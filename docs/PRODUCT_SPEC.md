@@ -2,16 +2,16 @@
 
 ## Resum
 
-Diagnosi IA permet crear un espai anonim de diagnosi sobre l'us educatiu de la intel.ligencia artificial. Una persona responsable crea l'espai, comparteix un enllac public amb el professorat i consulta resultats agregats amb un enllac privat.
+Diagnosi IA permet crear un espai anònim de diagnosi sobre l'ús educatiu de la intel·ligència artificial. Una persona responsable crea l'espai, comparteix un enllaç públic amb el professorat i consulta resultats de conjunt amb un enllaç privat.
 
-L'aplicacio no desa ni mostra el nom del centre. Tampoc avalua docents individualment.
+L'aplicació no desa ni mostra el nom del centre. Tampoc avalua docents individualment.
 
 ## Objectius
 
-- Crear espais anonims sense autenticacio.
-- Recollir respostes anonimes d'un questionari fix i versionat.
-- Mostrar resultats agregats des de la primera resposta.
-- Generar un informe PDF agregat.
+- Crear espais anònims sense autenticació.
+- Recollir respostes anònimes d'un qüestionari fix i versionat.
+- Mostrar resultats de conjunt des de la primera resposta.
+- Generar un informe PDF de conjunt.
 - Evitar la recollida de dades personals o identificadors de centre.
 
 ## Fora d'abast
@@ -21,7 +21,7 @@ L'aplicacio no desa ni mostra el nom del centre. Tampoc avalua docents individua
 - Seguiment individual del professorat.
 - Respostes obertes.
 - Exportacio de dades individuals.
-- Comparatives publiques entre centres.
+- Comparatives públiques entre centres.
 - Panell d'administracio global.
 
 ## Fluxos principals
@@ -30,17 +30,17 @@ L'aplicacio no desa ni mostra el nom del centre. Tampoc avalua docents individua
 
 Ruta: `/crear`
 
-La persona responsable crea un espai anonim. El servidor genera:
+La persona responsable crea un espai anònim. El servidor genera:
 
-- Codi public llegible amb format `C-7KX9-M2Q8`.
+- Codi públic llegible amb format `C-7KX9-M2Q8`.
 - Token privat llarg i criptograficament segur.
 
 Resultat mostrat un sol cop:
 
-- Enllac public: `/q/[publicCode]`
-- Enllac privat: `/resultats/[publicCode]#token=[privateToken]`
+- Enllaç públic: `/q/[publicCode]`
+- Enllaç privat: `/resultats/[publicCode]#token=[privateToken]`
 
-El token privat nomes existeix en text pla en el moment de creacio i al navegador de la persona responsable si conserva l'enllac.
+El token privat només existeix en text pla en el moment de creació i al navegador de la persona responsable si conserva l'enllaç.
 
 ### Resposta del professorat
 
@@ -49,16 +49,16 @@ Ruta: `/q/[publicCode]`
 El formulari ha de mostrar:
 
 - Objectiu de la diagnosi.
-- Respostes anonimes.
+- Respostes anònimes.
 - No recollida de dades personals.
-- Resultats nomes agregats.
+- Resultats només de conjunt.
 - Indicacio que cal respondre una sola vegada.
 
 El docent respon 20 preguntes obligatories amb escala:
 
 - `0`: Encara no
-- `1`: En part
-- `2`: Si, de manera habitual
+- `1`: Parcialment
+- `2`: Sí, de manera habitual
 
 No hi ha camps oberts.
 
@@ -66,12 +66,12 @@ No hi ha camps oberts.
 
 Ruta: `/resultats/[publicCode]#token=[privateToken]`
 
-El navegador llegeix el fragment `#token=` i envia el token mitjancant `POST /api/results`. El token no s'envia en query params.
+El navegador llegeix el fragment `#token=` i envia el token mitjançant `POST /api/results`. El token no s'envia en query params.
 
-El servidor valida el token i retorna nomes dades agregades:
+El servidor valida el token i retorna només dades de conjunt:
 
 - Codi de l'espai.
-- Versio del questionari.
+- Versio del qüestionari.
 - Nombre total de respostes.
 - Mitjana global.
 - Mitjana per bloc.
@@ -79,9 +79,9 @@ El servidor valida el token i retorna nomes dades agregades:
 - Mitjana per pregunta.
 - Distribucio per pregunta.
 - Grafiques apilades amb les tres opcions.
-- Text breu d'interpretacio.
+- Text breu d'interpretació.
 
-Si hi ha poques respostes, el tauler mostra un avis de prudencia metodologica. No hi ha minim fix.
+Si hi ha poques respostes, el tauler mostra un avís de prudència metodològica. No hi ha mínim fix.
 
 ### Informe PDF
 
@@ -89,26 +89,28 @@ Accio: boto `Descarrega l'informe PDF`
 
 Endpoint: `POST /api/reports/pdf`
 
-El servidor valida novament el token i genera un PDF agregat amb:
+El servidor valida novament el token i genera un PDF de conjunt amb:
 
 - Titol de la diagnosi.
-- Codi anonim de l'espai.
-- Versio del questionari.
-- Data de generacio.
+- Codi anònim de l'espai.
+- Versio del qüestionari.
+- Data de generació.
 - Nombre de respostes.
 - Explicacio de l'escala.
 - Grafica general dels blocs.
 - Grafiques i resultats de cada pregunta.
 - Resum de fortaleses.
-- Ambits amb marge de millora.
-- Nota metodologica.
-- Avis que no es una avaluacio individual del professorat.
+- Àmbits amb marge de millora.
+- Nota metodològica.
+- Avis que no és una avaluació individual del professorat.
 
 El PDF no inclou dades personals, token privat ni respostes individuals.
 
-## Questionari v1
+## Qüestionari v1
 
-Versio: `2026.1`
+Versió inicial: `2026.1`
+
+Versió activa corregida: `2026.2`
 
 Estructura:
 
@@ -120,32 +122,32 @@ Estructura:
 
 Blocs:
 
-1. Alfabetitzacio i us critic de la IA
-2. Us de la IA en la practica docent
+1. Alfabetització i ús crític de la IA
+2. Us de la IA en la pràctica docent
 3. Us de la IA amb l'alumnat
-4. Avaluacio i retroaccio
+4. Avaluacio i retroacció
 5. Dades, seguretat i criteris compartits
 
-Les preguntes concretes s'han de carregar amb migracio o `seed.sql`. Una versio amb respostes no es pot editar; qualsevol canvi crea una nova versio.
+Les preguntes concretes s'han de carregar amb migració o `seed.sql`. Una versió amb respostes no es pot editar; qualsevol canvi crea una nova versió.
 
 ## Textos funcionals recomanats
 
 ### Text introductori del formulari
 
-"Aquesta diagnosi anonima ajuda a coneixer de manera agregada com s'esta utilitzant la intel.ligencia artificial en el context educatiu. No es recullen dades personals, no s'identifica cap docent i els resultats nomes es mostraran de forma agregada. Respon una sola vegada."
+"Aquesta diagnosi anònima ajuda a conèixer amb una visió de conjunt com s'està utilitzant la intel·ligència artificial en el context educatiu. No es recullen dades personals, no s'identifica cap docent i els resultats només es mostraran en conjunt. Respon una sola vegada."
 
 ### Avis amb poques respostes
 
-"El nombre de respostes encara es baix. Els resultats poden ser menys representatius i s'han d'interpretar amb prudencia."
+"Poques respostes: interpreta els resultats amb prudència."
 
 ### Avis metodologic del PDF
 
-"Aquest informe presenta resultats agregats d'una diagnosi anonima. No permet avaluar individualment cap docent ni reconstruir respostes personals."
+"Aquest informe presenta resultats de conjunt d'una diagnosi anònima. No permet avaluar individualment cap docent ni reconstruir respostes personals."
 
 ## Requisits no funcionals
 
 - Validacio estricta al servidor.
 - Cap secret al client.
 - Cap dada individual al tauler o PDF.
-- Accessibilitat basica: formularis etiquetats, contrast suficient i navegacio amb teclat.
-- UI clara i institucional, sense aparenca de ranquing ni avaluacio personal.
+- Accessibilitat bàsica: formularis etiquetats, contrast suficient i navegació amb teclat.
+- UI clara i institucional, sense aparenca de ranquing ni avaluació personal.

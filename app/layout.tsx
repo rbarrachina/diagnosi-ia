@@ -4,7 +4,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Diagnosi IA",
-  description: "Diagnosi anonima i agregada sobre l'us educatiu de la IA.",
+  description: "Diagnosi anònima de conjunt sobre l'ús educatiu de la IA.",
+  referrer: "no-referrer",
 };
 
 export default function RootLayout({
@@ -13,7 +14,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="ca">
+    <html lang="ca" suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );

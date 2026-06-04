@@ -1,22 +1,29 @@
 # Diagnosi IA
 
-Aplicacio web per coneixer el grau d'us educatiu de la intel.ligencia artificial en centres educatius a partir de respostes anonimes i resultats agregats.
+Aplicació web per conèixer el grau d'ús educatiu de la intel·ligència artificial en centres educatius a partir de respostes anònimes i resultats de conjunt.
 
-Diagnosi IA no identifica centres ni docents. No es una eina d'avaluacio individual del professorat, sino una eina de diagnosi agregada per orientar decisions de centre.
+Diagnosi IA no identifica centres ni docents. No és una eina d'avaluació individual del professorat, sinó una eina de diagnosi global per orientar decisions de centre.
 
 ## Estat del projecte
 
-Aquest repositori te implementada la primera fase tecnica: aplicacio Next.js inicial, TypeScript estricte, Tailwind CSS, lint, tests i estructura de carpetes base.
+Aquest repositori té implementades les primeres fases:
 
-La funcionalitat de negoci encara no esta implementada. En particular, encara no hi ha integracio amb Supabase, creacio d'espais, formulari de respostes, resultats ni PDF.
+- Fase 1: aplicació Next.js inicial, TypeScript estricte, Tailwind CSS, lint, tests i estructura base.
+- Fase 2: esquema PostgreSQL per a Supabase, seed del qüestionari, restriccions i RLS.
+- Fase 3: creació d'espais anònims, generació segura de codi públic i token privat, formulari públic i enviament validat de respostes.
+- Fase 4: tauler privat de resultats de conjunt, gràfiques web i informe PDF server-side.
 
-Abans d'implementar funcionalitat, cal mantenir com a referencia:
+Encara no estan implementats l'enduriment de rate limiting, protecció anti-bots, política de retenció i tancament d'espais.
+
+Abans d'implementar funcionalitat, cal mantenir com a referència:
 
 - [docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/PRIVACY.md](docs/PRIVACY.md)
 - [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md)
 - [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)
+- [docs/SECURITY_REVIEW.md](docs/SECURITY_REVIEW.md)
+- [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)
 
 ## Arquitectura prevista
 
@@ -25,11 +32,11 @@ Abans d'implementar funcionalitat, cal mantenir com a referencia:
 - Tailwind CSS
 - Vercel per al desplegament
 - PostgreSQL a Supabase
-- Recharts per a grafiques web
+- Recharts per a gràfiques web
 - `@react-pdf/renderer` per generar informes PDF al servidor
 - Validacio estricta de dades al servidor
-- Operacions sensibles nomes mitjancant Route Handlers o funcions de servidor
-- Sense acces directe del navegador a les taules de respostes
+- Operacions sensibles només mitjançant Route Handlers o funcions de servidor
+- Sense accés directe del navegador a les taules de respostes
 
 ## Rutes previstes
 
@@ -44,7 +51,7 @@ Abans d'implementar funcionalitat, cal mantenir com a referencia:
 
 ## Variables d'entorn previstes
 
-El projecte haura d'incloure un fitxer `.env.example` sense secrets reals:
+El projecte haurà d'incloure un fitxer `.env.example` sense secrets reals:
 
 ```bash
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -55,14 +62,25 @@ PRIVATE_TOKEN_HMAC_SECRET=replace-with-strong-random-secret
 
 Regles:
 
-- `SUPABASE_SERVICE_ROLE_KEY` nomes pot existir al servidor.
-- `PRIVATE_TOKEN_HMAC_SECRET` nomes pot existir al servidor.
+- `SUPABASE_SERVICE_ROLE_KEY` només pot existir al servidor.
+- `PRIVATE_TOKEN_HMAC_SECRET` només pot existir al servidor.
 - Cap secret pot exposar-se amb prefix `NEXT_PUBLIC_`.
 - El token privat no s'ha d'incloure mai en query params ni logs.
 
+## Base de dades
+
+La fase de base de dades inclou:
+
+- `supabase/migrations/20260604130000_initial_schema.sql`
+- `supabase/migrations/20260604131500_add_composite_foreign_key_indexes.sql`
+- `supabase/migrations/20260604143000_create_submission_rpc.sql`
+- `supabase/seed.sql`
+
+Consulta [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) per aplicar manualment les migracions i el seed a Supabase.
+
 ## Com executar el projecte
 
-Instal.lar dependencies:
+Instal·lar dependències:
 
 ```bash
 npm install
@@ -85,20 +103,20 @@ npm run build
 
 ## Privacitat
 
-L'aplicacio no ha de recollir ni desar:
+L'aplicació no ha de recollir ni desar:
 
 - nom del centre
 - codi oficial del centre
 - nom o cognoms dels docents
-- correus electronics
+- correus electrònics
 - comptes d'usuari
 - identificadors personals
-- informacio del dispositiu
-- adreces IP a la base de dades de l'aplicacio
+- informació del dispositiu
+- adreces IP a la base de dades de l'aplicació
 - respostes obertes
 
-No ha d'existir cap taula anomenada `centres`. La taula principal d'espais anonims s'ha d'anomenar `diagnostic_spaces`.
+No ha d'existir cap taula anomenada `centres`. La taula principal d'espais anònims s'ha d'anomenar `diagnostic_spaces`.
 
-## Llicencia
+## Llicència
 
 Pendent de decidir.

@@ -2,37 +2,37 @@
 
 ## Principi rector
 
-Diagnosi IA ha de minimitzar dades. La diagnosi funciona sense identificar centres, docents o persones responsables. Els resultats nomes existeixen en forma agregada.
+Diagnosi IA ha de minimitzar dades. La diagnosi funciona sense identificar centres, docents o persones responsables. Els resultats només existeixen en conjunt.
 
 ## Dades prohibides
 
-L'aplicacio no ha de recollir ni desar:
+L'aplicació no ha de recollir ni desar:
 
 - nom del centre
 - codi oficial del centre
 - nom o cognoms dels docents
-- correus electronics
+- correus electrònics
 - comptes d'usuari
 - identificadors personals
-- informacio del dispositiu
-- adreces IP a la base de dades de l'aplicacio
+- informació del dispositiu
+- adreces IP a la base de dades de l'aplicació
 - respostes obertes
 
 Tambe queda prohibit crear una taula `centres`.
 
 ## Dades permeses
 
-Nomes es preveuen:
+Només es preveuen:
 
-- Codi public anonim de l'espai.
+- Codi públic anònim de l'espai.
 - Hash o HMAC del token privat.
-- Versio del questionari.
+- Versio del qüestionari.
 - Estat actiu/inactiu de l'espai.
-- Submissions anonimes amb identificador tecnic intern.
+- Submissions anònimes amb identificador tècnic intern.
 - Respostes tancades amb valors `0`, `1`, `2`.
-- Timestamps tecnics agregables, no visibles al tauler ni al PDF.
+- Timestamps tècnics agregables, no visibles al tauler ni al PDF.
 
-Nota: els timestamps de `submissions` poden ser utils per integritat i manteniment, pero no s'han de mostrar ni exportar. Si es considera que augmenten massa el risc de reidentificacio en espais petits, es poden ometre o truncar en una revisio de privacitat.
+Nota: els timestamps de `submissions` poden ser útils per integritat i manteniment, però no s'han de mostrar ni exportar. Si es considera que augmenten massa el risc de reidentificació en espais petits, es poden ometre o truncar en una revisió de privacitat.
 
 ## Token privat
 
@@ -46,7 +46,7 @@ Requisits:
 - No escrit en logs.
 - No inclos en PDF.
 
-Format d'enllac privat:
+Format d'enllaç privat:
 
 ```text
 /resultats/[publicCode]#token=[privateToken]
@@ -64,6 +64,8 @@ El tauler i el PDF poden mostrar:
 - mitjanes per pregunta
 - distribucions per pregunta
 
+La implementació actual retorna només aquest model de dades de conjunt a `POST /api/results`. El PDF es genera amb la mateixa capa de resultats de conjunt després de validar novament el token.
+
 No poden mostrar:
 
 - files individuals
@@ -74,41 +76,43 @@ No poden mostrar:
 
 ## Risc amb poques respostes
 
-No hi ha minim fix per consultar resultats. Aixo es una decisio de producte, pero implica mes risc interpretatiu quan el volum es baix.
+No hi ha mínim fix per consultar resultats. Això és una decisió de producte, però implica més risc interpretatiu quan el volum és baix.
 
 Mitigacio obligatoria:
 
-- Mostrar un avis de prudencia quan hi hagi poques respostes.
+- Mostrar un avís de prudència quan hi hagi poques respostes.
 - Evitar qualsevol visualitzacio que combini respostes per persona.
 - No mostrar timestamps individuals.
 
-Llindar recomanat per a l'avis: menys de 5 respostes. Aquest llindar no bloqueja l'acces.
+Llindar recomanat per a l'avís: menys de 5 respostes. Aquest llindar no bloqueja l'accés.
 
 ## Supabase i RLS
 
 Cal activar Row Level Security a totes les taules exposades.
 
-No s'han de crear politiques publiques de lectura per a:
+No s'han de crear polítiques públiques de lectura per a:
 
 - `diagnostic_spaces`
 - `submissions`
 - `answers`
 
-El client public de Supabase, si existeix, no ha de poder llegir ni escriure directament aquestes taules. Les operacions es fan amb endpoints server-side.
+El client públic de Supabase, si existeix, no ha de poder llegir ni escriure directament aquestes taules. Les operacions es fan amb endpoints server-side.
+
+La inserció de respostes de la fase 3 es fa amb una RPC server-only. Els rols `anon` i `authenticated` no tenen permís d'execució sobre aquesta funció; només el servidor amb `service_role` pot cridar-la.
 
 ## Logs
 
 No s'han de registrar:
 
 - tokens privats
-- cossos complets de peticions amb respostes
-- identificadors tecnics combinats amb dades que permetin perfilar una persona
+- cossos complets de pèticions amb respostes
+- identificadors tècnics combinats amb dades que permetin perfilar una persona
 
-Els errors han de ser generics per a l'usuari i tecnicament suficients per depurar sense dades sensibles.
+Els errors han de ser genèrics per a l'usuari i tècnicament suficients per depurar sense dades sensibles.
 
 ## Exportacions
 
-L'unica exportacio prevista es el PDF agregat. No s'ha d'afegir CSV ni JSON descarregable amb respostes individuals sense una nova revisio de privacitat.
+L'única exportació prevista és el PDF de conjunt. No s'ha d'afegir CSV ni JSON descarregable amb respostes individuals sense una nova revisió de privacitat.
 
 ## Riscos pendents per a fase 2
 
@@ -117,4 +121,4 @@ L'unica exportacio prevista es el PDF agregat. No s'ha d'afegir CSV ni JSON desc
 - Deteccio d'enviaments massius automatitzats.
 - Caducitat o tancament automatic d'espais.
 - Revisio legal o DPO si l'eina s'usa en entorns institucionals.
-- Politica de retencio i eliminacio de dades.
+- Politica de retenció i eliminacio de dades.
