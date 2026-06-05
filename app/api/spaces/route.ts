@@ -1,18 +1,9 @@
 import { createDiagnosticSpace } from "@/lib/spaces/create-space";
+import { resolveAppUrl } from "@/lib/http/app-url";
 import { readJsonRequestBody } from "@/lib/http/request";
 import { createSpaceRequestSchema } from "@/lib/validation/schemas";
 
 export const runtime = "nodejs";
-
-function getAppUrl(request: Request): string {
-  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
-
-  if (configuredUrl) {
-    return configuredUrl.replace(/\/$/, "");
-  }
-
-  return new URL(request.url).origin;
-}
 
 export async function POST(request: Request): Promise<Response> {
   try {
@@ -22,7 +13,9 @@ export async function POST(request: Request): Promise<Response> {
     });
     createSpaceRequestSchema.parse(payload);
 
-    const createdSpace = await createDiagnosticSpace(getAppUrl(request));
+    const createdSpace = await createDiagnosticSpace(
+      resolveAppUrl(request.url, process.env.NEXT_PUBLIC_APP_URL),
+    );
 
     return Response.json(
       {

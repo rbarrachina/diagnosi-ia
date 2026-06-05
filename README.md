@@ -4,6 +4,8 @@ Aplicació web per conèixer el grau d'ús educatiu de la intel·ligència artif
 
 Diagnosi IA no identifica centres ni docents. No és una eina d'avaluació individual del professorat, sinó una eina de diagnosi global per orientar decisions de centre.
 
+Aplicació en funcionament: https://diagnosi-ia.vercel.app/
+
 ## Estat del projecte
 
 Aquest repositori té implementades les primeres fases:
@@ -62,6 +64,9 @@ PRIVATE_TOKEN_HMAC_SECRET=replace-with-strong-random-secret
 
 Regles:
 
+- En producció, `NEXT_PUBLIC_APP_URL` ha d'apuntar a `https://diagnosi-ia.vercel.app`.
+- Si `NEXT_PUBLIC_APP_URL` no està configurada, l'aplicació genera els enllaços a partir del domini de la petició.
+- Si `NEXT_PUBLIC_APP_URL` apunta a `localhost` però la petició arriba des d'un domini públic, s'ignora per evitar enllaços de producció cap a local.
 - `SUPABASE_SERVICE_ROLE_KEY` només pot existir al servidor.
 - `PRIVATE_TOKEN_HMAC_SECRET` només pot existir al servidor.
 - Cap secret pot exposar-se amb prefix `NEXT_PUBLIC_`.
