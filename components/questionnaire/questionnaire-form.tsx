@@ -175,10 +175,10 @@ function IntroPage({ questionnaire }: { questionnaire: PublicQuestionnaire }) {
   return (
     <div>
       <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
-        Diagnosi IA
+        Competència digital docent en IA
       </p>
       <h1 className="mt-3 text-3xl font-semibold tracking-normal text-ink">
-        Qüestionari anònim
+        Qüestionari
       </h1>
       <div className="mt-5 grid gap-4 text-sm leading-6 text-slate-700 sm:grid-cols-2">
         <p>
@@ -194,8 +194,7 @@ function IntroPage({ questionnaire }: { questionnaire: PublicQuestionnaire }) {
           identificadors personals ni respostes obertes.
         </p>
         <p>
-          Cal respondre una sola vegada. Totes les preguntes són obligatòries i
-          utilitzen la mateixa escala.
+          La diagnosi consta de 20 preguntes obligatòries. Cada docent l’ha de respondre una sola vegada.
         </p>
       </div>
       <dl className="mt-6 grid gap-3 text-sm sm:grid-cols-2">

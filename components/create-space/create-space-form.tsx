@@ -57,29 +57,24 @@ export function CreateSpaceForm() {
   }
 
   return (
-    <div className="rounded-md border border-line bg-white p-6 text-center shadow-sm">
+    <div className="flex h-full flex-col rounded-md border border-line bg-white p-6 text-center shadow-sm">
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
-          Codi públic
+          CREAR QÜESTIONARI
         </p>
         <h2 className="text-xl font-semibold text-ink">
-          Crea l&apos;espai
+          Soc responsable del centre educatiu
         </h2>
-        <p className="text-sm leading-6 text-slate-700">
-          El codi públic identifica l&apos;espai de diagnosi sense identificar
-          cap centre. Comparteix l&apos;enllaç públic amb el professorat i
-          conserva l&apos;enllaç privat per consultar els resultats.
-        </p>
       </div>
 
       {state.status !== "created" ? (
         <button
-          className="mt-6 rounded-md bg-action px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="mt-6 inline-flex self-center rounded-md bg-action px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
           disabled={state.status === "submitting"}
           onClick={handleCreateSpace}
           type="button"
         >
-          {state.status === "submitting" ? "Creant..." : "Crea l'espai"}
+          {state.status === "submitting" ? "Creant..." : "Crear el qüestionari"}
         </button>
       ) : null}
 
