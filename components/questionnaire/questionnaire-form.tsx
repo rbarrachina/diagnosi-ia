@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SCALE_OPTIONS, type ScaleValue } from "@/lib/questionnaire/scale";
 import type { PublicQuestionnaire, QuestionBlock } from "@/lib/questionnaire/types";
 
@@ -33,6 +33,10 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
       : Math.round((currentStep / totalPages) * 100);
   const currentBlock = currentStep > 0 ? questionnaire.blocks[currentStep - 1] : null;
   const isLastBlock = currentStep === questionnaire.blocks.length;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [currentStep]);
 
   function blockIsComplete(block: QuestionBlock): boolean {
     return block.questions.every((question) => answers[question.id] !== undefined);
