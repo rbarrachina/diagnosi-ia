@@ -2,11 +2,12 @@ import "server-only";
 
 import { verifyPrivateToken } from "@/lib/crypto/private-token";
 import { createSupabaseAdminClient } from "@/lib/database/server";
-import { calculateAggregatedResults } from "@/lib/results/calculate-results";
+import { calculateAggregatedResultsFromCounts } from "@/lib/results/calculate-results";
 import type {
-  AnswerRecord,
+  AnswerCountRecord,
   BlockDefinition,
   QuestionDefinition,
+  ScaleValue,
 } from "@/lib/results/types";
 import type { PrivateResultsRequestInput } from "@/lib/validation/schemas";
 
@@ -37,7 +38,8 @@ type QuestionRow = {
 
 type AnswerRow = {
   question_id: string;
-  value: 0 | 1 | 2;
+  value: ScaleValue;
+  answer_count: number | string;
 };
 
 export class ResultsAccessError extends Error {
@@ -95,7 +97,7 @@ export async function getAggregatedResults(payload: PrivateResultsRequestInput) 
     { data: blocks, error: blocksError },
     { data: questions, error: questionsError },
     { count: totalSubmissions, error: submissionsError },
-    { data: answers, error: answersError },
+    { data: answerCounts, error: answerCountsError },
   ] = await Promise.all([
     supabase
       .from("question_blocks")
@@ -114,9 +116,9 @@ export async function getAggregatedResults(payload: PrivateResultsRequestInput) 
       .select("id", { count: "exact", head: true })
       .eq("diagnostic_space_id", space.id),
     supabase
-      .from("answers")
-      .select("question_id, value, submissions!inner(diagnostic_space_id)")
-      .eq("submissions.diagnostic_space_id", space.id)
+      .rpc("get_diagnostic_answer_counts", {
+        p_diagnostic_space_id: space.id,
+      })
       .returns<AnswerRow[]>(),
   ]);
 
@@ -124,13 +126,15 @@ export async function getAggregatedResults(payload: PrivateResultsRequestInput) 
     blocksError ||
     questionsError ||
     submissionsError ||
-    answersError ||
+    answerCountsError ||
     !blocks ||
     !questions ||
-    !answers
+    !answerCounts
   ) {
     throw new Error("Could not load aggregated results");
   }
+
+  const answerCountRows = answerCounts as unknown as AnswerRow[];
 
   const blockDefinitions: BlockDefinition[] = blocks.map((block) => ({
     id: block.id,
@@ -146,18 +150,19 @@ export async function getAggregatedResults(payload: PrivateResultsRequestInput) 
     text: question.text,
   }));
 
-  const answerRecords: AnswerRecord[] = answers.map((answer) => ({
+  const answerCountRecords: AnswerCountRecord[] = answerCountRows.map((answer) => ({
     questionId: answer.question_id,
     value: answer.value,
+    count: Number(answer.answer_count),
   }));
 
-  return calculateAggregatedResults({
+  return calculateAggregatedResultsFromCounts({
     publicCode: space.public_code,
     questionnaireVersion: space.questionnaires.version,
     generatedAt: new Date().toISOString(),
     totalSubmissions: totalSubmissions ?? 0,
     blocks: blockDefinitions,
     questions: questionDefinitions,
-    answers: answerRecords,
+    answerCounts: answerCountRecords,
   });
 }

@@ -259,9 +259,9 @@ Proves:
 Riscos o decisions pendents:
 
 - Definir textos d'interpretació exactes.
-- Decidir si els resultats de conjunt es calculen en SQL o TypeScript.
+- Rate limiting i proteccio anti-bots continuen fora d'abast d'aquesta fase.
 
-Estat: implementada. Els resultats de conjunt es calculen en TypeScript al servidor a partir de files internes no exposades al navegador.
+Estat: implementada. PostgreSQL calcula els recomptes agregats amb la RPC server-only `public.get_diagnostic_answer_counts(uuid)` i TypeScript construeix el model final del tauler i del PDF a partir d'aquests totals. No es carreguen files individuals d'`answers` per generar resultats.
 
 ## Fase 7: Informe PDF
 

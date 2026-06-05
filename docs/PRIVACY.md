@@ -66,6 +66,8 @@ El tauler i el PDF poden mostrar:
 
 La implementació actual retorna només aquest model de dades de conjunt a `POST /api/results`. El PDF es genera amb la mateixa capa de resultats de conjunt després de validar novament el token.
 
+El recompte intern de respostes es fa a PostgreSQL amb una RPC server-only que retorna només totals per pregunta i valor de resposta. El servidor no necessita carregar totes les files individuals d'`answers` per calcular el tauler o el PDF.
+
 No poden mostrar:
 
 - files individuals

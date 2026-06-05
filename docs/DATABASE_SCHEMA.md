@@ -11,6 +11,7 @@ Implementacio actual:
 - RPC de submissions: `supabase/migrations/20260604143000_create_submission_rpc.sql`
 - Conversió d'identificador de qüestionari: `supabase/migrations/20260604154605_convert_questionnaire_ids_to_three_digit_codes.sql`
 - Conversió d'identificador de bloc: `supabase/migrations/20260604155650_convert_block_ids_to_two_digit_codes.sql`
+- RPC de resultats agregats: `supabase/migrations/20260605143459_create_aggregated_results_rpc.sql`
 - Seed: `supabase/seed.sql`
 - Configuracio manual: `docs/SUPABASE_SETUP.md`
 
@@ -205,8 +206,16 @@ Alternativa:
 
 Els resultats de conjunt poden calcular-se:
 
-- En SQL amb consultes agrupades.
-- En servidor TypeScript a partir de files internes, no de submissions exposades al client.
+- En SQL amb consultes agrupades mitjançant `public.get_diagnostic_answer_counts(uuid)`.
+- En servidor TypeScript només a partir de totals agregats, no de files individuals de `answers`.
+
+Implementacio actual:
+
+- El servidor valida primer el token privat.
+- Despres crida la RPC server-only `public.get_diagnostic_answer_counts(uuid)`.
+- La RPC retorna només recomptes agregats per `question_id` i valor de l'escala (`0`, `1`, `2`).
+- La RPC no retorna `submission_id`, timestamps, ni cap combinacio de respostes d'una mateixa persona.
+- Els rols `anon` i `authenticated` no tenen permís d'execucio sobre aquesta funcio; només `service_role`.
 
 Cal retornar:
 

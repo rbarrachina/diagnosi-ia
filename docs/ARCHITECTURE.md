@@ -200,6 +200,7 @@ Implementacio actual:
 - El token arriba només per `POST`.
 - El client llegeix `#token=` i elimina el fragment visualment amb `history.replaceState`.
 - La resposta no inclou token, submissions, dates individuals ni combinacions de respostes.
+- El recompte de respostes es fa amb la RPC server-only `public.get_diagnostic_answer_counts(uuid)`, que retorna només totals agregats per pregunta i valor de l'escala.
 
 ### `POST /api/reports/pdf`
 

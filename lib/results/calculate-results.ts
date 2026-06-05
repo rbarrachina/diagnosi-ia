@@ -1,5 +1,6 @@
 import type {
   AggregatedResults,
+  AnswerCountRecord,
   AnswerRecord,
   BlockDefinition,
   DistributionBucket,
@@ -47,6 +48,38 @@ function average(values: number[]): number | null {
   return roundToTwoDecimals(
     values.reduce((total, value) => total + value, 0) / values.length,
   );
+}
+
+function weightedAverage(counts: Record<ScaleValue, number>): number | null {
+  const totalCount = SCALE_OPTIONS.reduce(
+    (total, option) => total + counts[option.value],
+    0,
+  );
+
+  if (totalCount === 0) {
+    return null;
+  }
+
+  const weightedTotal = SCALE_OPTIONS.reduce(
+    (total, option) => total + option.value * counts[option.value],
+    0,
+  );
+
+  return roundToTwoDecimals(weightedTotal / totalCount);
+}
+
+function mergeDistributionCounts(
+  distributions: Record<ScaleValue, number>[],
+): Record<ScaleValue, number> {
+  const merged = createEmptyDistribution();
+
+  for (const distribution of distributions) {
+    for (const option of SCALE_OPTIONS) {
+      merged[option.value] += distribution[option.value];
+    }
+  }
+
+  return merged;
 }
 
 function interpretationForAverage(averageValue: number | null): string {
@@ -148,6 +181,87 @@ export function calculateAggregatedResults(params: {
     });
 
   const globalAverage = average(params.answers.map((answer) => answer.value));
+
+  return {
+    publicCode: params.publicCode,
+    questionnaireVersion: params.questionnaireVersion,
+    generatedAt: params.generatedAt,
+    totalSubmissions: params.totalSubmissions,
+    globalAverage,
+    lowResponseWarning: params.totalSubmissions > 0 && params.totalSubmissions < LOW_RESPONSE_THRESHOLD,
+    scale: SCALE_OPTIONS,
+    blocks: blockResults,
+    interpretation: interpretationForAverage(globalAverage),
+    strengths: summarizeBlocks(blockResults, "strengths"),
+    improvementAreas: summarizeBlocks(blockResults, "improvements"),
+  };
+}
+
+export function calculateAggregatedResultsFromCounts(params: {
+  publicCode: string;
+  questionnaireVersion: string;
+  generatedAt: string;
+  totalSubmissions: number;
+  blocks: BlockDefinition[];
+  questions: QuestionDefinition[];
+  answerCounts: AnswerCountRecord[];
+}): AggregatedResults {
+  const questionsByBlock = new Map<string, QuestionDefinition[]>();
+  const countsByQuestion = new Map<string, Record<ScaleValue, number>>();
+
+  for (const question of params.questions) {
+    const blockQuestions = questionsByBlock.get(question.blockId) ?? [];
+    blockQuestions.push(question);
+    questionsByBlock.set(question.blockId, blockQuestions);
+    countsByQuestion.set(question.id, createEmptyDistribution());
+  }
+
+  for (const answerCount of params.answerCounts) {
+    const questionCounts =
+      countsByQuestion.get(answerCount.questionId) ?? createEmptyDistribution();
+    questionCounts[answerCount.value] += answerCount.count;
+    countsByQuestion.set(answerCount.questionId, questionCounts);
+  }
+
+  const blockResults = params.blocks
+    .sort((a, b) => a.position - b.position)
+    .map((block) => {
+      const blockQuestions = questionsByBlock.get(block.id) ?? [];
+      const questionResults = blockQuestions
+        .sort((a, b) => a.blockPosition - b.blockPosition)
+        .map((question) => {
+          const distributionCounts =
+            countsByQuestion.get(question.id) ?? createEmptyDistribution();
+
+          return {
+            position: question.position,
+            blockPosition: question.blockPosition,
+            text: question.text,
+            average: weightedAverage(distributionCounts),
+            distribution: formatDistribution(distributionCounts, params.totalSubmissions),
+          };
+        });
+
+      const blockCounts = mergeDistributionCounts(
+        blockQuestions.map(
+          (question) => countsByQuestion.get(question.id) ?? createEmptyDistribution(),
+        ),
+      );
+
+      return {
+        position: block.position,
+        title: block.title,
+        average: weightedAverage(blockCounts),
+        questions: questionResults,
+      };
+    });
+
+  const globalCounts = mergeDistributionCounts(
+    params.questions.map(
+      (question) => countsByQuestion.get(question.id) ?? createEmptyDistribution(),
+    ),
+  );
+  const globalAverage = weightedAverage(globalCounts);
 
   return {
     publicCode: params.publicCode,

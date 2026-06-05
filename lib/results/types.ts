@@ -59,3 +59,9 @@ export type AnswerRecord = {
   questionId: string;
   value: ScaleValue;
 };
+
+export type AnswerCountRecord = {
+  questionId: string;
+  value: ScaleValue;
+  count: number;
+};
