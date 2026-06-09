@@ -14,6 +14,7 @@ Implementacio actual:
 - RPC de resultats agregats: `supabase/migrations/20260605143459_create_aggregated_results_rpc.sql`
 - Neteja de default obsolet de blocs: `supabase/migrations/20260609093301_drop_question_blocks_id_default.sql`
 - Clau primaria composta de respostes: `supabase/migrations/20260609095253_use_composite_primary_key_for_answers.sql`
+- Propietari OAuth i tokens de resultats: `supabase/migrations/20260609143524_add_auth_ownership_and_results_tokens.sql`
 - Seed: `supabase/seed.sql`
 - Configuracio manual: `docs/SUPABASE_SETUP.md`
 
@@ -105,6 +106,12 @@ Columnes proposades:
 - `id uuid primary key default gen_random_uuid()`
 - `public_code text not null unique`
 - `private_token_hmac text not null`
+- `owner_user_id uuid references auth.users(id)`
+- `results_token_hash text not null`
+- `results_token_encrypted text`
+- `results_token_enabled boolean not null default true`
+- `results_token_created_at timestamptz not null default now()`
+- `results_token_expires_at timestamptz`
 - `questionnaire_id text not null references questionnaires(id) on delete restrict`
 - `is_active boolean not null default true`
 - `created_at timestamptz not null default now()`

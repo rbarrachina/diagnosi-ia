@@ -4,21 +4,25 @@
 
 Aquest repositori conté una aplicació de diagnosi anònima sobre l'ús educatiu de la intel·ligència artificial.
 
-L'aplicació treballa amb espais de diagnosi anònims, no amb centres identificats. La prioritat tècnica principal és preservar l'anonimat i evitar que la implementació introdueixi identificadors directes o indirectes.
+L'aplicació treballa amb espais de diagnosi anònims, no amb centres identificats. La prioritat tècnica principal és preservar l'anonimat del professorat participant i evitar que la implementació introdueixi identificadors directes o indirectes en les respostes.
+
+Els creadors d'espais poden autenticar-se amb Supabase Auth i Google OAuth, limitat a comptes `@xtec.cat`, només per crear i gestionar els espais propis.
 
 ## Regles de privacitat
 
 - No crear cap taula anomenada `centres`.
 - No afegir mai camps per desar el nom del centre.
 - No desar ni mostrar el nom del centre.
-- No recollir noms, cognoms, correus electrònics, identificadors personals, IPs ni informació del dispositiu.
-- No crear comptes d'usuari.
+- No recollir noms, cognoms, correus electrònics, identificadors personals, IPs ni informació del dispositiu del professorat participant.
+- No crear comptes d'usuari per al professorat participant.
+- Els comptes OAuth de creadors només poden servir per propietat i gestio d'espais; no s'han de barrejar amb respostes individuals.
 - No afegir respostes obertes.
 - No mostrar ni exportar respostes individuals.
 - No crear endpoints que retornin files individuals de `submissions` o `answers`.
 - No permetre reconstruir el conjunt complet de respostes d'una mateixa persona des del tauler o el PDF.
 - No donar accés directe del navegador a `diagnostic_spaces`, `submissions` ni `answers`.
 - No incloure tokens privats en logs, URLs amb query string, PDFs o respostes d'error.
+- Si cal recuperar un token compartit per al creador, s'ha de guardar xifrat amb una clau server-side i també com HMAC per validacio; mai en text pla.
 - Tots els resultats s'han de presentar sempre en conjunt.
 - No afegir filtres que puguin facilitar la identificacio indirecta de persones.
 

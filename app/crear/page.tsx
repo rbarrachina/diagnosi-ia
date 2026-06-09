@@ -1,7 +1,17 @@
+import {
+  LogoutButton,
+  XtecAccessNotice,
+  XtecForbiddenNotice,
+} from "@/components/auth/auth-actions";
 import { CreateSpaceForm } from "@/components/create-space/create-space-form";
 import { ParticipantInfoCard } from "@/components/create-space/participant-info-card";
+import { getXtecSessionState } from "@/lib/auth/session";
 
-export default function CreatePage() {
+export const dynamic = "force-dynamic";
+
+export default async function CreatePage() {
+  const session = await getXtecSessionState();
+
   return (
     <main className="min-h-screen bg-paper">
       <section className="mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-center px-6 py-12 text-center">
@@ -30,10 +40,37 @@ export default function CreatePage() {
           </p>
         </div>
 
-        <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
-          <CreateSpaceForm />
-          <ParticipantInfoCard />
-        </div>
+        {session.status === "unauthenticated" ? (
+          <div className="w-full max-w-xl">
+            <XtecAccessNotice />
+          </div>
+        ) : null}
+
+        {session.status === "forbidden" ? (
+          <div className="w-full max-w-xl">
+            <XtecForbiddenNotice />
+          </div>
+        ) : null}
+
+        {session.status === "authenticated" ? (
+          <>
+            <div className="mb-4 flex w-full items-center justify-between rounded-md border border-line bg-white px-4 py-3 text-left text-sm text-slate-700 shadow-sm">
+              <span>
+                Sessió iniciada com <strong>{session.user.email}</strong>
+              </span>
+              <div className="flex items-center gap-3">
+                <a className="font-semibold text-action" href="/espais">
+                  Els meus espais
+                </a>
+                <LogoutButton next="/crear" />
+              </div>
+            </div>
+            <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
+              <CreateSpaceForm />
+              <ParticipantInfoCard />
+            </div>
+          </>
+        ) : null}
       </section>
     </main>
   );

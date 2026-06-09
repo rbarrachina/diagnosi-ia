@@ -1,3 +1,4 @@
+import { getXtecSessionState } from "@/lib/auth/session";
 import { createDiagnosticSpace } from "@/lib/spaces/create-space";
 import { resolveAppUrl } from "@/lib/http/app-url";
 import { readJsonRequestBody } from "@/lib/http/request";
@@ -13,15 +14,30 @@ export async function POST(request: Request): Promise<Response> {
     });
     createSpaceRequestSchema.parse(payload);
 
+    const session = await getXtecSessionState();
+
+    if (session.status === "unauthenticated") {
+      return Response.json({ error: "Cal iniciar sessió." }, { status: 401 });
+    }
+
+    if (session.status === "forbidden") {
+      return Response.json(
+        { error: "Només es permet l’accés amb un compte XTEC." },
+        { status: 403 },
+      );
+    }
+
     const createdSpace = await createDiagnosticSpace(
       resolveAppUrl(request.url, process.env.NEXT_PUBLIC_APP_URL),
+      session.user.id,
     );
 
     return Response.json(
       {
         publicCode: createdSpace.publicCode,
         publicUrl: createdSpace.publicUrl,
-        privateResultsUrl: createdSpace.privateResultsUrl,
+        sharedResultsUrl: createdSpace.sharedResultsUrl,
+        ownerResultsUrl: createdSpace.ownerResultsUrl,
       },
       { status: 201 },
     );

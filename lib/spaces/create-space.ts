@@ -1,28 +1,28 @@
 import "server-only";
 
-import { generatePrivateToken, hashPrivateToken } from "@/lib/crypto/private-token";
 import { generatePublicCode } from "@/lib/crypto/public-code";
 import { createSupabaseAdminClient } from "@/lib/database/server";
+import {
+  buildOwnerResultsUrl,
+  buildSharedResultsUrl,
+  generateResultsToken,
+} from "@/lib/results/results-token";
 import { QUESTIONNAIRE_VERSION } from "@/lib/validation/schemas";
 
 const MAX_PUBLIC_CODE_ATTEMPTS = 8;
 
 export type CreatedDiagnosticSpace = {
   publicCode: string;
-  privateToken: string;
+  sharedResultsUrl: string;
+  ownerResultsUrl: string;
   publicUrl: string;
-  privateResultsUrl: string;
 };
 
 export async function createDiagnosticSpace(
   appUrl: string,
+  ownerUserId: string,
 ): Promise<CreatedDiagnosticSpace> {
   const supabase = createSupabaseAdminClient();
-  const tokenSecret = process.env.PRIVATE_TOKEN_HMAC_SECRET;
-
-  if (!tokenSecret) {
-    throw new Error("PRIVATE_TOKEN_HMAC_SECRET is required");
-  }
 
   const { data: questionnaire, error: questionnaireError } = await supabase
     .from("questionnaires")
@@ -35,23 +35,26 @@ export async function createDiagnosticSpace(
     throw new Error("Active questionnaire version not found");
   }
 
-  const privateToken = generatePrivateToken();
-  const privateTokenHmac = hashPrivateToken(privateToken, tokenSecret);
+  const resultsToken = generateResultsToken();
 
   for (let attempt = 0; attempt < MAX_PUBLIC_CODE_ATTEMPTS; attempt += 1) {
     const publicCode = generatePublicCode();
     const { error } = await supabase.from("diagnostic_spaces").insert({
       public_code: publicCode,
-      private_token_hmac: privateTokenHmac,
+      private_token_hmac: resultsToken.hash,
+      results_token_hash: resultsToken.hash,
+      results_token_encrypted: resultsToken.encrypted,
+      results_token_created_at: new Date().toISOString(),
+      owner_user_id: ownerUserId,
       questionnaire_id: questionnaire.id,
     });
 
     if (!error) {
       return {
         publicCode,
-        privateToken,
         publicUrl: `${appUrl}/q/${publicCode}`,
-        privateResultsUrl: `${appUrl}/resultats/${publicCode}#token=${privateToken}`,
+        sharedResultsUrl: buildSharedResultsUrl(appUrl, publicCode, resultsToken.token),
+        ownerResultsUrl: buildOwnerResultsUrl(appUrl, publicCode),
       };
     }
 

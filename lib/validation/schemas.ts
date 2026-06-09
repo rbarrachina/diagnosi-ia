@@ -56,6 +56,13 @@ export const privateResultsRequestSchema = z
   })
   .strict();
 
+export const ownerResultsRequestSchema = z
+  .object({
+    publicCode: publicCodeSchema,
+  })
+  .strict();
+
 export type SubmissionAnswerInput = z.infer<typeof submissionAnswerSchema>;
 export type SubmissionRequestInput = z.infer<typeof submissionRequestSchema>;
 export type PrivateResultsRequestInput = z.infer<typeof privateResultsRequestSchema>;
+export type OwnerResultsRequestInput = z.infer<typeof ownerResultsRequestSchema>;

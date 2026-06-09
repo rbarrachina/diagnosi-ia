@@ -35,6 +35,14 @@ const answersPrimaryKeyMigration = readFileSync(
   "utf8",
 );
 
+const authOwnershipMigration = readFileSync(
+  join(
+    process.cwd(),
+    "supabase/migrations/20260609143524_add_auth_ownership_and_results_tokens.sql",
+  ),
+  "utf8",
+);
+
 describe("questionnaire identifiers", () => {
   it("converts questionnaire ids and related foreign keys to three-digit text codes", () => {
     expect(conversionMigration).toContain("lpad(row_number()");
@@ -71,5 +79,15 @@ describe("questionnaire identifiers", () => {
       "add constraint answers_pkey primary key (submission_id, question_id)",
     );
     expect(answersPrimaryKeyMigration).toContain("drop column id");
+  });
+
+  it("adds authenticated ownership and recoverable encrypted result tokens", () => {
+    expect(authOwnershipMigration).toContain("owner_user_id uuid references auth.users(id)");
+    expect(authOwnershipMigration).toContain("results_token_hash text");
+    expect(authOwnershipMigration).toContain("results_token_encrypted text");
+    expect(authOwnershipMigration).toContain("results_token_enabled boolean");
+    expect(authOwnershipMigration).toContain(
+      "set results_token_hash = private_token_hmac",
+    );
   });
 });

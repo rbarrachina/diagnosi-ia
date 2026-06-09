@@ -2,11 +2,11 @@
 
 ## Principi rector
 
-Diagnosi IA ha de minimitzar dades. La diagnosi funciona sense identificar centres, docents o persones responsables. Els resultats només existeixen en conjunt.
+Diagnosi IA ha de minimitzar dades. La resposta del professorat funciona sense identificar centres ni docents. Els creadors d'espais s'autentiquen amb compte XTEC per gestionar els espais propis. Els resultats només existeixen en conjunt.
 
 ## Dades prohibides
 
-L'aplicació no ha de recollir ni desar:
+L'aplicació no ha de recollir ni desar del professorat participant:
 
 - nom del centre
 - codi oficial del centre
@@ -24,8 +24,10 @@ Tambe queda prohibit crear una taula `centres`.
 
 Només es preveuen:
 
+- Identificador d'usuari autenticat del creador XTEC (`owner_user_id`).
 - Codi públic anònim de l'espai.
 - Hash o HMAC del token privat.
+- Token privat xifrat per poder reconstruir l'enllaç compartit al creador autenticat.
 - Versio del qüestionari.
 - Estat actiu/inactiu de l'espai.
 - Submissions anònimes amb identificador tècnic intern.
@@ -41,7 +43,8 @@ Requisits:
 - Minim 32 bytes aleatoris.
 - Generat amb font criptograficament segura.
 - No desat en text pla.
-- Desat com HMAC o hash amb secret del servidor.
+- Desat com HMAC o hash amb secret del servidor per validar-lo.
+- Desat xifrat amb clau server-side per poder recuperar l'enllaç compartit des de la gestio del creador.
 - No inclos en query params.
 - No escrit en logs.
 - No inclos en PDF.
@@ -49,7 +52,7 @@ Requisits:
 Format d'enllaç privat:
 
 ```text
-/resultats/[publicCode]#token=[privateToken]
+/resultats/compartit/[publicCode]#token=[privateToken]
 ```
 
 El fragment `#token=` no s'envia automaticament al servidor pel navegador. La pagina de resultats l'ha de llegir i enviar per `POST`.
@@ -100,7 +103,9 @@ No s'han de crear polítiques públiques de lectura per a:
 
 El client públic de Supabase, si existeix, no ha de poder llegir ni escriure directament aquestes taules. Les operacions es fan amb endpoints server-side.
 
-La inserció de respostes de la fase 3 es fa amb una RPC server-only. Els rols `anon` i `authenticated` no tenen permís d'execució sobre aquesta funció; només el servidor amb `service_role` pot cridar-la.
+La inserció de respostes es fa amb una RPC server-only. Els rols `anon` i `authenticated` no tenen permís d'execució sobre aquesta funció; només el servidor amb `service_role` pot cridar-la.
+
+La gestio d'espais del creador es fa també amb rutes server-side. Tot i que existeixi Supabase Auth, el navegador no ha de llegir directament `diagnostic_spaces`, perquè aquesta taula conté hash i token xifrat.
 
 ## Logs
 

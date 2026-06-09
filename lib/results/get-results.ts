@@ -1,8 +1,8 @@
 import "server-only";
 
-import { verifyPrivateToken } from "@/lib/crypto/private-token";
 import { createSupabaseAdminClient } from "@/lib/database/server";
 import { calculateAggregatedResultsFromCounts } from "@/lib/results/calculate-results";
+import { verifyResultsToken } from "@/lib/results/results-token";
 import type {
   AnswerCountRecord,
   BlockDefinition,
@@ -14,7 +14,9 @@ import type { PrivateResultsRequestInput } from "@/lib/validation/schemas";
 type SpaceRow = {
   id: string;
   public_code: string;
-  private_token_hmac: string;
+  results_token_hash: string;
+  results_token_enabled: boolean;
+  results_token_expires_at: string | null;
   is_active: boolean;
   questionnaires: {
     id: string;
@@ -48,35 +50,44 @@ export class ResultsAccessError extends Error {
   }
 }
 
-function getTokenSecret(): string {
-  const tokenSecret = process.env.PRIVATE_TOKEN_HMAC_SECRET;
-
-  if (!tokenSecret) {
-    throw new Error("PRIVATE_TOKEN_HMAC_SECRET is required");
-  }
-
-  return tokenSecret;
-}
-
-async function loadAuthorizedSpace(payload: PrivateResultsRequestInput): Promise<SpaceRow> {
+async function loadSpaceByPublicCode(publicCode: string): Promise<SpaceRow> {
   const supabase = createSupabaseAdminClient();
 
   const { data: space, error } = await supabase
     .from("diagnostic_spaces")
-    .select("id, public_code, private_token_hmac, is_active, questionnaires!inner(id, version)")
-    .eq("public_code", payload.publicCode)
+    .select(
+      [
+        "id",
+        "public_code",
+        "results_token_hash",
+        "results_token_enabled",
+        "results_token_expires_at",
+        "is_active",
+        "questionnaires!inner(id, version)",
+      ].join(", "),
+    )
+    .eq("public_code", publicCode)
     .maybeSingle<SpaceRow>();
 
   if (error || !space?.questionnaires || !space.is_active) {
     throw new ResultsAccessError();
   }
 
+  return space;
+}
+
+async function loadSharedTokenSpace(
+  payload: PrivateResultsRequestInput,
+): Promise<SpaceRow> {
+  const space = await loadSpaceByPublicCode(payload.publicCode);
+  const expiresAt = space.results_token_expires_at
+    ? new Date(space.results_token_expires_at)
+    : null;
+
   if (
-    !verifyPrivateToken(
-      payload.privateToken,
-      space.private_token_hmac,
-      getTokenSecret(),
-    )
+    !space.results_token_enabled ||
+    (expiresAt && expiresAt.getTime() < Date.now()) ||
+    !verifyResultsToken(payload.privateToken, space.results_token_hash)
   ) {
     throw new ResultsAccessError();
   }
@@ -84,9 +95,35 @@ async function loadAuthorizedSpace(payload: PrivateResultsRequestInput): Promise
   return space;
 }
 
-export async function getAggregatedResults(payload: PrivateResultsRequestInput) {
+async function loadOwnerSpace(publicCode: string, ownerUserId: string): Promise<SpaceRow> {
   const supabase = createSupabaseAdminClient();
-  const space = await loadAuthorizedSpace(payload);
+
+  const { data: space, error } = await supabase
+    .from("diagnostic_spaces")
+    .select(
+      [
+        "id",
+        "public_code",
+        "results_token_hash",
+        "results_token_enabled",
+        "results_token_expires_at",
+        "is_active",
+        "questionnaires!inner(id, version)",
+      ].join(", "),
+    )
+    .eq("public_code", publicCode)
+    .eq("owner_user_id", ownerUserId)
+    .maybeSingle<SpaceRow>();
+
+  if (error || !space?.questionnaires || !space.is_active) {
+    throw new ResultsAccessError();
+  }
+
+  return space;
+}
+
+async function getAggregatedResultsForSpace(space: SpaceRow) {
+  const supabase = createSupabaseAdminClient();
   const questionnaireId = space.questionnaires?.id;
 
   if (!questionnaireId || !space.questionnaires) {
@@ -165,4 +202,19 @@ export async function getAggregatedResults(payload: PrivateResultsRequestInput) 
     questions: questionDefinitions,
     answerCounts: answerCountRecords,
   });
+}
+
+export async function getAggregatedResults(payload: PrivateResultsRequestInput) {
+  const space = await loadSharedTokenSpace(payload);
+
+  return getAggregatedResultsForSpace(space);
+}
+
+export async function getAggregatedResultsForOwner(params: {
+  publicCode: string;
+  ownerUserId: string;
+}) {
+  const space = await loadOwnerSpace(params.publicCode, params.ownerUserId);
+
+  return getAggregatedResultsForSpace(space);
 }

@@ -7,6 +7,7 @@
 - Tailwind CSS
 - Vercel
 - PostgreSQL a Supabase
+- Supabase Auth amb Google OAuth per a creadors XTEC
 - Recharts per a gràfiques web
 - `@react-pdf/renderer` per generar PDF al servidor
 
@@ -18,6 +19,7 @@
 - El servidor retorna resultats de conjunt, no files individuals.
 - Els tokens privats es comparen amb hash o HMAC, mai amb text pla.
 - El token privat no és posa en query params ni logs.
+- La creació i gestio d'espais requereix sessió OAuth amb correu `@xtec.cat`.
 
 ## Estructura prevista
 
@@ -25,8 +27,12 @@
 app/
   page.tsx
   crear/page.tsx
+  espais/page.tsx
+  espais/[publicCode]/resultats/page.tsx
   q/[publicCode]/page.tsx
   resultats/[publicCode]/page.tsx
+  resultats/compartit/[publicCode]/page.tsx
+  auth/callback/route.ts
   api/
     spaces/route.ts
     submissions/route.ts
@@ -65,7 +71,8 @@ Decisio implementada:
 
 - Codi públic: 8 caràcters útils de l'alfabet `ABCDEFGHJKMNPQRSTUVWXYZ23456789`, renderitzat com `C-XXXX-XXXX`, generat amb `crypto.randomInt`.
 - Token privat: 32 bytes aleatoris codificats en base64url.
-- Persistencia: `private_token_hmac = HMAC-SHA256(token, PRIVATE_TOKEN_HMAC_SECRET)`.
+- Persistencia: `results_token_hash = HMAC-SHA256(token, PRIVATE_TOKEN_HMAC_SECRET)`.
+- Recuperacio del token compartit: `results_token_encrypted` xifrat amb `RESULTS_TOKEN_ENCRYPTION_KEY`.
 
 ### `lib/database`
 
@@ -127,7 +134,8 @@ Flux:
 1. Generar codi públic.
 2. Generar token privat.
 3. Calcular HMAC del token.
-4. Inserir `diagnostic_spaces`.
+4. Xifrar el token privat per recuperar-lo des de la gestio del creador.
+5. Inserir `diagnostic_spaces` amb `owner_user_id`.
 5. Si hi ha col·lisió unique de codi públic, regenerar i reintentar.
 6. Retornar enllaços públic i privat.
 
@@ -137,7 +145,8 @@ Resposta:
 {
   "publicCode": "C-7KX9-M2Q8",
   "públicUrl": "/q/C-7KX9-M2Q8",
-  "privateResultsUrl": "/resultats/C-7KX9-M2Q8#token=..."
+  "sharedResultsUrl": "/resultats/compartit/C-7KX9-M2Q8#token=...",
+  "ownerResultsUrl": "/espais/C-7KX9-M2Q8/resultats"
 }
 ```
 

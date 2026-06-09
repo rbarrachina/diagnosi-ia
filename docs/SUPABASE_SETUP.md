@@ -82,15 +82,36 @@ Al dashboard de Supabase:
 Per provar `/crear`, `POST /api/spaces`, `/q/[publicCode]` i `POST /api/submissions`:
 
 ```bash
-SUPABASE_URL=https://<PROJECT_REF>.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://<PROJECT_REF>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<public-anon-key>
 SUPABASE_SERVICE_ROLE_KEY=<server-only-service-role-key>
 PRIVATE_TOKEN_HMAC_SECRET=<strong-random-secret>
+RESULTS_TOKEN_ENCRYPTION_KEY=<32-byte-base64url-key>
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-No posis `SUPABASE_SERVICE_ROLE_KEY` ni `PRIVATE_TOKEN_HMAC_SECRET` amb prefix `NEXT_PUBLIC_`.
+No posis `SUPABASE_SERVICE_ROLE_KEY`, `PRIVATE_TOKEN_HMAC_SECRET` ni `RESULTS_TOKEN_ENCRYPTION_KEY` amb prefix `NEXT_PUBLIC_`.
 
 El valor de `PRIVATE_TOKEN_HMAC_SECRET` ha de ser llarg i aleatori. No reutilitzis el placeholder de `.env.example`.
+
+El valor de `RESULTS_TOKEN_ENCRYPTION_KEY` ha de descodificar a 32 bytes. Exemple per generar-lo:
+
+```bash
+openssl rand -base64 32 | tr '+/' '-_' | tr -d '='
+```
+
+## Supabase Auth i Google OAuth
+
+Activa Google com a provider d'autenticació a Supabase Auth.
+
+URLs de redirecció de l'aplicació:
+
+```text
+http://localhost:3000/auth/callback
+https://diagnosi-ia.vercel.app/auth/callback
+```
+
+A Google Cloud OAuth, configura com a authorized redirect URI la callback del projecte Supabase indicada al dashboard de Supabase Auth per al provider Google.
 
 ## Verificacions recomanades
 

@@ -5,7 +5,8 @@ import { useState } from "react";
 type CreatedSpaceResponse = {
   publicCode: string;
   publicUrl: string;
-  privateResultsUrl: string;
+  sharedResultsUrl: string;
+  ownerResultsUrl: string;
 };
 
 type FormState =
@@ -14,7 +15,7 @@ type FormState =
   | { status: "created"; data: CreatedSpaceResponse }
   | { status: "error"; message: string };
 
-type CopyState = "idle" | "public" | "private";
+type CopyState = "idle" | "public" | "shared";
 
 export function CreateSpaceForm() {
   const [state, setState] = useState<FormState>({ status: "idle" });
@@ -117,28 +118,35 @@ export function CreateSpaceForm() {
 
           <label className="block">
             <span className="text-sm font-semibold text-ink">
-              Enllaç privat de resultats
+              Enllaç privat compartit de resultats
             </span>
             <div className="mt-2 flex gap-2">
               <input
                 className="min-w-0 flex-1 rounded-md border border-line bg-white px-3 py-2 text-sm text-ink"
                 readOnly
-                value={state.data.privateResultsUrl}
+                value={state.data.sharedResultsUrl}
               />
               <button
                 className="rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-action hover:text-action"
-                onClick={() => copyToClipboard(state.data.privateResultsUrl, "private")}
+                onClick={() => copyToClipboard(state.data.sharedResultsUrl, "shared")}
                 type="button"
               >
-                {copyState === "private" ? "Copiat" : "Copia"}
+                {copyState === "shared" ? "Copiat" : "Copia"}
               </button>
             </div>
           </label>
 
           <p className="text-sm leading-6 text-slate-700">
-            Conserva l&apos;enllaç privat. El token no es desa en text pla i no
-            es podrà recuperar des de l&apos;aplicació.
+            L&apos;enllaç privat es desa xifrat i es pot recuperar des del teu
+            espai de gestió.
           </p>
+
+          <a
+            className="inline-flex rounded-md bg-action px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
+            href={state.data.ownerResultsUrl}
+          >
+            Ves als resultats
+          </a>
         </div>
       ) : null}
     </div>

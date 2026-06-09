@@ -2,13 +2,13 @@
 
 ## Resum
 
-Diagnosi IA permet crear un espai anònim de diagnosi sobre l'ús educatiu de la intel·ligència artificial. Una persona responsable crea l'espai, comparteix un enllaç públic amb el professorat i consulta resultats de conjunt amb un enllaç privat.
+Diagnosi IA permet crear un espai anònim de diagnosi sobre l'ús educatiu de la intel·ligència artificial. Una persona responsable autenticada amb compte XTEC crea l'espai, comparteix un enllaç públic amb el professorat i consulta resultats de conjunt amb OAuth o amb un enllaç privat.
 
 L'aplicació no desa ni mostra el nom del centre. Tampoc avalua docents individualment.
 
 ## Objectius
 
-- Crear espais anònims sense autenticació.
+- Crear espais anònims amb autenticació OAuth per al creador XTEC.
 - Recollir respostes anònimes d'un qüestionari fix i versionat.
 - Mostrar resultats de conjunt des de la primera resposta.
 - Generar un informe PDF de conjunt.
@@ -16,7 +16,7 @@ L'aplicació no desa ni mostra el nom del centre. Tampoc avalua docents individu
 
 ## Fora d'abast
 
-- Comptes d'usuari.
+- Comptes d'usuari per al professorat participant.
 - Gestio de centres identificats.
 - Seguiment individual del professorat.
 - Respostes obertes.
@@ -30,7 +30,7 @@ L'aplicació no desa ni mostra el nom del centre. Tampoc avalua docents individu
 
 Ruta: `/crear`
 
-La persona responsable crea un espai anònim. El servidor genera:
+La persona responsable inicia sessió amb Google OAuth mitjançant Supabase Auth. Només s'accepten comptes amb correu acabat en `@xtec.cat`. Després crea un espai anònim. El servidor genera:
 
 - Codi públic llegible amb format `C-7KX9-M2Q8`.
 - Token privat llarg i criptograficament segur.
@@ -38,9 +38,10 @@ La persona responsable crea un espai anònim. El servidor genera:
 Resultat mostrat un sol cop:
 
 - Enllaç públic: `/q/[publicCode]`
-- Enllaç privat: `/resultats/[publicCode]#token=[privateToken]`
+- Enllaç privat compartit: `/resultats/compartit/[publicCode]#token=[privateToken]`
+- Enllaç de resultats del creador: `/espais/[publicCode]/resultats`
 
-El token privat només existeix en text pla en el moment de creació i al navegador de la persona responsable si conserva l'enllaç.
+El token privat es desa com HMAC per validar-lo i xifrat per poder reconstruir l'enllaç per al creador autenticat. No es desa mai en text pla.
 
 ### Resposta del professorat
 
@@ -64,9 +65,13 @@ No hi ha camps oberts.
 
 ### Consulta de resultats
 
-Ruta: `/resultats/[publicCode]#token=[privateToken]`
+Ruta compartida: `/resultats/compartit/[publicCode]#token=[privateToken]`
+
+Ruta del creador: `/espais/[publicCode]/resultats`
 
 El navegador llegeix el fragment `#token=` i envia el token mitjançant `POST /api/results`. El token no s'envia en query params.
+
+El creador autenticat pot consultar els resultats dels espais propis si `owner_user_id` coincideix amb el seu usuari autenticat.
 
 El servidor valida el token i retorna només dades de conjunt:
 
