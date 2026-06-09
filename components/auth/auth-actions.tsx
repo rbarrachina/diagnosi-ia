@@ -2,7 +2,7 @@ type LoginButtonProps = {
   next?: string;
 };
 
-export function LoginButton({ next = "/espais" }: LoginButtonProps) {
+export function LoginButton({ next = "/crear" }: LoginButtonProps) {
   return (
     <a
       className="inline-flex rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"

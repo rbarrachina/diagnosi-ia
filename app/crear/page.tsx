@@ -48,8 +48,9 @@ export default async function CreatePage() {
         </div>
 
         {session.status === "unauthenticated" ? (
-          <div className="w-full max-w-xl">
+          <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
             <XtecAccessNotice />
+            <ParticipantInfoCard />
           </div>
         ) : null}
 
@@ -65,16 +66,10 @@ export default async function CreatePage() {
               <span>
                 Sessió iniciada com <strong>{session.user.email}</strong>
               </span>
-              <div className="flex items-center gap-3">
-                <a className="font-semibold text-action" href="/espais">
-                  Els meus espais
-                </a>
-                <LogoutButton next="/crear" />
-              </div>
+              <LogoutButton next="/crear" />
             </div>
-            <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
+            <div className="w-full max-w-xl">
               <CreateSpaceForm existingSpace={existingSpace} />
-              <ParticipantInfoCard />
             </div>
           </>
         ) : null}

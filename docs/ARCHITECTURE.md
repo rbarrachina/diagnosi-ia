@@ -255,7 +255,11 @@ Presenta l'eina i enllaça a `/crear`. Ha de reforçar que es tracta d'una diagn
 
 ### `/crear`
 
-Permet crear un espai anònim. Mostra els enllaços generats i recomana conservar l'enllaç privat.
+Abans de l'autenticació mostra dues capses: accés per a responsables i informació per al professorat participant. Després de l'autenticació permet crear l'únic espai del creador o gestionar l'espai existent: enllaços, resultats, regeneració de l'enllaç privat i reinici del qüestionari.
+
+### `/espais`
+
+Ruta de compatibilitat. Redirigeix a `/crear`, que és la pantalla única de gestio de l'espai del creador.
 
 ### `/q/[publicCode]`
 

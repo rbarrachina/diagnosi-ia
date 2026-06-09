@@ -92,8 +92,8 @@ export function OwnerResultsClient({
               </p>
               <h1 className="mt-2 text-2xl font-semibold text-ink">{publicCode}</h1>
             </div>
-            <a className="text-sm font-semibold text-action" href="/espais">
-              Torna als espais
+            <a className="text-sm font-semibold text-action" href="/crear">
+              Torna a la gestió
             </a>
           </div>
 

@@ -43,11 +43,11 @@ Resultat mostrat després de crear l'espai i recuperable des de la gestio del cr
 
 El token privat es desa com HMAC per validar-lo i xifrat per poder reconstruir l'enllaç per al creador autenticat. No es desa mai en text pla.
 
-Si l'usuari ja té un espai creat, no pot crear-ne un segon. Pot reiniciar el qüestionari des de la gestio de l'espai.
+Si l'usuari ja té un espai creat, no pot crear-ne un segon. La mateixa pantalla `/crear` mostra els enllaços, l'accés als resultats, la regeneració de l'enllaç privat i el reinici del qüestionari.
 
 ### Reinici de qüestionari
 
-Ruta de gestio: `/espais`
+Ruta de gestio: `/crear`
 
 El creador autenticat pot reiniciar el seu qüestionari. Aquesta accio:
 

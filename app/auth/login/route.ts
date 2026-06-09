@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
-  const next = safeRelativePath(requestUrl.searchParams.get("next"), "/espais");
+  const next = safeRelativePath(requestUrl.searchParams.get("next"), "/crear");
   const appUrl = resolveAppUrl(request.url, process.env.NEXT_PUBLIC_APP_URL);
   let supabase;
 

@@ -49,7 +49,7 @@ export async function POST(request: Request): Promise<Response> {
       return Response.json(
         {
           error:
-            "Aquest usuari ja té un qüestionari. Ves a Els meus espais per gestionar-lo o reiniciar-lo.",
+            "Aquest usuari ja té un qüestionari. El pots gestionar o reiniciar des d'aquesta pantalla.",
         },
         { status: 409 },
       );
