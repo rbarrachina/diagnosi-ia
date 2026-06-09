@@ -30,18 +30,34 @@ L'aplicació no desa ni mostra el nom del centre. Tampoc avalua docents individu
 
 Ruta: `/crear`
 
-La persona responsable inicia sessió amb Google OAuth mitjançant Supabase Auth. Només s'accepten comptes amb correu acabat en `@xtec.cat`. Després crea un espai anònim. El servidor genera:
+La persona responsable inicia sessió amb Google OAuth mitjançant Supabase Auth. Només s'accepten comptes amb correu acabat en `@xtec.cat`. Cada usuari autenticat pot tenir un únic espai anònim. El servidor genera:
 
 - Codi públic llegible amb format `C-7KX9-M2Q8`.
 - Token privat llarg i criptograficament segur.
 
-Resultat mostrat un sol cop:
+Resultat mostrat després de crear l'espai i recuperable des de la gestio del creador:
 
 - Enllaç públic: `/q/[publicCode]`
 - Enllaç privat compartit: `/resultats/compartit/[publicCode]#token=[privateToken]`
 - Enllaç de resultats del creador: `/espais/[publicCode]/resultats`
 
 El token privat es desa com HMAC per validar-lo i xifrat per poder reconstruir l'enllaç per al creador autenticat. No es desa mai en text pla.
+
+Si l'usuari ja té un espai creat, no pot crear-ne un segon. Pot reiniciar el qüestionari des de la gestio de l'espai.
+
+### Reinici de qüestionari
+
+Ruta de gestio: `/espais`
+
+El creador autenticat pot reiniciar el seu qüestionari. Aquesta accio:
+
+- elimina totes les `submissions` i `answers` anònimes de l'espai;
+- conserva el mateix `diagnostic_spaces.id` i el mateix `owner_user_id`;
+- genera un nou codi públic;
+- genera un nou token privat de resultats;
+- invalida l'enllaç públic i l'enllaç privat antics.
+
+No s'eliminen ni es modifiquen les preguntes del qüestionari versionat.
 
 ### Resposta del professorat
 

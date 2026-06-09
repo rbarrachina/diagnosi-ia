@@ -1,5 +1,8 @@
 import { getXtecSessionState } from "@/lib/auth/session";
-import { createDiagnosticSpace } from "@/lib/spaces/create-space";
+import {
+  createDiagnosticSpace,
+  OwnerSpaceAlreadyExistsError,
+} from "@/lib/spaces/create-space";
 import { resolveAppUrl } from "@/lib/http/app-url";
 import { readJsonRequestBody } from "@/lib/http/request";
 import { createSpaceRequestSchema } from "@/lib/validation/schemas";
@@ -41,7 +44,17 @@ export async function POST(request: Request): Promise<Response> {
       },
       { status: 201 },
     );
-  } catch {
+  } catch (error) {
+    if (error instanceof OwnerSpaceAlreadyExistsError) {
+      return Response.json(
+        {
+          error:
+            "Aquest usuari ja té un qüestionari. Ves a Els meus espais per gestionar-lo o reiniciar-lo.",
+        },
+        { status: 409 },
+      );
+    }
+
     return Response.json({ error: "No s'ha pogut crear l'espai." }, { status: 400 });
   }
 }

@@ -11,6 +11,13 @@ import { QUESTIONNAIRE_VERSION } from "@/lib/validation/schemas";
 
 const MAX_PUBLIC_CODE_ATTEMPTS = 8;
 
+export class OwnerSpaceAlreadyExistsError extends Error {
+  constructor() {
+    super("Owner already has a diagnostic space");
+    this.name = "OwnerSpaceAlreadyExistsError";
+  }
+}
+
 export type CreatedDiagnosticSpace = {
   publicCode: string;
   sharedResultsUrl: string;
@@ -23,6 +30,20 @@ export async function createDiagnosticSpace(
   ownerUserId: string,
 ): Promise<CreatedDiagnosticSpace> {
   const supabase = createSupabaseAdminClient();
+
+  const { data: existingSpace, error: existingSpaceError } = await supabase
+    .from("diagnostic_spaces")
+    .select("public_code")
+    .eq("owner_user_id", ownerUserId)
+    .maybeSingle<{ public_code: string }>();
+
+  if (existingSpaceError) {
+    throw new Error("Could not check existing diagnostic space");
+  }
+
+  if (existingSpace) {
+    throw new OwnerSpaceAlreadyExistsError();
+  }
 
   const { data: questionnaire, error: questionnaireError } = await supabase
     .from("questionnaires")

@@ -6,11 +6,18 @@ import {
 import { CreateSpaceForm } from "@/components/create-space/create-space-form";
 import { ParticipantInfoCard } from "@/components/create-space/participant-info-card";
 import { getXtecSessionState } from "@/lib/auth/session";
+import { getServerAppUrl } from "@/lib/http/server-app-url";
+import { listOwnerSpaces } from "@/lib/spaces/manage-spaces";
 
 export const dynamic = "force-dynamic";
 
 export default async function CreatePage() {
   const session = await getXtecSessionState();
+  const ownerSpaces =
+    session.status === "authenticated"
+      ? await listOwnerSpaces(session.user.id, await getServerAppUrl())
+      : [];
+  const existingSpace = ownerSpaces[0] ?? null;
 
   return (
     <main className="min-h-screen bg-paper">
@@ -66,7 +73,7 @@ export default async function CreatePage() {
               </div>
             </div>
             <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
-              <CreateSpaceForm />
+              <CreateSpaceForm existingSpace={existingSpace} />
               <ParticipantInfoCard />
             </div>
           </>

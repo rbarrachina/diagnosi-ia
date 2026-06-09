@@ -121,6 +121,10 @@ Els errors han de ser genèrics per a l'usuari i tècnicament suficients per dep
 
 L'única exportació prevista és el PDF de conjunt. No s'ha d'afegir CSV ni JSON descarregable amb respostes individuals sense una nova revisió de privacitat.
 
+## Reinici d'espai
+
+El creador autenticat pot reiniciar el seu únic espai. El reinici elimina `submissions` i `answers` anònimes de l'espai, regenera el codi públic i regenera el token privat de resultats. No conserva un històric de respostes individuals i no modifica les preguntes versionades.
+
 ## Riscos pendents per a fase 2
 
 - Rate limiting.

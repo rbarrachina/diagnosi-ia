@@ -15,6 +15,7 @@ Implementacio actual:
 - Neteja de default obsolet de blocs: `supabase/migrations/20260609093301_drop_question_blocks_id_default.sql`
 - Clau primaria composta de respostes: `supabase/migrations/20260609095253_use_composite_primary_key_for_answers.sql`
 - Propietari OAuth i tokens de resultats: `supabase/migrations/20260609143524_add_auth_ownership_and_results_tokens.sql`
+- Espai únic per creador i RPC de reinici: `supabase/migrations/20260609162000_add_single_owner_space_reset_rpc.sql`
 - Seed: `supabase/seed.sql`
 - Configuracio manual: `docs/SUPABASE_SETUP.md`
 
@@ -120,12 +121,14 @@ Columnes proposades:
 Restriccions:
 
 - `public_code` unique.
+- `owner_user_id` únic quan no és null: cada creador autenticat pot tenir com a màxim un espai.
 - `public_code` amb check de format, per exemple `^C-[A-HJ-KM-NP-Z2-9]{4}-[A-HJ-KM-NP-Z2-9]{4}$`.
 - Cap columna de nom de centre, codi de centre o persona responsable.
 
 Indexos:
 
 - `unique index diagnostic_spaces_public_code_key on diagnostic_spaces(public_code)`
+- `unique index diagnostic_spaces_owner_user_id_unique_idx on diagnostic_spaces(owner_user_id) where owner_user_id is not null`
 
 ### `submissions`
 
@@ -205,6 +208,15 @@ Supabase JS no ofereix una transacció SQL multisentència arbitrària des del c
 - Revocacio d'`execute` per a `anon` i `authenticated`.
 - Validacio de forma del payload, 20 respostes exactes, camps permesos, duplicats, valors `0`, `1`, `2` i pertinença de preguntes al qüestionari.
 - Inserció de `submissions` i `answers` en una única transacció de PostgreSQL.
+
+Per reiniciar un espai existent, la implementació usa:
+
+- Funcio SQL RPC `public.reset_owner_diagnostic_space(uuid, text, text, text, text)`.
+- Execucio només des del servidor amb `service_role`.
+- Revocacio d'`execute` per a `anon` i `authenticated`.
+- Eliminació de `answers` i `submissions` de l'espai.
+- Actualitzacio atòmica de `public_code`, `results_token_hash`, `results_token_encrypted` i metadades del token.
+- Cap eliminació ni modificació de preguntes versionades.
 
 Alternativa:
 

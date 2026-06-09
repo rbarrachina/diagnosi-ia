@@ -52,12 +52,14 @@ export default async function SpacesPage() {
             <p className="mt-3 text-sm text-slate-700">{session.user.email}</p>
           </div>
           <div className="flex items-center gap-3">
-            <a
-              className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
-              href="/crear"
-            >
-              Crear qüestionari
-            </a>
+            {spaces.length === 0 ? (
+              <a
+                className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
+                href="/crear"
+              >
+                Crear qüestionari
+              </a>
+            ) : null}
             <LogoutButton next="/" />
           </div>
         </div>

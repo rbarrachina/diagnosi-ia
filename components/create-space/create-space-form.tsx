@@ -5,7 +5,7 @@ import { useState } from "react";
 type CreatedSpaceResponse = {
   publicCode: string;
   publicUrl: string;
-  sharedResultsUrl: string;
+  sharedResultsUrl: string | null;
   ownerResultsUrl: string;
 };
 
@@ -17,9 +17,15 @@ type FormState =
 
 type CopyState = "idle" | "public" | "shared";
 
-export function CreateSpaceForm() {
+type CreateSpaceFormProps = {
+  existingSpace?: CreatedSpaceResponse | null;
+};
+
+export function CreateSpaceForm({ existingSpace = null }: CreateSpaceFormProps) {
   const [state, setState] = useState<FormState>({ status: "idle" });
   const [copyState, setCopyState] = useState<CopyState>("idle");
+
+  const displayedSpace = state.status === "created" ? state.data : existingSpace;
 
   async function copyToClipboard(value: string, target: Exclude<CopyState, "idle">) {
     try {
@@ -44,15 +50,20 @@ export function CreateSpaceForm() {
       });
 
       if (!response.ok) {
-        throw new Error("Create space failed");
+        const errorPayload = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(errorPayload?.error ?? "No s'ha pogut crear l'espai.");
       }
 
       const data = (await response.json()) as CreatedSpaceResponse;
       setState({ status: "created", data });
-    } catch {
+    } catch (error) {
       setState({
         status: "error",
-        message: "No s'ha pogut crear l'espai. Torna-ho a provar.",
+        message: error instanceof Error
+          ? error.message
+          : "No s'ha pogut crear l'espai. Torna-ho a provar.",
       });
     }
   }
@@ -68,7 +79,14 @@ export function CreateSpaceForm() {
         </h2>
       </div>
 
-      {state.status !== "created" ? (
+      {displayedSpace ? (
+        <p className="mx-auto mt-5 max-w-sm text-sm leading-6 text-slate-700">
+          Ja tens un qüestionari creat. Pots compartir-ne els enllaços o
+          reiniciar-lo des d&apos;Els meus espais.
+        </p>
+      ) : null}
+
+      {!displayedSpace ? (
         <button
           className="mt-6 inline-flex self-center rounded-md bg-action px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
           disabled={state.status === "submitting"}
@@ -85,14 +103,14 @@ export function CreateSpaceForm() {
         </p>
       ) : null}
 
-      {state.status === "created" ? (
+      {displayedSpace ? (
         <div className="mt-6 space-y-4 rounded-md border border-line bg-paper p-4 text-left">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
               Codi públic
             </p>
             <p className="mt-1 font-mono text-lg font-semibold text-ink">
-              {state.data.publicCode}
+              {displayedSpace.publicCode}
             </p>
           </div>
 
@@ -104,11 +122,11 @@ export function CreateSpaceForm() {
               <input
                 className="min-w-0 flex-1 rounded-md border border-line bg-white px-3 py-2 text-sm text-ink"
                 readOnly
-                value={state.data.publicUrl}
+                value={displayedSpace.publicUrl}
               />
               <button
                 className="rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-action hover:text-action"
-                onClick={() => copyToClipboard(state.data.publicUrl, "public")}
+                onClick={() => copyToClipboard(displayedSpace.publicUrl, "public")}
                 type="button"
               >
                 {copyState === "public" ? "Copiat" : "Copia"}
@@ -124,11 +142,18 @@ export function CreateSpaceForm() {
               <input
                 className="min-w-0 flex-1 rounded-md border border-line bg-white px-3 py-2 text-sm text-ink"
                 readOnly
-                value={state.data.sharedResultsUrl}
+                value={
+                  displayedSpace.sharedResultsUrl ?? "Cal regenerar l’enllaç privat."
+                }
               />
               <button
                 className="rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-action hover:text-action"
-                onClick={() => copyToClipboard(state.data.sharedResultsUrl, "shared")}
+                disabled={!displayedSpace.sharedResultsUrl}
+                onClick={() =>
+                  displayedSpace.sharedResultsUrl
+                    ? copyToClipboard(displayedSpace.sharedResultsUrl, "shared")
+                    : undefined
+                }
                 type="button"
               >
                 {copyState === "shared" ? "Copiat" : "Copia"}
@@ -143,9 +168,15 @@ export function CreateSpaceForm() {
 
           <a
             className="inline-flex rounded-md bg-action px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
-            href={state.data.ownerResultsUrl}
+            href={displayedSpace.ownerResultsUrl}
           >
             Ves als resultats
+          </a>
+          <a
+            className="ml-3 inline-flex rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
+            href="/espais"
+          >
+            Els meus espais
           </a>
         </div>
       ) : null}

@@ -43,6 +43,14 @@ const authOwnershipMigration = readFileSync(
   "utf8",
 );
 
+const singleOwnerSpaceMigration = readFileSync(
+  join(
+    process.cwd(),
+    "supabase/migrations/20260609162000_add_single_owner_space_reset_rpc.sql",
+  ),
+  "utf8",
+);
+
 describe("questionnaire identifiers", () => {
   it("converts questionnaire ids and related foreign keys to three-digit text codes", () => {
     expect(conversionMigration).toContain("lpad(row_number()");
@@ -89,5 +97,12 @@ describe("questionnaire identifiers", () => {
     expect(authOwnershipMigration).toContain(
       "set results_token_hash = private_token_hmac",
     );
+  });
+
+  it("limits authenticated creators to one diagnostic space", () => {
+    expect(singleOwnerSpaceMigration).toContain(
+      "create unique index diagnostic_spaces_owner_user_id_unique_idx",
+    );
+    expect(singleOwnerSpaceMigration).toContain("where owner_user_id is not null");
   });
 });

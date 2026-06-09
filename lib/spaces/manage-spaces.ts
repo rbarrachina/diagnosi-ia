@@ -1,5 +1,6 @@
 import "server-only";
 
+import { generatePublicCode } from "@/lib/crypto/public-code";
 import { createSupabaseAdminClient } from "@/lib/database/server";
 import {
   buildOwnerResultsUrl,
@@ -7,6 +8,8 @@ import {
   decryptStoredResultsToken,
   generateResultsToken,
 } from "@/lib/results/results-token";
+
+const MAX_RESET_CODE_ATTEMPTS = 8;
 
 type OwnerSpaceRow = {
   public_code: string;
@@ -24,6 +27,13 @@ export type OwnerDiagnosticSpace = {
   ownerResultsUrl: string;
   sharedResultsUrl: string | null;
   resultsTokenEnabled: boolean;
+};
+
+export type ResetOwnerDiagnosticSpaceResult = {
+  publicCode: string;
+  publicUrl: string;
+  ownerResultsUrl: string;
+  sharedResultsUrl: string;
 };
 
 function mapOwnerSpace(
@@ -120,4 +130,45 @@ export async function regenerateOwnerResultsToken(params: {
       resultsToken.token,
     ),
   };
+}
+
+export async function resetOwnerDiagnosticSpace(params: {
+  ownerUserId: string;
+  publicCode: string;
+  appUrl: string;
+}): Promise<ResetOwnerDiagnosticSpaceResult> {
+  const supabase = createSupabaseAdminClient();
+
+  for (let attempt = 0; attempt < MAX_RESET_CODE_ATTEMPTS; attempt += 1) {
+    const newPublicCode = generatePublicCode();
+    const resultsToken = generateResultsToken();
+
+    const { data, error } = await supabase.rpc("reset_owner_diagnostic_space", {
+        p_owner_user_id: params.ownerUserId,
+        p_current_public_code: params.publicCode,
+        p_new_public_code: newPublicCode,
+        p_results_token_hash: resultsToken.hash,
+        p_results_token_encrypted: resultsToken.encrypted,
+      });
+    const rows = data as Array<{ public_code: string }> | null;
+
+    if (!error && rows?.[0]) {
+      return {
+        publicCode: rows[0].public_code,
+        publicUrl: `${params.appUrl}/q/${rows[0].public_code}`,
+        ownerResultsUrl: buildOwnerResultsUrl(params.appUrl, rows[0].public_code),
+        sharedResultsUrl: buildSharedResultsUrl(
+          params.appUrl,
+          rows[0].public_code,
+          resultsToken.token,
+        ),
+      };
+    }
+
+    if (error?.code !== "23505") {
+      throw new Error("Could not reset diagnostic space");
+    }
+  }
+
+  throw new Error("Could not generate a unique public code");
 }

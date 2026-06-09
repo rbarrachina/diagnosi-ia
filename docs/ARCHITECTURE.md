@@ -35,6 +35,7 @@ app/
   auth/callback/route.ts
   api/
     spaces/route.ts
+    spaces/[publicCode]/reset/route.ts
     submissions/route.ts
     results/route.ts
     reports/pdf/route.ts
@@ -131,6 +132,7 @@ Entrada: cos buit o opcions futures estrictament validades.
 
 Flux:
 
+0. Comprovar que el creador autenticat no té ja un espai diagnòstic.
 1. Generar codi públic.
 2. Generar token privat.
 3. Calcular HMAC del token.
@@ -149,6 +151,23 @@ Resposta:
   "ownerResultsUrl": "/espais/C-7KX9-M2Q8/resultats"
 }
 ```
+
+Si el creador ja té un espai, la resposta és `409` i la UI el deriva a la gestio de l'espai existent.
+
+### `POST /api/spaces/[publicCode]/reset`
+
+Entrada: sense cos.
+
+Flux:
+
+1. Validar sessió OAuth XTEC.
+2. Validar que l'espai pertany al creador autenticat.
+3. Generar un codi públic nou.
+4. Generar un token privat nou, calcular HMAC i xifrar-lo.
+5. Cridar la RPC server-only `public.reset_owner_diagnostic_space`.
+6. Retornar nous enllaços públic, compartit i de resultats del creador.
+
+La RPC elimina `answers` i `submissions` de l'espai, pero no elimina `questions`, `question_blocks` ni `questionnaires`. El canvi de codi públic i token invalida els enllaços antics.
 
 ### `POST /api/submissions`
 
