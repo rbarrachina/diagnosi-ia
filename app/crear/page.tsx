@@ -62,13 +62,13 @@ export default async function CreatePage() {
 
         {session.status === "authenticated" ? (
           <>
-            <div className="mb-4 flex w-full items-center justify-between rounded-md border border-line bg-white px-4 py-3 text-left text-sm text-slate-700 shadow-sm">
+            <div className="mb-4 flex w-full max-w-2xl items-center justify-between rounded-md border border-line bg-white px-4 py-3 text-left text-sm text-slate-700 shadow-sm">
               <span>
                 Sessió iniciada com <strong>{session.user.email}</strong>
               </span>
               <LogoutButton next="/crear" />
             </div>
-            <div className="w-full max-w-xl">
+            <div className="w-full max-w-2xl">
               <CreateSpaceForm existingSpace={existingSpace} />
             </div>
           </>

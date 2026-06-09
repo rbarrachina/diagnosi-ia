@@ -237,15 +237,15 @@ export function CreateSpaceForm({ existingSpace = null }: CreateSpaceFormProps) 
             espai de gestió.
           </p>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <div className="flex flex-col gap-3 md:flex-row md:flex-nowrap">
             <a
-              className="inline-flex justify-center rounded-md bg-action px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
+              className="inline-flex shrink-0 justify-center rounded-md bg-action px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
               href={displayedSpace.ownerResultsUrl}
             >
               Ves als resultats
             </a>
             <button
-              className="inline-flex justify-center rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action disabled:cursor-not-allowed disabled:text-slate-400"
+              className="inline-flex shrink-0 justify-center rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action disabled:cursor-not-allowed disabled:text-slate-400"
               disabled={regenerating || resetting}
               onClick={() => regenerateSharedLink(displayedSpace.publicCode)}
               type="button"
@@ -253,7 +253,7 @@ export function CreateSpaceForm({ existingSpace = null }: CreateSpaceFormProps) 
               {regenerating ? "Regenerant..." : "Regenerar enllaç privat"}
             </button>
             <button
-              className="inline-flex justify-center rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-800 transition hover:border-red-400 hover:bg-red-50 disabled:cursor-not-allowed disabled:text-slate-400"
+              className="inline-flex shrink-0 justify-center rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-800 transition hover:border-red-400 hover:bg-red-50 disabled:cursor-not-allowed disabled:text-slate-400"
               disabled={resetting || regenerating}
               onClick={() => resetSpace(displayedSpace.publicCode)}
               type="button"
