@@ -19,6 +19,14 @@ const blockIdMigration = readFileSync(
   "utf8",
 );
 
+const blockIdDefaultCleanupMigration = readFileSync(
+  join(
+    process.cwd(),
+    "supabase/migrations/20260609093301_drop_question_blocks_id_default.sql",
+  ),
+  "utf8",
+);
+
 describe("questionnaire identifiers", () => {
   it("converts questionnaire ids and related foreign keys to three-digit text codes", () => {
     expect(conversionMigration).toContain("lpad(row_number()");
@@ -42,5 +50,11 @@ describe("questionnaire identifiers", () => {
     expect(blockIdMigration).toContain("unique (questionnaire_id, block_id, block_position)");
     expect(seed).toContain("('01', 1, 'Alfabetització i ús crític de la IA')");
     expect(seed).not.toContain("22222222-2222-4222-8222-222222222201");
+  });
+
+  it("removes the obsolete UUID default from text block ids", () => {
+    expect(blockIdDefaultCleanupMigration).toContain(
+      "alter column id drop default",
+    );
   });
 });

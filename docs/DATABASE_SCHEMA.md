@@ -12,6 +12,7 @@ Implementacio actual:
 - Conversió d'identificador de qüestionari: `supabase/migrations/20260604154605_convert_questionnaire_ids_to_three_digit_codes.sql`
 - Conversió d'identificador de bloc: `supabase/migrations/20260604155650_convert_block_ids_to_two_digit_codes.sql`
 - RPC de resultats agregats: `supabase/migrations/20260605143459_create_aggregated_results_rpc.sql`
+- Neteja de default obsolet de blocs: `supabase/migrations/20260609093301_drop_question_blocks_id_default.sql`
 - Seed: `supabase/seed.sql`
 - Configuracio manual: `docs/SUPABASE_SETUP.md`
 
