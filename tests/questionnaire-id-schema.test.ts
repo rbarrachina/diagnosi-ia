@@ -27,6 +27,14 @@ const blockIdDefaultCleanupMigration = readFileSync(
   "utf8",
 );
 
+const answersPrimaryKeyMigration = readFileSync(
+  join(
+    process.cwd(),
+    "supabase/migrations/20260609095253_use_composite_primary_key_for_answers.sql",
+  ),
+  "utf8",
+);
+
 describe("questionnaire identifiers", () => {
   it("converts questionnaire ids and related foreign keys to three-digit text codes", () => {
     expect(conversionMigration).toContain("lpad(row_number()");
@@ -56,5 +64,12 @@ describe("questionnaire identifiers", () => {
     expect(blockIdDefaultCleanupMigration).toContain(
       "alter column id drop default",
     );
+  });
+
+  it("uses the natural submission/question key for answers", () => {
+    expect(answersPrimaryKeyMigration).toContain(
+      "add constraint answers_pkey primary key (submission_id, question_id)",
+    );
+    expect(answersPrimaryKeyMigration).toContain("drop column id");
   });
 });

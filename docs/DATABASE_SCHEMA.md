@@ -13,6 +13,7 @@ Implementacio actual:
 - Conversió d'identificador de bloc: `supabase/migrations/20260604155650_convert_block_ids_to_two_digit_codes.sql`
 - RPC de resultats agregats: `supabase/migrations/20260605143459_create_aggregated_results_rpc.sql`
 - Neteja de default obsolet de blocs: `supabase/migrations/20260609093301_drop_question_blocks_id_default.sql`
+- Clau primaria composta de respostes: `supabase/migrations/20260609095253_use_composite_primary_key_for_answers.sql`
 - Seed: `supabase/seed.sql`
 - Configuracio manual: `docs/SUPABASE_SETUP.md`
 
@@ -145,7 +146,6 @@ Respostes tancades.
 
 Columnes proposades:
 
-- `id uuid primary key default gen_random_uuid()`
 - `submission_id uuid not null references submissions(id) on delete cascade`
 - `questionnaire_id text not null`
 - `question_id uuid not null references questions(id) on delete restrict`
@@ -154,7 +154,7 @@ Columnes proposades:
 Restriccions:
 
 - `value in (0, 1, 2)`
-- `unique (submission_id, question_id)`
+- `primary key (submission_id, question_id)`
 
 La columna `questionnaire_id` és tècnica i permet reforçar amb claus foranes compostes que una resposta no apunti a una pregunta d'una altra versió.
 
@@ -291,11 +291,10 @@ create table submissions (
 );
 
 create table answers (
-  id uuid primary key default gen_random_uuid(),
   submission_id uuid not null references submissions(id) on delete cascade,
   questionnaire_id text not null,
   question_id uuid not null references questions(id) on delete restrict,
   value integer not null check (value in (0, 1, 2)),
-  unique (submission_id, question_id)
+  primary key (submission_id, question_id)
 );
 ```
