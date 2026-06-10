@@ -3,6 +3,13 @@ import "server-only";
 import { createSupabaseAdminClient } from "@/lib/database/server";
 import type { SubmissionRequestInput } from "@/lib/validation/schemas";
 
+export class SubmissionLimitReachedError extends Error {
+  constructor() {
+    super("Submission limit reached");
+    this.name = "SubmissionLimitReachedError";
+  }
+}
+
 type SubmissionRpcAnswer = {
   questionId: string;
   value: 0 | 1 | 2;
@@ -22,6 +29,10 @@ export async function createSubmission(payload: SubmissionRequestInput): Promise
   });
 
   if (error) {
+    if (error.code === "23514") {
+      throw new SubmissionLimitReachedError();
+    }
+
     throw new Error("Could not create submission");
   }
 }

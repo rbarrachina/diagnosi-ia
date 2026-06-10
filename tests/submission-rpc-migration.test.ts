@@ -6,6 +6,14 @@ const migration = readFileSync(
   "utf8",
 );
 
+const submissionLimitMigration = readFileSync(
+  join(
+    process.cwd(),
+    "supabase/migrations/20260610140500_limit_submissions_per_space.sql",
+  ),
+  "utf8",
+);
+
 describe("submission RPC migration", () => {
   it("keeps direct browser roles from executing the insertion RPC", () => {
     expect(migration).toContain(
@@ -25,5 +33,10 @@ describe("submission RPC migration", () => {
     expect(migration).toContain("(answer_item.answer ->> 'value') not in ('0', '1', '2')");
     expect(migration).toContain("duplicate_question_count <> 0");
     expect(migration).toContain("matched_question_count <> 20");
+  });
+
+  it("limits each diagnostic space to 300 submissions", () => {
+    expect(submissionLimitMigration).toContain("current_submission_count >= 300");
+    expect(submissionLimitMigration).toContain("for update of diagnostic_spaces");
   });
 });

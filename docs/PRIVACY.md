@@ -71,6 +71,10 @@ La implementació actual retorna només aquest model de dades de conjunt a `POST
 
 El recompte intern de respostes es fa a PostgreSQL amb una RPC server-only que retorna només totals per pregunta i valor de resposta. El servidor no necessita carregar totes les files individuals d'`answers` per calcular el tauler o el PDF.
 
+El límit de 300 respostes per espai es valida comptant submissions de l'espai en
+la mateixa RPC server-only d'enviament. Aquest recompte és agregat i no afegeix
+cap identificador de docent.
+
 No poden mostrar:
 
 - files individuals

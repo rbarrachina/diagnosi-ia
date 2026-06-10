@@ -211,6 +211,7 @@ Criteris d'acceptacio:
 - El servidor valida exactament 20 respostes.
 - El servidor rebutja duplicats, valors fora de rang i camps inesperats.
 - L'espai ha d'existir i estar actiu.
+- L'espai no pot superar 300 submissions completes.
 - La inserció de submission i answers és atòmica.
 
 Proves:
@@ -225,7 +226,7 @@ Riscos o decisions pendents:
 - No hi ha mecanisme fort per garantir "una sola vegada" sense identificar persones. Cal comunicar-ho com instrucció, no com garantia tècnica.
 - Anti-bots queda per fase 2 del producte.
 
-Estat: implementada amb RPC PostgreSQL `public.create_submission_with_answers` i Route Handler server-side.
+Estat: implementada amb RPC PostgreSQL `public.create_submission_with_answers` i Route Handler server-side. La RPC limita cada espai a 300 submissions completes.
 
 ## Fase 6: Agregacio i resultats web
 

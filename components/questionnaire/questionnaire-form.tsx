@@ -110,7 +110,12 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Submission failed");
+        const errorPayload = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(
+          errorPayload?.error ?? "No s'han pogut desar les respostes.",
+        );
       }
 
       try {
@@ -121,10 +126,12 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
       }
 
       setSubmitState({ status: "submitted" });
-    } catch {
+    } catch (error) {
       setSubmitState({
         status: "error",
-        message: "No s'han pogut desar les respostes. Torna-ho a provar.",
+        message: error instanceof Error
+          ? error.message
+          : "No s'han pogut desar les respostes. Torna-ho a provar.",
       });
     }
   }

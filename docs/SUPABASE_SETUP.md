@@ -24,6 +24,7 @@ No implementat encara:
 - `supabase/migrations/20260604130000_initial_schema.sql`
 - `supabase/migrations/20260604131500_add_composite_foreign_key_indexes.sql`
 - `supabase/migrations/20260604143000_create_submission_rpc.sql`
+- `supabase/migrations/20260610140500_limit_submissions_per_space.sql`
 - `supabase/seed.sql`
 
 ## Projecte Supabase creat
@@ -41,6 +42,7 @@ Migracions aplicades:
 - `seed_questionnaire_2026_1`
 - `add_composite_foreign_key_indexes`
 - `create_submission_rpc`
+- `limit_submissions_per_space`
 
 ## Aplicació manual a Supabase
 
@@ -63,7 +65,8 @@ Opcio amb SQL Editor del dashboard:
 4. Executa tot el contingut de `supabase/seed.sql`.
 5. Executa tot el contingut de `supabase/migrations/20260604131500_add_composite_foreign_key_indexes.sql`.
 6. Executa tot el contingut de `supabase/migrations/20260604143000_create_submission_rpc.sql`.
-7. Desa els resultats de verificació indicats més avall.
+7. Executa tot el contingut de `supabase/migrations/20260610140500_limit_submissions_per_space.sql`.
+8. Desa els resultats de verificació indicats més avall.
 
 ## Configuracio manual important
 

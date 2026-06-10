@@ -79,6 +79,10 @@ El docent respon 20 preguntes obligatories amb escala:
 
 No hi ha camps oberts.
 
+Cada espai de diagnosi admet un màxim de 300 respostes completes. Quan s'arriba
+a aquest límit, el formulari ja no accepta nous enviaments i informa que el
+qüestionari ha arribat al màxim de respostes.
+
 Quan el servidor accepta l'enviament, el navegador desa una marca local per al
 codi públic del qüestionari i evita un segon enviament des del mateix navegador.
 Aquesta mesura no identifica la persona i no garanteix que una mateixa persona

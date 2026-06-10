@@ -188,6 +188,7 @@ Validacions:
 - L'espai existeix.
 - L'espai està actiu.
 - La versió coincideix amb l'espai.
+- L'espai encara no ha arribat a 300 submissions.
 - Hi ha exactament 20 respostes.
 - No hi ha preguntes duplicades.
 - Totes les preguntes pertanyen a la versió.
@@ -197,6 +198,7 @@ Validacions:
 Persistencia:
 
 - Inserció de `submissions` i `answers` dins una transacció amb `public.create_submission_with_answers`.
+- La RPC bloqueja la fila de `diagnostic_spaces` amb `FOR UPDATE` abans de comptar submissions per evitar superar el límit en enviaments simultanis.
 
 Resposta:
 

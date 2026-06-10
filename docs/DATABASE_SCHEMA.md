@@ -16,6 +16,7 @@ Implementacio actual:
 - Clau primaria composta de respostes: `supabase/migrations/20260609095253_use_composite_primary_key_for_answers.sql`
 - Propietari OAuth i tokens de resultats: `supabase/migrations/20260609143524_add_auth_ownership_and_results_tokens.sql`
 - Espai únic per creador i RPC de reinici: `supabase/migrations/20260609162000_add_single_owner_space_reset_rpc.sql`
+- Límit de 300 submissions per espai: `supabase/migrations/20260610140500_limit_submissions_per_space.sql`
 - Seed: `supabase/seed.sql`
 - Configuracio manual: `docs/SUPABASE_SETUP.md`
 
@@ -207,7 +208,11 @@ Supabase JS no ofereix una transacció SQL multisentència arbitrària des del c
 - Execucio només des del servidor amb `service_role`.
 - Revocacio d'`execute` per a `anon` i `authenticated`.
 - Validacio de forma del payload, 20 respostes exactes, camps permesos, duplicats, valors `0`, `1`, `2` i pertinença de preguntes al qüestionari.
+- Validacio que l'espai no supera 300 submissions completes.
 - Inserció de `submissions` i `answers` en una única transacció de PostgreSQL.
+
+La RPC bloqueja la fila de `diagnostic_spaces` amb `FOR UPDATE` abans de comptar
+submissions. Això evita que dos enviaments simultanis puguin superar el límit.
 
 Per reiniciar un espai existent, la implementació usa:
 

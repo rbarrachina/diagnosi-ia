@@ -3,6 +3,7 @@ import { PUBLIC_CODE_PATTERN } from "@/lib/crypto/public-code";
 
 export const QUESTIONNAIRE_VERSION = "2026.2";
 export const EXPECTED_ANSWER_COUNT = 20;
+export const MAX_SUBMISSIONS_PER_SPACE = 300;
 
 export const publicCodeSchema = z
   .string()
