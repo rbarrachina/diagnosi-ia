@@ -107,6 +107,15 @@ La inserció de respostes es fa amb una RPC server-only. Els rols `anon` i `auth
 
 La gestio d'espais del creador es fa també amb rutes server-side. Tot i que existeixi Supabase Auth, el navegador no ha de llegir directament `diagnostic_spaces`, perquè aquesta taula conté hash i token xifrat.
 
+## Bloqueig local de resposta repetida
+
+Després d'un enviament correcte, el navegador desa una marca local amb el codi
+públic anònim de l'espai (`diagnosi-ia:submitted:[publicCode]`). Aquesta marca
+només viu al navegador de la persona participant i no s'envia a la base de dades.
+Serveix per evitar enviaments repetits accidentals des del mateix navegador,
+però no identifica la persona ni impedeix tècnicament respondre des d'un altre
+navegador o dispositiu.
+
 ## Logs
 
 No s'han de registrar:

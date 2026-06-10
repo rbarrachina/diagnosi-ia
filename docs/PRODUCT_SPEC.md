@@ -79,6 +79,12 @@ El docent respon 20 preguntes obligatories amb escala:
 
 No hi ha camps oberts.
 
+Quan el servidor accepta l'enviament, el navegador desa una marca local per al
+codi públic del qüestionari i evita un segon enviament des del mateix navegador.
+Aquesta mesura no identifica la persona i no garanteix que una mateixa persona
+no pugui respondre des d'un altre navegador, dispositiu o després d'esborrar les
+dades locals.
+
 ### Consulta de resultats
 
 Ruta compartida: `/resultats/compartit/[publicCode]#token=[privateToken]`

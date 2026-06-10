@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { SCALE_OPTIONS, type ScaleValue } from "@/lib/questionnaire/scale";
 import type { PublicQuestionnaire, QuestionBlock } from "@/lib/questionnaire/types";
+import {
+  hasLocalSubmission,
+  markLocalSubmission,
+} from "@/lib/submissions/local-submission-lock";
 
 type AnswerValue = ScaleValue;
 
@@ -19,6 +23,7 @@ type QuestionnaireFormProps = {
 export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [currentStep, setCurrentStep] = useState(0);
+  const [submittedInCurrentSession, setSubmittedInCurrentSession] = useState(false);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
 
   const questions = useMemo(
@@ -33,6 +38,19 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
       : Math.round((currentStep / totalPages) * 100);
   const currentBlock = currentStep > 0 ? questionnaire.blocks[currentStep - 1] : null;
   const isLastBlock = currentStep === questionnaire.blocks.length;
+  const submittedBeforeThisSession = useSyncExternalStore(
+    () => () => undefined,
+    () => {
+      try {
+        return hasLocalSubmission(questionnaire.publicCode, window.localStorage);
+      } catch {
+        return false;
+      }
+    },
+    () => false,
+  );
+  const alreadySubmittedLocally =
+    submittedBeforeThisSession || submittedInCurrentSession;
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -57,6 +75,14 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
   }
 
   async function submitAnswers() {
+    if (alreadySubmittedLocally) {
+      setSubmitState({
+        status: "error",
+        message: "Aquest navegador ja ha enviat una resposta per aquest qüestionari.",
+      });
+      return;
+    }
+
     if (Object.keys(answers).length !== questions.length) {
       setSubmitState({
         status: "error",
@@ -87,6 +113,13 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
         throw new Error("Submission failed");
       }
 
+      try {
+        markLocalSubmission(questionnaire.publicCode, window.localStorage);
+        setSubmittedInCurrentSession(true);
+      } catch {
+        // If browser storage is unavailable, the anonymous submission still counts.
+      }
+
       setSubmitState({ status: "submitted" });
     } catch {
       setSubmitState({
@@ -104,6 +137,24 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
           Les respostes s&apos;han enregistrat correctament.
         </p>
         <ProgressBar percentage={progressPercentage} />
+      </div>
+    );
+  }
+
+  if (alreadySubmittedLocally) {
+    return (
+      <div className="rounded-md border border-line bg-white p-8 text-center shadow-sm">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
+          Qüestionari respost
+        </p>
+        <h1 className="mt-3 text-2xl font-semibold text-ink">
+          Aquest navegador ja ha enviat una resposta
+        </h1>
+        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-700">
+          Per preservar l’anonimat, l’aplicació no identifica les persones. Aquest
+          bloqueig només evita repetir l’enviament des del mateix navegador.
+        </p>
+        <ProgressBar percentage={100} />
       </div>
     );
   }
