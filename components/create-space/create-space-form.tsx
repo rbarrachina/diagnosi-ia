@@ -154,13 +154,6 @@ export function CreateSpaceForm({ existingSpace = null }: CreateSpaceFormProps) 
         </h2>
       </div>
 
-      {displayedSpace ? (
-        <p className="mx-auto mt-5 max-w-sm text-sm leading-6 text-slate-700">
-          Ja tens un qüestionari creat. Gestiona els enllaços i els resultats
-          des d&apos;aquí.
-        </p>
-      ) : null}
-
       {!displayedSpace ? (
         <button
           className="mt-6 inline-flex self-center rounded-md bg-action px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
