@@ -121,6 +121,17 @@ export function ResultsDashboard({
         <div className="mt-4 grid gap-6 lg:grid-cols-2">
           <div className="h-72 min-w-0">
             <ResponsiveContainer height="100%" minWidth={0} width="100%">
+              <BarChart data={blockChartData(results.blocks)}>
+                <CartesianGrid stroke="#d8dee6" strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis domain={[0, 2]} />
+                <Tooltip />
+                <Bar dataKey="mitjana" fill="#256f7c" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="h-72 min-w-0">
+            <ResponsiveContainer height="100%" minWidth={0} width="100%">
               <RadarChart data={blockChartData(results.blocks)}>
                 <PolarGrid stroke="#d8dee6" />
                 <PolarAngleAxis dataKey="name" tick={{ fill: "#334155", fontSize: 12 }} />
@@ -135,17 +146,6 @@ export function ResultsDashboard({
                   strokeWidth={2}
                 />
               </RadarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="h-72 min-w-0">
-            <ResponsiveContainer height="100%" minWidth={0} width="100%">
-              <BarChart data={blockChartData(results.blocks)}>
-                <CartesianGrid stroke="#d8dee6" strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis domain={[0, 2]} />
-                <Tooltip />
-                <Bar dataKey="mitjana" fill="#256f7c" radius={[4, 4, 0, 0]} />
-              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
