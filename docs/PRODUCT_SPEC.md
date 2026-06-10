@@ -108,7 +108,7 @@ El servidor valida el token i retorna només dades de conjunt:
 - Nombre total de respostes.
 - Mitjana global.
 - Mitjana per bloc.
-- Grafica de barres per bloc.
+- Grafica d'aranya i grafica de barres per bloc.
 - Mitjana per pregunta.
 - Distribucio per pregunta.
 - Grafiques apilades amb les tres opcions.

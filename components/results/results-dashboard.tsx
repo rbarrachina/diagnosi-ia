@@ -5,6 +5,11 @@ import {
   BarChart,
   CartesianGrid,
   Legend,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -113,17 +118,45 @@ export function ResultsDashboard({
 
       <div className="mt-6 rounded-md border border-line bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-ink">Mitjana de cada bloc</h2>
-        <div className="mt-4 h-72 min-w-0">
-          <ResponsiveContainer height="100%" minWidth={0} width="100%">
-            <BarChart data={blockChartData(results.blocks)}>
-              <CartesianGrid stroke="#d8dee6" strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis domain={[0, 2]} />
-              <Tooltip />
-              <Bar dataKey="mitjana" fill="#256f7c" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="mt-4 grid gap-6 lg:grid-cols-2">
+          <div className="h-72 min-w-0">
+            <ResponsiveContainer height="100%" minWidth={0} width="100%">
+              <RadarChart data={blockChartData(results.blocks)}>
+                <PolarGrid stroke="#d8dee6" />
+                <PolarAngleAxis dataKey="name" tick={{ fill: "#334155", fontSize: 12 }} />
+                <PolarRadiusAxis angle={90} domain={[0, 2]} tickCount={5} />
+                <Tooltip />
+                <Radar
+                  dataKey="mitjana"
+                  fill="#256f7c"
+                  fillOpacity={0.24}
+                  name="Mitjana"
+                  stroke="#256f7c"
+                  strokeWidth={2}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="h-72 min-w-0">
+            <ResponsiveContainer height="100%" minWidth={0} width="100%">
+              <BarChart data={blockChartData(results.blocks)}>
+                <CartesianGrid stroke="#d8dee6" strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis domain={[0, 2]} />
+                <Tooltip />
+                <Bar dataKey="mitjana" fill="#256f7c" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
+        <dl className="mt-5 grid gap-3 border-t border-line pt-4 text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-3">
+          {results.blocks.map((block) => (
+            <div className="flex gap-2" key={block.position}>
+              <dt className="shrink-0 font-semibold text-ink">Bloc {block.position}</dt>
+              <dd>{block.title}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
       <div className="mt-6 rounded-md border border-line bg-white p-5 shadow-sm">
