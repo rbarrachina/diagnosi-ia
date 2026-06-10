@@ -186,10 +186,7 @@ export function CreateSpaceForm({ existingSpace = null }: CreateSpaceFormProps) 
 
       {displayedSpace ? (
         <div className="mt-6 space-y-4 rounded-md border border-line bg-paper p-4 text-left">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-            <div className="inline-flex w-fit items-center rounded-md border border-line bg-white px-3 py-2 text-sm font-semibold text-slate-700">
-              Respostes {displayedSpace.totalSubmissions}
-            </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                 Codi públic
@@ -197,6 +194,14 @@ export function CreateSpaceForm({ existingSpace = null }: CreateSpaceFormProps) 
               <p className="mt-1 font-mono text-lg font-semibold text-ink">
                 {displayedSpace.publicCode}
               </p>
+            </div>
+            <div className="flex w-fit min-w-24 flex-col items-center rounded-md border border-line bg-white px-4 py-3 text-center">
+              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                Respostes
+              </span>
+              <span className="mt-1 text-3xl font-semibold leading-none text-ink">
+                {displayedSpace.totalSubmissions}
+              </span>
             </div>
           </div>
 
