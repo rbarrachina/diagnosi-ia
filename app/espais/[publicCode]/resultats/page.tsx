@@ -3,9 +3,7 @@ import { XtecAccessNotice, XtecForbiddenNotice } from "@/components/auth/auth-ac
 import { OwnerResultsClient } from "@/components/results/owner-results-client";
 import { getXtecSessionState } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
-import { getServerAppUrl } from "@/lib/http/server-app-url";
 import { getAggregatedResultsForOwner, ResultsAccessError } from "@/lib/results/get-results";
-import { getOwnerSpace } from "@/lib/spaces/manage-spaces";
 
 export const dynamic = "force-dynamic";
 
@@ -44,18 +42,13 @@ export default async function OwnerResultsPage({ params }: OwnerResultsPageProps
     );
   }
 
-  const appUrl = await getServerAppUrl();
   let results;
-  let ownerSpace;
 
   try {
-    [results, ownerSpace] = await Promise.all([
-      getAggregatedResultsForOwner({
-        publicCode,
-        ownerUserId: session.user.id,
-      }),
-      getOwnerSpace(session.user.id, publicCode, appUrl),
-    ]);
+    results = await getAggregatedResultsForOwner({
+      publicCode,
+      ownerUserId: session.user.id,
+    });
   } catch (error) {
     if (error instanceof ResultsAccessError) {
       notFound();
@@ -64,17 +57,9 @@ export default async function OwnerResultsPage({ params }: OwnerResultsPageProps
     throw error;
   }
 
-  if (!ownerSpace) {
-    notFound();
-  }
-
   return (
     <main className="min-h-screen bg-paper">
-      <OwnerResultsClient
-        initialSharedResultsUrl={ownerSpace.sharedResultsUrl}
-        publicCode={publicCode}
-        results={results}
-      />
+      <OwnerResultsClient publicCode={publicCode} results={results} />
     </main>
   );
 }

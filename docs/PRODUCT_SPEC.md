@@ -101,6 +101,8 @@ El navegador llegeix el fragment `#token=` i envia el token mitjançant `POST /a
 
 El creador autenticat pot consultar els resultats dels espais propis si `owner_user_id` coincideix amb el seu usuari autenticat.
 
+La vista de resultats del creador mostra l'accio de descarregar el PDF i un boto per tornar a la gestio de l'espai. La gestio de l'enllaç privat compartit es fa des de `/crear`.
+
 El servidor valida el token i retorna només dades de conjunt:
 
 - Codi de l'espai.

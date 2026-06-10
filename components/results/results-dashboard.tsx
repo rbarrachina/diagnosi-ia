@@ -21,6 +21,7 @@ import type { AggregatedResults, BlockResult } from "@/lib/results/types";
 type ResultsDashboardProps = {
   results: AggregatedResults;
   isDownloading: boolean;
+  managementHref?: string;
   onDownloadPdf: () => void;
 };
 
@@ -47,6 +48,7 @@ function questionDistributionData(block: BlockResult) {
 export function ResultsDashboard({
   results,
   isDownloading,
+  managementHref,
   onDownloadPdf,
 }: ResultsDashboardProps) {
   return (
@@ -64,14 +66,24 @@ export function ResultsDashboard({
           </p>
         </div>
 
-        <button
-          className="rounded-md bg-action px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
-          disabled={isDownloading}
-          onClick={onDownloadPdf}
-          type="button"
-        >
-          {isDownloading ? "Generant PDF..." : "Descarrega l'informe PDF"}
-        </button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <button
+            className="rounded-md bg-action px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
+            disabled={isDownloading}
+            onClick={onDownloadPdf}
+            type="button"
+          >
+            {isDownloading ? "Generant PDF..." : "Descarrega l'informe PDF"}
+          </button>
+          {managementHref ? (
+            <a
+              className="rounded-md border border-line bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
+              href={managementHref}
+            >
+              Torna a la gestió
+            </a>
+          ) : null}
+        </div>
       </div>
 
       {results.lowResponseWarning ? (
