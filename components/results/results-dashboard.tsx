@@ -117,7 +117,9 @@ export function ResultsDashboard({
       </div>
 
       <div className="mt-6 rounded-md border border-line bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-ink">Mitjana de cada bloc</h2>
+        <h2 className="text-center text-lg font-semibold text-ink">
+          Mitjana per blocs
+        </h2>
         <div className="mt-4 grid gap-6 lg:grid-cols-2">
           <div className="h-72 min-w-0">
             <ResponsiveContainer height="100%" minWidth={0} width="100%">
