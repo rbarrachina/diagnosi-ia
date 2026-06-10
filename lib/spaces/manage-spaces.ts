@@ -12,6 +12,7 @@ import {
 const MAX_RESET_CODE_ATTEMPTS = 8;
 
 type OwnerSpaceRow = {
+  id: string;
   public_code: string;
   is_active: boolean;
   created_at: string;
@@ -27,6 +28,7 @@ export type OwnerDiagnosticSpace = {
   ownerResultsUrl: string;
   sharedResultsUrl: string | null;
   resultsTokenEnabled: boolean;
+  totalSubmissions: number;
 };
 
 export type ResetOwnerDiagnosticSpaceResult = {
@@ -34,11 +36,13 @@ export type ResetOwnerDiagnosticSpaceResult = {
   publicUrl: string;
   ownerResultsUrl: string;
   sharedResultsUrl: string;
+  totalSubmissions: number;
 };
 
 function mapOwnerSpace(
   row: OwnerSpaceRow,
   appUrl: string,
+  totalSubmissions: number,
 ): OwnerDiagnosticSpace {
   const token = decryptStoredResultsToken(row.results_token_encrypted);
 
@@ -50,7 +54,24 @@ function mapOwnerSpace(
     ownerResultsUrl: buildOwnerResultsUrl(appUrl, row.public_code),
     sharedResultsUrl: token ? buildSharedResultsUrl(appUrl, row.public_code, token) : null,
     resultsTokenEnabled: row.results_token_enabled,
+    totalSubmissions,
   };
+}
+
+async function countSpaceSubmissions(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  spaceId: string,
+): Promise<number> {
+  const { count, error } = await supabase
+    .from("submissions")
+    .select("id", { count: "exact", head: true })
+    .eq("diagnostic_space_id", spaceId);
+
+  if (error || count === null) {
+    throw new Error("Could not count owner space submissions");
+  }
+
+  return count;
 }
 
 export async function listOwnerSpaces(
@@ -61,7 +82,7 @@ export async function listOwnerSpaces(
   const { data, error } = await supabase
     .from("diagnostic_spaces")
     .select(
-      "public_code, is_active, created_at, results_token_enabled, results_token_encrypted",
+      "id, public_code, is_active, created_at, results_token_enabled, results_token_encrypted",
     )
     .eq("owner_user_id", ownerUserId)
     .order("created_at", { ascending: false })
@@ -71,7 +92,16 @@ export async function listOwnerSpaces(
     throw new Error("Could not load owner spaces");
   }
 
-  return data.map((space) => mapOwnerSpace(space, appUrl));
+  const spacesWithCounts = await Promise.all(
+    data.map(async (space) => ({
+      space,
+      totalSubmissions: await countSpaceSubmissions(supabase, space.id),
+    })),
+  );
+
+  return spacesWithCounts.map(({ space, totalSubmissions }) =>
+    mapOwnerSpace(space, appUrl, totalSubmissions),
+  );
 }
 
 export async function getOwnerSpace(
@@ -83,7 +113,7 @@ export async function getOwnerSpace(
   const { data, error } = await supabase
     .from("diagnostic_spaces")
     .select(
-      "public_code, is_active, created_at, results_token_enabled, results_token_encrypted",
+      "id, public_code, is_active, created_at, results_token_enabled, results_token_encrypted",
     )
     .eq("owner_user_id", ownerUserId)
     .eq("public_code", publicCode)
@@ -93,7 +123,13 @@ export async function getOwnerSpace(
     throw new Error("Could not load owner space");
   }
 
-  return data ? mapOwnerSpace(data, appUrl) : null;
+  if (!data) {
+    return null;
+  }
+
+  const totalSubmissions = await countSpaceSubmissions(supabase, data.id);
+
+  return mapOwnerSpace(data, appUrl, totalSubmissions);
 }
 
 export async function regenerateOwnerResultsToken(params: {
@@ -162,6 +198,7 @@ export async function resetOwnerDiagnosticSpace(params: {
           rows[0].public_code,
           resultsToken.token,
         ),
+        totalSubmissions: 0,
       };
     }
 

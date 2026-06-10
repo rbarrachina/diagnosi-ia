@@ -23,6 +23,7 @@ export type CreatedDiagnosticSpace = {
   sharedResultsUrl: string;
   ownerResultsUrl: string;
   publicUrl: string;
+  totalSubmissions: number;
 };
 
 export async function createDiagnosticSpace(
@@ -76,6 +77,7 @@ export async function createDiagnosticSpace(
         publicUrl: `${appUrl}/q/${publicCode}`,
         sharedResultsUrl: buildSharedResultsUrl(appUrl, publicCode, resultsToken.token),
         ownerResultsUrl: buildOwnerResultsUrl(appUrl, publicCode),
+        totalSubmissions: 0,
       };
     }
 
