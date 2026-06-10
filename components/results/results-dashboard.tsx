@@ -77,7 +77,7 @@ export function ResultsDashboard({
           </button>
           {managementHref ? (
             <a
-              className="rounded-md border border-line bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
+              className="rounded-md bg-action px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
               href={managementHref}
             >
               Torna a la gestió
