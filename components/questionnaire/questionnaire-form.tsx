@@ -337,7 +337,7 @@ function BlockPage({
               {SCALE_OPTIONS.map((option) => (
                 isReadOnly ? (
                   <div
-                    className="flex min-h-12 items-center rounded-md border border-line bg-paper px-3 py-2 text-sm text-slate-700"
+                    className={`flex min-h-12 items-center rounded-md border px-3 py-2 text-sm text-ink ${option.formClasses}`}
                     key={option.value}
                   >
                     {option.label}
