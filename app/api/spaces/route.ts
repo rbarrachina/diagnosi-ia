@@ -38,6 +38,8 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json(
       {
         publicCode: createdSpace.publicCode,
+        questionnaireTitle: createdSpace.questionnaireTitle,
+        questionnaireVersion: createdSpace.questionnaireVersion,
         publicUrl: createdSpace.publicUrl,
         sharedResultsUrl: createdSpace.sharedResultsUrl,
         ownerResultsUrl: createdSpace.ownerResultsUrl,

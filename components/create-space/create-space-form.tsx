@@ -4,6 +4,8 @@ import { useState } from "react";
 
 type CreatedSpaceResponse = {
   publicCode: string;
+  questionnaireTitle: string;
+  questionnaireVersion: string;
   publicUrl: string;
   sharedResultsUrl: string | null;
   ownerResultsUrl: string;
@@ -182,10 +184,13 @@ export function CreateSpaceForm({ existingSpace = null }: CreateSpaceFormProps) 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                Codi públic
+                Qüestionari
               </p>
-              <p className="mt-1 font-mono text-lg font-semibold text-ink">
-                {displayedSpace.publicCode}
+              <p className="mt-1 break-words text-lg font-semibold leading-snug text-ink">
+                {displayedSpace.questionnaireTitle}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-slate-600">
+                Versió {displayedSpace.questionnaireVersion}
               </p>
             </div>
             <div className="flex w-fit min-w-24 flex-col items-center rounded-md border border-line bg-white px-4 py-3 text-center">

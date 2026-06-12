@@ -19,6 +19,8 @@ export class OwnerSpaceAlreadyExistsError extends Error {
 
 export type CreatedDiagnosticSpace = {
   publicCode: string;
+  questionnaireTitle: string;
+  questionnaireVersion: string;
   sharedResultsUrl: string;
   ownerResultsUrl: string;
   publicUrl: string;
@@ -47,9 +49,9 @@ export async function createDiagnosticSpace(
 
   const { data: questionnaire, error: questionnaireError } = await supabase
     .from("questionnaires")
-    .select("id")
+    .select("id, title, version")
     .eq("is_active", true)
-    .single<{ id: string }>();
+    .single<{ id: string; title: string; version: string }>();
 
   if (questionnaireError || !questionnaire) {
     throw new Error("Active questionnaire version not found");
@@ -72,6 +74,8 @@ export async function createDiagnosticSpace(
     if (!error) {
       return {
         publicCode,
+        questionnaireTitle: questionnaire.title,
+        questionnaireVersion: questionnaire.version,
         publicUrl: `${appUrl}/q/${publicCode}`,
         sharedResultsUrl: buildSharedResultsUrl(appUrl, publicCode, resultsToken.token),
         ownerResultsUrl: buildOwnerResultsUrl(appUrl, publicCode),

@@ -11,6 +11,14 @@ import {
 
 const MAX_RESET_CODE_ATTEMPTS = 8;
 
+const OWNER_SPACE_SELECT =
+  "id, public_code, is_active, created_at, results_token_enabled, results_token_encrypted, questionnaires!inner(title, version)";
+
+type OwnerSpaceQuestionnaireRow = {
+  title: string;
+  version: string;
+};
+
 type OwnerSpaceRow = {
   id: string;
   public_code: string;
@@ -18,10 +26,13 @@ type OwnerSpaceRow = {
   created_at: string;
   results_token_enabled: boolean;
   results_token_encrypted: string | null;
+  questionnaires: OwnerSpaceQuestionnaireRow;
 };
 
 export type OwnerDiagnosticSpace = {
   publicCode: string;
+  questionnaireTitle: string;
+  questionnaireVersion: string;
   isActive: boolean;
   createdAt: string;
   publicUrl: string;
@@ -33,6 +44,8 @@ export type OwnerDiagnosticSpace = {
 
 export type ResetOwnerDiagnosticSpaceResult = {
   publicCode: string;
+  questionnaireTitle: string;
+  questionnaireVersion: string;
   publicUrl: string;
   ownerResultsUrl: string;
   sharedResultsUrl: string;
@@ -48,6 +61,8 @@ function mapOwnerSpace(
 
   return {
     publicCode: row.public_code,
+    questionnaireTitle: row.questionnaires.title,
+    questionnaireVersion: row.questionnaires.version,
     isActive: row.is_active,
     createdAt: row.created_at,
     publicUrl: `${appUrl}/q/${row.public_code}`,
@@ -81,9 +96,7 @@ export async function listOwnerSpaces(
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("diagnostic_spaces")
-    .select(
-      "id, public_code, is_active, created_at, results_token_enabled, results_token_encrypted",
-    )
+    .select(OWNER_SPACE_SELECT)
     .eq("owner_user_id", ownerUserId)
     .order("created_at", { ascending: false })
     .returns<OwnerSpaceRow[]>();
@@ -112,9 +125,7 @@ export async function getOwnerSpace(
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("diagnostic_spaces")
-    .select(
-      "id, public_code, is_active, created_at, results_token_enabled, results_token_encrypted",
-    )
+    .select(OWNER_SPACE_SELECT)
     .eq("owner_user_id", ownerUserId)
     .eq("public_code", publicCode)
     .maybeSingle<OwnerSpaceRow>();
@@ -189,13 +200,29 @@ export async function resetOwnerDiagnosticSpace(params: {
     const rows = data as Array<{ public_code: string }> | null;
 
     if (!error && rows?.[0]) {
+      const { data: resetSpace, error: resetSpaceError } = await supabase
+        .from("diagnostic_spaces")
+        .select("public_code, questionnaires!inner(title, version)")
+        .eq("owner_user_id", params.ownerUserId)
+        .eq("public_code", rows[0].public_code)
+        .maybeSingle<{
+          public_code: string;
+          questionnaires: OwnerSpaceQuestionnaireRow;
+        }>();
+
+      if (resetSpaceError || !resetSpace) {
+        throw new Error("Could not load reset diagnostic space");
+      }
+
       return {
-        publicCode: rows[0].public_code,
-        publicUrl: `${params.appUrl}/q/${rows[0].public_code}`,
-        ownerResultsUrl: buildOwnerResultsUrl(params.appUrl, rows[0].public_code),
+        publicCode: resetSpace.public_code,
+        questionnaireTitle: resetSpace.questionnaires.title,
+        questionnaireVersion: resetSpace.questionnaires.version,
+        publicUrl: `${params.appUrl}/q/${resetSpace.public_code}`,
+        ownerResultsUrl: buildOwnerResultsUrl(params.appUrl, resetSpace.public_code),
         sharedResultsUrl: buildSharedResultsUrl(
           params.appUrl,
-          rows[0].public_code,
+          resetSpace.public_code,
           resultsToken.token,
         ),
         totalSubmissions: 0,
