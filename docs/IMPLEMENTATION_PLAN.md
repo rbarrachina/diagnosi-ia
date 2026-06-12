@@ -8,7 +8,9 @@ El pla està dividit en fases petites i verificables. No s'hauria de començar u
 - Fase 2 completada: esquema Supabase, seed del qüestionari, restriccions i RLS.
 - Fase 3 implementada en aquest canvi: criptografia, creació d'espais, formulari públic i submissions atomiques.
 - Fase 4 implementada en aquest canvi: resultats de conjunt, validació de token de resultats, gràfiques web i PDF.
-- Gestio de creador implementada: un únic espai per usuari autenticat, recuperació d'enllaç privat i reinici d'espai amb rotació d'enllaços.
+- Gestio de creador implementada: un únic espai per usuari autenticat,
+  recuperació d'enllaç privat i reinici d'espai amb rotació d'enllaços i
+  assignacio de la versio activa.
 - Nova fase prevista: administracio global del qüestionari versionat i dels
   administradors.
 - Fora d'abast actual: rate limiting, anti-bots, retenció de dades i tancament d'espais.
@@ -183,7 +185,8 @@ Criteris d'acceptacio:
 - Les col·lisions de `public_code` es reintenten.
 - No es registra el token.
 - Si l'usuari ja té un espai, la UI el deriva a la gestio de l'espai existent.
-- El reinici elimina respostes anònimes, conserva propietari i espai, i regenera codi públic i token privat.
+- El reinici elimina respostes anònimes, conserva propietari i espai, assigna
+  la versio activa, i regenera codi públic i token privat.
 
 Proves:
 

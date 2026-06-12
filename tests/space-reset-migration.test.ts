@@ -8,6 +8,13 @@ const migration = readFileSync(
   ),
   "utf8",
 );
+const activeQuestionnaireResetMigration = readFileSync(
+  join(
+    process.cwd(),
+    "supabase/migrations/20260612102000_reset_space_to_active_questionnaire.sql",
+  ),
+  "utf8",
+);
 
 describe("owner diagnostic space reset migration", () => {
   it("enforces one authenticated diagnostic space per owner", () => {
@@ -29,14 +36,25 @@ describe("owner diagnostic space reset migration", () => {
     expect(migration).not.toContain("delete from public.questionnaires");
   });
 
+  it("assigns the active questionnaire version when resetting an owner space", () => {
+    expect(activeQuestionnaireResetMigration).toContain("where questionnaires.is_active = true");
+    expect(activeQuestionnaireResetMigration).toContain(
+      "questionnaire_id = active_questionnaire_id",
+    );
+    expect(activeQuestionnaireResetMigration).toContain("delete from public.answers");
+    expect(activeQuestionnaireResetMigration).toContain("delete from public.submissions");
+    expect(activeQuestionnaireResetMigration).not.toContain("delete from public.questions");
+    expect(activeQuestionnaireResetMigration).not.toContain("delete from public.questionnaires");
+  });
+
   it("keeps the reset RPC server-only", () => {
-    expect(migration).toContain(
+    expect(activeQuestionnaireResetMigration).toContain(
       "revoke all on function public.reset_owner_diagnostic_space(uuid, text, text, text, text) from anon;",
     );
-    expect(migration).toContain(
+    expect(activeQuestionnaireResetMigration).toContain(
       "revoke all on function public.reset_owner_diagnostic_space(uuid, text, text, text, text) from authenticated;",
     );
-    expect(migration).toContain(
+    expect(activeQuestionnaireResetMigration).toContain(
       "grant execute on function public.reset_owner_diagnostic_space(uuid, text, text, text, text) to service_role;",
     );
   });

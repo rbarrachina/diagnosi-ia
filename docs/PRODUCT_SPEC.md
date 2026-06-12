@@ -125,6 +125,8 @@ El creador autenticat pot reiniciar el seu qüestionari. Aquesta accio:
 
 - elimina totes les `submissions` i `answers` anònimes de l'espai;
 - conserva el mateix `diagnostic_spaces.id` i el mateix `owner_user_id`;
+- assigna l'espai a la versio de qüestionari que estigui activa en aquell
+  moment;
 - genera un nou codi públic;
 - genera un nou token privat de resultats;
 - invalida l'enllaç públic i l'enllaç privat antics.

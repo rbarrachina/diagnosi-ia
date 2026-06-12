@@ -323,7 +323,9 @@ Per reiniciar un espai existent, la implementació usa:
 - Execucio només des del servidor amb `service_role`.
 - Revocacio d'`execute` per a `anon` i `authenticated`.
 - Eliminació de `answers` i `submissions` de l'espai.
-- Actualitzacio atòmica de `public_code`, `results_token_hash`, `results_token_encrypted` i metadades del token.
+- Reassignacio de `diagnostic_spaces.questionnaire_id` a la versio activa.
+- Actualitzacio atòmica de `public_code`, `results_token_hash`,
+  `results_token_encrypted` i metadades del token.
 - Cap eliminació ni modificació de preguntes versionades.
 
 Alternativa:

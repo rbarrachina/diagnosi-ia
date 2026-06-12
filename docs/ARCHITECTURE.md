@@ -324,10 +324,14 @@ Flux:
 2. Validar que l'espai pertany al creador autenticat.
 3. Generar un codi públic nou.
 4. Generar un token privat nou, calcular HMAC i xifrar-lo.
-5. Cridar la RPC server-only `public.reset_owner_diagnostic_space`.
+5. Cridar la RPC server-only `public.reset_owner_diagnostic_space`, que
+   reassigna l'espai a la versio activa del qüestionari.
 6. Retornar nous enllaços públic, compartit i de resultats del creador.
 
-La RPC elimina `answers` i `submissions` de l'espai, pero no elimina `questions`, `question_blocks` ni `questionnaires`. El canvi de codi públic i token invalida els enllaços antics.
+La RPC elimina `answers` i `submissions` de l'espai, actualitza
+`diagnostic_spaces.questionnaire_id` a la versio activa i no elimina
+`questions`, `question_blocks` ni `questionnaires`. El canvi de codi públic i
+token invalida els enllaços antics.
 
 ### `POST /api/submissions`
 
