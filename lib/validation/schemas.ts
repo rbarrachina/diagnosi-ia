@@ -3,7 +3,16 @@ import { PUBLIC_CODE_PATTERN } from "@/lib/crypto/public-code";
 
 export const QUESTIONNAIRE_VERSION = "2026.2";
 export const EXPECTED_ANSWER_COUNT = 20;
+export const MAX_QUESTION_BLOCKS = 10;
+export const MAX_QUESTIONS_PER_BLOCK = 10;
+export const MAX_QUESTIONNAIRE_QUESTIONS = MAX_QUESTION_BLOCKS * MAX_QUESTIONS_PER_BLOCK;
 export const MAX_SUBMISSIONS_PER_SPACE = 300;
+
+export const questionnaireVersionSchema = z
+  .string()
+  .min(6)
+  .max(24)
+  .regex(/^[0-9]{4}\.[0-9]+$/, "La versió del qüestionari no és vàlida");
 
 export const publicCodeSchema = z
   .string()
@@ -29,8 +38,8 @@ export const createSpaceRequestSchema = z.object({}).strict();
 export const submissionRequestSchema = z
   .object({
     publicCode: publicCodeSchema,
-    questionnaireVersion: z.literal(QUESTIONNAIRE_VERSION),
-    answers: z.array(submissionAnswerSchema).length(EXPECTED_ANSWER_COUNT),
+    questionnaireVersion: questionnaireVersionSchema,
+    answers: z.array(submissionAnswerSchema).min(1).max(MAX_QUESTIONNAIRE_QUESTIONS),
   })
   .strict()
   .superRefine((payload, context) => {
@@ -63,7 +72,148 @@ export const ownerResultsRequestSchema = z
   })
   .strict();
 
+export const questionnaireIdSchema = z
+  .string()
+  .regex(/^[0-9]{3}$/, "L'identificador de qüestionari no és vàlid");
+
+export const questionnaireTitleSchema = z.string().trim().min(1).max(200);
+export const questionnaireBlockTitleSchema = z.string().trim().min(1).max(160);
+export const questionnaireQuestionTextSchema = z.string().trim().min(1).max(600);
+
+export const adminQuestionInputSchema = z
+  .object({
+    blockPosition: z.number().int().min(1).max(MAX_QUESTIONS_PER_BLOCK),
+    text: questionnaireQuestionTextSchema,
+  })
+  .strict();
+
+export const adminQuestionBlockInputSchema = z
+  .object({
+    position: z.number().int().min(1).max(MAX_QUESTION_BLOCKS),
+    title: questionnaireBlockTitleSchema,
+    questions: z.array(adminQuestionInputSchema).max(MAX_QUESTIONS_PER_BLOCK),
+  })
+  .strict()
+  .superRefine((block, context) => {
+    const questionPositions = new Set<number>();
+
+    for (const question of block.questions) {
+      if (questionPositions.has(question.blockPosition)) {
+        context.addIssue({
+          code: "custom",
+          message: "Duplicate question position inside block",
+          path: ["questions"],
+        });
+        return;
+      }
+
+      questionPositions.add(question.blockPosition);
+    }
+  });
+
+export const adminQuestionnaireBlocksSchema = z
+  .array(adminQuestionBlockInputSchema)
+  .max(MAX_QUESTION_BLOCKS)
+  .superRefine((blocks, context) => {
+    const blockPositions = new Set<number>();
+
+    for (const block of blocks) {
+      if (blockPositions.has(block.position)) {
+        context.addIssue({
+          code: "custom",
+          message: "Duplicate block position",
+          path: ["blocks"],
+        });
+        return;
+      }
+
+      blockPositions.add(block.position);
+    }
+  });
+
+export const createQuestionnaireDraftInputSchema = z
+  .object({
+    version: questionnaireVersionSchema,
+    title: questionnaireTitleSchema,
+  })
+  .strict();
+
+export const copyQuestionnaireVersionInputSchema = z
+  .object({
+    sourceQuestionnaireId: questionnaireIdSchema,
+    newVersion: questionnaireVersionSchema,
+    newTitle: questionnaireTitleSchema,
+  })
+  .strict();
+
+export const createQuestionnaireVersionInputSchema = z
+  .object({
+    sourceQuestionnaireId: z.union([questionnaireIdSchema, z.literal("blank")]),
+    version: questionnaireVersionSchema,
+    title: questionnaireTitleSchema,
+  })
+  .strict();
+
+export const replaceQuestionnaireContentInputSchema = z
+  .object({
+    questionnaireId: questionnaireIdSchema,
+    title: questionnaireTitleSchema,
+    blocks: adminQuestionnaireBlocksSchema,
+    confirmAssignedEdit: z.boolean().default(false),
+  })
+  .strict();
+
+export const activateQuestionnaireVersionInputSchema = z
+  .object({
+    questionnaireId: questionnaireIdSchema,
+  })
+  .strict();
+
+export const deleteQuestionnaireVersionInputSchema = z
+  .object({
+    questionnaireId: questionnaireIdSchema,
+  })
+  .strict();
+
+export const adminUserInputSchema = z
+  .object({
+    userId: z.string().uuid(),
+  })
+  .strict();
+
+export const adminUserSearchQuerySchema = z.string().trim().min(2).max(80);
+
+export const setAdminUserActiveInputSchema = z
+  .object({
+    userId: z.string().uuid(),
+    isActive: z.boolean(),
+  })
+  .strict();
+
 export type SubmissionAnswerInput = z.infer<typeof submissionAnswerSchema>;
 export type SubmissionRequestInput = z.infer<typeof submissionRequestSchema>;
 export type PrivateResultsRequestInput = z.infer<typeof privateResultsRequestSchema>;
 export type OwnerResultsRequestInput = z.infer<typeof ownerResultsRequestSchema>;
+export type AdminQuestionInput = z.infer<typeof adminQuestionInputSchema>;
+export type AdminQuestionBlockInput = z.infer<typeof adminQuestionBlockInputSchema>;
+export type CreateQuestionnaireDraftInput = z.infer<
+  typeof createQuestionnaireDraftInputSchema
+>;
+export type CopyQuestionnaireVersionInput = z.infer<
+  typeof copyQuestionnaireVersionInputSchema
+>;
+export type CreateQuestionnaireVersionInput = z.infer<
+  typeof createQuestionnaireVersionInputSchema
+>;
+export type ReplaceQuestionnaireContentInput = z.infer<
+  typeof replaceQuestionnaireContentInputSchema
+>;
+export type ActivateQuestionnaireVersionInput = z.infer<
+  typeof activateQuestionnaireVersionInputSchema
+>;
+export type DeleteQuestionnaireVersionInput = z.infer<
+  typeof deleteQuestionnaireVersionInputSchema
+>;
+export type AdminUserInput = z.infer<typeof adminUserInputSchema>;
+export type AdminUserSearchQuery = z.infer<typeof adminUserSearchQuerySchema>;
+export type SetAdminUserActiveInput = z.infer<typeof setAdminUserActiveInputSchema>;

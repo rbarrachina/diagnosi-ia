@@ -25,6 +25,11 @@ No implementat encara:
 - `supabase/migrations/20260604131500_add_composite_foreign_key_indexes.sql`
 - `supabase/migrations/20260604143000_create_submission_rpc.sql`
 - `supabase/migrations/20260610140500_limit_submissions_per_space.sql`
+- `supabase/migrations/20260611183000_add_admin_users.sql`
+- `supabase/migrations/20260611184500_add_admin_read_rls_policies.sql`
+- `supabase/migrations/20260611190000_add_admin_service_rpcs.sql`
+- `supabase/migrations/20260611193000_allow_submissions_for_space_questionnaire_version.sql`
+- `supabase/migrations/20260611203000_grant_private_schema_usage_to_service_role.sql`
 - `supabase/seed.sql`
 
 ## Projecte Supabase creat
@@ -66,7 +71,12 @@ Opcio amb SQL Editor del dashboard:
 5. Executa tot el contingut de `supabase/migrations/20260604131500_add_composite_foreign_key_indexes.sql`.
 6. Executa tot el contingut de `supabase/migrations/20260604143000_create_submission_rpc.sql`.
 7. Executa tot el contingut de `supabase/migrations/20260610140500_limit_submissions_per_space.sql`.
-8. Desa els resultats de verificació indicats més avall.
+8. Executa tot el contingut de `supabase/migrations/20260611183000_add_admin_users.sql`.
+9. Executa tot el contingut de `supabase/migrations/20260611184500_add_admin_read_rls_policies.sql`.
+10. Executa tot el contingut de `supabase/migrations/20260611190000_add_admin_service_rpcs.sql`.
+11. Executa tot el contingut de `supabase/migrations/20260611193000_allow_submissions_for_space_questionnaire_version.sql`.
+12. Executa tot el contingut de `supabase/migrations/20260611203000_grant_private_schema_usage_to_service_role.sql`.
+13. Desa els resultats de verificació indicats més avall.
 
 ## Configuracio manual important
 
@@ -79,6 +89,50 @@ Al dashboard de Supabase:
 - Si revises `Project Settings > API`, comprova que qualsevol exposicio via Data API queda protegida per RLS i sense grants a `anon`/`authenticated` per aquestes taules.
 - Desa `SUPABASE_SERVICE_ROLE_KEY` només en entorns de servidor.
 - En fases posteriors, configura a Vercel només variables server-side per a secrets.
+
+## Bootstrap del primer administrador
+
+El primer administrador és el primer usuari autenticat amb compte `@xtec.cat`
+que accedeix correctament a la pantalla `/admin`.
+
+Aquesta regla només s'aplica quan `public.admin_users` és buida. Quan ja hi ha
+almenys un administrador actiu o inactiu, l'accés a `/admin` no ha de concedir
+cap nou permís d'administracio. Els administradors següents només es poden
+afegir o reactivar des de l'administracio per part d'un administrador actiu.
+
+La creació d'espais de diagnosi no concedeix permisos d'administracio.
+
+Requisits d'implementacio:
+
+- El provider Google OAuth ja ha d'estar configurat.
+- La migració `supabase/migrations/20260611183000_add_admin_users.sql` ha
+  d'estar aplicada.
+- El bootstrap s'ha de fer server-side després de validar que l'usuari és
+  `@xtec.cat`.
+- La base de dades de l'aplicació només ha de desar el `auth.users.id` del
+  primer usuari; no s'han de copiar emails.
+- La comprovacio "no hi ha cap admin" i la insercio del primer admin han de ser
+  atòmiques, preferiblement amb una RPC PostgreSQL amb bloqueig transaccional,
+  per evitar que dos primers logins simultanis a `/admin` puguin obtenir el rol.
+
+SQL orientatiu per a la futura RPC de bootstrap:
+
+```sql
+select pg_advisory_xact_lock(hashtext('diagnosi_ia_admin_bootstrap'));
+
+insert into public.admin_users (user_id, role, is_active)
+select
+  p_user_id,
+  'admin',
+  true
+where not exists (
+  select 1
+  from public.admin_users
+);
+```
+
+Aquest SQL és orientatiu: no s'ha d'executar manualment sense adaptar-lo dins
+una funcio o transaccio que rebi `p_user_id` des del servidor.
 
 ## Variables d'entorn per a la fase 3
 
@@ -132,6 +186,7 @@ order by table_name;
 Resultat esperat:
 
 - `answers`
+- `admin_users`
 - `diagnostic_spaces`
 - `question_blocks`
 - `questionnaires`
@@ -188,7 +243,8 @@ where schemaname = 'públic'
     'questions',
     'diagnostic_spaces',
     'submissions',
-    'answers'
+    'answers',
+    'admin_users'
   )
 order by tablename;
 ```
@@ -213,6 +269,36 @@ order by tablename, policyname;
 ```
 
 Resultat esperat: polítiques de denegació amb `qual = false` i `with_check = false`; cap política `using (true)`.
+
+### Lectura d'administracio limitada
+
+```sql
+select
+  grantee,
+  table_name,
+  privilege_type
+from information_schema.role_table_grants
+where table_schema = 'public'
+  and grantee in ('anon', 'authenticated')
+  and table_name in (
+    'admin_users',
+    'questionnaires',
+    'question_blocks',
+    'questions',
+    'diagnostic_spaces',
+    'submissions',
+    'answers'
+  )
+order by table_name, grantee, privilege_type;
+```
+
+Resultat esperat:
+
+- `authenticated` només té `SELECT` sobre `admin_users`, `questionnaires`,
+  `question_blocks` i `questions`.
+- `anon` no té permisos sobre aquestes taules.
+- `diagnostic_spaces`, `submissions` i `answers` no tenen permisos per a
+  `anon` ni `authenticated`.
 
 ### Seed del qüestionari
 

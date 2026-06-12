@@ -14,7 +14,7 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const payload = submissionRequestSchema.parse(
       await readJsonRequestBody(request, {
-        maxBytes: 16_384,
+        maxBytes: 64_000,
       }),
     );
     await createSubmission(payload);

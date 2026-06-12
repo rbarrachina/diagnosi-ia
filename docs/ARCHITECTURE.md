@@ -20,6 +20,11 @@
 - Els tokens privats es comparen amb hash o HMAC, mai amb text pla.
 - El token privat no és posa en query params ni logs.
 - La creació i gestio d'espais requereix sessió OAuth amb correu `@xtec.cat`.
+- L'administracio global requereix sessió OAuth i autoritzacio explicita com a
+  administrador, excepte el bootstrap inicial quan `admin_users` encara és
+  buida.
+- L'administracio del qüestionari no pot exposar `submissions` ni `answers`
+  individuals al navegador.
 
 ## Estructura prevista
 
@@ -32,8 +37,13 @@ app/
   q/[publicCode]/page.tsx
   resultats/[publicCode]/page.tsx
   resultats/compartit/[publicCode]/page.tsx
+  admin/
+    page.tsx
+    versions/
+    administradors/
   auth/callback/route.ts
   api/
+    admin/
     spaces/route.ts
     spaces/[publicCode]/reset/route.ts
     submissions/route.ts
@@ -49,6 +59,7 @@ lib/
   database/
   pdf/
   questionnaire/
+  admin/
   validation/
 supabase/
   migrations/
@@ -102,7 +113,32 @@ Responsabilitats:
 
 - Carregar qüestionari actiu o versionat.
 - Validar que l'espai usa la versió esperada.
-- Garantir que les preguntes d'una versió amb respostes no s'editen.
+- Bloquejar inicialment l'edicio de versions assignades a espais i exigir una
+  confirmacio explícita abans de corregir-les.
+- Crear noves versions a partir d'una versio existent quan calgui fer canvis
+  estructurals sobre un qüestionari que ja té respostes.
+
+Regla de correccions:
+
+- Una versio sense `diagnostic_space` associat es pot editar directament.
+- Si una versio ja està assignada a un espai, la UI exigeix prémer `Editar` i
+  acceptar un avís abans de desar.
+- Si una versio està activa o ja té respostes, només es poden corregir títols i
+  textos existents. Els canvis d'estructura requereixen una nova versio
+  inactiva.
+- Activar una versio només afecta els nous espais que es crein a partir
+  d'aquell moment; els espais existents mantenen el seu `questionnaire_id`.
+
+### `lib/admin`
+
+Responsabilitats:
+
+- Validar que l'usuari OAuth autenticat és administrador actiu.
+- Encapsular operacions server-side de gestio de versions, blocs, preguntes i
+  administradors.
+- Evitar que components client importin el client Supabase amb `service_role`.
+- Retornar només metadades de qüestionari i administracio, mai files
+  individuals de `submissions` o `answers`.
 
 ### `lib/aggregation`
 
@@ -126,6 +162,129 @@ Responsabilitats:
 
 ## Endpoints
 
+Nota d'implementacio: la UI d'administracio pot executar mutacions amb server
+actions de Next.js sempre que mantinguin les mateixes garanties que els Route
+Handlers: validacio server-side, comprovacio d'administrador actiu i ús exclusiu
+del client Supabase amb `service_role` al servidor. Els endpoints
+`app/api/admin/**` només són necessaris si cal exposar una API HTTP interna
+separada de la pantalla `/admin`.
+
+### `/admin`
+
+Pantalla d'entrada a l'administracio.
+
+Flux:
+
+1. Si no hi ha sessió OAuth, mostrar accés amb Google.
+2. Després del callback OAuth, validar que l'usuari és `@xtec.cat`.
+3. Si `admin_users` és buida, crear aquest usuari com a primer administrador
+   dins una operacio atòmica server-side i permetre l'accés.
+4. Si `admin_users` no és buida, permetre l'accés només si l'usuari té una fila
+   activa a `admin_users`.
+5. Si l'usuari no és administrador actiu, mostrar accés denegat sense revelar
+   metadades d'altres administradors.
+
+El bootstrap inicial ha d'estar separat de la creació d'espais de diagnosi.
+Crear un espai no concedeix permisos d'administracio.
+
+La pantalla `/admin` implementada separa la gestio en dues vistes de menú:
+
+- gestio de qüestionaris;
+- gestio d'usuaris administradors.
+
+La vista de gestio de qüestionaris mostra:
+
+- llista de versions amb estat actiu, nombre de blocs, preguntes, espais i
+  submissions;
+- formulari únic per crear una versio en blanc o copiar una versio existent;
+- editor de blocs i preguntes amb creacio i eliminacio d'elements;
+- avís i confirmacio abans d'editar versions assignades a espais;
+- activacio d'una versio completa amb confirmacio.
+- eliminacio destructiva d'una versio no activa amb avís i confirmacio
+  explícita.
+
+La vista de gestio d'usuaris mostra la gestio d'administradors per
+`auth.users.id`. Per fer la seleccio usable, el servidor pot consultar
+Supabase Auth Admin amb `service_role`, cercar comptes XTEC per nom, cognoms o
+correu i retornar només els camps necessaris per triar l'administrador. La taula
+`admin_users` continua desant només l'identificador d'Auth i metadades de rol.
+
+### Server action o `POST /api/admin/questionnaires`
+
+Entrada: dades estrictament validades per crear una nova versio o clonar una
+versio existent.
+
+Flux:
+
+1. Validar sessió OAuth.
+2. Validar que l'usuari és administrador actiu.
+3. Crear la nova fila de `questionnaires`.
+4. Validar que el títol no dupliqui cap versio existent.
+5. Crear blocs i preguntes associats dins una operacio transaccional quan es
+   copia una versio existent.
+6. Retornar només metadades de la versio creada.
+
+### Server action o `PATCH /api/admin/questionnaires/[id]`
+
+Entrada: canvis de títol, blocs o preguntes tancades.
+
+Flux:
+
+1. Validar sessió OAuth i rol administrador.
+2. Comprovar si la versio està assignada a algun `diagnostic_space`.
+3. Si no està assignada a cap espai, permetre correccions in-place.
+4. Si ja està assignada a un espai, exigir confirmacio explícita.
+5. Si està activa o ja té respostes, permetre només correccions de títols i
+   textos mantenint la mateixa estructura de blocs i preguntes.
+
+El desat pot deixar una versio sense respostes com a esborrany parcial, fins a
+un màxim de 10 blocs i 10 preguntes per bloc. En afegir un bloc nou, la UI
+afegeix una pregunta inicial. La validacio d'estructura activable es fa en
+l'activacio, no en cada desat.
+
+### Server action o `POST /api/admin/questionnaires/[id]/activate`
+
+Entrada: sense cos o cos buit estrictament validat.
+
+Flux:
+
+1. Validar sessió OAuth i rol administrador.
+2. Validar que la versio té entre 1 i 10 blocs, entre 1 i 10 preguntes per
+   bloc i escala `0`, `1`, `2`.
+3. Desactivar la versio activa anterior i activar la versio indicada dins una
+   operacio transaccional.
+4. No modificar cap `diagnostic_space` existent.
+
+### Server action o `POST /api/admin/questionnaires/[id]/delete`
+
+Entrada: identificador de versio no activa i confirmacio explícita
+d'eliminacio.
+
+Flux:
+
+1. Validar sessió OAuth i rol administrador.
+2. Exigir confirmacio explícita al formulari i avís de navegador.
+3. Rebutjar versions actives.
+4. Cridar una RPC server-only que elimina, en aquest ordre, `answers`,
+   `submissions`, `diagnostic_spaces`, `questions`, `question_blocks` i
+   `questionnaires` de la versio.
+5. No retornar files individuals ni cossos de respostes.
+
+### Server action o `POST /api/admin/admins`
+
+Entrada: identificador d'usuari Supabase Auth seleccionat des d'una cerca
+server-side d'usuaris Auth o introduit manualment.
+
+Flux:
+
+1. Validar sessió OAuth i rol administrador.
+2. Cercar usuaris Auth només al servidor si cal mostrar candidats.
+3. Crear o activar l'administrador guardant només `auth.users.id`.
+4. Retornar metadades mínimes de gestio.
+
+No s'ha de desar ni mostrar informació de participants en cap endpoint
+d'administracio.
+
 ### `POST /api/spaces`
 
 Entrada: cos buit o opcions futures estrictament validades.
@@ -137,7 +296,8 @@ Flux:
 2. Generar token privat.
 3. Calcular HMAC del token.
 4. Xifrar el token privat per recuperar-lo des de la gestio del creador.
-5. Inserir `diagnostic_spaces` amb `owner_user_id`.
+5. Inserir `diagnostic_spaces` amb `owner_user_id` i el `questionnaire_id` de
+   la versio activa en aquell moment.
 5. Si hi ha col·lisió unique de codi públic, regenerar i reintentar.
 6. Retornar enllaços públic i privat.
 
@@ -187,9 +347,12 @@ Validacions:
 
 - L'espai existeix.
 - L'espai està actiu.
-- La versió coincideix amb l'espai.
+- La versió coincideix amb la versio assignada a l'espai quan es va crear.
+- La versio assignada a l'espai no ha de continuar sent la versio activa; els
+  espais existents poden seguir rebent submissions amb la seva versio original.
 - L'espai encara no ha arribat a 300 submissions.
-- Hi ha exactament 20 respostes.
+- Hi ha exactament una resposta per cada pregunta de la versio assignada a
+  l'espai.
 - No hi ha preguntes duplicades.
 - Totes les preguntes pertanyen a la versió.
 - Tots els valors són `0`, `1` o `2`.

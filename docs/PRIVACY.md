@@ -25,6 +25,7 @@ Tambe queda prohibit crear una taula `centres`.
 Només es preveuen:
 
 - Identificador d'usuari autenticat del creador XTEC (`owner_user_id`).
+- Identificador d'usuari autenticat dels administradors autoritzats.
 - Codi públic anònim de l'espai.
 - Hash o HMAC del token privat.
 - Token privat xifrat per poder reconstruir l'enllaç compartit al creador autenticat.
@@ -35,6 +36,37 @@ Només es preveuen:
 - Timestamps tècnics agregables, no visibles al tauler ni al PDF.
 
 Nota: els timestamps de `submissions` poden ser útils per integritat i manteniment, però no s'han de mostrar ni exportar. Si es considera que augmenten massa el risc de reidentificació en espais petits, es poden ometre o truncar en una revisió de privacitat.
+
+## Administracio
+
+Els administradors només poden gestionar l'estructura del qüestionari versionat
+i altres administradors. La seva autoritzacio es basa en el seu identificador
+de Supabase Auth i s'ha de mantenir separada de les submissions anònimes.
+
+La pantalla d'administracio pot mostrar nom, cognoms i correu dels comptes
+administradors o candidats a administrador llegint-los server-side de Supabase
+Auth. Aquesta visualitzacio és només per identificar a qui es concedeixen
+permisos; l'aplicacio no ha de copiar aquests camps a `admin_users` ni
+barrejar-los amb respostes.
+
+L'administracio no pot:
+
+- veure files individuals de `submissions` o `answers`;
+- exportar respostes individuals;
+- filtrar resultats per atributs que identifiquin centres o persones;
+- crear respostes obertes;
+- afegir camps de centre, persona, email, IP, dispositiu o user agent.
+
+Les correccions menors del qüestionari es poden aplicar directament sobre una
+versio assignada només després d'un avís explícit a l'administrador. Quan una
+versio està activa o ja té respostes, les correccions directes només poden
+canviar títols i textos existents; no poden eliminar ni afegir preguntes perquè
+això podria alterar el formulari vigent o el significat de respostes ja
+recollides. Els canvis estructurals han de crear una nova versio.
+
+L'eliminacio d'una versio no activa de qüestionari pot eliminar també espais i
+respostes anònimes associades, però no ha de mostrar, exportar ni retornar files
+individuals abans d'esborrar-les. Les versions actives no es poden eliminar.
 
 ## Token privat
 
@@ -110,6 +142,12 @@ El client públic de Supabase, si existeix, no ha de poder llegir ni escriure di
 La inserció de respostes es fa amb una RPC server-only. Els rols `anon` i `authenticated` no tenen permís d'execució sobre aquesta funció; només el servidor amb `service_role` pot cridar-la.
 
 La gestio d'espais del creador es fa també amb rutes server-side. Tot i que existeixi Supabase Auth, el navegador no ha de llegir directament `diagnostic_spaces`, perquè aquesta taula conté hash i token xifrat.
+
+La gestio d'administracio també s'ha de fer amb rutes server-side o funcions de
+servidor. Les polítiques RLS per a administradors només poden habilitar
+metadades necessaries del qüestionari i de la taula d'administradors; no han de
+donar lectura directa a `diagnostic_spaces`, `submissions` ni `answers` des del
+navegador.
 
 ## Bloqueig local de resposta repetida
 

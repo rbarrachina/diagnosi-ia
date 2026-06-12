@@ -22,7 +22,77 @@ L'aplicació no desa ni mostra el nom del centre. Tampoc avalua docents individu
 - Respostes obertes.
 - Exportacio de dades individuals.
 - Comparatives públiques entre centres.
-- Panell d'administracio global.
+
+## Administracio del qüestionari
+
+L'aplicació inclou una administracio global limitada al manteniment del
+qüestionari versionat i dels comptes administradors. Aquesta administracio no
+pot accedir a respostes individuals, no pot identificar centres i no pot crear
+filtres o exportacions que facilitin la reidentificacio de persones.
+
+Funcionalitats previstes:
+
+- gestionar blocs de preguntes;
+- gestionar preguntes tancades;
+- crear noves versions del qüestionari;
+- activar una versio concreta;
+- eliminar una versio no activa del qüestionari amb tots els espais i respostes
+  associats després d'un avís explícit;
+- aplicar correccions menors sobre una versio només quan encara no estigui
+  assignada a cap espai de diagnosi;
+- gestionar administradors.
+
+La gestio d'administradors permet cercar comptes XTEC existents per nom,
+cognoms o correu i seleccionar quin usuari rep permisos. La pantalla pot
+mostrar nom, cognoms i correu llegits server-side de Supabase Auth per facilitar
+la identificacio de l'administrador, però aquestes dades no es copien a
+`admin_users`.
+
+Eliminar un administrador només elimina el rol d'administracio de `admin_users`;
+no elimina ni modifica el compte de Supabase Auth de la persona.
+
+Les versions noves es creen des d'un únic formulari on l'administrador tria si
+vol començar amb un qüestionari en blanc o copiar una versio existent. El títol
+sempre és obligatori i ha de ser diferent dels títols existents. Les versions
+sense espais de diagnosi assignats poden desar-se com a esborrany parcial durant
+l'edició: l'administrador pot afegir o eliminar blocs i pot afegir o eliminar
+preguntes dins de cada bloc. En afegir un bloc nou, l'editor crea també una
+pregunta inicial. Cada versio pot tenir entre 1 i 10 blocs, i cada bloc pot
+tenir entre 1 i 10 preguntes. L'activació exigeix que tots els blocs tinguin
+almenys una pregunta.
+
+### Acces inicial d'administracio
+
+El primer administrador és el primer usuari autenticat amb compte `@xtec.cat`
+que accedeix a la pantalla d'administracio quan encara no existeix cap fila a
+`admin_users`.
+
+Un cop existeix almenys un administrador, cap altre usuari pot accedir a
+l'administracio pel simple fet de tenir un compte XTEC. Els nous
+administradors només poden ser afegits o reactivats per un administrador actiu.
+
+Aquest bootstrap inicial no s'ha de barrejar amb la creació d'espais de
+diagnosi. Crear un qüestionari o un espai no concedeix permisos
+d'administracio.
+
+### Regla de correccions menors
+
+Una versio del qüestionari sense espais assignats es pot corregir directament.
+
+Quan una versio ja està assignada a un espai, l'editor la mostra bloquejada per
+defecte. Un administrador pot prémer `Editar` i acceptar un avís explícit abans
+de modificar-la. Si la versio està activa o ja té respostes, només es poden
+corregir títols i textos existents; no es poden eliminar ni afegir blocs o
+preguntes. Les versions inactives sense respostes poden modificar estructura.
+
+L'activacio d'una nova versio no modifica respostes existents, no reassigna
+respostes a preguntes noves i no altera els resultats dels espais anteriors.
+
+Eliminar una versio no activa és una accio destructiva d'administracio. Després
+de confirmar l'avís, s'elimina la versio i totes les seves instàncies d'espai,
+respostes, blocs i preguntes. Les versions actives no mostren el botó
+d'eliminacio i la base de dades també rebutja eliminar-les. Aquesta accio no ha
+de retornar ni exportar files individuals abans d'eliminar-les.
 
 ## Fluxos principals
 
@@ -73,7 +143,8 @@ El formulari ha de mostrar:
 - Resultats només de conjunt.
 - Indicacio que cal respondre una sola vegada.
 
-El docent respon 20 preguntes obligatories amb escala:
+El docent respon totes les preguntes obligatories de la versio assignada a
+l'espai, amb escala:
 
 - `0`: Encara no
 - `1`: Parcialment
@@ -147,7 +218,7 @@ Versió inicial: `2026.1`
 
 Versió activa corregida: `2026.2`
 
-Estructura:
+Estructura inicial:
 
 - 5 blocs.
 - 4 preguntes per bloc.
@@ -163,7 +234,10 @@ Blocs:
 4. Avaluacio i retroacció
 5. Dades, seguretat i criteris compartits
 
-Les preguntes concretes s'han de carregar amb migració o `seed.sql`. Una versió amb respostes no es pot editar; qualsevol canvi crea una nova versió.
+Les preguntes concretes s'han de carregar amb migració o `seed.sql`. Una versió
+activa o amb respostes només admet correccions de títols i textos existents
+després d'acceptar l'avís d'edició quan correspongui; qualsevol canvi
+d'estructura crea una nova versió.
 
 ## Textos funcionals recomanats
 

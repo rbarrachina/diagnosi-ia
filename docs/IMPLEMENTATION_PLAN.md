@@ -9,6 +9,8 @@ El pla està dividit en fases petites i verificables. No s'hauria de començar u
 - Fase 3 implementada en aquest canvi: criptografia, creació d'espais, formulari públic i submissions atomiques.
 - Fase 4 implementada en aquest canvi: resultats de conjunt, validació de token de resultats, gràfiques web i PDF.
 - Gestio de creador implementada: un únic espai per usuari autenticat, recuperació d'enllaç privat i reinici d'espai amb rotació d'enllaços.
+- Nova fase prevista: administracio global del qüestionari versionat i dels
+  administradors.
 - Fora d'abast actual: rate limiting, anti-bots, retenció de dades i tancament d'espais.
 
 ## Fase 0: Validacio documental
@@ -47,6 +49,14 @@ Riscos o decisions pendents:
 - Aprovar el llindar d'avís de poques respostes.
 - Decidir `zod` o validació manual.
 - Decidir RPC SQL o connexió `pg` per transaccions.
+- Administracio aprovada com a nou abast: només pot gestionar qüestionaris i
+  administradors, no respostes individuals.
+- Regla aprovada per correccions menors: una versio assignada a espais es pot
+  editar només després d'un avís i confirmacio explícita. Si està activa o ja té
+  respostes, només es poden corregir títols i textos mantenint l'estructura.
+- Els esborranys sense espais assignats poden tenir estructura parcial durant
+  l'edició; poden arribar a 10 blocs i 10 preguntes per bloc, i l'activacio
+  exigeix almenys 1 bloc amb almenys 1 pregunta per bloc.
 
 ## Fase 1: Bootstrap tècnic
 
@@ -112,7 +122,7 @@ Proves:
 Riscos o decisions pendents:
 
 - Definir el text definitiu de les 20 preguntes.
-- Decidir com impedir tècnicament l'edició de versions amb respostes.
+- Decidir quan una correccio sobre versions assignades requereix nova versio.
 
 ## Fase 3: Criptografia i validació
 
@@ -207,8 +217,9 @@ Fitxers:
 Criteris d'acceptacio:
 
 - El formulari mostra els avisos d'anonimat i tractament de les dades en conjunt.
-- Totes les 20 preguntes són obligatories.
-- El servidor valida exactament 20 respostes.
+- Totes les preguntes de la versio assignada són obligatories.
+- El servidor valida exactament una resposta per cada pregunta de la versio
+  assignada.
 - El servidor rebutja duplicats, valors fora de rang i camps inesperats.
 - L'espai ha d'existir i estar actiu.
 - L'espai no pot superar 300 submissions completes.
@@ -342,6 +353,100 @@ Riscos o decisions pendents:
 - Monitoratge sense dades personals.
 - Politica de retenció.
 - Procediment d'esborrat d'espais.
+
+## Fase 8A: Administracio del qüestionari
+
+Objectiu:
+
+- Afegir una administracio global per gestionar versions, blocs, preguntes i
+  administradors sense exposar respostes individuals ni dades identificatives.
+
+Fitxers:
+
+- `docs/PRODUCT_SPEC.md`
+- `docs/ARCHITECTURE.md`
+- `docs/PRIVACY.md`
+- `docs/DATABASE_SCHEMA.md`
+- `docs/IMPLEMENTATION_PLAN.md`
+- `supabase/migrations/*_add_questionnaire_admin.sql`
+- `app/admin/**`
+- `app/api/admin/**` si cal una API HTTP separada de la UI
+- `lib/admin/**`
+- `lib/questionnaire/**`
+- `lib/validation/schemas.ts`
+- `tests/admin*.test.ts`
+- `tests/questionnaire*.test.ts`
+
+Criteris d'acceptacio:
+
+- Existeix una autoritzacio explicita d'administradors separada dels creadors
+  d'espais.
+- L'accés d'administracio requereix OAuth i usuari administrador actiu.
+- Es poden crear noves versions del qüestionari.
+- La creació de versio usa un únic formulari amb opcio d'esborrany en blanc o
+  copia d'una versio existent.
+- El títol de cada versio és obligatori i únic.
+- Es poden gestionar blocs i preguntes tancades fins a 10 blocs i 10 preguntes
+  per bloc, mantenint valors `0`, `1`, `2`.
+- Es pot activar una versio concreta i només una versio queda activa.
+- Es pot eliminar una versio no activa amb avís i confirmacio explícita; això
+  elimina també espais, respostes, blocs i preguntes associats.
+- Les correccions in-place sobre versions assignades exigeixen un avís i una
+  confirmacio explícita.
+- Si una versio està activa o ja té respostes, l'API rebutja canvis d'estructura
+  i només permet corregir títols i textos existents.
+- L'activacio d'una nova versio no modifica els espais ja creats ni les
+  submissions existents.
+- Cap endpoint d'administracio retorna files individuals de `submissions` o
+  `answers`.
+- Si la UI usa server actions en comptes de Route Handlers, les accions han de
+  validar sessio, rol i payload al servidor amb les mateixes garanties.
+- No es desa ni es mostra cap nom de centre, codi de centre, nom de docent,
+  email de participant, IP, user agent ni informació de dispositiu.
+
+Proves:
+
+- `npm run lint`
+- `npm test`
+- `npm run typecheck`
+- `npm run build`
+- Tests de migració per RLS i permisos d'administrador.
+- Tests de validació per crear versions, editar versions sense espais assignats,
+  exigir confirmacio en versions assignades i rebutjar canvis d'estructura quan
+  ja hi ha respostes.
+- Tests d'activacio per garantir una única versio activa.
+- Revisio manual del diff per comprovar que no s'exposen secrets ni dades
+  identificatives.
+
+Riscos o decisions pendents:
+
+- Bootstrap inicial definit: el primer usuari autenticat `@xtec.cat` que
+  accedeix correctament a `/admin` esdevé administrador si `admin_users` és
+  buida. La insercio s'ha de fer server-side i només ha de desar el seu
+  `auth.users.id`.
+- Crear un espai de diagnosi no concedeix permisos d'administracio.
+- El bootstrap automàtic del primer administrador ha de ser atòmic, amb RPC o
+  bloqueig transaccional, per evitar que dos primers logins simultanis a
+  `/admin` obtinguin el rol.
+- La gestio d'administradors queda limitada inicialment a `auth.users.id`. Si
+  cal mostrar correus, s'han de llegir server-side de Supabase Auth sense
+  duplicar-los a la base de dades de l'aplicacio.
+- Decidir si es vol conservar historial d'activacions de versions. Si es fa,
+  ha de ser historial de metadades, mai de respostes individuals.
+
+Estat parcial:
+
+- Implementada la taula `admin_users`.
+- Implementada lectura RLS de metadades per administradors actius.
+- Implementades RPCs server-only per bootstrap, crear esborranys, copiar
+  versions, reemplaçar contingut i activar versions.
+- Implementats serveis server-side `lib/admin/auth.ts`,
+  `lib/admin/questionnaires.ts` i `lib/admin/admin-users.ts`.
+- Implementada la ruta `/admin` amb llista de versions, editor de
+  blocs/preguntes, activacio amb confirmacio i gestio d'administradors per
+  `auth.users.id`.
+- Pendent: endpoints `app/api/admin/**` només si cal consumir aquestes
+  operacions fora de la UI.
 
 ## Fase 9: Desplegament
 

@@ -21,7 +21,7 @@ export function LogoutButton({ next = "/" }: LogoutButtonProps) {
   return (
     <form action={`/auth/logout?next=${encodeURIComponent(next)}`} method="post">
       <button
-        className="rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
+        className="inline-flex h-10 items-center rounded-md border border-line bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
         type="submit"
       >
         Tanca sessió

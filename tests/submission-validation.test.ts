@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
   EXPECTED_ANSWER_COUNT,
+  MAX_QUESTIONNAIRE_QUESTIONS,
   QUESTIONNAIRE_VERSION,
   submissionRequestSchema,
 } from "@/lib/validation/schemas";
@@ -21,8 +22,23 @@ function validPayload() {
 }
 
 describe("submission payload validation", () => {
-  it("accepts exactly 20 closed answers for the active questionnaire version", () => {
+  it("accepts closed answers for a questionnaire version", () => {
     expect(() => submissionRequestSchema.parse(validPayload())).not.toThrow();
+    expect(() =>
+      submissionRequestSchema.parse({
+        ...validPayload(),
+        questionnaireVersion: "2026.3",
+      }),
+    ).not.toThrow();
+    expect(() =>
+      submissionRequestSchema.parse({
+        ...validPayload(),
+        answers: Array.from({ length: MAX_QUESTIONNAIRE_QUESTIONS }, () => ({
+          questionId: randomUUID(),
+          value: 1,
+        })),
+      }),
+    ).not.toThrow();
   });
 
   it("rejects additional top-level fields and answer fields", () => {
@@ -42,11 +58,21 @@ describe("submission payload validation", () => {
     ).toThrow();
   });
 
-  it("rejects missing answers, duplicated questions, invalid values, and wrong versions", () => {
+  it("rejects empty answers, too many answers, duplicated questions, invalid values, and invalid versions", () => {
     expect(() =>
       submissionRequestSchema.parse({
         ...validPayload(),
-        answers: validAnswers().slice(1),
+        answers: [],
+      }),
+    ).toThrow();
+
+    expect(() =>
+      submissionRequestSchema.parse({
+        ...validPayload(),
+        answers: Array.from({ length: MAX_QUESTIONNAIRE_QUESTIONS + 1 }, () => ({
+          questionId: randomUUID(),
+          value: 1,
+        })),
       }),
     ).toThrow();
 
@@ -71,7 +97,7 @@ describe("submission payload validation", () => {
     expect(() =>
       submissionRequestSchema.parse({
         ...validPayload(),
-        questionnaireVersion: "2026.3",
+        questionnaireVersion: "v3",
       }),
     ).toThrow();
   });

@@ -1,6 +1,6 @@
 # Revisio de seguretat i privacitat
 
-Data de revisió: 2026-06-04.
+Data de revisió: 2026-06-11.
 
 ## Abast revisat
 
@@ -10,6 +10,7 @@ Data de revisió: 2026-06-04.
 - Consultes Supabase server-side.
 - RLS, grants i RPC de submissions.
 - Resultats de conjunt i PDF.
+- Administracio global del qüestionari.
 - Cerca de secrets i logs.
 
 ## Resultats de la revisió
@@ -22,6 +23,30 @@ No s'ha trobat cap endpoint que retorni files individuals de `submissions` o `an
 - `POST /api/reports/pdf` reutilitza la mateixa capa de resultats de conjunt i revalida el token.
 - El navegador no importa `@supabase/supabase-js` ni `createSupabaseAdminClient`.
 - Les consultes a `answers` i `submissions` només apareixen en moduls server-only.
+- L'administracio no té cap `app/api/admin/**` implementat actualment; la UI
+  `/admin` usa server actions i serveis server-only.
+- La UI d'administracio només mostra metadades de qüestionari:
+  versions, blocs, preguntes, estat actiu i recompte de respostes.
+- El recompte de respostes d'una versio es fa amb `select` amb
+  `{ count: "exact", head: true }`; no es retornen files individuals.
+- L'administracio no consulta `answers`.
+
+### Administracio i dades identificatives
+
+- No s'han afegit filtres per centre, persona, docent, dispositiu, IP o user
+  agent.
+- La gestio d'administradors usa `auth.users.id`. No es desa email a
+  `admin_users`.
+- La pantalla `/admin` pot mostrar el correu del compte OAuth autenticat actual
+  com a estat de sessio, pero no mostra dades de participants.
+- Les mutacions d'administracio validen sessio i rol al servidor abans de
+  cridar les RPCs o serveis amb `service_role`.
+- Les correccions sobre versions actives o amb respostes passen per la RPC
+  server-only `replace_questionnaire_content`, que exigeix confirmacio quan hi
+  ha espais assignats i preserva l'estructura de blocs i preguntes.
+- L'eliminacio destructiva d'una versio no activa passa per la RPC server-only
+  `delete_questionnaire_version`; elimina dades dependents sense retornar files
+  individuals al navegador i rebutja versions actives.
 
 ### Tokens privats
 
@@ -38,6 +63,8 @@ No s'ha trobat cap endpoint que retorni files individuals de `submissions` o `an
 - `.env.example` conté placeholders, no secrets reals.
 - `SUPABASE_SERVICE_ROLE_KEY` només s'utilitza a `lib/database/server.ts`, que importa `server-only`.
 - No s'han trobat claus reals en fitxers versionables.
+- Els errors d'administracio són genèrics i no inclouen tokens, secrets, rows
+  individuals, identificadors de submissions o dades de participants.
 
 ### Supabase
 
@@ -69,6 +96,13 @@ Els performance advisors mostren avisos `unused_index` de nivell INFO, esperable
 - S'han afegit proves per als límits i validació de cos de pèticio.
 - S'ha afegit `referrer: "no-referrer"` a `app/layout.tsx`.
 - S'han afegit capcaleres HTTP basiques a `next.config.ts`: `Referrer-Policy`, `X-Content-Type-Options`, `X-Frame-Options` i `Permissions-Policy`.
+- S'han afegit proves estàtiques d'administracio a
+  `tests/admin-privacy-review.test.ts` per detectar:
+  - endpoints admin que referencien `submissions` o `answers`;
+  - lectures directes d'`answers` o files de `submissions` des d'admin;
+  - formularis amb camps de centre, persona o participant;
+  - `console.*` en codi admin;
+  - secrets o tokens en codi i errors d'admin.
 
 ## Riscos pendents
 

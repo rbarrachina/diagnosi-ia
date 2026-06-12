@@ -7,7 +7,6 @@ import {
   buildSharedResultsUrl,
   generateResultsToken,
 } from "@/lib/results/results-token";
-import { QUESTIONNAIRE_VERSION } from "@/lib/validation/schemas";
 
 const MAX_PUBLIC_CODE_ATTEMPTS = 8;
 
@@ -49,7 +48,6 @@ export async function createDiagnosticSpace(
   const { data: questionnaire, error: questionnaireError } = await supabase
     .from("questionnaires")
     .select("id")
-    .eq("version", QUESTIONNAIRE_VERSION)
     .eq("is_active", true)
     .single<{ id: string }>();
 

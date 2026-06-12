@@ -16,7 +16,12 @@ Aquest repositori té implementades les primeres fases:
 - Fase 4: tauler privat de resultats de conjunt, gràfiques web i informe PDF server-side.
 - Fase 5: autenticació OAuth amb Google/Supabase Auth per a creadors XTEC i gestió dels espais propis.
 
-Encara no estan implementats l'enduriment de rate limiting, protecció anti-bots, política de retenció i tancament d'espais.
+Fase prevista següent:
+
+- Administració global del qüestionari versionat i dels administradors, sense
+  accés a respostes individuals.
+
+Encara no estan implementats l'administració global, l'enduriment de rate limiting, protecció anti-bots, política de retenció i tancament d'espais.
 
 Abans d'implementar funcionalitat, cal mantenir com a referència:
 

@@ -13,6 +13,13 @@ const submissionLimitMigration = readFileSync(
   ),
   "utf8",
 );
+const expandedLimitsMigration = readFileSync(
+  join(
+    process.cwd(),
+    "supabase/migrations/20260611220000_expand_questionnaire_admin_limits.sql",
+  ),
+  "utf8",
+);
 
 describe("submission RPC migration", () => {
   it("keeps direct browser roles from executing the insertion RPC", () => {
@@ -27,12 +34,15 @@ describe("submission RPC migration", () => {
     );
   });
 
-  it("enforces the fixed questionnaire shape in the database", () => {
-    expect(migration).toContain("answer_count <> 20");
-    expect(migration).toContain("answer_key.key not in ('questionId', 'value')");
-    expect(migration).toContain("(answer_item.answer ->> 'value') not in ('0', '1', '2')");
-    expect(migration).toContain("duplicate_question_count <> 0");
-    expect(migration).toContain("matched_question_count <> 20");
+  it("enforces complete answers for the assigned questionnaire shape in the database", () => {
+    expect(expandedLimitsMigration).toContain("target_question_count integer");
+    expect(expandedLimitsMigration).toContain("answer_count <> target_question_count");
+    expect(expandedLimitsMigration).toContain("answer_key.key not in ('questionId', 'value')");
+    expect(expandedLimitsMigration).toContain(
+      "(answer_item.answer ->> 'value') not in ('0', '1', '2')",
+    );
+    expect(expandedLimitsMigration).toContain("duplicate_question_count <> 0");
+    expect(expandedLimitsMigration).toContain("matched_question_count <> target_question_count");
   });
 
   it("limits each diagnostic space to 300 submissions", () => {

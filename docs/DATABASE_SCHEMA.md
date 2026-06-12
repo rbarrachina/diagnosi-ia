@@ -4,6 +4,10 @@ Base de dades prevista: PostgreSQL a Supabase.
 
 La taula principal d'espais s'anomena `diagnostic_spaces`. No ha d'existir cap taula `centres`.
 
+L'administracio global del qüestionari requereix una extensio controlada de
+l'esquema. Aquesta extensio no pot afegir dades identificatives de centres o
+participants i no pot donar accés directe a respostes individuals.
+
 Implementacio actual:
 
 - Migracio: `supabase/migrations/20260604130000_initial_schema.sql`
@@ -17,6 +21,10 @@ Implementacio actual:
 - Propietari OAuth i tokens de resultats: `supabase/migrations/20260609143524_add_auth_ownership_and_results_tokens.sql`
 - Espai únic per creador i RPC de reinici: `supabase/migrations/20260609162000_add_single_owner_space_reset_rpc.sql`
 - Límit de 300 submissions per espai: `supabase/migrations/20260610140500_limit_submissions_per_space.sql`
+- Administradors globals: `supabase/migrations/20260611183000_add_admin_users.sql`
+- RLS de lectura per administradors: `supabase/migrations/20260611184500_add_admin_read_rls_policies.sql`
+- RPCs server-only d'administracio: `supabase/migrations/20260611190000_add_admin_service_rpcs.sql`
+- Submissions per versio assignada a l'espai: `supabase/migrations/20260611193000_allow_submissions_for_space_questionnaire_version.sql`
 - Seed: `supabase/seed.sql`
 - Configuracio manual: `docs/SUPABASE_SETUP.md`
 
@@ -68,7 +76,7 @@ Restriccions:
 - `id` amb format de 2 digits (`01`, `02`, ...), scoped per `questionnaire_id`.
 - `primary key (id, questionnaire_id)`
 - `unique (questionnaire_id, position)`
-- `position between 1 and 5`
+- `position between 1 and 10`
 
 ### `questions`
 
@@ -90,14 +98,32 @@ Restriccions:
 - `unique (questionnaire_id, position)`
 - `unique (questionnaire_id, block_id, block_position)`
 - `foreign key (block_id, questionnaire_id) references question_blocks(id, questionnaire_id)`
-- `position between 1 and 20`
-- `block_position between 1 and 4`
+- `position between 1 and 100`
+- `block_position between 1 and 10`
 - `scale_min = 0`
 - `scale_max = 2`
 
 La migració usa claus foranes compostes per garantir que bloc, pregunta, submission i resposta pertanyen a la mateixa versió del qüestionari.
 
-El seed inclou una validació que garanteix 5 blocs, 20 preguntes i 4 preguntes per bloc per a la versió activa.
+El seed inicial inclou una validació que garanteix 5 blocs, 20 preguntes i
+4 preguntes per bloc per a la versió activa inicial.
+
+Regla d'edicio:
+
+- Si una versio no està assignada a cap `diagnostic_space`, els administradors
+  poden aplicar correccions menors sobre `questionnaires`, `question_blocks` i
+  `questions`, incloent crear o eliminar blocs i preguntes mentre la versio
+  encara és un esborrany.
+- Si una versio ja està assignada a un `diagnostic_space`, l'edicio requereix
+  confirmacio explícita des de l'administracio.
+- Si una versio està activa o ja té respostes, només es poden corregir títols i
+  textos existents; no es poden eliminar ni afegir blocs o preguntes in-place.
+- Només una versio ha d'estar activa a la vegada.
+- Activar una nova versio no actualitza `diagnostic_spaces.questionnaire_id`
+  dels espais ja creats.
+- El desat de contingut admet esborranys parcials amb com a màxim 10 blocs i
+  10 preguntes per bloc. L'activacio exigeix almenys 1 bloc i almenys
+  1 pregunta per bloc.
 
 ### `diagnostic_spaces`
 
@@ -174,6 +200,34 @@ Indexos:
 - `index answers_question_id_idx on answers(question_id)`
 - `index answers_submission_id_idx on answers(submission_id)`
 
+### `admin_users`
+
+Autoritza l'administracio global server-side.
+
+Columnes proposades:
+
+- `user_id uuid primary key references auth.users(id) on delete cascade`
+- `role text not null default 'admin'`
+- `is_active boolean not null default true`
+- `created_at timestamptz not null default now()`
+- `created_by uuid references auth.users(id) on delete set null`
+
+Restriccions:
+
+- `role in ('admin')` inicialment.
+- No desar noms, cognoms, emails ni cap dada de participants.
+- La gestio d'administradors ha d'identificar usuaris pel seu `auth.users.id`.
+  Si cal mostrar correus d'administradors, s'han d'obtenir server-side des de
+  Supabase Auth i no copiar-los a la base de dades de l'aplicació.
+
+RLS i permisos:
+
+- RLS activat i forçat.
+- `authenticated` només pot fer `select` si `current_user_is_admin()` és cert.
+- `anon` no té grants.
+- `service_role` pot consultar, inserir, actualitzar i eliminar files.
+- Les altes, baixes i reactivacions d'administradors s'han de fer server-side.
+
 ## RLS
 
 Activar RLS:
@@ -185,6 +239,7 @@ alter table questions enable row level security;
 alter table diagnostic_spaces enable row level security;
 alter table submissions enable row level security;
 alter table answers enable row level security;
+alter table admin_users enable row level security;
 ```
 
 No crear polítiques públiques de lectura per a:
@@ -192,6 +247,49 @@ No crear polítiques públiques de lectura per a:
 - `diagnostic_spaces`
 - `submissions`
 - `answers`
+
+Per a l'administracio:
+
+- `admin_users` ha de tenir RLS activat.
+- Els administradors poden consultar directament només metadades necessaries de
+  `questionnaires`, `question_blocks`, `questions` i `admin_users`.
+- Aquesta lectura directa requereix rol `authenticated` i una fila activa a
+  `admin_users`.
+- Els rols de navegador no tenen grants directes d'`insert`, `update` ni
+  `delete` sobre aquestes taules.
+- El navegador no ha de tenir accés directe a `diagnostic_spaces`,
+  `submissions` ni `answers`, encara que l'usuari sigui administrador.
+- Les operacions que creen versions, activen versions o comproven submissions
+  s'han de fer server-side amb validacio estricta i, quan afecten diverses
+  taules, dins una RPC o transacció.
+
+RPCs server-only:
+
+- `public.bootstrap_first_admin(uuid)`: crea el primer administrador de manera
+  atòmica quan `admin_users` és buida.
+- `public.create_questionnaire_draft(text, text)`: crea una nova versio
+  inactiva sense blocs ni preguntes.
+- `public.copy_questionnaire_version(text, text, text)`: copia blocs i
+  preguntes d'una versio existent a una nova versio inactiva.
+- `public.replace_questionnaire_content(text, text, jsonb, boolean)`:
+  reemplaça o corregeix títol, blocs i preguntes. La versio amb espais assignats
+  requereix confirmacio. Si està activa o ja té respostes, només s'actualitzen
+  títols i textos mantenint la mateixa estructura.
+- `public.activate_questionnaire_version(text)`: activa una versio completa i
+  desactiva la resta sense modificar espais existents.
+- `public.delete_questionnaire_version(text)`: elimina una versio no activa i
+  totes les dades dependents en ordre (`answers`, `submissions`,
+  `diagnostic_spaces`, `questions`, `question_blocks`, `questionnaires`). És
+  destructiva i només pot ser cridada pel servidor després d'una confirmacio
+  explícita.
+
+Totes aquestes RPCs revoquen execucio a `anon` i `authenticated` i només poden
+ser cridades pel servidor amb `service_role`.
+
+Índexs d'administracio:
+
+- `questionnaires_title_unique_idx` garanteix que no es puguin crear dues
+  versions amb el mateix títol després de normalitzar espais i majúscules.
 
 Opcions per a qüestionari públic:
 
@@ -207,8 +305,13 @@ Supabase JS no ofereix una transacció SQL multisentència arbitrària des del c
 - Funció SQL RPC `public.create_submission_with_answers(text, text, jsonb)`.
 - Execucio només des del servidor amb `service_role`.
 - Revocacio d'`execute` per a `anon` i `authenticated`.
-- Validacio de forma del payload, 20 respostes exactes, camps permesos, duplicats, valors `0`, `1`, `2` i pertinença de preguntes al qüestionari.
+- Validacio de forma del payload, una resposta per cada pregunta de la versio,
+  camps permesos, duplicats, valors `0`, `1`, `2` i pertinença de preguntes al
+  qüestionari.
 - Validacio que l'espai no supera 300 submissions completes.
+- Validacio que la versio enviada coincideix amb la versio del qüestionari
+  assignada a l'espai. Aquesta versio pot haver deixat de ser activa després de
+  crear l'espai.
 - Inserció de `submissions` i `answers` en una única transacció de PostgreSQL.
 
 La RPC bloqueja la fila de `diagnostic_spaces` amb `FOR UPDATE` abans de comptar
@@ -258,7 +361,10 @@ El fitxer `supabase/seed.sql` ha d'inserir:
 - 5 blocs
 - 20 preguntes
 
-Les preguntes d'una versió amb respostes no s'han d'editar. Els canvis futurs creen una nova fila a `questionnaires` i noves files de blocs i preguntes.
+Les preguntes d'una versió assignada a un espai de diagnosi només s'han
+d'editar després d'una confirmacio explícita. Si la versio ja té respostes, les
+correccions in-place han de preservar els identificadors i l'estructura de les
+preguntes existents.
 
 ## Migracio inicial orientativa
 
@@ -276,7 +382,7 @@ create table questionnaires (
 create table question_blocks (
   id text not null check (id ~ '^[0-9]{2}$'),
   questionnaire_id text not null references questionnaires(id) on delete restrict,
-  position integer not null check (position between 1 and 5),
+  position integer not null check (position between 1 and 10),
   title text not null,
   primary key (id, questionnaire_id),
   unique (questionnaire_id, position)
@@ -286,8 +392,8 @@ create table questions (
   id uuid primary key default gen_random_uuid(),
   questionnaire_id text not null references questionnaires(id) on delete restrict,
   block_id text not null,
-  position integer not null check (position between 1 and 20),
-  block_position integer not null check (block_position between 1 and 4),
+  position integer not null check (position between 1 and 100),
+  block_position integer not null check (block_position between 1 and 10),
   text text not null,
   scale_min integer not null default 0 check (scale_min = 0),
   scale_max integer not null default 2 check (scale_max = 2),
