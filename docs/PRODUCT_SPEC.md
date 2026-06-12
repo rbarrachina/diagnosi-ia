@@ -110,10 +110,17 @@ Resultat mostrat després de crear l'espai i recuperable des de la gestio del cr
 - Enllaç públic: `/q/[publicCode]`
 - Enllaç privat compartit: `/resultats/compartit/[publicCode]#token=[privateToken]`
 - Enllaç de resultats del creador: `/espais/[publicCode]/resultats`
+- Previsualització del qüestionari en mode lectura:
+  `/espais/[publicCode]/questionari`
 
 El token privat es desa com HMAC per validar-lo i xifrat per poder reconstruir l'enllaç per al creador autenticat. No es desa mai en text pla.
 
 Si l'usuari ja té un espai creat, no pot crear-ne un segon. La mateixa pantalla `/crear` mostra els enllaços, el nombre agregat de respostes, l'accés als resultats, la regeneració de l'enllaç privat i el reinici del qüestionari.
+
+La gestio del creador també ofereix un botó per veure el qüestionari assignat a
+l'espai en mode lectura. Aquesta previsualització exigeix sessió XTEC i
+propietat de l'espai, mostra un avís clar que no es pot respondre i no inclou
+cap botó d'enviament.
 
 La regeneració de l'enllaç privat es mostra al costat de l'enllaç privat compartit i demana confirmació abans d'invalidar l'enllaç anterior.
 

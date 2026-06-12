@@ -37,6 +37,7 @@ export type OwnerDiagnosticSpace = {
   createdAt: string;
   publicUrl: string;
   ownerResultsUrl: string;
+  questionnairePreviewUrl: string;
   sharedResultsUrl: string | null;
   resultsTokenEnabled: boolean;
   totalSubmissions: number;
@@ -48,6 +49,7 @@ export type ResetOwnerDiagnosticSpaceResult = {
   questionnaireVersion: string;
   publicUrl: string;
   ownerResultsUrl: string;
+  questionnairePreviewUrl: string;
   sharedResultsUrl: string;
   totalSubmissions: number;
 };
@@ -67,6 +69,7 @@ function mapOwnerSpace(
     createdAt: row.created_at,
     publicUrl: `${appUrl}/q/${row.public_code}`,
     ownerResultsUrl: buildOwnerResultsUrl(appUrl, row.public_code),
+    questionnairePreviewUrl: `${appUrl}/espais/${row.public_code}/questionari`,
     sharedResultsUrl: token ? buildSharedResultsUrl(appUrl, row.public_code, token) : null,
     resultsTokenEnabled: row.results_token_enabled,
     totalSubmissions,
@@ -220,6 +223,7 @@ export async function resetOwnerDiagnosticSpace(params: {
         questionnaireVersion: resetSpace.questionnaires.version,
         publicUrl: `${params.appUrl}/q/${resetSpace.public_code}`,
         ownerResultsUrl: buildOwnerResultsUrl(params.appUrl, resetSpace.public_code),
+        questionnairePreviewUrl: `${params.appUrl}/espais/${resetSpace.public_code}/questionari`,
         sharedResultsUrl: buildSharedResultsUrl(
           params.appUrl,
           resetSpace.public_code,

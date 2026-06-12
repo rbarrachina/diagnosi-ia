@@ -9,6 +9,7 @@ type CreatedSpaceResponse = {
   publicUrl: string;
   sharedResultsUrl: string | null;
   ownerResultsUrl: string;
+  questionnairePreviewUrl: string;
   totalSubmissions: number;
 };
 
@@ -264,6 +265,12 @@ export function CreateSpaceForm({ existingSpace = null }: CreateSpaceFormProps) 
           </p>
 
           <div className="flex flex-col gap-3 md:flex-row md:flex-nowrap">
+            <a
+              className="inline-flex shrink-0 justify-center rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
+              href={displayedSpace.questionnairePreviewUrl}
+            >
+              Veure qüestionari
+            </a>
             <a
               className="inline-flex shrink-0 justify-center rounded-md bg-action px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
               href={displayedSpace.ownerResultsUrl}

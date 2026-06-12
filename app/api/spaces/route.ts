@@ -43,6 +43,7 @@ export async function POST(request: Request): Promise<Response> {
         publicUrl: createdSpace.publicUrl,
         sharedResultsUrl: createdSpace.sharedResultsUrl,
         ownerResultsUrl: createdSpace.ownerResultsUrl,
+        questionnairePreviewUrl: createdSpace.questionnairePreviewUrl,
         totalSubmissions: createdSpace.totalSubmissions,
       },
       { status: 201 },

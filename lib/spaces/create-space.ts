@@ -23,6 +23,7 @@ export type CreatedDiagnosticSpace = {
   questionnaireVersion: string;
   sharedResultsUrl: string;
   ownerResultsUrl: string;
+  questionnairePreviewUrl: string;
   publicUrl: string;
   totalSubmissions: number;
 };
@@ -79,6 +80,7 @@ export async function createDiagnosticSpace(
         publicUrl: `${appUrl}/q/${publicCode}`,
         sharedResultsUrl: buildSharedResultsUrl(appUrl, publicCode, resultsToken.token),
         ownerResultsUrl: buildOwnerResultsUrl(appUrl, publicCode),
+        questionnairePreviewUrl: `${appUrl}/espais/${publicCode}/questionari`,
         totalSubmissions: 0,
       };
     }

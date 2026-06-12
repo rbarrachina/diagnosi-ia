@@ -33,6 +33,7 @@ app/
   page.tsx
   crear/page.tsx
   espais/page.tsx
+  espais/[publicCode]/questionari/page.tsx
   espais/[publicCode]/resultats/page.tsx
   q/[publicCode]/page.tsx
   resultats/[publicCode]/page.tsx
@@ -313,6 +314,19 @@ Resposta:
 ```
 
 Si el creador ja té un espai, la resposta és `409` i la UI el deriva a la gestio de l'espai existent.
+
+### `/espais/[publicCode]/questionari`
+
+Pantalla de previsualització del qüestionari per al creador autenticat.
+
+Flux:
+
+1. Validar format del codi públic.
+2. Validar sessió OAuth XTEC.
+3. Validar que `owner_user_id` de l'espai coincideix amb l'usuari autenticat.
+4. Carregar la versio assignada a l'espai.
+5. Renderitzar el qüestionari en mode lectura, sense inputs actius ni botó
+   d'enviament.
 
 ### `POST /api/spaces/[publicCode]/reset`
 

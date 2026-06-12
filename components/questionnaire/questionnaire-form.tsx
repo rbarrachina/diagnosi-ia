@@ -18,13 +18,18 @@ type SubmitState =
 
 type QuestionnaireFormProps = {
   questionnaire: PublicQuestionnaire;
+  mode?: "response" | "readOnly";
 };
 
-export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
+export function QuestionnaireForm({
+  questionnaire,
+  mode = "response",
+}: QuestionnaireFormProps) {
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [currentStep, setCurrentStep] = useState(0);
   const [submittedInCurrentSession, setSubmittedInCurrentSession] = useState(false);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
+  const isReadOnly = mode === "readOnly";
 
   const questions = useMemo(
     () => questionnaire.blocks.flatMap((block) => block.questions),
@@ -50,7 +55,7 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
     () => false,
   );
   const alreadySubmittedLocally =
-    submittedBeforeThisSession || submittedInCurrentSession;
+    !isReadOnly && (submittedBeforeThisSession || submittedInCurrentSession);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -63,7 +68,7 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
   function goToNextStep() {
     setSubmitState({ status: "idle" });
 
-    if (currentBlock && !blockIsComplete(currentBlock)) {
+    if (!isReadOnly && currentBlock && !blockIsComplete(currentBlock)) {
       setSubmitState({
         status: "error",
         message: "Cal respondre totes les preguntes d'aquest bloc abans de continuar.",
@@ -169,11 +174,12 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
   return (
     <section className="rounded-md border border-line bg-white p-6 shadow-sm">
       {currentStep === 0 ? (
-        <IntroPage questionnaire={questionnaire} />
+        <IntroPage isReadOnly={isReadOnly} questionnaire={questionnaire} />
       ) : currentBlock ? (
         <BlockPage
           answers={answers}
           block={currentBlock}
+          isReadOnly={isReadOnly}
           onAnswer={(questionId, value) =>
             setAnswers((currentAnswers) => ({
               ...currentAnswers,
@@ -208,7 +214,18 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
           </button>
         ) : null}
 
-        {isLastBlock ? (
+        {isReadOnly && isLastBlock ? (
+          <button
+            className="rounded-md border border-line bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
+            onClick={() => {
+              setSubmitState({ status: "idle" });
+              setCurrentStep(0);
+            }}
+            type="button"
+          >
+            Torna a l&apos;inici
+          </button>
+        ) : isLastBlock ? (
           <button
             className="rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
             disabled={submitState.status === "submitting"}
@@ -223,7 +240,11 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
             onClick={goToNextStep}
             type="button"
           >
-            {currentStep === 0 ? "Comença el qüestionari" : "Continua"}
+            {currentStep === 0
+              ? isReadOnly
+                ? "Veure blocs"
+                : "Comença el qüestionari"
+              : "Continua"}
           </button>
         )}
       </div>
@@ -233,15 +254,27 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
   );
 }
 
-function IntroPage({ questionnaire }: { questionnaire: PublicQuestionnaire }) {
+function IntroPage({
+  isReadOnly,
+  questionnaire,
+}: {
+  isReadOnly: boolean;
+  questionnaire: PublicQuestionnaire;
+}) {
   return (
     <div>
       <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
-        Competència digital docent en IA
+        {isReadOnly ? "Mode lectura" : "Competència digital docent en IA"}
       </p>
       <h1 className="mt-3 text-3xl font-semibold tracking-normal text-ink">
-        Qüestionari
+        {isReadOnly ? "Previsualització del qüestionari" : "Qüestionari"}
       </h1>
+      {isReadOnly ? (
+        <p className="mt-4 rounded-md border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold leading-6 text-sky-900">
+          Aquesta pantalla només serveix per visualitzar el qüestionari. No es
+          pot respondre, no es desa cap resposta i no compta com una participació.
+        </p>
+      ) : null}
       <div className="mt-5 grid gap-4 text-sm leading-6 text-slate-700 sm:grid-cols-2">
         <p>
           L&apos;objectiu és conèixer el grau d&apos;ús educatiu de la IA al
@@ -276,10 +309,12 @@ function IntroPage({ questionnaire }: { questionnaire: PublicQuestionnaire }) {
 function BlockPage({
   answers,
   block,
+  isReadOnly,
   onAnswer,
 }: {
   answers: Record<string, AnswerValue>;
   block: QuestionBlock;
+  isReadOnly: boolean;
   onAnswer: (questionId: string, value: AnswerValue) => void;
 }) {
   return (
@@ -300,20 +335,29 @@ function BlockPage({
             </legend>
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
               {SCALE_OPTIONS.map((option) => (
-                <label
-                  className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm text-ink transition ${option.formClasses}`}
-                  key={option.value}
-                >
-                  <input
-                    checked={answers[question.id] === option.value}
-                    className={`h-4 w-4 ${option.accentClass}`}
-                    name={question.id}
-                    onChange={() => onAnswer(question.id, option.value)}
-                    type="radio"
-                    value={option.value}
-                  />
-                  <span>{option.label}</span>
-                </label>
+                isReadOnly ? (
+                  <div
+                    className="flex min-h-12 items-center rounded-md border border-line bg-paper px-3 py-2 text-sm text-slate-700"
+                    key={option.value}
+                  >
+                    {option.label}
+                  </div>
+                ) : (
+                  <label
+                    className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm text-ink transition ${option.formClasses}`}
+                    key={option.value}
+                  >
+                    <input
+                      checked={answers[question.id] === option.value}
+                      className={`h-4 w-4 ${option.accentClass}`}
+                      name={question.id}
+                      onChange={() => onAnswer(question.id, option.value)}
+                      type="radio"
+                      value={option.value}
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                )
               ))}
             </div>
           </fieldset>
