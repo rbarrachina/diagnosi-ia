@@ -10,15 +10,21 @@ import type {
 } from "@/lib/results/types";
 
 export const SCALE_OPTIONS: ScaleOption[] = [
-  { value: 0, label: "Encara no" },
-  { value: 1, label: "Parcialment" },
-  { value: 2, label: "Sí, de manera habitual" },
+  { value: 0, label: "Gens / No ho faig" },
+  { value: 1, label: "Una mica / Ocasionalment" },
+  { value: 2, label: "Bastant / Habitualment" },
+  { value: 3, label: "Molt / Soc un referent al centre" },
 ];
 
 const LOW_RESPONSE_THRESHOLD = 5;
+const MAX_SCALE_VALUE = 3;
 
 function roundToTwoDecimals(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+function scoreToPercentage(value: number): number {
+  return roundToTwoDecimals((value / MAX_SCALE_VALUE) * 100);
 }
 
 function createEmptyDistribution(): Record<ScaleValue, number> {
@@ -26,6 +32,7 @@ function createEmptyDistribution(): Record<ScaleValue, number> {
     0: 0,
     1: 0,
     2: 0,
+    3: 0,
   };
 }
 
@@ -40,17 +47,17 @@ function formatDistribution(
   }));
 }
 
-function average(values: number[]): number | null {
+function averagePercentage(values: number[]): number | null {
   if (values.length === 0) {
     return null;
   }
 
-  return roundToTwoDecimals(
+  return scoreToPercentage(
     values.reduce((total, value) => total + value, 0) / values.length,
   );
 }
 
-function weightedAverage(counts: Record<ScaleValue, number>): number | null {
+function weightedAveragePercentage(counts: Record<ScaleValue, number>): number | null {
   const totalCount = SCALE_OPTIONS.reduce(
     (total, option) => total + counts[option.value],
     0,
@@ -65,7 +72,7 @@ function weightedAverage(counts: Record<ScaleValue, number>): number | null {
     0,
   );
 
-  return roundToTwoDecimals(weightedTotal / totalCount);
+  return scoreToPercentage(weightedTotal / totalCount);
 }
 
 function mergeDistributionCounts(
@@ -82,20 +89,24 @@ function mergeDistributionCounts(
   return merged;
 }
 
-function interpretationForAverage(averageValue: number | null): string {
-  if (averageValue === null) {
+function interpretationForPercentage(percentageValue: number | null): string {
+  if (percentageValue === null) {
     return "Encara no hi ha respostes per interpretar els resultats.";
   }
 
-  if (averageValue < 0.75) {
+  if (percentageValue < 25) {
     return "La diagnosi mostra un ús inicial de la IA. Convé prioritzar criteris compartits, alfabetització bàsica i acompanyament docent.";
   }
 
-  if (averageValue < 1.5) {
+  if (percentageValue < 50) {
     return "La diagnosi mostra un ús en desenvolupament. Hi ha pràctiques presents, però encara desiguals o no consolidades.";
   }
 
-  return "La diagnosi mostra un ús habitual i bastant consolidat de la IA, amb oportunitat de revisar qualitat, coherència i seguretat.";
+  if (percentageValue < 75) {
+    return "La diagnosi mostra un ús habitual i bastant consolidat de la IA, amb oportunitat de revisar qualitat, coherència i seguretat.";
+  }
+
+  return "La diagnosi mostra un ús molt consolidat de la IA, amb persones o pràctiques que poden actuar com a referents per compartir criteris i acompanyar l'equip.";
 }
 
 function summarizeBlocks(
@@ -116,15 +127,17 @@ function summarizeBlocks(
 
   return sortedBlocks.slice(0, 2).map((block) =>
     mode === "strengths"
-      ? `${block.title}: mitjana ${block.average.toFixed(2)} sobre 2.`
-      : `${block.title}: mitjana ${block.average.toFixed(2)} sobre 2.`,
+      ? `${block.title}: ${block.average.toFixed(1)}%.`
+      : `${block.title}: ${block.average.toFixed(1)}%.`,
   );
 }
 
 export function calculateAggregatedResults(params: {
   publicCode: string;
+  scopeLabel?: string;
   questionnaireVersion: string;
   generatedAt: string;
+  diagnosticSpaceCount?: number;
   totalSubmissions: number;
   blocks: BlockDefinition[];
   questions: QuestionDefinition[];
@@ -163,7 +176,7 @@ export function calculateAggregatedResults(params: {
             position: question.position,
             blockPosition: question.blockPosition,
             text: question.text,
-            average: average(questionAnswers.map((answer) => answer.value)),
+            average: averagePercentage(questionAnswers.map((answer) => answer.value)),
             distribution: formatDistribution(distributionCounts, params.totalSubmissions),
           };
         });
@@ -171,7 +184,7 @@ export function calculateAggregatedResults(params: {
       return {
         position: block.position,
         title: block.title,
-        average: average(
+        average: averagePercentage(
           blockQuestions.flatMap((question) =>
             (answersByQuestion.get(question.id) ?? []).map((answer) => answer.value),
           ),
@@ -180,18 +193,20 @@ export function calculateAggregatedResults(params: {
       };
     });
 
-  const globalAverage = average(params.answers.map((answer) => answer.value));
+  const globalAverage = averagePercentage(params.answers.map((answer) => answer.value));
 
   return {
     publicCode: params.publicCode,
+    scopeLabel: params.scopeLabel,
     questionnaireVersion: params.questionnaireVersion,
     generatedAt: params.generatedAt,
+    diagnosticSpaceCount: params.diagnosticSpaceCount,
     totalSubmissions: params.totalSubmissions,
     globalAverage,
     lowResponseWarning: params.totalSubmissions > 0 && params.totalSubmissions < LOW_RESPONSE_THRESHOLD,
     scale: SCALE_OPTIONS,
     blocks: blockResults,
-    interpretation: interpretationForAverage(globalAverage),
+    interpretation: interpretationForPercentage(globalAverage),
     strengths: summarizeBlocks(blockResults, "strengths"),
     improvementAreas: summarizeBlocks(blockResults, "improvements"),
   };
@@ -199,8 +214,10 @@ export function calculateAggregatedResults(params: {
 
 export function calculateAggregatedResultsFromCounts(params: {
   publicCode: string;
+  scopeLabel?: string;
   questionnaireVersion: string;
   generatedAt: string;
+  diagnosticSpaceCount?: number;
   totalSubmissions: number;
   blocks: BlockDefinition[];
   questions: QuestionDefinition[];
@@ -237,7 +254,7 @@ export function calculateAggregatedResultsFromCounts(params: {
             position: question.position,
             blockPosition: question.blockPosition,
             text: question.text,
-            average: weightedAverage(distributionCounts),
+            average: weightedAveragePercentage(distributionCounts),
             distribution: formatDistribution(distributionCounts, params.totalSubmissions),
           };
         });
@@ -251,7 +268,7 @@ export function calculateAggregatedResultsFromCounts(params: {
       return {
         position: block.position,
         title: block.title,
-        average: weightedAverage(blockCounts),
+        average: weightedAveragePercentage(blockCounts),
         questions: questionResults,
       };
     });
@@ -261,18 +278,20 @@ export function calculateAggregatedResultsFromCounts(params: {
       (question) => countsByQuestion.get(question.id) ?? createEmptyDistribution(),
     ),
   );
-  const globalAverage = weightedAverage(globalCounts);
+  const globalAverage = weightedAveragePercentage(globalCounts);
 
   return {
     publicCode: params.publicCode,
+    scopeLabel: params.scopeLabel,
     questionnaireVersion: params.questionnaireVersion,
     generatedAt: params.generatedAt,
+    diagnosticSpaceCount: params.diagnosticSpaceCount,
     totalSubmissions: params.totalSubmissions,
     globalAverage,
     lowResponseWarning: params.totalSubmissions > 0 && params.totalSubmissions < LOW_RESPONSE_THRESHOLD,
     scale: SCALE_OPTIONS,
     blocks: blockResults,
-    interpretation: interpretationForAverage(globalAverage),
+    interpretation: interpretationForPercentage(globalAverage),
     strengths: summarizeBlocks(blockResults, "strengths"),
     improvementAreas: summarizeBlocks(blockResults, "improvements"),
   };

@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const createSpaceService = readFileSync(
-  join(process.cwd(), "lib/spaces/create-space.ts"),
+const diagnosticSpacesRepository = readFileSync(
+  join(process.cwd(), "lib/repositories/diagnostic-spaces.ts"),
   "utf8",
 );
 
@@ -23,10 +23,10 @@ const expandedLimitsMigration = readFileSync(
 
 describe("questionnaire version selection", () => {
   it("creates new spaces from the currently active questionnaire", () => {
-    expect(createSpaceService).toContain('.from("questionnaires")');
-    expect(createSpaceService).toContain('.eq("is_active", true)');
-    expect(createSpaceService).not.toContain("QUESTIONNAIRE_VERSION");
-    expect(createSpaceService).not.toContain('.eq("version"');
+    expect(diagnosticSpacesRepository).toContain("from questionnaires");
+    expect(diagnosticSpacesRepository).toContain("where is_active = true");
+    expect(diagnosticSpacesRepository).not.toContain("QUESTIONNAIRE_VERSION");
+    expect(diagnosticSpacesRepository).not.toContain("where version =");
   });
 
   it("allows submissions for the version assigned to the space even if inactive later", () => {

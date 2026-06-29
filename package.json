@@ -8,12 +8,17 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:seed": "node scripts/db/seed.mjs",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",
-    "@supabase/ssr": "^0.12.0",
-    "@supabase/supabase-js": "^2.107.0",
+    "drizzle-orm": "^0.45.2",
+    "mysql2": "^3.22.5",
     "next": "^16.2.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -27,6 +32,7 @@
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "autoprefixer": "^10.4.20",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9.17.0",
     "eslint-config-next": "^16.2.7",
     "jsdom": "^25.0.1",

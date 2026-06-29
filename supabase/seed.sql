@@ -88,7 +88,7 @@ select
   question_seed.block_position,
   question_seed.text,
   0,
-  2
+  3
 from questionnaire
 join question_seed on true
 join public.question_blocks

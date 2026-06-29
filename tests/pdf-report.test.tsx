@@ -1,36 +1,40 @@
 import { renderDiagnosticReportPdf } from "@/lib/pdf/render-report";
 import type { AggregatedResults } from "@/lib/results/types";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const results: AggregatedResults = {
   publicCode: "C-7KX9-M2Q8",
   questionnaireVersion: "2026.2",
   generatedAt: "2026-06-04T10:00:00.000Z",
   totalSubmissions: 2,
-  globalAverage: 1.25,
+  globalAverage: 41.67,
   lowResponseWarning: true,
   scale: [
-    { value: 0, label: "Encara no" },
-    { value: 1, label: "Parcialment" },
-    { value: 2, label: "Sí, de manera habitual" },
+    { value: 0, label: "Gens / No ho faig" },
+    { value: 1, label: "Una mica / Ocasionalment" },
+    { value: 2, label: "Bastant / Habitualment" },
+    { value: 3, label: "Molt / Soc un referent al centre" },
   ],
   interpretation: "Interpretació de conjunt.",
-  strengths: ["Bloc 1: mitjana 1.50 sobre 2."],
-  improvementAreas: ["Bloc 2: mitjana 1.00 sobre 2."],
+  strengths: ["Bloc 1: 50.0%."],
+  improvementAreas: ["Bloc 2: 33.3%."],
   blocks: [
     {
       position: 1,
       title: "Bloc 1",
-      average: 1.5,
+      average: 50,
       questions: [
         {
           position: 1,
           blockPosition: 1,
           text: "Pregunta 1",
-          average: 1.5,
+          average: 50,
           distribution: [
-            { value: 0, label: "Encara no", count: 0, percentage: 0 },
-            { value: 1, label: "Parcialment", count: 1, percentage: 50 },
-            { value: 2, label: "Sí, de manera habitual", count: 1, percentage: 50 },
+            { value: 0, label: "Gens / No ho faig", count: 0, percentage: 0 },
+            { value: 1, label: "Una mica / Ocasionalment", count: 1, percentage: 50 },
+            { value: 2, label: "Bastant / Habitualment", count: 1, percentage: 50 },
+            { value: 3, label: "Molt / Soc un referent al centre", count: 0, percentage: 0 },
           ],
         },
       ],
@@ -38,17 +42,18 @@ const results: AggregatedResults = {
     {
       position: 2,
       title: "Bloc 2",
-      average: 1,
+      average: 33.33,
       questions: [
         {
           position: 2,
           blockPosition: 1,
           text: "Pregunta 2",
-          average: 1,
+          average: 33.33,
           distribution: [
-            { value: 0, label: "Encara no", count: 1, percentage: 50 },
-            { value: 1, label: "Parcialment", count: 1, percentage: 50 },
-            { value: 2, label: "Sí, de manera habitual", count: 0, percentage: 0 },
+            { value: 0, label: "Gens / No ho faig", count: 1, percentage: 50 },
+            { value: 1, label: "Una mica / Ocasionalment", count: 1, percentage: 50 },
+            { value: 2, label: "Bastant / Habitualment", count: 0, percentage: 0 },
+            { value: 3, label: "Molt / Soc un referent al centre", count: 0, percentage: 0 },
           ],
         },
       ],
@@ -72,5 +77,15 @@ describe("renderDiagnosticReportPdf", () => {
     const buffer = await renderDiagnosticReportPdf(results);
 
     expect(countPdfPages(buffer)).toBe(results.blocks.length + 1);
+  });
+
+  it("does not render tokens or individual answer fields", () => {
+    const reportSource = readFileSync(
+      join(process.cwd(), "lib/pdf/report-document.tsx"),
+      "utf8",
+    );
+
+    expect(reportSource).not.toMatch(/privateToken|resultsToken|token_hash|submissionId/i);
+    expect(reportSource).not.toMatch(/answers\.submission_id|submission_id|owner_user_id/i);
   });
 });

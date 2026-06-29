@@ -17,11 +17,13 @@ type SubmitState =
   | { status: "error"; message: string };
 
 type QuestionnaireFormProps = {
+  alreadySubmitted?: boolean;
   questionnaire: PublicQuestionnaire;
   mode?: "response" | "readOnly";
 };
 
 export function QuestionnaireForm({
+  alreadySubmitted: alreadySubmittedByAccount = false,
   questionnaire,
   mode = "response",
 }: QuestionnaireFormProps) {
@@ -56,6 +58,8 @@ export function QuestionnaireForm({
   );
   const alreadySubmittedLocally =
     !isReadOnly && (submittedBeforeThisSession || submittedInCurrentSession);
+  const alreadySubmitted =
+    !isReadOnly && (alreadySubmittedByAccount || alreadySubmittedLocally);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -67,6 +71,14 @@ export function QuestionnaireForm({
 
   function goToNextStep() {
     setSubmitState({ status: "idle" });
+
+    if (!isReadOnly && currentStep === 0 && alreadySubmitted) {
+      setSubmitState({
+        status: "error",
+        message: "Aquest usuari ja ha respost l'enquesta.",
+      });
+      return;
+    }
 
     if (!isReadOnly && currentBlock && !blockIsComplete(currentBlock)) {
       setSubmitState({
@@ -80,10 +92,10 @@ export function QuestionnaireForm({
   }
 
   async function submitAnswers() {
-    if (alreadySubmittedLocally) {
+    if (alreadySubmitted) {
       setSubmitState({
         status: "error",
-        message: "Aquest navegador ja ha enviat una resposta per aquest qüestionari.",
+        message: "Aquest usuari ja ha respost l'enquesta.",
       });
       return;
     }
@@ -153,28 +165,16 @@ export function QuestionnaireForm({
     );
   }
 
-  if (alreadySubmittedLocally) {
-    return (
-      <div className="rounded-md border border-line bg-white p-8 text-center shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
-          Qüestionari respost
-        </p>
-        <h1 className="mt-3 text-2xl font-semibold text-ink">
-          Aquest navegador ja ha enviat una resposta
-        </h1>
-        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-700">
-          Per preservar l’anonimat, l’aplicació no identifica les persones. Aquest
-          bloqueig només evita repetir l’enviament des del mateix navegador.
-        </p>
-        <ProgressBar percentage={100} />
-      </div>
-    );
-  }
-
   return (
     <section className="rounded-md border border-line bg-white p-6 shadow-sm">
       {currentStep === 0 ? (
-        <IntroPage isReadOnly={isReadOnly} questionnaire={questionnaire} />
+        <IntroPage
+          alreadySubmitted={alreadySubmitted}
+          isReadOnly={isReadOnly}
+          onStart={goToNextStep}
+          questionCount={questions.length}
+          questionnaire={questionnaire}
+        />
       ) : currentBlock ? (
         <BlockPage
           answers={answers}
@@ -195,12 +195,8 @@ export function QuestionnaireForm({
         </p>
       ) : null}
 
-      <div
-        className={`mt-6 flex flex-col gap-3 sm:flex-row sm:items-center ${
-          currentStep === 0 ? "sm:justify-end" : "sm:justify-between"
-        }`}
-      >
-        {currentStep > 0 ? (
+      {currentStep > 0 ? (
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             className="rounded-md border border-line bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action disabled:cursor-not-allowed disabled:text-slate-400"
             disabled={submitState.status === "submitting"}
@@ -212,42 +208,38 @@ export function QuestionnaireForm({
           >
             Anterior
           </button>
-        ) : null}
 
-        {isReadOnly && isLastBlock ? (
-          <button
-            className="rounded-md border border-line bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
-            onClick={() => {
-              setSubmitState({ status: "idle" });
-              setCurrentStep(0);
-            }}
-            type="button"
-          >
-            Torna a l&apos;inici
-          </button>
-        ) : isLastBlock ? (
-          <button
-            className="rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
-            disabled={submitState.status === "submitting"}
-            onClick={submitAnswers}
-            type="button"
-          >
-            {submitState.status === "submitting" ? "Enviant..." : "Envia les respostes"}
-          </button>
-        ) : (
-          <button
-            className="rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
-            onClick={goToNextStep}
-            type="button"
-          >
-            {currentStep === 0
-              ? isReadOnly
-                ? "Veure blocs"
-                : "Comença el qüestionari"
-              : "Continua"}
-          </button>
-        )}
-      </div>
+          {isReadOnly && isLastBlock ? (
+            <button
+              className="rounded-md border border-line bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
+              onClick={() => {
+                setSubmitState({ status: "idle" });
+                setCurrentStep(0);
+              }}
+              type="button"
+            >
+              Torna a l&apos;inici
+            </button>
+          ) : isLastBlock ? (
+            <button
+              className="rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
+              disabled={submitState.status === "submitting"}
+              onClick={submitAnswers}
+              type="button"
+            >
+              {submitState.status === "submitting" ? "Enviant..." : "Envia les respostes"}
+            </button>
+          ) : (
+            <button
+              className="rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
+              onClick={goToNextStep}
+              type="button"
+            >
+              Continua
+            </button>
+          )}
+        </div>
+      ) : null}
 
       <ProgressBar percentage={progressPercentage} />
     </section>
@@ -255,10 +247,16 @@ export function QuestionnaireForm({
 }
 
 function IntroPage({
+  alreadySubmitted,
   isReadOnly,
+  onStart,
+  questionCount,
   questionnaire,
 }: {
+  alreadySubmitted: boolean;
   isReadOnly: boolean;
+  onStart: () => void;
+  questionCount: number;
   questionnaire: PublicQuestionnaire;
 }) {
   return (
@@ -289,19 +287,37 @@ function IntroPage({
           identificadors personals ni respostes obertes.
         </p>
         <p>
-          La diagnosi consta de 20 preguntes obligatòries. Cada docent l’ha de respondre una sola vegada.
+          La diagnosi consta de {questionCount} preguntes obligatòries. Cada
+          docent l’ha de respondre una sola vegada.
         </p>
       </div>
-      <dl className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
-        <div>
-          <dt className="font-semibold text-ink">Codi</dt>
-          <dd className="mt-1 font-mono text-slate-700">{questionnaire.publicCode}</dd>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:items-start">
+        <div className="space-y-3">
+          <p className="inline-flex items-center gap-2 rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-900">
+            <span aria-hidden="true">📋</span>
+            Versió del qüestionari: {questionnaire.questionnaireVersion}
+          </p>
+          <p className="inline-flex items-center gap-2 rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-900">
+            <span aria-hidden="true">⏱️</span>
+            Temps estimat: {questionnaire.estimatedMinutes} minuts
+          </p>
         </div>
-        <div>
-          <dt className="font-semibold text-ink">Versió del qüestionari</dt>
-          <dd className="mt-1 text-slate-700">{questionnaire.questionnaireVersion}</dd>
+        <div className="flex flex-col gap-3 sm:items-end">
+          {alreadySubmitted ? (
+            <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-5 text-amber-900">
+              Aquest usuari ja ha respost l&apos;enquesta i no la pot tornar a fer.
+            </p>
+          ) : null}
+          <button
+            className="rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
+            disabled={alreadySubmitted}
+            onClick={onStart}
+            type="button"
+          >
+            {isReadOnly ? "Veure blocs" : "Comença el qüestionari"}
+          </button>
         </div>
-      </dl>
+      </div>
     </div>
   );
 }
@@ -324,16 +340,13 @@ function BlockPage({
       </p>
       <h2 className="mt-3 text-2xl font-semibold text-ink">{block.title}</h2>
 
-      <div className="mt-6 space-y-5">
+      <div className="mt-6 space-y-7">
         {block.questions.map((question) => (
-          <fieldset
-            className="border-t border-line pt-5 first:border-t-0 first:pt-0"
-            key={question.id}
-          >
+          <fieldset key={question.id}>
             <legend className="text-sm font-semibold leading-6 text-ink">
-              {question.position}. {question.text}
+              {block.position}.{question.blockPosition}. {question.text}
             </legend>
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <div className="mt-1 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
               {SCALE_OPTIONS.map((option) => (
                 isReadOnly ? (
                   <div

@@ -32,6 +32,7 @@ export type AdminQuestionnaireSummary = {
   id: string;
   version: string;
   title: string;
+  estimatedMinutes: number;
   isActive: boolean;
   createdAt: string;
   diagnosticSpaceCount: number;
@@ -48,5 +49,6 @@ export type AdminQuestionnaireMutationResult = {
   id: string;
   version: string;
   title: string;
+  estimatedMinutes: number;
   isActive: boolean;
 };

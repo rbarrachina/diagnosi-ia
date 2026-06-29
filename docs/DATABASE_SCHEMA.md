@@ -1,6 +1,10 @@
 # Esquema de base de dades
 
-Base de dades prevista: PostgreSQL a Supabase.
+Base de dades prevista a `main`: PostgreSQL a Supabase.
+
+Base de dades prevista a `migration/mysql`: MySQL 8.4 local, amb esquema net
+equivalent a l'estat funcional actual. Aquesta branca és experimental i no
+substitueix `main` fins que el flux local complet estigui verificat.
 
 La taula principal d'espais s'anomena `diagnostic_spaces`. No ha d'existir cap taula `centres`.
 
@@ -28,6 +32,33 @@ Implementacio actual:
 - Seed: `supabase/seed.sql`
 - Configuracio manual: `docs/SUPABASE_SETUP.md`
 
+Implementacio prevista a `migration/mysql`:
+
+- Client server-side: `lib/db/client.ts`.
+- Esquema Drizzle: `lib/db/schema.ts`.
+- Configuracio Drizzle: `drizzle.config.ts`.
+- Repositoris server-side a `lib/repositories/*`.
+- Seed local MySQL per a la versio activa `2026.2`.
+- Sense acces directe del navegador a MySQL.
+
+Les migracions PostgreSQL existents no s'han de traduir una a una. La branca
+MySQL ha de definir un esquema net que preservi les taules, restriccions i
+garanties de privacitat de l'estat final actual.
+
+## Conversio PostgreSQL a MySQL
+
+- `uuid` passa a `char(36)` o equivalent. Els UUIDs es generen des de
+  TypeScript server-side.
+- `timestamptz` passa a `datetime(3)` o equivalent, tractat com UTC.
+- `jsonb` passa a `json`.
+- Funcions `plpgsql` i RPCs passen a funcions TypeScript server-side.
+- RLS passa a control d'acces server-side, validacio estricta i repositoris.
+- Les operacions multi-taula passen a transaccions MySQL.
+- Els casts PostgreSQL i expressions especifiques de PostgreSQL s'han de
+  substituir per codi compatible amb MySQL.
+- `DATABASE_URL` és una variable server-side i no pot tenir prefix
+  `NEXT_PUBLIC_`.
+
 ## Model relacional
 
 ```mermaid
@@ -51,6 +82,7 @@ Columnes proposades:
 - `id text primary key`
 - `version text not null unique`
 - `title text not null`
+- `estimated_minutes integer not null default 10`
 - `is_active boolean not null default false`
 - `created_at timestamptz not null default now()`
 
@@ -58,6 +90,7 @@ Restriccions:
 
 - `id` amb format de 3 digits (`001`, `002`, ...).
 - `version` unique.
+- `estimated_minutes` entre 1 i 120.
 - La versió inicial és `2026.1`; la versió activa corregida és `2026.2`.
 
 ### `question_blocks`
@@ -84,14 +117,15 @@ Defineix preguntes tancades.
 
 Columnes proposades:
 
-- `id uuid primary key default gen_random_uuid()`
+- `id uuid primary key default gen_random_uuid()` a PostgreSQL.
+  A MySQL: `char(36) primary key`, generat des de TypeScript.
 - `questionnaire_id text not null references questionnaires(id) on delete restrict`
 - `block_id text not null`
 - `position integer not null`
 - `block_position integer not null`
 - `text text not null`
 - `scale_min integer not null default 0`
-- `scale_max integer not null default 2`
+- `scale_max integer not null default 3`
 
 Restriccions:
 
@@ -101,7 +135,7 @@ Restriccions:
 - `position between 1 and 100`
 - `block_position between 1 and 10`
 - `scale_min = 0`
-- `scale_max = 2`
+- `scale_max = 3`
 
 La migració usa claus foranes compostes per garantir que bloc, pregunta, submission i resposta pertanyen a la mateixa versió del qüestionari.
 
@@ -131,10 +165,12 @@ Espais anònims de diagnosi.
 
 Columnes proposades:
 
-- `id uuid primary key default gen_random_uuid()`
+- `id uuid primary key default gen_random_uuid()` a PostgreSQL.
+  A MySQL: `char(36) primary key`, generat des de TypeScript.
 - `public_code text not null unique`
 - `private_token_hmac text not null`
-- `owner_user_id uuid references auth.users(id)`
+- `owner_user_id uuid references auth.users(id)` a PostgreSQL/Supabase.
+  A MySQL: identificador opac d'usuari autenticat, sense FK a `auth.users`.
 - `results_token_hash text not null`
 - `results_token_encrypted text`
 - `results_token_enabled boolean not null default true`
@@ -163,7 +199,8 @@ Enviaments anònims.
 
 Columnes proposades:
 
-- `id uuid primary key default gen_random_uuid()`
+- `id uuid primary key default gen_random_uuid()` a PostgreSQL.
+  A MySQL: `char(36) primary key`, generat des de TypeScript.
 - `diagnostic_space_id uuid not null references diagnostic_spaces(id) on delete restrict`
 - `questionnaire_id text not null references questionnaires(id) on delete restrict`
 - `created_at timestamptz not null default now()`
@@ -176,6 +213,32 @@ Restriccions:
 Indexos:
 
 - `index submissions_diagnostic_space_id_idx on submissions(diagnostic_space_id)`
+
+### `submission_locks`
+
+Bloqueja una resposta per compte XTEC autenticat i codi public d'enquesta sense
+guardar correus ni unir identitat amb respostes.
+
+Columnes proposades:
+
+- `diagnostic_space_id uuid not null references diagnostic_spaces(id) on delete cascade`
+- `public_code text not null`
+- `lock_hmac text not null`
+- `created_at timestamptz not null default now()`
+
+Restriccions:
+
+- `primary key (diagnostic_space_id, lock_hmac)`
+- `public_code` amb el mateix format que `diagnostic_spaces.public_code`
+- `char_length(lock_hmac) >= 43`
+- No hi ha `submission_id`, email, IP, user agent ni respostes.
+
+Notes:
+
+- `lock_hmac` es calcula al servidor amb secret server-side a partir de
+  l'identificador opac autenticat i el codi public de l'enquesta.
+- El reinici d'espai elimina els bloquejos associats.
+- Les consultes de resultats no llegeixen aquesta taula.
 
 ### `answers`
 
@@ -190,7 +253,7 @@ Columnes proposades:
 
 Restriccions:
 
-- `value in (0, 1, 2)`
+- `value in (0, 1, 2, 3)`
 - `primary key (submission_id, question_id)`
 
 La columna `questionnaire_id` és tècnica i permet reforçar amb claus foranes compostes que una resposta no apunti a una pregunta d'una altra versió.
@@ -206,11 +269,15 @@ Autoritza l'administracio global server-side.
 
 Columnes proposades:
 
-- `user_id uuid primary key references auth.users(id) on delete cascade`
+- `user_id uuid primary key references auth.users(id) on delete cascade` a
+  PostgreSQL/Supabase.
+  A MySQL: identificador opac d'usuari autenticat, sense FK a `auth.users`.
 - `role text not null default 'admin'`
 - `is_active boolean not null default true`
 - `created_at timestamptz not null default now()`
-- `created_by uuid references auth.users(id) on delete set null`
+- `created_by uuid references auth.users(id) on delete set null` a
+  PostgreSQL/Supabase.
+  A MySQL: identificador opac opcional, sense FK a `auth.users`.
 
 Restriccions:
 
@@ -220,6 +287,30 @@ Restriccions:
   Si cal mostrar correus d'administradors, s'han d'obtenir server-side des de
   Supabase Auth i no copiar-los a la base de dades de l'aplicació.
 
+### `app_settings`
+
+Desa configuracio global no personal de l'aplicacio.
+
+Columnes proposades:
+
+- `setting_key varchar(64) primary key`
+- `setting_value varchar(64) not null`
+- `updated_at datetime(3) not null default current_timestamp(3)` a MySQL.
+
+Restriccions:
+
+- `setting_key` i `setting_value` no poden ser blancs.
+- Per `setting_key = 'responsible_access_mode'`, `setting_value` només pot ser
+  `all_xtec` o `centre_xtec`.
+- Per `setting_key = 'admin_results_minimum_submissions'`, `setting_value` ha
+  de ser un enter entre `0` i `10`.
+
+Aquesta taula no pot desar noms de centre, codis de centre, correus ni cap
+dada de participants. L'opcio `centre_xtec` només activa la comprovacio del
+format del correu autenticat (`[a-e][0-9]{7}@xtec.cat`) en codi server-side.
+L'opcio `admin_results_minimum_submissions` només desa un llindar agregat per
+filtrar els resultats globals d'administracio.
+
 RLS i permisos:
 
 - RLS activat i forçat.
@@ -228,7 +319,18 @@ RLS i permisos:
 - `service_role` pot consultar, inserir, actualitzar i eliminar files.
 - Les altes, baixes i reactivacions d'administradors s'han de fer server-side.
 
+Nota per a MySQL:
+
+- MySQL no ofereix RLS equivalent a Supabase. La proteccio s'ha d'aplicar a la
+  capa d'aplicacio: Route Handlers/server actions, repositoris server-side i
+  validacio d'identitat abans de cada operacio sensible.
+- `admin_users` no ha de copiar nom, cognoms ni email. Si el mode local
+  provisional necessita mostrar un email per debug, aquest valor no s'ha de
+  persistir a la taula.
+
 ## RLS
+
+Aquest apartat aplica a `main` amb PostgreSQL/Supabase.
 
 Activar RLS:
 
@@ -286,6 +388,10 @@ RPCs server-only:
 Totes aquestes RPCs revoquen execucio a `anon` i `authenticated` i només poden
 ser cridades pel servidor amb `service_role`.
 
+En `migration/mysql`, aquestes RPCs s'han de substituir per funcions
+TypeScript server-side amb transaccions MySQL. Les funcions equivalents han de
+mantenir la mateixa regla de no retornar files individuals.
+
 Índexs d'administracio:
 
 - `questionnaires_title_unique_idx` garanteix que no es puguin crear dues
@@ -306,7 +412,7 @@ Supabase JS no ofereix una transacció SQL multisentència arbitrària des del c
 - Execucio només des del servidor amb `service_role`.
 - Revocacio d'`execute` per a `anon` i `authenticated`.
 - Validacio de forma del payload, una resposta per cada pregunta de la versio,
-  camps permesos, duplicats, valors `0`, `1`, `2` i pertinença de preguntes al
+  camps permesos, duplicats, valors `0`, `1`, `2`, `3` i pertinença de preguntes al
   qüestionari.
 - Validacio que l'espai no supera 300 submissions completes.
 - Validacio que la versio enviada coincideix amb la versio del qüestionari
@@ -316,6 +422,12 @@ Supabase JS no ofereix una transacció SQL multisentència arbitrària des del c
 
 La RPC bloqueja la fila de `diagnostic_spaces` amb `FOR UPDATE` abans de comptar
 submissions. Això evita que dos enviaments simultanis puguin superar el límit.
+
+En `migration/mysql`, `createSubmissionWithAnswers()` ha de reproduir aquesta
+garantia dins una transaccio MySQL, bloquejant l'espai abans de comptar
+submissions i inserint `submissions` i `answers` de manera atomica. La validacio
+ha de comprovar exactament totes les preguntes del qüestionari assignat a
+l'espai, no un nombre fix hardcoded.
 
 Per reiniciar un espai existent, la implementació usa:
 
@@ -343,16 +455,21 @@ Implementacio actual:
 
 - El servidor valida primer el token privat.
 - Despres crida la RPC server-only `public.get_diagnostic_answer_counts(uuid)`.
-- La RPC retorna només recomptes agregats per `question_id` i valor de l'escala (`0`, `1`, `2`).
+- La RPC retorna només recomptes agregats per `question_id` i valor de l'escala (`0`, `1`, `2`, `3`).
 - La RPC no retorna `submission_id`, timestamps, ni cap combinacio de respostes d'una mateixa persona.
 - Els rols `anon` i `authenticated` no tenen permís d'execucio sobre aquesta funcio; només `service_role`.
+
+En `migration/mysql`, el servidor ha d'obtenir aquests recomptes amb una
+consulta `GROUP BY` a MySQL que retorni nomes `question_id`, `value` i
+`answer_count`. El servidor no ha de carregar combinacions de respostes per
+submission.
 
 Cal retornar:
 
 - `totalSubmissions`
-- `globalAverage`
-- `blockAverages`
-- `questionAverages`
+- `globalAverage`, amb valor normalitzat a percentatge 0-100
+- `blockAverages`, amb valors normalitzats a percentatge 0-100
+- `questionAverages`, amb valors normalitzats a percentatge 0-100
 - `questionDistributions`
 
 ## Seed inicial
@@ -362,6 +479,11 @@ El fitxer `supabase/seed.sql` ha d'inserir:
 - `questionnaires.version = '2026.2'`
 - 5 blocs
 - 20 preguntes
+
+El seed MySQL equivalent ha de crear la mateixa versio activa inicial. Aquesta
+regla del seed no implica que el codi de submissions hagi de codificar sempre
+20 preguntes: el nombre valid és el conjunt complet de preguntes del
+qüestionari assignat a l'espai.
 
 Les preguntes d'una versió assignada a un espai de diagnosi només s'han
 d'editar després d'una confirmacio explícita. Si la versio ja té respostes, les
@@ -398,7 +520,7 @@ create table questions (
   block_position integer not null check (block_position between 1 and 10),
   text text not null,
   scale_min integer not null default 0 check (scale_min = 0),
-  scale_max integer not null default 2 check (scale_max = 2),
+  scale_max integer not null default 3 check (scale_max = 3),
   unique (questionnaire_id, position),
   unique (questionnaire_id, block_id, block_position),
   foreign key (block_id, questionnaire_id) references question_blocks(id, questionnaire_id)
@@ -426,7 +548,7 @@ create table answers (
   submission_id uuid not null references submissions(id) on delete cascade,
   questionnaire_id text not null,
   question_id uuid not null references questions(id) on delete restrict,
-  value integer not null check (value in (0, 1, 2)),
+  value integer not null check (value in (0, 1, 2, 3)),
   primary key (submission_id, question_id)
 );
 ```

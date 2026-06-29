@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
-import { XtecAccessNotice, XtecForbiddenNotice } from "@/components/auth/auth-actions";
+import {
+  ResponsibleForbiddenNotice,
+  XtecAccessNotice,
+} from "@/components/auth/auth-actions";
 import { OwnerResultsClient } from "@/components/results/owner-results-client";
-import { getXtecSessionState } from "@/lib/auth/session";
+import { getResponsibleSessionState } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
 import { getAggregatedResultsForOwner, ResultsAccessError } from "@/lib/results/get-results";
 
@@ -20,7 +23,7 @@ export default async function OwnerResultsPage({ params }: OwnerResultsPageProps
     notFound();
   }
 
-  const session = await getXtecSessionState();
+  const session = await getResponsibleSessionState();
 
   if (session.status === "unauthenticated") {
     return (
@@ -36,7 +39,7 @@ export default async function OwnerResultsPage({ params }: OwnerResultsPageProps
     return (
       <main className="min-h-screen bg-paper">
         <section className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-6">
-          <XtecForbiddenNotice />
+          <ResponsibleForbiddenNotice reason={session.reason} />
         </section>
       </main>
     );

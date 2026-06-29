@@ -2,21 +2,27 @@
 
 ## Resum
 
-Diagnosi IA permet crear un espai anònim de diagnosi sobre l'ús educatiu de la intel·ligència artificial. Una persona responsable autenticada amb compte XTEC crea l'espai, comparteix un enllaç públic amb el professorat i consulta resultats de conjunt amb OAuth o amb un enllaç privat.
+Diagnosi IA permet crear un espai anònim de diagnosi sobre l'ús educatiu de la intel·ligència artificial. Una persona responsable autenticada amb compte XTEC autoritzat crea l'espai, comparteix un enllaç públic amb el professorat i consulta resultats de conjunt amb OAuth o amb un enllaç privat.
 
 L'aplicació no desa ni mostra el nom del centre. Tampoc avalua docents individualment.
 
+Nota de branca: `main` continua sent la versio estable amb
+Supabase/PostgreSQL. La branca `migration/mysql` és experimental i té com a
+objectiu immediat fer funcionar el mateix producte en local amb MySQL. Aquesta
+migracio no canvia l'abast funcional ni les regles d'anonimat del producte.
+
 ## Objectius
 
-- Crear espais anònims amb autenticació OAuth per al creador XTEC.
-- Recollir respostes anònimes d'un qüestionari fix i versionat.
+- Crear espais anònims amb autenticació OAuth per al creador XTEC autoritzat.
+- Recollir respostes anònimes d'un qüestionari fix i versionat, amb accés
+  autenticat XTEC del professorat només per evitar respostes repetides.
 - Mostrar resultats de conjunt des de la primera resposta.
 - Generar un informe PDF de conjunt.
 - Evitar la recollida de dades personals o identificadors de centre.
 
 ## Fora d'abast
 
-- Comptes d'usuari per al professorat participant.
+- Perfils, gestio o emmagatzematge de correus del professorat participant.
 - Gestio de centres identificats.
 - Seguiment individual del professorat.
 - Respostes obertes.
@@ -35,12 +41,17 @@ Funcionalitats previstes:
 - gestionar blocs de preguntes;
 - gestionar preguntes tancades;
 - crear noves versions del qüestionari;
+- configurar els minuts estimats per respondre cada versio;
 - activar una versio concreta;
 - eliminar una versio no activa del qüestionari amb tots els espais i respostes
   associats després d'un avís explícit;
 - aplicar correccions menors sobre una versio només quan encara no estigui
   assignada a cap espai de diagnosi;
-- gestionar administradors.
+- gestionar administradors;
+- configurar si l'accés de responsables admet qualsevol compte `@xtec.cat` o
+  només comptes de centre XTEC.
+- consultar resultats globals agregats per versio de qüestionari i descarregar
+  un PDF agregat d'administracio.
 
 La gestio d'administradors permet cercar comptes XTEC existents per nom,
 cognoms o correu i seleccionar quin usuari rep permisos. La pantalla pot
@@ -53,8 +64,9 @@ no elimina ni modifica el compte de Supabase Auth de la persona.
 
 Les versions noves es creen des d'un únic formulari on l'administrador tria si
 vol començar amb un qüestionari en blanc o copiar una versio existent. El títol
-sempre és obligatori i ha de ser diferent dels títols existents. Les versions
-sense espais de diagnosi assignats poden desar-se com a esborrany parcial durant
+sempre és obligatori i ha de ser diferent dels títols existents. Cada versio
+inclou els minuts estimats per respondre-la, configurables entre 1 i 120 minuts.
+Les versions sense espais de diagnosi assignats poden desar-se com a esborrany parcial durant
 l'edició: l'administrador pot afegir o eliminar blocs i pot afegir o eliminar
 preguntes dins de cada bloc. En afegir un bloc nou, l'editor crea també una
 pregunta inicial. Cada versio pot tenir entre 1 i 10 blocs, i cada bloc pot
@@ -75,6 +87,31 @@ Aquest bootstrap inicial no s'ha de barrejar amb la creació d'espais de
 diagnosi. Crear un qüestionari o un espai no concedeix permisos
 d'administracio.
 
+### Configuracio d'acces de responsables
+
+L'administracio inclou una pantalla de configuracio global. Inclou l'opcio
+`responsible_access_mode`, amb dos valors possibles:
+
+- `all_xtec`: qualsevol compte acabat en `@xtec.cat` pot accedir com a
+  responsable.
+- `centre_xtec`: només els comptes de centre XTEC poden accedir com a
+  responsables.
+
+Els comptes de centre XTEC tenen el format: una lletra inicial `a`, `b`, `c`,
+`d` o `e`, seguida de 7 digits i el domini `@xtec.cat`, per exemple
+`a0000000@xtec.cat`.
+
+Els administradors actius de l'aplicacio poden accedir com a responsables en
+qualsevol dels dos modes. Aquesta excepcio no dona accés a respostes
+individuals ni canvia les garanties d'anonimat.
+
+La configuracio també inclou `admin_results_minimum_submissions`, un enter entre
+0 i 10. En els resultats globals d'administracio, només es computen les
+enquestes amb més respostes que aquest valor. Les enquestes amb un nombre de
+respostes igual o inferior al llindar no s'inclouen en els totals, percentatges
+ni PDF d'administracio. La pantalla de resultats mostra una frase inicial que
+explica el llindar aplicat.
+
 ### Regla de correccions menors
 
 Una versio del qüestionari sense espais assignats es pot corregir directament.
@@ -94,16 +131,45 @@ respostes, blocs i preguntes. Les versions actives no mostren el botó
 d'eliminacio i la base de dades també rebutja eliminar-les. Aquesta accio no ha
 de retornar ni exportar files individuals abans d'eliminar-les.
 
+### Resultats d'administracio
+
+L'administracio inclou una vista `Resultats`. Inicialment no hi ha cap versio
+seleccionada i no es calculen resultats fins que l'administrador tria una
+versio del qüestionari. Un cop seleccionada, consulta els resultats agregats de
+totes les enquestes respostes amb aquella versio. Aquesta vista només mostra
+dades de conjunt: nombre agregat de centres/espais, nombre total de respostes,
+percentatges globals, percentatges per bloc, percentatges per pregunta i
+distribucions agregades. Si hi ha definit un llindar de respostes mínimes per
+computar resultats globals, només s'hi inclouen les enquestes que superen
+aquest llindar.
+
+La vista no mostra espais individuals, centres, creadors, docents, timestamps
+individuals, `submission_id`, `answer_id` ni combinacions de respostes d'una
+mateixa persona. El PDF d'administracio repeteix la mateixa agregacio per
+versio i no inclou tokens ni codis publics d'espais.
+
 ## Fluxos principals
 
 ### Creacio d'espai
 
 Ruta: `/crear`
 
-La persona responsable inicia sessió amb Google OAuth mitjançant Supabase Auth. Només s'accepten comptes amb correu acabat en `@xtec.cat`. Cada usuari autenticat pot tenir un únic espai anònim. El servidor genera:
+La persona responsable inicia sessió amb compte XTEC autoritzat. A `main` això es fa amb
+Google OAuth mitjançant Supabase Auth. A `migration/mysql` això es fa amb
+Google OAuth directe, sense Supabase, o amb mode local provisional de
+desenvolupament. Només s'accepten comptes amb correu acabat en `@xtec.cat`;
+segons la configuracio global, l'accés de responsables pot quedar limitat als
+comptes de centre XTEC. Els administradors actius poden crear i gestionar el
+seu espai en qualsevol dels dos modes.
+Cada usuari autenticat pot tenir un únic espai anònim. El servidor genera:
 
 - Codi públic llegible amb format `C-7KX9-M2Q8`.
 - Token privat llarg i criptograficament segur.
+
+A `migration/mysql`, la capa d'autenticacio és server-side i independent de
+Supabase. El mode `AUTH_MODE=google` valida el `id_token` amb Google, exigeix
+email `@xtec.cat` i desa a MySQL nomes un identificador opac derivat amb HMAC.
+El mode `AUTH_MODE=local` queda com a ajuda de desenvolupament.
 
 Resultat mostrat després de crear l'espai i recuperable des de la gestio del creador:
 
@@ -148,16 +214,26 @@ El formulari ha de mostrar:
 
 - Objectiu de la diagnosi.
 - Respostes anònimes.
-- No recollida de dades personals.
+- No recollida de noms, correus, centre, IP, dispositiu ni respostes obertes.
 - Resultats només de conjunt.
 - Indicacio que cal respondre una sola vegada.
+- Emoji de rellotge amb els minuts estimats necessaris per respondre el
+  qüestionari.
+
+Per obrir el formulari, el docent ha d'iniciar sessio amb un compte
+`@xtec.cat`. Aquesta sessio no crea un compte de professorat a la base de dades
+de l'aplicacio i no es copia el correu a les taules de diagnosi. El servidor
+calcula un HMAC server-side per al codi public de l'enquesta i l'usuari
+autenticat, i el desa a `submission_locks` per impedir una segona resposta al
+mateix enllaç. Aquest HMAC no es desa a `submissions` ni a `answers`.
 
 El docent respon totes les preguntes obligatories de la versio assignada a
 l'espai, amb escala:
 
-- `0`: Encara no
-- `1`: Parcialment
-- `2`: Sí, de manera habitual
+- `0`: Gens / No ho faig
+- `1`: Una mica / Ocasionalment
+- `2`: Bastant / Habitualment
+- `3`: Molt / Soc un referent al centre
 
 No hi ha camps oberts.
 
@@ -165,11 +241,8 @@ Cada espai de diagnosi admet un màxim de 300 respostes completes. Quan s'arriba
 a aquest límit, el formulari ja no accepta nous enviaments i informa que el
 qüestionari ha arribat al màxim de respostes.
 
-Quan el servidor accepta l'enviament, el navegador desa una marca local per al
-codi públic del qüestionari i evita un segon enviament des del mateix navegador.
-Aquesta mesura no identifica la persona i no garanteix que una mateixa persona
-no pugui respondre des d'un altre navegador, dispositiu o després d'esborrar les
-dades locals.
+Quan el servidor accepta l'enviament, també es desa una marca local al navegador
+per millorar l'experiencia si la persona torna a obrir el mateix enllaç.
 
 ### Consulta de resultats
 
@@ -188,12 +261,12 @@ El servidor valida el token i retorna només dades de conjunt:
 - Codi de l'espai.
 - Versio del qüestionari.
 - Nombre total de respostes.
-- Mitjana global.
-- Mitjana per bloc.
+- Percentatge global normalitzat a partir de l'escala 0-3.
+- Percentatge per bloc.
 - Grafica d'aranya i grafica de barres per bloc.
-- Mitjana per pregunta.
+- Percentatge per pregunta.
 - Distribucio per pregunta.
-- Grafiques apilades amb les tres opcions.
+- Grafiques apilades amb les quatre opcions.
 - Text breu d'interpretació.
 
 Si hi ha poques respostes, el tauler mostra un avís de prudència metodològica. No hi ha mínim fix.
@@ -233,7 +306,7 @@ Estructura inicial:
 - 4 preguntes per bloc.
 - 20 preguntes totals.
 - Totes obligatories.
-- Totes amb escala `0`, `1`, `2`.
+- Totes amb escala `0`, `1`, `2`, `3`.
 
 Blocs:
 

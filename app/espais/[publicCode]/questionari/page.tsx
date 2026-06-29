@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
-import { XtecAccessNotice, XtecForbiddenNotice } from "@/components/auth/auth-actions";
+import {
+  ResponsibleForbiddenNotice,
+  XtecAccessNotice,
+} from "@/components/auth/auth-actions";
 import { QuestionnaireForm } from "@/components/questionnaire/questionnaire-form";
-import { getXtecSessionState } from "@/lib/auth/session";
+import { getResponsibleSessionState } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
 import { getServerAppUrl } from "@/lib/http/server-app-url";
 import { loadPublicQuestionnaire } from "@/lib/questionnaire/load-public-questionnaire";
@@ -24,7 +27,7 @@ export default async function OwnerQuestionnairePreviewPage({
     notFound();
   }
 
-  const session = await getXtecSessionState();
+  const session = await getResponsibleSessionState();
 
   if (session.status === "unauthenticated") {
     return (
@@ -40,7 +43,7 @@ export default async function OwnerQuestionnairePreviewPage({
     return (
       <main className="min-h-screen bg-paper">
         <section className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-6">
-          <XtecForbiddenNotice />
+          <ResponsibleForbiddenNotice reason={session.reason} />
         </section>
       </main>
     );

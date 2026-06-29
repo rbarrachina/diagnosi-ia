@@ -11,6 +11,7 @@ import { getRequiredAdminUser } from "@/lib/admin/auth";
 import { getRequiredFormString, parseQuestionnaireContentFormData } from "@/lib/admin/form";
 import {
   activateQuestionnaireVersion,
+  AdminQuestionnaireOperationError,
   createQuestionnaireVersion,
   deleteQuestionnaireVersion,
   replaceQuestionnaireContent,
@@ -18,10 +19,16 @@ import {
 import {
   activateQuestionnaireVersionInputSchema,
   adminUserInputSchema,
+  adminResultsMinimumSubmissionsSchema,
   createQuestionnaireVersionInputSchema,
   deleteQuestionnaireVersionInputSchema,
+  responsibleAccessModeSchema,
   setAdminUserActiveInputSchema,
 } from "@/lib/validation/schemas";
+import {
+  setAdminResultsMinimumSubmissions,
+  setResponsibleAccessMode,
+} from "@/lib/auth/responsible-access";
 
 type AdminActionStatus =
   | "activated"
@@ -31,7 +38,8 @@ type AdminActionStatus =
   | "copied"
   | "created"
   | "deleted"
-  | "saved";
+  | "saved"
+  | "settings-saved";
 
 type AdminActionError =
   | "activation-confirmation"
@@ -41,14 +49,18 @@ type AdminActionError =
   | "admin-update"
   | "copy"
   | "create"
+  | "create-title-exists"
+  | "create-version-exists"
   | "delete"
   | "delete-confirmation"
-  | "save";
+  | "save"
+  | "settings";
 
-type AdminSection = "admins" | "questionnaires";
+type AdminSection = "admins" | "questionnaires" | "settings";
 
 function adminPath(params: {
   error?: AdminActionError;
+  hash?: string;
   questionnaireId?: string;
   section?: AdminSection;
   status?: AdminActionStatus;
@@ -72,7 +84,8 @@ function adminPath(params: {
   }
 
   const query = searchParams.toString();
-  return query ? `/admin?${query}` : "/admin";
+  const path = query ? `/admin?${query}` : "/admin";
+  return params.hash ? `${path}#${params.hash}` : path;
 }
 
 async function requireAdminActorId() {
@@ -91,10 +104,16 @@ export async function createQuestionnaireVersionAction(formData: FormData) {
       sourceQuestionnaireId,
       version: getRequiredFormString(formData, "version"),
       title: getRequiredFormString(formData, "title"),
+      estimatedMinutes: getRequiredFormString(formData, "estimatedMinutes"),
     });
     result = await createQuestionnaireVersion(payload);
-  } catch {
-    redirect(adminPath({ error: "create", section: "questionnaires" }));
+  } catch (error) {
+    redirect(
+      adminPath({
+        error: getCreateQuestionnaireError(error),
+        section: "questionnaires",
+      }),
+    );
   }
 
   revalidatePath("/admin");
@@ -107,6 +126,20 @@ export async function createQuestionnaireVersionAction(formData: FormData) {
   );
 }
 
+function getCreateQuestionnaireError(error: unknown): AdminActionError {
+  if (error instanceof AdminQuestionnaireOperationError) {
+    if (error.reason === "duplicate_version") {
+      return "create-version-exists";
+    }
+
+    if (error.reason === "duplicate_title") {
+      return "create-title-exists";
+    }
+  }
+
+  return "create";
+}
+
 export async function saveQuestionnaireContentAction(formData: FormData) {
   await requireAdminActorId();
   const questionnaireId = getRequiredFormString(formData, "questionnaireId");
@@ -115,11 +148,25 @@ export async function saveQuestionnaireContentAction(formData: FormData) {
     const payload = parseQuestionnaireContentFormData(formData);
     await replaceQuestionnaireContent(payload);
   } catch {
-    redirect(adminPath({ error: "save", questionnaireId, section: "questionnaires" }));
+    redirect(
+      adminPath({
+        error: "save",
+        hash: "admin-top",
+        questionnaireId,
+        section: "questionnaires",
+      }),
+    );
   }
 
   revalidatePath("/admin");
-  redirect(adminPath({ questionnaireId, section: "questionnaires", status: "saved" }));
+  redirect(
+    adminPath({
+      hash: "admin-top",
+      questionnaireId,
+      section: "questionnaires",
+      status: "saved",
+    }),
+  );
 }
 
 export async function activateQuestionnaireVersionAction(formData: FormData) {
@@ -231,4 +278,24 @@ export async function setAdminUserActiveAction(formData: FormData) {
 
   revalidatePath("/admin");
   redirect(adminPath({ section: "admins", status: "admin-updated" }));
+}
+
+export async function setResponsibleAccessModeAction(formData: FormData) {
+  await requireAdminActorId();
+
+  try {
+    const mode = responsibleAccessModeSchema.parse(
+      getRequiredFormString(formData, "responsibleAccessMode"),
+    );
+    const minimumSubmissions = adminResultsMinimumSubmissionsSchema.parse(
+      getRequiredFormString(formData, "minimumResponseCount"),
+    );
+    await setResponsibleAccessMode(mode);
+    await setAdminResultsMinimumSubmissions(minimumSubmissions);
+  } catch {
+    redirect(adminPath({ error: "settings", section: "settings" }));
+  }
+
+  revalidatePath("/admin");
+  redirect(adminPath({ section: "settings", status: "settings-saved" }));
 }

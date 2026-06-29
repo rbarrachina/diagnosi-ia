@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1781556864648,
+      "tag": "0000_luxuriant_ikaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1781685987943,
+      "tag": "0001_short_onslaught",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1781784000000,
+      "tag": "0002_submission_locks",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1781791200000,
+      "tag": "0003_admin_results_minimum_submissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1781877600000,
+      "tag": "0004_questionnaire_estimated_minutes",
+      "breakpoints": true
+    }
+  ]
+}

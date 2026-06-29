@@ -1,4 +1,4 @@
-import { getXtecSessionState } from "@/lib/auth/session";
+import { getResponsibleSessionState } from "@/lib/auth/session";
 import {
   createDiagnosticSpace,
   OwnerSpaceAlreadyExistsError,
@@ -17,7 +17,7 @@ export async function POST(request: Request): Promise<Response> {
     });
     createSpaceRequestSchema.parse(payload);
 
-    const session = await getXtecSessionState();
+    const session = await getResponsibleSessionState();
 
     if (session.status === "unauthenticated") {
       return Response.json({ error: "Cal iniciar sessió." }, { status: 401 });
@@ -25,7 +25,7 @@ export async function POST(request: Request): Promise<Response> {
 
     if (session.status === "forbidden") {
       return Response.json(
-        { error: "Només es permet l’accés amb un compte XTEC." },
+        { error: getResponsibleAccessErrorMessage(session.reason) },
         { status: 403 },
       );
     }
@@ -61,4 +61,10 @@ export async function POST(request: Request): Promise<Response> {
 
     return Response.json({ error: "No s'ha pogut crear l'espai." }, { status: 400 });
   }
+}
+
+function getResponsibleAccessErrorMessage(reason: "not_xtec" | "not_centre_xtec") {
+  return reason === "not_centre_xtec"
+    ? "Només es permet l'accés a responsables amb un compte de centre XTEC o amb un administrador actiu."
+    : "Només es permet l'accés amb un compte XTEC.";
 }

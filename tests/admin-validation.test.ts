@@ -22,8 +22,9 @@ describe("admin validation schemas", () => {
   it("accepts strict questionnaire draft metadata", () => {
     expect(() =>
       createQuestionnaireDraftInputSchema.parse({
-        version: "2026.3",
-        title: "Diagnosi IA - Qüestionari 2026.3",
+        version: "2026-27 v1",
+        title: "Diagnosi IA - Qüestionari 2026-27 v1",
+        estimatedMinutes: 10,
       }),
     ).not.toThrow();
 
@@ -31,6 +32,7 @@ describe("admin validation schemas", () => {
       createQuestionnaireDraftInputSchema.parse({
         version: "2026.3",
         title: "Diagnosi IA",
+        estimatedMinutes: 10,
         unexpected: true,
       }),
     ).toThrow();
@@ -42,6 +44,7 @@ describe("admin validation schemas", () => {
         sourceQuestionnaireId: "002",
         newVersion: "2026.3",
         newTitle: "Diagnosi IA - Qüestionari 2026.3",
+        estimatedMinutes: 10,
       }),
     ).not.toThrow();
 
@@ -50,6 +53,7 @@ describe("admin validation schemas", () => {
         sourceQuestionnaireId: "2",
         newVersion: "v3",
         newTitle: "Diagnosi IA",
+        estimatedMinutes: 10,
       }),
     ).toThrow();
   });
@@ -58,8 +62,9 @@ describe("admin validation schemas", () => {
     expect(() =>
       createQuestionnaireVersionInputSchema.parse({
         sourceQuestionnaireId: "blank",
-        version: "2026.3",
-        title: "Diagnosi IA - Qüestionari 2026.3",
+        version: "2026-27 v1",
+        title: "Diagnosi IA - Qüestionari 2026-27 v1",
+        estimatedMinutes: "10",
       }),
     ).not.toThrow();
 
@@ -68,6 +73,7 @@ describe("admin validation schemas", () => {
         sourceQuestionnaireId: "002",
         version: "2026.3",
         title: "Diagnosi IA - Qüestionari 2026.3",
+        estimatedMinutes: 12,
       }),
     ).not.toThrow();
 
@@ -76,6 +82,16 @@ describe("admin validation schemas", () => {
         sourceQuestionnaireId: "2",
         version: "2026.3",
         title: "Diagnosi IA - Qüestionari 2026.3",
+        estimatedMinutes: 10,
+      }),
+    ).toThrow();
+
+    expect(() =>
+      createQuestionnaireVersionInputSchema.parse({
+        sourceQuestionnaireId: "blank",
+        version: "2026.3",
+        title: "Diagnosi IA - Qüestionari 2026.3",
+        estimatedMinutes: 0,
       }),
     ).toThrow();
   });
@@ -85,6 +101,7 @@ describe("admin validation schemas", () => {
       replaceQuestionnaireContentInputSchema.parse({
         questionnaireId: "003",
         title: "Diagnosi IA - Qüestionari 2026.3",
+        estimatedMinutes: 10,
         blocks: validBlocks(),
       }),
     ).not.toThrow();
@@ -93,6 +110,7 @@ describe("admin validation schemas", () => {
       replaceQuestionnaireContentInputSchema.parse({
         questionnaireId: "003",
         title: "Diagnosi IA - Qüestionari 2026.3",
+        estimatedMinutes: 10,
         blocks: validBlocks().slice(0, 4),
       }),
     ).not.toThrow();
@@ -101,6 +119,7 @@ describe("admin validation schemas", () => {
       replaceQuestionnaireContentInputSchema.parse({
         questionnaireId: "003",
         title: "Diagnosi IA - Qüestionari 2026.3",
+        estimatedMinutes: 10,
         blocks: [
           ...validBlocks(),
           {
@@ -121,6 +140,7 @@ describe("admin validation schemas", () => {
       replaceQuestionnaireContentInputSchema.parse({
         questionnaireId: "003",
         title: "Diagnosi IA - Qüestionari 2026.3",
+        estimatedMinutes: 10,
         blocks: duplicateBlocks,
       }),
     ).toThrow();
@@ -135,6 +155,7 @@ describe("admin validation schemas", () => {
       replaceQuestionnaireContentInputSchema.parse({
         questionnaireId: "003",
         title: "Diagnosi IA - Qüestionari 2026.3",
+        estimatedMinutes: 10,
         blocks: duplicateQuestions,
       }),
     ).toThrow();

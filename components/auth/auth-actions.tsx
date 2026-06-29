@@ -61,3 +61,25 @@ export function XtecForbiddenNotice() {
     </div>
   );
 }
+
+type ResponsibleForbiddenNoticeProps = {
+  reason?: "not_xtec" | "not_centre_xtec";
+};
+
+export function ResponsibleForbiddenNotice({
+  reason = "not_xtec",
+}: ResponsibleForbiddenNoticeProps) {
+  return (
+    <div className="rounded-md border border-red-200 bg-red-50 p-6 text-center text-red-900 shadow-sm">
+      <h2 className="text-xl font-semibold">Accés no autoritzat</h2>
+      <p className="mt-3 text-sm leading-6">
+        {reason === "not_centre_xtec"
+          ? "Només es permet l'accés a responsables amb un compte de centre XTEC o amb un administrador actiu."
+          : "Només es permet l'accés amb un compte XTEC."}
+      </p>
+      <div className="mt-5 flex justify-center">
+        <LogoutButton next="/crear" />
+      </div>
+    </div>
+  );
+}

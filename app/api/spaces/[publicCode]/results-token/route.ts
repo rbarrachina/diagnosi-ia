@@ -1,4 +1,4 @@
-import { getXtecSessionState } from "@/lib/auth/session";
+import { getResponsibleSessionState } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
 import { resolveAppUrl } from "@/lib/http/app-url";
 import { regenerateOwnerResultsToken } from "@/lib/spaces/manage-spaces";
@@ -22,7 +22,7 @@ export async function POST(
       return Response.json({ error: "Codi públic invàlid." }, { status: 400 });
     }
 
-    const session = await getXtecSessionState();
+    const session = await getResponsibleSessionState();
 
     if (session.status === "unauthenticated") {
       return Response.json({ error: "Cal iniciar sessió." }, { status: 401 });
@@ -30,7 +30,7 @@ export async function POST(
 
     if (session.status === "forbidden") {
       return Response.json(
-        { error: "Només es permet l’accés amb un compte XTEC." },
+        { error: getResponsibleAccessErrorMessage(session.reason) },
         { status: 403 },
       );
     }
@@ -48,4 +48,10 @@ export async function POST(
       { status: 400 },
     );
   }
+}
+
+function getResponsibleAccessErrorMessage(reason: "not_xtec" | "not_centre_xtec") {
+  return reason === "not_centre_xtec"
+    ? "Només es permet l'accés a responsables amb un compte de centre XTEC o amb un administrador actiu."
+    : "Només es permet l'accés amb un compte XTEC.";
 }

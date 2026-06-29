@@ -1,4 +1,4 @@
-export type ScaleValue = 0 | 1 | 2;
+export type ScaleValue = 0 | 1 | 2 | 3;
 
 export type ScaleOption = {
   value: ScaleValue;
@@ -29,8 +29,10 @@ export type BlockResult = {
 
 export type AggregatedResults = {
   publicCode: string;
+  scopeLabel?: string;
   questionnaireVersion: string;
   generatedAt: string;
+  diagnosticSpaceCount?: number;
   totalSubmissions: number;
   globalAverage: number | null;
   lowResponseWarning: boolean;

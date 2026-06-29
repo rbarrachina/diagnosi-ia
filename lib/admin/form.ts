@@ -22,6 +22,7 @@ export function parseQuestionnaireContentFormData(
   const payload = {
     questionnaireId: getRequiredFormString(formData, "questionnaireId"),
     title: getRequiredFormString(formData, "title"),
+    estimatedMinutes: getRequiredFormString(formData, "estimatedMinutes"),
     confirmAssignedEdit: formData.get("confirmAssignedEdit") === "yes",
     blocks: blockPositions.map((blockPosition) => {
       const questionPositions = formData

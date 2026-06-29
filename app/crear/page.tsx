@@ -1,18 +1,18 @@
 import {
   LogoutButton,
+  ResponsibleForbiddenNotice,
   XtecAccessNotice,
-  XtecForbiddenNotice,
 } from "@/components/auth/auth-actions";
 import { CreateSpaceForm } from "@/components/create-space/create-space-form";
 import { ParticipantInfoCard } from "@/components/create-space/participant-info-card";
-import { getXtecSessionState } from "@/lib/auth/session";
+import { getResponsibleSessionState } from "@/lib/auth/session";
 import { getServerAppUrl } from "@/lib/http/server-app-url";
 import { listOwnerSpaces } from "@/lib/spaces/manage-spaces";
 
 export const dynamic = "force-dynamic";
 
 export default async function CreatePage() {
-  const session = await getXtecSessionState();
+  const session = await getResponsibleSessionState();
   const ownerSpaces =
     session.status === "authenticated"
       ? await listOwnerSpaces(session.user.id, await getServerAppUrl())
@@ -58,7 +58,7 @@ export default async function CreatePage() {
 
         {session.status === "forbidden" ? (
           <div className="w-full max-w-xl">
-            <XtecForbiddenNotice />
+            <ResponsibleForbiddenNotice reason={session.reason} />
           </div>
         ) : null}
 

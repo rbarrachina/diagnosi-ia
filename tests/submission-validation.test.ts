@@ -39,6 +39,14 @@ describe("submission payload validation", () => {
         })),
       }),
     ).not.toThrow();
+    expect(() =>
+      submissionRequestSchema.parse({
+        ...validPayload(),
+        answers: validAnswers().map((answer, index) =>
+          index === 0 ? { ...answer, value: 3 } : answer,
+        ),
+      }),
+    ).not.toThrow();
   });
 
   it("rejects additional top-level fields and answer fields", () => {
@@ -86,7 +94,7 @@ describe("submission payload validation", () => {
     ).toThrow();
 
     const invalidValue = validAnswers();
-    invalidValue[0] = { ...invalidValue[0], value: 3 };
+    invalidValue[0] = { ...invalidValue[0], value: 4 };
     expect(() =>
       submissionRequestSchema.parse({
         ...validPayload(),

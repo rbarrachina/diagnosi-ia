@@ -1,8 +1,10 @@
 import type { NextRequest } from "next/server";
-import { updateSupabaseAuthSession } from "@/lib/database/auth-middleware";
+import { NextResponse } from "next/server";
 
 export async function proxy(request: NextRequest) {
-  return updateSupabaseAuthSession(request);
+  return NextResponse.next({
+    request,
+  });
 }
 
 export const config = {

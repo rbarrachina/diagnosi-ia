@@ -21,6 +21,33 @@ describe("resolveAppUrl", () => {
     ).toBe("https://diagnosi-ia.vercel.app");
   });
 
+  it("ignores a private-network configured URL for public tunnel requests", () => {
+    expect(
+      resolveAppUrl(
+        "https://example.trycloudflare.com/api/spaces",
+        "http://192.168.1.168:3000",
+      ),
+    ).toBe("https://example.trycloudflare.com");
+  });
+
+  it("uses a private-network request origin even when another private URL is configured", () => {
+    expect(
+      resolveAppUrl(
+        "http://192.168.1.200:3000/api/spaces",
+        "http://192.168.1.168:3000",
+      ),
+    ).toBe("http://192.168.1.200:3000");
+  });
+
+  it("uses a local request origin even when a public URL is configured", () => {
+    expect(
+      resolveAppUrl(
+        "http://localhost:3000/api/spaces",
+        "https://example.trycloudflare.com",
+      ),
+    ).toBe("http://localhost:3000");
+  });
+
   it("allows a local configured URL for local requests", () => {
     expect(resolveAppUrl("http://localhost:3000/api/spaces", "http://localhost:3000")).toBe(
       "http://localhost:3000",

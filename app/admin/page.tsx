@@ -1,17 +1,26 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { LoginButton, LogoutButton } from "@/components/auth/auth-actions";
+import { AdminResultsClient } from "@/components/results/admin-results-client";
 import {
   addAdminUserAction,
   activateQuestionnaireVersionAction,
   createQuestionnaireVersionAction,
   deleteQuestionnaireVersionAction,
   deleteAdminUserAction,
+  setResponsibleAccessModeAction,
   setAdminUserActiveAction,
 } from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/app/admin/activation-button";
 import { QuestionnaireEditorForm } from "@/app/admin/questionnaire-editor-form";
 import { listAdminUsers, searchAuthUsersForAdmin } from "@/lib/admin/admin-users";
 import { getAdminSessionState } from "@/lib/admin/auth";
+import { isLocalAuthEnabled } from "@/lib/auth/local";
+import {
+  getAdminResultsMinimumSubmissions,
+  getResponsibleAccessMode,
+  type ResponsibleAccessMode,
+} from "@/lib/auth/responsible-access";
 import type {
   AdminQuestionnaireDetail,
   AdminQuestionnaireSummary,
@@ -22,6 +31,7 @@ import {
   getQuestionnaireVersionDetail,
   listQuestionnaireVersions,
 } from "@/lib/admin/questionnaires";
+import { getAggregatedResultsForQuestionnaireVersion } from "@/lib/results/get-results";
 import {
   MAX_QUESTION_BLOCKS,
   MAX_QUESTIONS_PER_BLOCK,
@@ -50,6 +60,7 @@ const statusMessages: Record<string, string> = {
   created: "Esborrany creat.",
   deleted: "Qüestionari eliminat.",
   saved: "Contingut desat.",
+  "settings-saved": "Configuració desada.",
 };
 
 const errorMessages: Record<string, string> = {
@@ -59,13 +70,16 @@ const errorMessages: Record<string, string> = {
   "admin-delete": "No s'ha pogut eliminar el rol d'administrador.",
   "admin-update": "No s'ha pogut actualitzar l'administrador.",
   copy: "No s'ha pogut copiar la versió.",
-  create: "No s'ha pogut crear la versió. Revisa que la versió i el títol no existeixin.",
+  create: "No s'ha pogut crear la versió. Revisa que les dades siguin vàlides.",
+  "create-title-exists": "No s'ha pogut crear la versió perquè el títol ja existeix.",
+  "create-version-exists": "No s'ha pogut crear la versió perquè la versió ja existeix.",
   delete: "No s'ha pogut eliminar el qüestionari.",
   "delete-confirmation": "Cal confirmar l'eliminació total.",
   save: "No s'ha pogut desar. Revisa l'avís d'edició i que no s'eliminin preguntes amb respostes.",
+  settings: "No s'ha pogut desar la configuració.",
 };
 
-type AdminSection = "admins" | "questionnaires";
+type AdminSection = "admins" | "questionnaires" | "results" | "settings";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("ca-ES", {
@@ -76,16 +90,29 @@ function formatDate(value: string) {
 }
 
 function getAdminSection(params: { error?: string; section?: string; status?: string }) {
-  if (params.section === "admins" || params.section === "questionnaires") {
+  if (
+    params.section === "admins" ||
+    params.section === "questionnaires" ||
+    params.section === "results" ||
+    params.section === "settings"
+  ) {
     return params.section;
   }
 
   if (
     params.status === "admin-added" ||
     params.status === "admin-updated" ||
+    params.status === "settings-saved" ||
     params.error === "admin-add" ||
-    params.error === "admin-update"
+    params.error === "admin-update" ||
+    params.error === "settings"
   ) {
+    return params.status === "settings-saved" || params.error === "settings"
+      ? "settings"
+      : "admins";
+  }
+
+  if (isLocalAuthEnabled()) {
     return "admins";
   }
 
@@ -109,6 +136,21 @@ function getSelectedQuestionnaireId(
     versions[0]?.id ??
     null
   );
+}
+
+function getRequestedQuestionnaireId(
+  requestedId: string | undefined,
+  versions: AdminQuestionnaireSummary[],
+) {
+  if (
+    requestedId &&
+    questionnaireIdSchema.safeParse(requestedId).success &&
+    versions.some((version) => version.id === requestedId)
+  ) {
+    return requestedId;
+  }
+
+  return null;
 }
 
 function AdminAccessDenied({
@@ -149,7 +191,8 @@ function AdminSetupError() {
             configurada abans d&apos;entrar a aquesta pantalla.
           </p>
           <p className="mt-3 text-sm leading-6">
-            Revisa que existeixin `admin_users` i la RPC `bootstrap_first_admin`.
+            Revisa que existeixi `admin_users` a MySQL i que la configuració
+            local apunti a la base de dades correcta.
           </p>
           <div className="mt-5 flex justify-center">
             <LogoutButton next="/admin" />
@@ -236,6 +279,7 @@ function AdminMenu({
   const questionnaireHref = selectedQuestionnaireId
     ? `/admin?section=questionnaires&questionnaireId=${selectedQuestionnaireId}`
     : "/admin?section=questionnaires";
+  const resultsHref = "/admin?section=results";
 
   const linkClass = (section: AdminSection) =>
     `inline-flex h-10 items-center rounded-md border px-4 text-sm font-semibold transition ${
@@ -249,10 +293,103 @@ function AdminMenu({
       <Link className={linkClass("questionnaires")} href={questionnaireHref}>
         Gestió de qüestionaris
       </Link>
+      <Link className={linkClass("results")} href={resultsHref}>
+        Resultats
+      </Link>
       <Link className={linkClass("admins")} href="/admin?section=admins">
         Gestió d&apos;usuaris
       </Link>
+      <Link className={linkClass("settings")} href="/admin?section=settings">
+        Configuració
+      </Link>
     </nav>
+  );
+}
+
+function AdminResultsPanel({
+  minimumResponseCount,
+  selectedQuestionnaireId,
+  versions,
+}: {
+  minimumResponseCount: number;
+  selectedQuestionnaireId: string | null;
+  versions: AdminQuestionnaireSummary[];
+}) {
+  const selectedVersion = versions.find((version) => version.id === selectedQuestionnaireId);
+
+  return (
+    <div className="space-y-6">
+      <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">Resultats</h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Tria una versió del qüestionari per veure els resultats agregats
+              de totes les enquestes fetes amb aquella versió.
+            </p>
+          </div>
+          <form action="/admin" className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <input name="section" type="hidden" value="results" />
+            <label className="text-sm font-medium text-slate-700">
+              Versió del qüestionari
+              <select
+                className="mt-1 min-w-72 rounded-md border border-line bg-white px-3 py-2 text-sm"
+                defaultValue={selectedQuestionnaireId ?? ""}
+                name="questionnaireId"
+                required
+              >
+                <option disabled value="">
+                  Tria una versió
+                </option>
+                {versions.map((version) => (
+                  <option key={version.id} value={version.id}>
+                    {version.version} · {version.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-[#1f5d68]"
+              disabled={versions.length === 0}
+              type="submit"
+            >
+              Mostra resultats
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {selectedQuestionnaireId && selectedVersion ? (
+        <AdminResultsContent
+          minimumResponseCount={minimumResponseCount}
+          questionnaireId={selectedQuestionnaireId}
+        />
+      ) : (
+        <section className="rounded-md border border-dashed border-line bg-white p-5 text-sm text-slate-600">
+          {versions.length === 0
+            ? "Encara no hi ha cap versió de qüestionari per mostrar."
+            : "Tria una versió del qüestionari per generar els resultats."}
+        </section>
+      )}
+    </div>
+  );
+}
+
+async function AdminResultsContent({
+  minimumResponseCount,
+  questionnaireId,
+}: {
+  minimumResponseCount: number;
+  questionnaireId: string;
+}) {
+  const results = await getAggregatedResultsForQuestionnaireVersion(questionnaireId);
+
+  return (
+    <AdminResultsClient
+      minimumResponseCount={minimumResponseCount}
+      questionnaireId={questionnaireId}
+      results={results}
+    />
   );
 }
 
@@ -266,7 +403,7 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
           <input
             className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm"
             name="version"
-            placeholder="2026.3"
+            placeholder="2026-27 v1"
             required
           />
         </label>
@@ -275,8 +412,20 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
           <input
             className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm"
             name="title"
-            placeholder="Diagnosi IA - Qüestionari 2026.3"
+            placeholder="Diagnosi IA - Qüestionari 2026-27 v1"
             required
+          />
+        </label>
+        <label className="block text-sm font-medium text-slate-700">
+          Minuts per respondre-la
+          <input
+            className="mt-1 w-28 rounded-md border border-line px-3 py-2 text-sm"
+            defaultValue={10}
+            max={120}
+            min={1}
+            name="estimatedMinutes"
+            required
+            type="number"
           />
         </label>
         <label className="block text-sm font-medium text-slate-700">
@@ -352,7 +501,8 @@ function QuestionnaireEditor({ detail }: { detail: AdminQuestionnaireDetail | nu
           </div>
           <p className="mt-2 text-sm text-slate-600">
             {detail.blockCount} blocs, {detail.questionCount} preguntes,{" "}
-            {detail.diagnosticSpaceCount} espais, {detail.totalSubmissions} respostes.
+            {detail.diagnosticSpaceCount} espais, {detail.totalSubmissions} respostes,{" "}
+            {detail.estimatedMinutes} minuts.
             Creada el {formatDate(detail.createdAt)}.
           </p>
         </div>
@@ -589,6 +739,164 @@ function AdminUsersPanel({
   );
 }
 
+function InfoDisclosure({ children, label }: { children: ReactNode; label: string }) {
+  return (
+    <span className="group relative inline-flex">
+      <button
+        aria-label={label}
+        className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-blue-200 text-blue-600 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          className="h-3.5 w-3.5"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4" />
+          <path d="M12 8h.01" />
+        </svg>
+      </button>
+      <span className="absolute left-0 top-full z-10 mt-2 hidden w-72 rounded-md border border-line bg-white p-3 text-sm font-normal leading-6 text-slate-700 shadow-lg group-hover:block group-focus-within:block sm:w-96">
+        {children}
+      </span>
+    </span>
+  );
+}
+
+function ResponsibleAccessOption({
+  checked,
+  children,
+  description,
+  id,
+  infoLabel,
+  value,
+}: {
+  checked: boolean;
+  children: ReactNode;
+  description: ReactNode;
+  id: string;
+  infoLabel: string;
+  value: ResponsibleAccessMode;
+}) {
+  return (
+    <div className="flex items-start gap-3 py-4 text-sm text-slate-700">
+      <input
+        className="mt-1 h-4 w-4"
+        defaultChecked={checked}
+        id={id}
+        name="responsibleAccessMode"
+        type="radio"
+        value={value}
+      />
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="font-semibold text-ink" htmlFor={id}>
+            {children}
+          </label>
+          <InfoDisclosure label={infoLabel}>
+            {description}
+          </InfoDisclosure>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsPanel({
+  minimumResponseCount,
+  responsibleAccessMode,
+}: {
+  minimumResponseCount: number;
+  responsibleAccessMode: ResponsibleAccessMode;
+}) {
+  return (
+    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+      <h2 className="text-lg font-semibold text-ink">Configuració</h2>
+      <form action={setResponsibleAccessModeAction} className="mt-5 space-y-5">
+        <fieldset>
+          <legend className="text-sm font-semibold text-ink">
+            Accés per a responsables
+          </legend>
+          <div className="mt-3 space-y-1 rounded-md border border-line bg-white px-4">
+            <ResponsibleAccessOption
+              checked={responsibleAccessMode === "all_xtec"}
+              description={
+                <>
+                  Qualsevol compte acabat en @xtec.cat pot crear i gestionar el
+                  seu espai.
+                </>
+              }
+              id="responsible-access-all-xtec"
+              infoLabel="Més informació sobre qualsevol compte XTEC"
+              value="all_xtec"
+            >
+              Qualsevol compte XTEC
+            </ResponsibleAccessOption>
+            <ResponsibleAccessOption
+              checked={responsibleAccessMode === "centre_xtec"}
+              description={
+                <>
+                  Només els comptes amb format a0000000@xtec.cat, b0000000@xtec.cat,
+                  c0000000@xtec.cat, d0000000@xtec.cat o e0000000@xtec.cat poden
+                  accedir com a responsables. Els administradors actius també poden
+                  accedir en qualsevol mode.
+                </>
+              }
+              id="responsible-access-restricted-xtec"
+              infoLabel="Més informació sobre només comptes de centre XTEC"
+              value="centre_xtec"
+            >
+              Només comptes de centre XTEC
+            </ResponsibleAccessOption>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend className="text-sm font-semibold text-ink">
+            Resultats globals
+          </legend>
+          <div className="mt-3 rounded-md border border-line bg-white p-4 text-sm text-slate-700">
+            <div className="flex flex-wrap items-center gap-2">
+              <label
+                className="font-semibold text-ink"
+                htmlFor="minimum-response-count"
+              >
+                Respostes mínimes per computar
+              </label>
+              <input
+                className="w-20 rounded-md border border-line px-3 py-2 text-sm"
+                defaultValue={minimumResponseCount}
+                id="minimum-response-count"
+                max={10}
+                min={0}
+                name="minimumResponseCount"
+                required
+                type="number"
+              />
+              <InfoDisclosure label="Més informació sobre respostes mínimes per computar">
+                Les enquestes amb un nombre de respostes igual o inferior a
+                aquest valor no es computen als resultats globals
+                d&apos;administració.
+              </InfoDisclosure>
+            </div>
+          </div>
+        </fieldset>
+        <button
+          className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-[#1f5d68]"
+          type="submit"
+        >
+          Desa configuració
+        </button>
+      </form>
+    </section>
+  );
+}
+
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   const params = await searchParams;
   const session = await getAdminSessionState({ allowBootstrap: true });
@@ -619,18 +927,37 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     return <AdminSetupError />;
   }
 
-  const [versions, admins] = await Promise.all([
-    listQuestionnaireVersions(),
-    listAdminUsers(),
+  const activeSection = getAdminSection(params);
+  const [
+    versions,
+    admins,
+    responsibleAccessMode,
+    minimumResponseCount,
+  ] = await Promise.all([
+    activeSection === "questionnaires" || activeSection === "results"
+      ? listQuestionnaireVersions()
+      : Promise.resolve([]),
+    activeSection === "admins" ? listAdminUsers() : Promise.resolve([]),
+    activeSection === "settings"
+      ? getResponsibleAccessMode()
+      : Promise.resolve<ResponsibleAccessMode>("all_xtec"),
+    activeSection === "settings" || activeSection === "results"
+      ? getAdminResultsMinimumSubmissions()
+      : Promise.resolve(0),
   ]);
   const selectedQuestionnaireId = getSelectedQuestionnaireId(
     params.questionnaireId,
     versions,
   );
+  const selectedResultsQuestionnaireId =
+    activeSection === "results"
+      ? getRequestedQuestionnaireId(params.questionnaireId, versions)
+      : selectedQuestionnaireId;
   const selectedDetail = selectedQuestionnaireId
-    ? await getQuestionnaireVersionDetail(selectedQuestionnaireId)
+    ? activeSection === "questionnaires"
+      ? await getQuestionnaireVersionDetail(selectedQuestionnaireId)
+      : null
     : null;
-  const activeSection = getAdminSection(params);
   const parsedAdminSearch = adminUserSearchQuerySchema.safeParse(params.adminSearch);
   const adminSearchQuery = parsedAdminSearch.success
     ? parsedAdminSearch.data
@@ -643,7 +970,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-paper">
+    <main className="min-h-screen scroll-mt-0 bg-paper" id="admin-top">
       <section className="mx-auto w-full max-w-7xl px-6 py-8">
         <header className="mb-6">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
@@ -656,7 +983,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <AdminMenu
                 activeSection={activeSection}
-                selectedQuestionnaireId={selectedQuestionnaireId}
+                selectedQuestionnaireId={selectedResultsQuestionnaireId}
               />
               <LogoutButton next="/admin" />
             </div>
@@ -692,13 +1019,24 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               <QuestionnaireEditor detail={selectedDetail} />
             </div>
           </div>
-        ) : (
+        ) : activeSection === "admins" ? (
           <AdminUsersPanel
             admins={admins}
             currentUserId={session.user.id}
             searchQuery={adminSearchQuery}
             searchResults={adminSearchResults}
             searchWasSubmitted={searchWasSubmitted}
+          />
+        ) : activeSection === "results" ? (
+          <AdminResultsPanel
+            minimumResponseCount={minimumResponseCount}
+            selectedQuestionnaireId={selectedResultsQuestionnaireId}
+            versions={versions}
+          />
+        ) : (
+          <SettingsPanel
+            minimumResponseCount={minimumResponseCount}
+            responsibleAccessMode={responsibleAccessMode}
           />
         )}
       </section>

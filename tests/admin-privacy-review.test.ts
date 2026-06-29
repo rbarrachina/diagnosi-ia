@@ -77,9 +77,8 @@ describe("admin privacy review", () => {
     expect(questionnaireService?.source).toContain(
       "countRows(\"submissions\", row.id)",
     );
-    expect(questionnaireService?.source).toContain(
-      ".select(\"id\", { count: \"exact\", head: true })",
-    );
+    expect(questionnaireService?.source).toContain("select count(*) as row_count");
+    expect(questionnaireService?.source).toContain("mysqlPool.execute");
   });
 
   it("does not introduce centre, person or participant identifiers in admin forms", () => {

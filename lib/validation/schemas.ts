@@ -10,9 +10,13 @@ export const MAX_SUBMISSIONS_PER_SPACE = 300;
 
 export const questionnaireVersionSchema = z
   .string()
-  .min(6)
+  .trim()
+  .min(2)
   .max(24)
-  .regex(/^[0-9]{4}\.[0-9]+$/, "La versió del qüestionari no és vàlida");
+  .regex(
+    /^[0-9]{4}[A-Za-zÀ-ÿ0-9 ._-]*$/,
+    "La versió del qüestionari no és vàlida",
+  );
 
 export const publicCodeSchema = z
   .string()
@@ -24,7 +28,12 @@ export const privateTokenSchema = z
   .max(256)
   .regex(/^[A-Za-z0-9_-]+$/, "El format del token privat no és vàlid");
 
-export const answerValueSchema = z.union([z.literal(0), z.literal(1), z.literal(2)]);
+export const answerValueSchema = z.union([
+  z.literal(0),
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+]);
 
 export const submissionAnswerSchema = z
   .object({
@@ -76,7 +85,18 @@ export const questionnaireIdSchema = z
   .string()
   .regex(/^[0-9]{3}$/, "L'identificador de qüestionari no és vàlid");
 
+export const adminResultsRequestSchema = z
+  .object({
+    questionnaireId: questionnaireIdSchema,
+  })
+  .strict();
+
 export const questionnaireTitleSchema = z.string().trim().min(1).max(200);
+export const questionnaireEstimatedMinutesSchema = z.coerce
+  .number()
+  .int()
+  .min(1)
+  .max(120);
 export const questionnaireBlockTitleSchema = z.string().trim().min(1).max(160);
 export const questionnaireQuestionTextSchema = z.string().trim().min(1).max(600);
 
@@ -135,6 +155,7 @@ export const createQuestionnaireDraftInputSchema = z
   .object({
     version: questionnaireVersionSchema,
     title: questionnaireTitleSchema,
+    estimatedMinutes: questionnaireEstimatedMinutesSchema,
   })
   .strict();
 
@@ -143,6 +164,7 @@ export const copyQuestionnaireVersionInputSchema = z
     sourceQuestionnaireId: questionnaireIdSchema,
     newVersion: questionnaireVersionSchema,
     newTitle: questionnaireTitleSchema,
+    estimatedMinutes: questionnaireEstimatedMinutesSchema,
   })
   .strict();
 
@@ -151,6 +173,7 @@ export const createQuestionnaireVersionInputSchema = z
     sourceQuestionnaireId: z.union([questionnaireIdSchema, z.literal("blank")]),
     version: questionnaireVersionSchema,
     title: questionnaireTitleSchema,
+    estimatedMinutes: questionnaireEstimatedMinutesSchema,
   })
   .strict();
 
@@ -158,6 +181,7 @@ export const replaceQuestionnaireContentInputSchema = z
   .object({
     questionnaireId: questionnaireIdSchema,
     title: questionnaireTitleSchema,
+    estimatedMinutes: questionnaireEstimatedMinutesSchema,
     blocks: adminQuestionnaireBlocksSchema,
     confirmAssignedEdit: z.boolean().default(false),
   })
@@ -190,6 +214,13 @@ export const setAdminUserActiveInputSchema = z
   })
   .strict();
 
+export const responsibleAccessModeSchema = z.enum(["all_xtec", "centre_xtec"]);
+export const adminResultsMinimumSubmissionsSchema = z.coerce
+  .number()
+  .int()
+  .min(0)
+  .max(10);
+
 export type SubmissionAnswerInput = z.infer<typeof submissionAnswerSchema>;
 export type SubmissionRequestInput = z.infer<typeof submissionRequestSchema>;
 export type PrivateResultsRequestInput = z.infer<typeof privateResultsRequestSchema>;
@@ -217,3 +248,7 @@ export type DeleteQuestionnaireVersionInput = z.infer<
 export type AdminUserInput = z.infer<typeof adminUserInputSchema>;
 export type AdminUserSearchQuery = z.infer<typeof adminUserSearchQuerySchema>;
 export type SetAdminUserActiveInput = z.infer<typeof setAdminUserActiveInputSchema>;
+export type ResponsibleAccessModeInput = z.infer<typeof responsibleAccessModeSchema>;
+export type AdminResultsMinimumSubmissionsInput = z.infer<
+  typeof adminResultsMinimumSubmissionsSchema
+>;

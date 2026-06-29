@@ -1,11 +1,13 @@
 import "server-only";
 
-import type { User } from "@supabase/supabase-js";
+import type { RowDataPacket } from "mysql2/promise";
+
+import type { AppAuthenticatedUser } from "@/lib/auth/local";
 import { getXtecSessionState } from "@/lib/auth/session";
-import { createSupabaseAdminClient } from "@/lib/database/server";
+import { mysqlPool } from "@/lib/db/client";
 
 export type AdminSessionState =
-  | { status: "authenticated"; user: User & { email: string }; bootstrapped: boolean }
+  | { status: "authenticated"; user: AppAuthenticatedUser; bootstrapped: boolean }
   | { status: "forbidden"; reason: "not_xtec" | "not_admin"; email: string | null }
   | { status: "setup_error"; reason: "admin_storage_unavailable" }
   | { status: "unauthenticated" };
@@ -17,38 +19,74 @@ export class AdminAccessError extends Error {
   }
 }
 
-type AdminUserRow = {
+type AdminUserRow = RowDataPacket & {
   user_id: string;
 };
 
+type CountRow = RowDataPacket & {
+  admin_count: number | string;
+};
+
+type LockRow = RowDataPacket & {
+  lock_result: number | null;
+};
+
 async function isActiveAdminUser(userId: string): Promise<boolean> {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("admin_users")
-    .select("user_id")
-    .eq("user_id", userId)
-    .eq("role", "admin")
-    .eq("is_active", true)
-    .maybeSingle<AdminUserRow>();
+  const [rows] = await mysqlPool.execute<AdminUserRow[]>(
+    `
+      select user_id
+      from admin_users
+      where user_id = ?
+        and role = 'admin'
+        and is_active = true
+      limit 1
+    `,
+    [userId],
+  );
 
-  if (error) {
-    throw new Error("Could not check administrator access");
-  }
-
-  return Boolean(data);
+  return Boolean(rows[0]);
 }
 
 async function bootstrapFirstAdmin(userId: string): Promise<boolean> {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase.rpc("bootstrap_first_admin", {
-    p_user_id: userId,
-  });
+  const connection = await mysqlPool.getConnection();
 
-  if (error) {
-    throw new Error("Could not bootstrap first administrator");
+  try {
+    await connection.beginTransaction();
+
+    const [lockRows] = await connection.execute<LockRow[]>(
+      "select get_lock('diagnosi_ia_admin_bootstrap', 10) as lock_result",
+    );
+
+    if (lockRows[0]?.lock_result !== 1) {
+      throw new Error("Could not acquire admin bootstrap lock");
+    }
+
+    const [countRows] = await connection.execute<CountRow[]>(
+      "select count(*) as admin_count from admin_users",
+    );
+
+    if (Number(countRows[0]?.admin_count ?? 0) !== 0) {
+      await connection.commit();
+      return false;
+    }
+
+    await connection.execute(
+      `
+        insert into admin_users (user_id, role, is_active, created_by)
+        values (?, 'admin', true, null)
+      `,
+      [userId],
+    );
+    await connection.commit();
+
+    return true;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    await connection.execute("select release_lock('diagnosi_ia_admin_bootstrap')");
+    connection.release();
   }
-
-  return Boolean(data);
 }
 
 export async function getAdminSessionState(options: {
@@ -98,7 +136,7 @@ export async function getAdminSessionState(options: {
   };
 }
 
-export async function getRequiredAdminUser(): Promise<User & { email: string }> {
+export async function getRequiredAdminUser(): Promise<AppAuthenticatedUser> {
   const session = await getAdminSessionState();
 
   if (session.status !== "authenticated") {

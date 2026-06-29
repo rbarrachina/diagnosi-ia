@@ -2,6 +2,8 @@
 
 ## Stack
 
+### `main`
+
 - Next.js App Router
 - TypeScript estricte
 - Tailwind CSS
@@ -11,6 +13,29 @@
 - Recharts per a gràfiques web
 - `@react-pdf/renderer` per generar PDF al servidor
 
+### `migration/mysql`
+
+La branca `migration/mysql` és experimental i prepara l'execucio local sense
+Supabase ni Vercel. L'objectiu immediat és executar l'aplicacio amb Next.js en
+Node.js i MySQL local.
+
+- Next.js App Router
+- TypeScript estricte
+- Tailwind CSS
+- MySQL 8.4 local
+- Drizzle ORM amb `mysql2`
+- Recharts per a gràfiques web
+- `@react-pdf/renderer` per generar PDF al servidor
+
+En aquesta branca, `main` continua sent la versio estable amb
+Supabase/PostgreSQL. Els fitxers `supabase/` es conserven com a referencia de
+la implementacio estable mentre la migracio no estigui completada.
+
+El flux principal local de `migration/mysql` no depen de Supabase: càrrega del
+qüestionari, creació d'espais, submissions, resultats agregats, PDF, auth
+server-side pròpia, `admin_users` i la gestio avançada de versions de
+qüestionari funcionen amb MySQL i codi server-side.
+
 ## Principis
 
 - El client mai accedeix directament a taules sensibles.
@@ -19,12 +44,28 @@
 - El servidor retorna resultats de conjunt, no files individuals.
 - Els tokens privats es comparen amb hash o HMAC, mai amb text pla.
 - El token privat no és posa en query params ni logs.
-- La creació i gestio d'espais requereix sessió OAuth amb correu `@xtec.cat`.
+- La creació i gestio d'espais requereix sessió OAuth amb correu `@xtec.cat`
+  autoritzat com a responsable. L'administracio pot limitar els responsables a
+  comptes de centre XTEC amb format `[a-e][0-9]{7}@xtec.cat`; els
+  administradors actius també poden ser responsables en qualsevol mode.
 - L'administracio global requereix sessió OAuth i autoritzacio explicita com a
   administrador, excepte el bootstrap inicial quan `admin_users` encara és
   buida.
 - L'administracio del qüestionari no pot exposar `submissions` ni `answers`
   individuals al navegador.
+- A `migration/mysql`, les garanties de RLS i RPCs de Supabase s'han de
+  substituir per repositoris server-side, validacio estricta i transaccions
+  MySQL. El navegador no ha de tenir acces directe a MySQL.
+- A `migration/mysql`, Supabase Auth queda substituit per una capa d'auth
+  server-side pròpia. `AUTH_MODE=local` serveix per desenvolupament ràpid i
+  `AUTH_MODE=google` fa OAuth real amb Google sense Supabase.
+- L'auth local provisional de `migration/mysql` s'activa només en
+  desenvolupament amb variables d'entorn (`AUTH_MODE=local`,
+  `LOCAL_AUTH_USER_ID`, `LOCAL_AUTH_EMAIL`). No desa nom, cognoms ni email a
+  `admin_users`.
+- El mode `AUTH_MODE=google` valida el `id_token` server-side, exigeix email
+  `@xtec.cat`, crea una cookie `httpOnly` signada i desa a MySQL nomes un UUID
+  opac derivat amb HMAC del subject de Google.
 
 ## Estructura prevista
 
@@ -95,6 +136,15 @@ Responsabilitats:
 - Encapsular consultes sensibles.
 - Evitar que components client importin clients amb privilegis.
 
+Nota per a `migration/mysql`:
+
+- La nova capa de dades s'ha de separar a `lib/db` i `lib/repositories`.
+- `lib/db/client.ts` ha de llegir `DATABASE_URL` i crear una connexio o pool
+  MySQL nomes al servidor.
+- Cap component client pot importar el client MySQL.
+- Les operacions que abans depenien de RPCs PostgreSQL passen a funcions
+  TypeScript server-side amb transaccions.
+
 ### `lib/validation`
 
 Responsabilitats:
@@ -145,9 +195,9 @@ Responsabilitats:
 
 Responsabilitats:
 
-- Calcular mitjana global.
-- Calcular mitjana per bloc.
-- Calcular mitjana per pregunta.
+- Calcular percentatge global normalitzat a partir de l'escala 0-3.
+- Calcular percentatge per bloc.
+- Calcular percentatge per pregunta.
 - Calcular distribucions per pregunta.
 - Generar textos d'interpretació a partir de resultats de conjunt.
 
@@ -170,6 +220,11 @@ del client Supabase amb `service_role` al servidor. Els endpoints
 `app/api/admin/**` només són necessaris si cal exposar una API HTTP interna
 separada de la pantalla `/admin`.
 
+Nota per a `migration/mysql`: les mateixes garanties s'han de mantenir amb la
+capa MySQL server-side. Quan un flux afecti diverses taules, la mutacio s'ha de
+fer dins una transaccio MySQL. Els endpoints no poden retornar files
+individuals de `submissions` o `answers`.
+
 ### `/admin`
 
 Pantalla d'entrada a l'administracio.
@@ -191,6 +246,7 @@ Crear un espai no concedeix permisos d'administracio.
 La pantalla `/admin` implementada separa la gestio en dues vistes de menú:
 
 - gestio de qüestionaris;
+- resultats agregats;
 - gestio d'usuaris administradors.
 
 La vista de gestio de qüestionaris mostra:
@@ -198,6 +254,7 @@ La vista de gestio de qüestionaris mostra:
 - llista de versions amb estat actiu, nombre de blocs, preguntes, espais i
   submissions;
 - formulari únic per crear una versio en blanc o copiar una versio existent;
+- configuracio dels minuts estimats per respondre cada versio;
 - editor de blocs i preguntes amb creacio i eliminacio d'elements;
 - avís i confirmacio abans d'editar versions assignades a espais;
 - activacio d'una versio completa amb confirmacio.
@@ -209,6 +266,31 @@ La vista de gestio d'usuaris mostra la gestio d'administradors per
 Supabase Auth Admin amb `service_role`, cercar comptes XTEC per nom, cognoms o
 correu i retornar només els camps necessaris per triar l'administrador. La taula
 `admin_users` continua desant només l'identificador d'Auth i metadades de rol.
+
+La vista de resultats d'administracio mostra un selector de versio de
+qüestionari i calcula resultats agregats acumulats de totes les enquestes
+d'aquella versio. La consulta MySQL agrupa per `question_id` i `value`, no
+retorna `submission_id`, `answer_id`, timestamps, espais individuals ni
+combinacions de respostes per persona.
+
+### `POST /api/admin/results/pdf`
+
+Entrada:
+
+```json
+{
+  "questionnaireId": "002"
+}
+```
+
+Flux:
+
+1. Validar sessio d'administrador actiu.
+2. Validar `questionnaireId` amb esquema estricte.
+3. Calcular resultats agregats de totes les submissions de la versio.
+4. Generar un PDF amb el mateix model agregat.
+
+No accepta tokens en query params i no retorna dades individuals.
 
 ### Server action o `POST /api/admin/questionnaires`
 
@@ -251,7 +333,7 @@ Flux:
 
 1. Validar sessió OAuth i rol administrador.
 2. Validar que la versio té entre 1 i 10 blocs, entre 1 i 10 preguntes per
-   bloc i escala `0`, `1`, `2`.
+   bloc i escala `0`, `1`, `2`, `3`.
 3. Desactivar la versio activa anterior i activar la versio indicada dins una
    operacio transaccional.
 4. No modificar cap `diagnostic_space` existent.
@@ -363,6 +445,7 @@ Entrada:
 
 Validacions:
 
+- El servidor té una sessio XTEC autenticada per al docent que respon.
 - L'espai existeix.
 - L'espai està actiu.
 - La versió coincideix amb la versio assignada a l'espai quan es va crear.
@@ -373,13 +456,18 @@ Validacions:
   l'espai.
 - No hi ha preguntes duplicades.
 - Totes les preguntes pertanyen a la versió.
-- Tots els valors són `0`, `1` o `2`.
+- Tots els valors són `0`, `1`, `2` o `3`.
 - No hi ha camps addicionals.
 
 Persistencia:
 
-- Inserció de `submissions` i `answers` dins una transacció amb `public.create_submission_with_answers`.
-- La RPC bloqueja la fila de `diagnostic_spaces` amb `FOR UPDATE` abans de comptar submissions per evitar superar el límit en enviaments simultanis.
+- Inserció d'un bloqueig HMAC a `submission_locks` i de `submissions` i
+  `answers` dins una mateixa transacció server-side.
+- La transacció bloqueja la fila de `diagnostic_spaces` amb `FOR UPDATE` abans
+  d'escriure el bloqueig i comptar submissions per evitar duplicats i superar
+  el límit en enviaments simultanis.
+- El HMAC de `submission_locks` no es desa a `submissions` ni a `answers` i no
+  es retorna al navegador.
 
 Resposta:
 
@@ -446,7 +534,9 @@ Ruta de compatibilitat. Redirigeix a `/crear`, que és la pantalla única de ges
 
 ### `/q/[publicCode]`
 
-Carrega metadades públiques mínimes del qüestionari necessari per respondre. No mostra dades de l'espai més enllà del codi.
+Carrega metadades públiques mínimes del qüestionari necessari per respondre,
+incloent versio i minuts estimats. No mostra dades de l'espai més enllà del
+codi.
 
 ### `/resultats/[publicCode]`
 
@@ -473,3 +563,5 @@ Es poden registrar errors tècnics sense dades personals ni tokens. Cal evitar l
 
 - Estrategia anti-bots i rate limiting.
 - Politica de caducitat o tancament d'espais.
+- Estrategia d'identitat final per substituir Supabase Auth fora de l'entorn
+  local. El mode local provisional no és una decisio de produccio.

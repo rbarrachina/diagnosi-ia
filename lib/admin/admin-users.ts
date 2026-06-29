@@ -1,9 +1,10 @@
 import "server-only";
 
-import type { User } from "@supabase/supabase-js";
-import { createSupabaseAdminClient } from "@/lib/database/server";
+import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
+
 import type { AdminUserSearchResult, AdminUserSummary } from "@/lib/admin/types";
-import { isXtecEmail } from "@/lib/auth/xtec";
+import { getXtecSessionState } from "@/lib/auth/session";
+import { mysqlPool } from "@/lib/db/client";
 import {
   adminUserInputSchema,
   adminUserSearchQuerySchema,
@@ -13,66 +14,19 @@ import {
   type SetAdminUserActiveInput,
 } from "@/lib/validation/schemas";
 
-type AdminUserRow = {
+type AdminUserRow = RowDataPacket & {
   user_id: string;
   role: "admin";
-  is_active: boolean;
-  created_at: string;
+  is_active: number | boolean;
+  created_at: string | Date;
   created_by: string | null;
 };
 
-const AUTH_SEARCH_PAGE_SIZE = 100;
-const MAX_AUTH_SEARCH_PAGES = 10;
-const MAX_AUTH_SEARCH_RESULTS = 20;
-
-function metadataText(user: User, keys: string[]) {
-  for (const key of keys) {
-    const value = user.user_metadata?.[key];
-
-    if (typeof value === "string" && value.trim() !== "") {
-      return value.trim();
-    }
+export class AdminUserOperationError extends Error {
+  constructor(message = "Could not manage administrator") {
+    super(message);
+    this.name = "AdminUserOperationError";
   }
-
-  return null;
-}
-
-function getDisplayName(user: User) {
-  const directName = metadataText(user, ["full_name", "name", "display_name"]);
-
-  if (directName) {
-    return directName;
-  }
-
-  const givenName = metadataText(user, ["given_name"]);
-  const familyName = metadataText(user, ["family_name"]);
-  const combinedName = [givenName, familyName].filter(Boolean).join(" ").trim();
-
-  return combinedName || null;
-}
-
-function searchableText(user: User) {
-  return [
-    user.email,
-    getDisplayName(user),
-    metadataText(user, ["given_name"]),
-    metadataText(user, ["family_name"]),
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-}
-
-function mapAuthUser(user: User): AdminUserSearchResult | null {
-  if (!isXtecEmail(user.email)) {
-    return null;
-  }
-
-  return {
-    userId: user.id,
-    displayName: getDisplayName(user),
-    email: user.email,
-  };
 }
 
 function mapAdminUser(
@@ -82,87 +36,43 @@ function mapAdminUser(
   return {
     userId: row.user_id,
     role: row.role,
-    isActive: row.is_active,
-    createdAt: row.created_at,
+    isActive: toBoolean(row.is_active),
+    createdAt: formatDateTime(row.created_at),
     createdBy: row.created_by,
-    displayName: profile?.displayName ?? null,
-    email: profile?.email ?? null,
+    displayName: profile?.userId === row.user_id ? profile.displayName : null,
+    email: profile?.userId === row.user_id ? profile.email : null,
   };
 }
 
-export class AdminUserOperationError extends Error {
-  constructor(message = "Could not manage administrator") {
-    super(message);
-    this.name = "AdminUserOperationError";
-  }
-}
-
 export async function listAdminUsers(): Promise<AdminUserSummary[]> {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("admin_users")
-    .select("user_id, role, is_active, created_at, created_by")
-    .order("created_at", { ascending: true })
-    .returns<AdminUserRow[]>();
-
-  if (error || !data) {
-    throw new AdminUserOperationError("Could not list administrators");
-  }
-
-  const profiles = await Promise.all(
-    data.map(async (row) => {
-      const { data: authData, error: authError } =
-        await supabase.auth.admin.getUserById(row.user_id);
-
-      if (authError || !authData.user) {
-        return [row.user_id, null] as const;
-      }
-
-      return [row.user_id, mapAuthUser(authData.user)] as const;
-    }),
+  const [rows] = await mysqlPool.execute<AdminUserRow[]>(
+    `
+      select user_id, role, is_active, created_at, created_by
+      from admin_users
+      order by created_at asc
+    `,
   );
-  const profileByUserId = new Map(profiles);
+  const currentProfile = await getCurrentAuthUserSearchProfile();
 
-  return data.map((row) => mapAdminUser(row, profileByUserId.get(row.user_id)));
+  return rows.map((row) => mapAdminUser(row, currentProfile));
 }
 
 export async function searchAuthUsersForAdmin(
   query: AdminUserSearchQuery,
 ): Promise<AdminUserSearchResult[]> {
   const parsedQuery = adminUserSearchQuerySchema.parse(query).toLowerCase();
-  const supabase = createSupabaseAdminClient();
-  const results = new Map<string, AdminUserSearchResult>();
+  const currentProfile = await getCurrentAuthUserSearchProfile();
 
-  for (let page = 1; page <= MAX_AUTH_SEARCH_PAGES; page += 1) {
-    const { data, error } = await supabase.auth.admin.listUsers({
-      page,
-      perPage: AUTH_SEARCH_PAGE_SIZE,
-    });
-
-    if (error) {
-      throw new AdminUserOperationError("Could not search users");
-    }
-
-    const users = data.users ?? [];
-
-    for (const user of users) {
-      const result = mapAuthUser(user);
-
-      if (result && searchableText(user).includes(parsedQuery)) {
-        results.set(result.userId, result);
-      }
-
-      if (results.size >= MAX_AUTH_SEARCH_RESULTS) {
-        return [...results.values()];
-      }
-    }
-
-    if (users.length < AUTH_SEARCH_PAGE_SIZE) {
-      break;
-    }
+  if (!currentProfile) {
+    return [];
   }
 
-  return [...results.values()];
+  const searchable = [currentProfile.userId, currentProfile.email, currentProfile.displayName]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return searchable.includes(parsedQuery) ? [currentProfile] : [];
 }
 
 export async function addOrReactivateAdminUser(
@@ -170,26 +80,26 @@ export async function addOrReactivateAdminUser(
   actorUserId: string,
 ): Promise<AdminUserSummary> {
   const payload = adminUserInputSchema.parse(input);
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("admin_users")
-    .upsert(
-      {
-        user_id: payload.userId,
-        role: "admin",
-        is_active: true,
-        created_by: actorUserId,
-      },
-      { onConflict: "user_id" },
-    )
-    .select("user_id, role, is_active, created_at, created_by")
-    .single<AdminUserRow>();
 
-  if (error || !data) {
+  await mysqlPool.execute(
+    `
+      insert into admin_users (user_id, role, is_active, created_by)
+      values (?, 'admin', true, ?)
+      on duplicate key update
+        role = 'admin',
+        is_active = true,
+        created_by = values(created_by)
+    `,
+    [payload.userId, actorUserId],
+  );
+
+  const admin = await getAdminUserById(payload.userId);
+
+  if (!admin) {
     throw new AdminUserOperationError();
   }
 
-  return mapAdminUser(data);
+  return admin;
 }
 
 export async function deleteAdminUser(
@@ -202,15 +112,12 @@ export async function deleteAdminUser(
     throw new AdminUserOperationError("Administrators cannot remove themselves");
   }
 
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("admin_users")
-    .delete()
-    .eq("user_id", payload.userId)
-    .select("user_id")
-    .single<{ user_id: string }>();
+  const [result] = await mysqlPool.execute<ResultSetHeader>(
+    "delete from admin_users where user_id = ?",
+    [payload.userId],
+  );
 
-  if (error || !data) {
+  if (result.affectedRows !== 1) {
     throw new AdminUserOperationError();
   }
 }
@@ -225,19 +132,61 @@ export async function setAdminUserActive(
     throw new AdminUserOperationError("Administrators cannot deactivate themselves");
   }
 
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("admin_users")
-    .update({
-      is_active: payload.isActive,
-    })
-    .eq("user_id", payload.userId)
-    .select("user_id, role, is_active, created_at, created_by")
-    .single<AdminUserRow>();
+  const [result] = await mysqlPool.execute<ResultSetHeader>(
+    `
+      update admin_users
+      set is_active = ?
+      where user_id = ?
+    `,
+    [payload.isActive, payload.userId],
+  );
 
-  if (error || !data) {
+  if (result.affectedRows !== 1) {
     throw new AdminUserOperationError();
   }
 
-  return mapAdminUser(data);
+  const admin = await getAdminUserById(payload.userId);
+
+  if (!admin) {
+    throw new AdminUserOperationError();
+  }
+
+  return admin;
+}
+
+async function getAdminUserById(userId: string): Promise<AdminUserSummary | null> {
+  const [rows] = await mysqlPool.execute<AdminUserRow[]>(
+    `
+      select user_id, role, is_active, created_at, created_by
+      from admin_users
+      where user_id = ?
+      limit 1
+    `,
+    [userId],
+  );
+  const [row] = rows;
+
+  return row ? mapAdminUser(row, await getCurrentAuthUserSearchProfile()) : null;
+}
+
+async function getCurrentAuthUserSearchProfile(): Promise<AdminUserSearchResult | null> {
+  const session = await getXtecSessionState();
+
+  if (session.status !== "authenticated") {
+    return null;
+  }
+
+  return {
+    userId: session.user.id,
+    displayName: "Usuari XTEC",
+    email: session.user.email,
+  };
+}
+
+function toBoolean(value: number | boolean): boolean {
+  return value === true || value === 1;
+}
+
+function formatDateTime(value: string | Date): string {
+  return value instanceof Date ? value.toISOString() : value;
 }

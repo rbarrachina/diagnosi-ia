@@ -64,6 +64,13 @@ const deleteQuestionnaireMigration = readFileSync(
   ),
   "utf8",
 );
+const expandedScaleMigration = readFileSync(
+  join(
+    process.cwd(),
+    "supabase/migrations/20260616121000_expand_answer_scale_to_four_options.sql",
+  ),
+  "utf8",
+);
 
 describe("admin service RPC migration", () => {
   it("bootstraps the first admin atomically and server-side only", () => {
@@ -194,13 +201,14 @@ describe("admin service RPC migration", () => {
   });
 
   it("activates only non-empty versions and does not touch diagnostic spaces", () => {
-    expect(expandedLimitsMigration).toContain("activate_questionnaire_version");
-    expect(expandedLimitsMigration).toContain("block_count < 1");
-    expect(expandedLimitsMigration).toContain("block_count > 10");
-    expect(expandedLimitsMigration).toContain("question_count > 100");
-    expect(expandedLimitsMigration).toContain("set is_active = false");
-    expect(expandedLimitsMigration).toContain("set is_active = true");
-    expect(expandedLimitsMigration).not.toContain("update public.diagnostic_spaces");
+    expect(expandedScaleMigration).toContain("activate_questionnaire_version");
+    expect(expandedScaleMigration).toContain("block_count < 1");
+    expect(expandedScaleMigration).toContain("block_count > 10");
+    expect(expandedScaleMigration).toContain("question_count > 100");
+    expect(expandedScaleMigration).toContain("questions.scale_max = 3");
+    expect(expandedScaleMigration).toContain("set is_active = false");
+    expect(expandedScaleMigration).toContain("set is_active = true");
+    expect(expandedScaleMigration).not.toContain("update public.diagnostic_spaces");
   });
 
   it("keeps all admin mutation RPCs away from browser roles", () => {

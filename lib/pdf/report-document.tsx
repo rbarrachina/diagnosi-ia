@@ -121,8 +121,8 @@ const styles = StyleSheet.create({
   },
 });
 
-function formatAverage(value: number | null): string {
-  return value === null ? "Sense dades" : value.toFixed(2);
+function formatPercentage(value: number | null): string {
+  return value === null ? "Sense dades" : `${value.toFixed(1)}%`;
 }
 
 function formatDate(value: string): string {
@@ -132,12 +132,12 @@ function formatDate(value: string): string {
   }).format(new Date(value));
 }
 
-function barWidth(average: number | null): string {
-  if (average === null) {
+function barWidth(percentage: number | null): string {
+  if (percentage === null) {
     return "0%";
   }
 
-  return `${Math.max(0, Math.min(100, (average / 2) * 100))}%`;
+  return `${Math.max(0, Math.min(100, percentage))}%`;
 }
 
 function distributionColor(value: DistributionBucket["value"]): string {
@@ -161,12 +161,14 @@ function DistributionBar({ distribution }: { distribution: DistributionBucket[] 
 }
 
 export function DiagnosticReportDocument({ results }: { results: AggregatedResults }) {
+  const scopeLabel = results.scopeLabel ?? results.publicCode;
+
   return (
     <Document
       author="Diagnosi IA"
       language="ca"
       subject="Informe de conjunt de diagnosi anònima"
-      title={`Diagnosi IA ${results.publicCode}`}
+      title={`Diagnosi IA ${scopeLabel}`}
     >
       <Page size="A4" style={styles.page}>
         <Text style={styles.title}>Diagnosi IA</Text>
@@ -176,20 +178,28 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
 
         <View style={styles.row}>
           <View style={styles.metric}>
-            <Text style={styles.metricLabel}>Codi anònim</Text>
-            <Text style={styles.metricValue}>{results.publicCode}</Text>
+            <Text style={styles.metricLabel}>
+              {results.scopeLabel ? "Àmbit" : "Codi anònim"}
+            </Text>
+            <Text style={styles.metricValue}>{scopeLabel}</Text>
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricLabel}>Versió</Text>
             <Text style={styles.metricValue}>{results.questionnaireVersion}</Text>
           </View>
+          {results.diagnosticSpaceCount !== undefined ? (
+            <View style={styles.metric}>
+              <Text style={styles.metricLabel}>Centres</Text>
+              <Text style={styles.metricValue}>{results.diagnosticSpaceCount}</Text>
+            </View>
+          ) : null}
           <View style={styles.metric}>
             <Text style={styles.metricLabel}>Respostes</Text>
             <Text style={styles.metricValue}>{results.totalSubmissions}</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricLabel}>Mitjana global</Text>
-            <Text style={styles.metricValue}>{formatAverage(results.globalAverage)}</Text>
+            <Text style={styles.metricLabel}>Percentatge global</Text>
+            <Text style={styles.metricValue}>{formatPercentage(results.globalAverage)}</Text>
           </View>
         </View>
 
@@ -206,7 +216,9 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
         <View style={styles.section}>
           <Text style={styles.heading}>Escala</Text>
           <Text style={styles.paragraph}>
-            0: Encara no · 1: Parcialment · 2: Sí, de manera habitual
+            {results.scale
+              .map((option) => `${option.value}: ${option.label}`)
+              .join(" · ")}
           </Text>
         </View>
 
@@ -215,7 +227,7 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
           {results.blocks.map((block) => (
             <View key={block.position}>
               <Text style={styles.blockTitle}>
-                {block.position}. {block.title} · {formatAverage(block.average)}
+                {block.position}. {block.title} · {formatPercentage(block.average)}
               </Text>
               <View style={styles.barTrack}>
                 <View style={[styles.barFill, { width: barWidth(block.average) }]} />
@@ -264,9 +276,9 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
             </Text>
 
             <View style={styles.section}>
-              <Text style={styles.heading}>Mitjana del bloc</Text>
+              <Text style={styles.heading}>Percentatge del bloc</Text>
               <Text style={styles.blockTitle}>
-                {block.position}. {block.title} · {formatAverage(block.average)}
+                {block.position}. {block.title} · {formatPercentage(block.average)}
               </Text>
               <View style={styles.barTrack}>
                 <View style={[styles.barFill, { width: barWidth(block.average) }]} />
@@ -278,9 +290,9 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
               {block.questions.map((question) => (
                 <View key={question.position} style={styles.question}>
                   <Text style={styles.questionText}>
-                    {question.position}. {question.text}
+                    {block.position}.{question.blockPosition}. {question.text}
                   </Text>
-                  <Text>Mitjana: {formatAverage(question.average)} sobre 2</Text>
+                  <Text>Percentatge: {formatPercentage(question.average)}</Text>
                   <DistributionBar distribution={question.distribution} />
                   <Text style={styles.legend}>
                     {question.distribution

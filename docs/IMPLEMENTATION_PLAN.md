@@ -11,9 +11,68 @@ El pla està dividit en fases petites i verificables. No s'hauria de començar u
 - Gestio de creador implementada: un únic espai per usuari autenticat,
   recuperació d'enllaç privat i reinici d'espai amb rotació d'enllaços i
   assignacio de la versio activa.
-- Nova fase prevista: administracio global del qüestionari versionat i dels
-  administradors.
+- Administracio global implementada a `migration/mysql`: bootstrap i gestio
+  d'administradors a MySQL, lectura de versions i mutacions server-side per
+  crear, copiar, editar, activar i eliminar versions de qüestionari.
+- Resultats d'administracio implementats a `migration/mysql`: vista agregada
+  per versio de qüestionari i PDF agregat, sense files individuals.
+- Configuracio global de responsables implementada a `migration/mysql`:
+  l'administracio pot triar entre qualsevol compte `@xtec.cat` o només comptes
+  de centre XTEC, i els administradors actius mantenen accés de responsable en
+  tots dos modes.
 - Fora d'abast actual: rate limiting, anti-bots, retenció de dades i tancament d'espais.
+
+## Branca `migration/mysql`
+
+La branca `migration/mysql` és experimental. `main` continua sent la versio
+estable actual amb Supabase/PostgreSQL.
+
+Objectiu immediat:
+
+- Fer funcionar l'aplicacio completament en local amb MySQL 8.4.
+- No preparar encara Vercel, Vercel Preview ni allowlists d'IPs.
+- No connectar encara amb el MySQL real del Departament.
+- Mantenir el mateix producte i les mateixes garanties d'anonimat.
+
+Decisions de treball:
+
+- Migrar progressivament i no eliminar Supabase de cop si aixo trenca
+  l'aplicacio.
+- Separar la migracio de base de dades de la substitucio de Supabase Auth.
+- Usar una capa d'auth server-side pròpia: `AUTH_MODE=local` per
+  desenvolupament ràpid i `AUTH_MODE=google` per login real amb Google OAuth
+  sense Supabase.
+- Crear un esquema MySQL net equivalent a l'estat final actual, no una
+  traduccio literal de totes les migracions PostgreSQL historiques.
+- Substituir RPCs PostgreSQL per funcions TypeScript server-side amb
+  transaccions MySQL.
+- Substituir RLS de Supabase per control d'acces server-side i repositoris.
+- Incloure `admin_users` dins l'abast de migracio, sense copiar nom, cognoms ni
+  email a la base de dades.
+- Incloure `app_settings` només per configuracio global no personal, sense noms
+  ni codis de centre.
+- Validar submissions contra totes les preguntes del qüestionari assignat a
+  l'espai; no hardcodejar sempre 20 preguntes fora del seed inicial.
+
+Guia operativa:
+
+- Les instruccions detallades fase a fase són a
+  `docs/MYSQL_MIGRATION_WORK_INSTRUCTIONS.md`.
+- Cada fase s'ha de completar, verificar i revisar abans de començar la
+  següent.
+
+Seqüencia prevista:
+
+1. Fase 0: documentacio i arquitectura de migracio.
+2. Fase 1: MySQL local, entorn i Drizzle.
+3. Fase 2: esquema MySQL i seed local.
+4. Fase 3: repositoris i lectura del qüestionari.
+5. Fase 4: submissions atomiques amb MySQL.
+6. Fase 5: resultats agregats i PDF.
+7. Fase 6: creacio, gestio i reset d'espais.
+8. Fase 7: auth local provisional i administracio.
+9. Fase 8: eliminar Supabase del flux principal local.
+10. Fase 9: proves funcionals locals i README.
 
 ## Fase 0: Validacio documental
 
@@ -219,10 +278,14 @@ Fitxers:
 
 Criteris d'acceptacio:
 
+- La ruta `/q/[publicCode]` exigeix sessio XTEC abans de mostrar el formulari.
 - El formulari mostra els avisos d'anonimat i tractament de les dades en conjunt.
 - Totes les preguntes de la versio assignada són obligatories.
 - El servidor valida exactament una resposta per cada pregunta de la versio
   assignada.
+- El servidor desa un HMAC a `submission_locks` per impedir una segona resposta
+  del mateix compte al mateix enllaç, sense copiar correu ni vincular-lo a
+  `submissions` o `answers`.
 - El servidor rebutja duplicats, valors fora de rang i camps inesperats.
 - L'espai ha d'existir i estar actiu.
 - L'espai no pot superar 300 submissions completes.
@@ -237,10 +300,13 @@ Proves:
 
 Riscos o decisions pendents:
 
-- No hi ha mecanisme fort per garantir "una sola vegada" sense identificar persones. Cal comunicar-ho com instrucció, no com garantia tècnica.
+- El bloqueig d'una sola resposta depen de la sessio XTEC i del secret HMAC.
+  Si el secret es rota, els comptes poden tornar a respondre.
 - Anti-bots queda per fase 2 del producte.
 
-Estat: implementada amb RPC PostgreSQL `public.create_submission_with_answers` i Route Handler server-side. La RPC limita cada espai a 300 submissions completes.
+Estat: implementada a MySQL amb Route Handler server-side, transaccio,
+`submission_locks`, límit de 300 submissions completes i validacio estricta de
+totes les respostes.
 
 ## Fase 6: Agregacio i resultats web
 
@@ -264,7 +330,8 @@ Criteris d'acceptacio:
 - El token no es mostra ni s'inclou en query params.
 - El servidor valida el token.
 - La resposta conté només dades de conjunt.
-- El tauler mostra codi, versió, total, mitjana global, blocs, preguntes, distribucions i interpretació.
+- El tauler mostra codi, versió, total, percentatge global, blocs, preguntes,
+  distribucions i interpretació.
 - Amb poques respostes mostra avís de prudència.
 - No mostra submissions, timestamps individuals ni combinacions per persona.
 
@@ -390,7 +457,7 @@ Criteris d'acceptacio:
   copia d'una versio existent.
 - El títol de cada versio és obligatori i únic.
 - Es poden gestionar blocs i preguntes tancades fins a 10 blocs i 10 preguntes
-  per bloc, mantenint valors `0`, `1`, `2`.
+  per bloc, mantenint valors `0`, `1`, `2`, `3`.
 - Es pot activar una versio concreta i només una versio queda activa.
 - Es pot eliminar una versio no activa amb avís i confirmacio explícita; això
   elimina també espais, respostes, blocs i preguntes associats.
@@ -402,6 +469,8 @@ Criteris d'acceptacio:
   submissions existents.
 - Cap endpoint d'administracio retorna files individuals de `submissions` o
   `answers`.
+- La vista `Resultats` d'administracio calcula només totals agregats per versio
+  de qüestionari i el PDF reutilitza aquest mateix model agregat.
 - Si la UI usa server actions en comptes de Route Handlers, les accions han de
   validar sessio, rol i payload al servidor amb les mateixes garanties.
 - No es desa ni es mostra cap nom de centre, codi de centre, nom de docent,

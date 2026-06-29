@@ -55,6 +55,7 @@ export function QuestionnaireEditorForm({
   isLocked: boolean;
 }) {
   const [title, setTitle] = useState(detail.title);
+  const [estimatedMinutes, setEstimatedMinutes] = useState(detail.estimatedMinutes);
   const [blocks, setBlocks] = useState(() => initialBlocks(detail));
   const [hasAcceptedLockedEdit, setHasAcceptedLockedEdit] = useState(false);
   const isEditingLockedVersion = isLocked && hasAcceptedLockedEdit;
@@ -193,6 +194,20 @@ export function QuestionnaireEditorForm({
           onChange={(event) => setTitle(event.target.value)}
           required
           value={title}
+        />
+      </label>
+      <label className="block text-sm font-medium text-slate-700">
+        Minuts per respondre-la
+        <input
+          className="mt-1 w-28 rounded-md border border-line px-3 py-2 text-sm disabled:bg-slate-100"
+          disabled={isFormDisabled}
+          max={120}
+          min={1}
+          name="estimatedMinutes"
+          onChange={(event) => setEstimatedMinutes(Number(event.target.value))}
+          required
+          type="number"
+          value={estimatedMinutes}
         />
       </label>
 

@@ -4,6 +4,7 @@ function buildFormData() {
   const formData = new FormData();
   formData.set("questionnaireId", "003");
   formData.set("title", "Diagnosi IA - Qüestionari 2026.3");
+  formData.set("estimatedMinutes", "10");
 
   for (let blockPosition = 1; blockPosition <= 5; blockPosition += 1) {
     formData.append("blockPosition", String(blockPosition));
@@ -31,6 +32,7 @@ describe("admin questionnaire form parsing", () => {
     expect(parsed).toEqual({
       questionnaireId: "003",
       title: "Diagnosi IA - Qüestionari 2026.3",
+      estimatedMinutes: 10,
       confirmAssignedEdit: false,
       blocks: expect.arrayContaining([
         expect.objectContaining({

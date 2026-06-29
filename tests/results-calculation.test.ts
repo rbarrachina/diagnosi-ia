@@ -39,7 +39,7 @@ const questions: QuestionDefinition[] = [
 ];
 
 const answers: AnswerRecord[] = [
-  { questionId: "question-1", value: 2 },
+  { questionId: "question-1", value: 3 },
   { questionId: "question-2", value: 1 },
   { questionId: "question-3", value: 0 },
   { questionId: "question-1", value: 2 },
@@ -48,7 +48,8 @@ const answers: AnswerRecord[] = [
 ];
 
 const answerCounts: AnswerCountRecord[] = [
-  { questionId: "question-1", value: 2, count: 2 },
+  { questionId: "question-1", value: 2, count: 1 },
+  { questionId: "question-1", value: 3, count: 1 },
   { questionId: "question-2", value: 1, count: 1 },
   { questionId: "question-2", value: 2, count: 1 },
   { questionId: "question-3", value: 0, count: 1 },
@@ -67,14 +68,15 @@ describe("calculateAggregatedResults", () => {
       answers,
     });
 
-    expect(results.globalAverage).toBe(1.33);
-    expect(results.blocks[0].average).toBe(1.75);
-    expect(results.blocks[1].average).toBe(0.5);
-    expect(results.blocks[0].questions[0].average).toBe(2);
+    expect(results.globalAverage).toBe(50);
+    expect(results.blocks[0].average).toBe(66.67);
+    expect(results.blocks[1].average).toBe(16.67);
+    expect(results.blocks[0].questions[0].average).toBe(83.33);
     expect(results.blocks[0].questions[1].distribution).toEqual([
-      { value: 0, label: "Encara no", count: 0, percentage: 0 },
-      { value: 1, label: "Parcialment", count: 1, percentage: 50 },
-      { value: 2, label: "Sí, de manera habitual", count: 1, percentage: 50 },
+      { value: 0, label: "Gens / No ho faig", count: 0, percentage: 0 },
+      { value: 1, label: "Una mica / Ocasionalment", count: 1, percentage: 50 },
+      { value: 2, label: "Bastant / Habitualment", count: 1, percentage: 50 },
+      { value: 3, label: "Molt / Soc un referent al centre", count: 0, percentage: 0 },
     ]);
   });
 
@@ -109,14 +111,15 @@ describe("calculateAggregatedResultsFromCounts", () => {
       answerCounts,
     });
 
-    expect(results.globalAverage).toBe(1.33);
-    expect(results.blocks[0].average).toBe(1.75);
-    expect(results.blocks[1].average).toBe(0.5);
-    expect(results.blocks[0].questions[0].average).toBe(2);
+    expect(results.globalAverage).toBe(50);
+    expect(results.blocks[0].average).toBe(66.67);
+    expect(results.blocks[1].average).toBe(16.67);
+    expect(results.blocks[0].questions[0].average).toBe(83.33);
     expect(results.blocks[0].questions[1].distribution).toEqual([
-      { value: 0, label: "Encara no", count: 0, percentage: 0 },
-      { value: 1, label: "Parcialment", count: 1, percentage: 50 },
-      { value: 2, label: "Sí, de manera habitual", count: 1, percentage: 50 },
+      { value: 0, label: "Gens / No ho faig", count: 0, percentage: 0 },
+      { value: 1, label: "Una mica / Ocasionalment", count: 1, percentage: 50 },
+      { value: 2, label: "Bastant / Habitualment", count: 1, percentage: 50 },
+      { value: 3, label: "Molt / Soc un referent al centre", count: 0, percentage: 0 },
     ]);
   });
 

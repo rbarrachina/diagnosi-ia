@@ -15,5 +15,6 @@ export type QuestionBlock = {
 export type PublicQuestionnaire = {
   publicCode: string;
   questionnaireVersion: string;
+  estimatedMinutes: number;
   blocks: QuestionBlock[];
 };
