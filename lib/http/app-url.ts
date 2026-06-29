@@ -77,14 +77,7 @@ export function resolveAppUrl(requestUrl: string, configuredUrl?: string): strin
     return requestOrigin;
   }
 
-  if (isPrivateOrLocalUrl(requestOrigin)) {
-    return requestOrigin;
-  }
-
-  if (
-    isPrivateOrLocalUrl(normalizedConfigured) &&
-    !isPrivateOrLocalUrl(requestOrigin)
-  ) {
+  if (isPrivateOrLocalUrl(normalizedConfigured)) {
     return requestOrigin;
   }
 

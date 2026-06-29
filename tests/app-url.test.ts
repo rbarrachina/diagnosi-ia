@@ -39,13 +39,13 @@ describe("resolveAppUrl", () => {
     ).toBe("http://192.168.1.200:3000");
   });
 
-  it("uses a local request origin even when a public URL is configured", () => {
+  it("uses a public configured URL even when the request origin is local", () => {
     expect(
       resolveAppUrl(
         "http://localhost:3000/api/spaces",
         "https://example.trycloudflare.com",
       ),
-    ).toBe("http://localhost:3000");
+    ).toBe("https://example.trycloudflare.com");
   });
 
   it("allows a local configured URL for local requests", () => {

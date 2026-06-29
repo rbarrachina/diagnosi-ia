@@ -17,22 +17,26 @@ describe("auth redirects", () => {
     };
   });
 
-  it("keeps local login redirects on localhost", async () => {
+  it("uses the public app URL for local login redirects when configured", async () => {
     const response = await login(
       new Request("http://localhost:3000/auth/login?next=/crear") as NextRequest,
     );
 
-    expect(response.headers.get("location")).toBe("http://localhost:3000/crear");
+    expect(response.headers.get("location")).toBe(
+      "https://example.trycloudflare.com/crear",
+    );
   });
 
-  it("keeps local logout redirects on localhost", async () => {
+  it("uses the public app URL for local logout redirects when configured", async () => {
     const response = await logout(
       new Request("http://localhost:3000/auth/logout?next=/crear", {
         method: "POST",
       }),
     );
 
-    expect(response.headers.get("location")).toBe("http://localhost:3000/crear");
+    expect(response.headers.get("location")).toBe(
+      "https://example.trycloudflare.com/crear",
+    );
   });
 
   it("uses the public app URL for public tunnel logout redirects", async () => {
