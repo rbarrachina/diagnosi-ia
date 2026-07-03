@@ -1,3 +1,5 @@
+import type { ResponsibleAccessMode } from "@/lib/auth/responsible-access";
+
 type LoginButtonProps = {
   next?: string;
 };
@@ -31,16 +33,34 @@ export function LogoutButton({ next = "/" }: LogoutButtonProps) {
 }
 
 type XtecAccessNoticeProps = {
+  responsibleAccessMode?: ResponsibleAccessMode;
   next?: string;
 };
 
-export function XtecAccessNotice({ next = "/crear" }: XtecAccessNoticeProps) {
+export function XtecAccessNotice({
+  responsibleAccessMode = "all_xtec",
+  next = "/crear",
+}: XtecAccessNoticeProps) {
+  const isCentreOnly = responsibleAccessMode === "centre_xtec";
+
   return (
-    <div className="rounded-md border border-line bg-white p-6 text-center shadow-sm">
-      <h2 className="text-xl font-semibold text-ink">Accés per a responsables</h2>
-      <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-700">
-        Per crear i gestionar qüestionaris cal accedir amb un compte XTEC.
-      </p>
+    <div className="flex h-full flex-col justify-center rounded-md border border-line bg-white p-6 text-center shadow-sm">
+      <div className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
+          Crear qüestionari
+        </p>
+        <h2 className="text-xl font-semibold text-ink">Soc responsable</h2>
+        <p className="mx-auto max-w-md text-sm leading-6 text-slate-700">
+          {isCentreOnly ? (
+            <strong className="font-semibold text-ink">
+              Només poden accedir amb email de centre XTEC, per exemple{" "}
+              a0123456@xtec.cat.
+            </strong>
+          ) : (
+            "Per crear i gestionar qüestionaris cal accedir amb un compte XTEC."
+          )}
+        </p>
+      </div>
       <div className="mt-5">
         <LoginButton next={next} />
       </div>

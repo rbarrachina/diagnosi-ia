@@ -5,6 +5,7 @@ import {
 } from "@/components/auth/auth-actions";
 import { CreateSpaceForm } from "@/components/create-space/create-space-form";
 import { ParticipantInfoCard } from "@/components/create-space/participant-info-card";
+import { getResponsibleAccessMode } from "@/lib/auth/responsible-access";
 import { getResponsibleSessionState } from "@/lib/auth/session";
 import { getServerAppUrl } from "@/lib/http/server-app-url";
 import { listOwnerSpaces } from "@/lib/spaces/manage-spaces";
@@ -13,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function CreatePage() {
   const session = await getResponsibleSessionState();
+  const responsibleAccessMode = await getResponsibleAccessMode();
   const ownerSpaces =
     session.status === "authenticated"
       ? await listOwnerSpaces(session.user.id, await getServerAppUrl())
@@ -35,14 +37,14 @@ export default async function CreatePage() {
                 Aquesta diagnosi s’organitza segons el rol de cada usuari.
               </span>
               <span className="block">
-                El responsable del centre genera el qüestionari per al claustre
-                i pot
+                🏫 El responsable del centre genera el qüestionari per al
+                claustre i pot
               </span>
               <span className="block">
                 consultar-ne els resultats de conjunt.
               </span>
               <span className="block">
-                El professorat respon el qüestionari a partir de l’enllaç
+                🧑‍🏫 El professorat respon el qüestionari a partir de l’enllaç
                 facilitat pel centre.
               </span>
             </p>
@@ -51,7 +53,7 @@ export default async function CreatePage() {
 
         {session.status === "unauthenticated" ? (
           <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
-            <XtecAccessNotice />
+            <XtecAccessNotice responsibleAccessMode={responsibleAccessMode} />
             <ParticipantInfoCard />
           </div>
         ) : null}
