@@ -37,6 +37,7 @@ describe("responsible access settings", () => {
       canUseResponsibleAccess({
         id: "00000000-0000-4000-8000-000000000001",
         email: "persona.prova@xtec.cat",
+        displayName: "Persona Prova",
       }),
     ).resolves.toBe(true);
   });
@@ -49,18 +50,21 @@ describe("responsible access settings", () => {
       canUseResponsibleAccess({
         id: "00000000-0000-4000-8000-000000000001",
         email: "persona.prova@xtec.cat",
+        displayName: "Persona Prova",
       }),
     ).resolves.toBe(false);
     await expect(
       canUseResponsibleAccess({
         id: "00000000-0000-4000-8000-000000000002",
         email: "a1234567@xtec.cat",
+        displayName: "Centre XTEC",
       }),
     ).resolves.toBe(true);
     await expect(
       canUseResponsibleAccess({
         id: "00000000-0000-4000-8000-000000000003",
         email: "admin.prova@xtec.cat",
+        displayName: "Admin Prova",
       }),
     ).resolves.toBe(true);
   });

@@ -16,15 +16,18 @@ describe("MySQL schema privacy constraints", () => {
     expect(schema).not.toMatch(/submission.*email|answer.*email|diagnostic.*email/i);
   });
 
-  it("defines admin users without copied personal fields", () => {
+  it("defines admin users with explicit administrator identity fields", () => {
     expect(schema).toContain('"admin_users"');
     expect(schema).toContain("userId");
+    expect(schema).toContain("email: varchar(\"email\"");
+    expect(schema).toContain("displayName: varchar(\"display_name\"");
+    expect(schema).toContain("lastLoginAt: datetime(\"last_login_at\"");
     const adminUsersDefinition = schema.slice(
       schema.indexOf("export const adminUsers"),
       schema.indexOf("export const adminEmailInvitations"),
     );
 
-    expect(adminUsersDefinition).not.toMatch(/first_name|last_name|full_name|email/i);
+    expect(adminUsersDefinition).not.toMatch(/first_name|last_name|participant/i);
   });
 
   it("keeps administrator email invitations separate from admin user ids", () => {

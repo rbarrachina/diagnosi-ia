@@ -261,15 +261,27 @@ export const adminUsers = mysqlTable(
   "admin_users",
   {
     userId: varchar("user_id", { length: 191 }).notNull().primaryKey(),
+    email: varchar("email", { length: 254 }),
+    displayName: varchar("display_name", { length: 255 }),
     role: varchar("role", { length: 20 }).notNull().default("admin"),
     isActive: boolean("is_active").notNull().default(true),
     createdAt: createdAt(),
     createdBy: varchar("created_by", { length: 191 }),
+    lastLoginAt: datetime("last_login_at", { mode: "string", fsp: 3 }),
   },
   (table) => [
+    uniqueIndex("admin_users_email_unique_idx").on(table.email),
     index("admin_users_created_by_idx").on(table.createdBy),
     check("admin_users_role_check", sql`${table.role} in ('admin')`),
     check("admin_users_user_id_not_blank_check", sql`trim(${table.userId}) <> ''`),
+    check(
+      "admin_users_email_format_check",
+      sql`${table.email} is null or ${table.email} regexp '^[^@[:space:]]+@xtec\\.cat$'`,
+    ),
+    check(
+      "admin_users_display_name_not_blank_check",
+      sql`${table.displayName} is null or trim(${table.displayName}) <> ''`,
+    ),
     check(
       "admin_users_created_by_not_blank_check",
       sql`${table.createdBy} is null or trim(${table.createdBy}) <> ''`,

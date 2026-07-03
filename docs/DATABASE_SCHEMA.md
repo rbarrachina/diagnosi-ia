@@ -272,25 +272,30 @@ Columnes proposades:
 - `user_id uuid primary key references auth.users(id) on delete cascade` a
   PostgreSQL/Supabase.
   A MySQL: identificador opac d'usuari autenticat, sense FK a `auth.users`.
+- `email varchar(254)` a MySQL, només per administradors.
+- `display_name varchar(255)` a MySQL, només per administradors.
 - `role text not null default 'admin'`
 - `is_active boolean not null default true`
 - `created_at timestamptz not null default now()`
 - `created_by uuid references auth.users(id) on delete set null` a
   PostgreSQL/Supabase.
   A MySQL: identificador opac opcional, sense FK a `auth.users`.
+- `last_login_at datetime(3)` a MySQL.
 
 Restriccions:
 
 - `role in ('admin')` inicialment.
-- No desar noms, cognoms, emails ni cap dada de participants.
-- La gestio d'administradors ha d'identificar usuaris pel seu identificador
-  autenticat opac. Si cal convidar una persona per correu a `migration/mysql`,
-  el correu s'ha de desar a `admin_email_invitations`, no a `admin_users`.
+- No desar cap dada de participants.
+- Els administradors no són anònims: a MySQL, `admin_users` pot desar correu i
+  nom visible obtinguts del login de Google, i aquestes dades són visibles per
+  altres administradors dins la pantalla d'administracio.
+- `email`, si està informat, ha d'acabar en `@xtec.cat`.
+- `display_name`, si està informat, no pot ser blanc.
 
 ### `admin_email_invitations`
 
-Desa invitacions d'administracio pendents i correus d'administradors acceptats
-per correu XTEC.
+Desa invitacions d'administracio pendents per correu XTEC i la traça mínima
+d'acceptacio.
 
 Columnes proposades a MySQL:
 
@@ -314,11 +319,8 @@ Flux:
 
 - Un administrador actiu introdueix un correu `@xtec.cat`.
 - Quan aquesta persona inicia sessio amb Google OAuth, el servidor valida el
-  correu, crea o reactiva `admin_users.user_id` amb l'identificador opac i marca
-  la invitacio com acceptada.
-- Quan un administrador actiu inicia sessio, el servidor pot registrar o
-  actualitzar el seu correu en aquesta taula com a acceptat. Això permet mostrar
-  els administradors coneguts sense copiar emails a `admin_users`.
+  correu, crea o reactiva `admin_users.user_id` amb l'identificador opac,
+  correu i nom visible, i marca la invitacio com acceptada.
 - Els resultats i PDFs no poden consultar aquesta taula.
 
 ### `app_settings`
@@ -358,12 +360,11 @@ Nota per a MySQL:
 - MySQL no ofereix RLS equivalent a Supabase. La proteccio s'ha d'aplicar a la
   capa d'aplicacio: Route Handlers/server actions, repositoris server-side i
   validacio d'identitat abans de cada operacio sensible.
-- `admin_users` no ha de copiar nom, cognoms ni email. Si el mode local
-  provisional necessita mostrar un email per debug, aquest valor no s'ha de
-  persistir a la taula.
-- `admin_email_invitations` és l'únic lloc on es pot persistir un correu
-  d'administracio pendent o acceptat, i només per al flux d'autoritzacio
-  d'administradors.
+- `admin_users` pot persistir email, nom visible i darrera entrada només per a
+  administradors. Aquesta excepcio no aplica a creadors comuns, participants,
+  submissions, answers ni espais de diagnosi.
+- `admin_email_invitations` persisteix correus d'invitacio pendents i la traça
+  d'acceptacio per al flux d'autoritzacio d'administradors.
 
 ## RLS
 

@@ -38,7 +38,7 @@ describe("Google OAuth without Supabase", () => {
     expect(url.origin).toBe("https://accounts.google.com");
     expect(url.searchParams.get("client_id")).toBe("google-client-id");
     expect(url.searchParams.get("response_type")).toBe("code");
-    expect(url.searchParams.get("scope")).toBe("openid email");
+    expect(url.searchParams.get("scope")).toBe("openid email profile");
     expect(url.searchParams.get("hd")).toBe("xtec.cat");
     expect(url.searchParams.get("nonce")).toBe("nonce-value");
   });
@@ -74,6 +74,7 @@ describe("Google OAuth without Supabase", () => {
           email_verified: "true",
           exp: Math.floor(Date.now() / 1000) + 300,
           nonce: "nonce-value",
+          name: "Persona Prova",
         }),
       ),
     );
@@ -86,6 +87,7 @@ describe("Google OAuth without Supabase", () => {
 
     expect(tokenInfo.email).toBe("persona.prova@xtec.cat");
     expect(user.email).toBe("persona.prova@xtec.cat");
+    expect(user.displayName).toBe("Persona Prova");
     expect(user.id).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
     );
@@ -128,11 +130,13 @@ describe("Google OAuth without Supabase", () => {
     const sessionCookie = createSessionCookieValue({
       id: "00000000-0000-4000-8000-000000000001",
       email: "usuari.prova@xtec.cat",
+      displayName: "Usuari Prova",
     });
 
     expect(parseSessionCookieValue(sessionCookie)).toEqual({
       id: "00000000-0000-4000-8000-000000000001",
       email: "usuari.prova@xtec.cat",
+      displayName: "Usuari Prova",
     });
   });
 });

@@ -43,6 +43,13 @@
       "when": 1783077044928,
       "tag": "0005_absent_hercules",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1783082400000,
+      "tag": "0006_admin_user_profiles",
+      "breakpoints": true
     }
   ]
 }

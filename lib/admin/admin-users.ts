@@ -6,7 +6,7 @@ import type {
   AdminEmailInvitationSummary,
   AdminUserSummary,
 } from "@/lib/admin/types";
-import { getXtecSessionState } from "@/lib/auth/session";
+import type { AppAuthenticatedUser } from "@/lib/auth/local";
 import { mysqlPool } from "@/lib/db/client";
 import {
   adminEmailInvitationInputSchema,
@@ -19,10 +19,13 @@ import {
 
 type AdminUserRow = RowDataPacket & {
   user_id: string;
+  email: string | null;
+  display_name: string | null;
   role: "admin";
   is_active: number | boolean;
   created_at: string | Date;
   created_by: string | null;
+  last_login_at: string | Date | null;
 };
 
 type AdminEmailInvitationRow = RowDataPacket & {
@@ -41,44 +44,37 @@ export class AdminUserOperationError extends Error {
   }
 }
 
-function mapAdminUser(
-  row: AdminUserRow,
-  profiles: Map<string, string>,
-  currentEmail: string | null,
-): AdminUserSummary {
-  const email = profiles.get(row.user_id) ?? currentEmail;
-
+function mapAdminUser(row: AdminUserRow): AdminUserSummary {
   return {
     userId: row.user_id,
     role: row.role,
     isActive: toBoolean(row.is_active),
     createdAt: formatDateTime(row.created_at),
     createdBy: row.created_by,
-    displayName: null,
-    email,
+    displayName: row.display_name,
+    email: row.email,
+    lastLoginAt: row.last_login_at ? formatDateTime(row.last_login_at) : null,
   };
 }
 
 export async function listAdminUsers(): Promise<AdminUserSummary[]> {
   const [rows] = await mysqlPool.execute<AdminUserRow[]>(
     `
-      select user_id, role, is_active, created_at, created_by
+      select
+        user_id,
+        email,
+        display_name,
+        role,
+        is_active,
+        created_at,
+        created_by,
+        last_login_at
       from admin_users
       order by created_at asc
     `,
   );
-  const currentUser = await getCurrentAuthUser();
-  const currentEmailByUserId =
-    currentUser && currentUser.email ? new Map([[currentUser.id, currentUser.email]]) : new Map();
-  const invitationEmailsByUserId = await getAcceptedInvitationEmailsByUserId();
 
-  return rows.map((row) =>
-    mapAdminUser(
-      row,
-      invitationEmailsByUserId,
-      currentEmailByUserId.get(row.user_id) ?? null,
-    ),
-  );
+  return rows.map(mapAdminUser);
 }
 
 export async function listAdminEmailInvitations(): Promise<
@@ -125,38 +121,10 @@ export async function inviteAdminByEmail(
   return invitation;
 }
 
-export async function addOrReactivateAdminUser(
-  input: AdminUserInput,
-  actorUserId: string,
-): Promise<AdminUserSummary> {
-  const payload = adminUserInputSchema.parse(input);
-
-  await mysqlPool.execute(
-    `
-      insert into admin_users (user_id, role, is_active, created_by)
-      values (?, 'admin', true, ?)
-      on duplicate key update
-        role = 'admin',
-        is_active = true,
-        created_by = values(created_by)
-    `,
-    [payload.userId, actorUserId],
-  );
-
-  const admin = await getAdminUserById(payload.userId);
-
-  if (!admin) {
-    throw new AdminUserOperationError();
-  }
-
-  return admin;
-}
-
-export async function acceptAdminEmailInvitationForUser(params: {
-  email: string;
-  userId: string;
-}): Promise<boolean> {
-  const payload = adminEmailInvitationInputSchema.parse({ email: params.email });
+export async function acceptAdminEmailInvitationForUser(
+  user: AppAuthenticatedUser,
+): Promise<boolean> {
+  const payload = adminEmailInvitationInputSchema.parse({ email: user.email });
   const connection = await mysqlPool.getConnection();
 
   try {
@@ -182,13 +150,24 @@ export async function acceptAdminEmailInvitationForUser(params: {
 
     await connection.execute(
       `
-        insert into admin_users (user_id, role, is_active, created_by)
-        values (?, 'admin', true, null)
+        insert into admin_users (
+          user_id,
+          email,
+          display_name,
+          role,
+          is_active,
+          created_by,
+          last_login_at
+        )
+        values (?, ?, ?, 'admin', true, null, current_timestamp(3))
         on duplicate key update
           role = 'admin',
-          is_active = true
+          is_active = true,
+          email = values(email),
+          display_name = values(display_name),
+          last_login_at = values(last_login_at)
       `,
-      [params.userId],
+      [user.id, payload.email, user.displayName],
     );
     await connection.execute(
       `
@@ -198,7 +177,7 @@ export async function acceptAdminEmailInvitationForUser(params: {
             accepted_by = ?
         where email = ?
       `,
-      [params.userId, payload.email],
+      [user.id, payload.email],
     );
     await connection.commit();
 
@@ -211,28 +190,33 @@ export async function acceptAdminEmailInvitationForUser(params: {
   }
 }
 
-export async function rememberAdminEmailForUser(params: {
-  email: string;
-  userId: string;
-}): Promise<void> {
-  const payload = adminEmailInvitationInputSchema.parse({ email: params.email });
+export async function updateAdminLoginProfile(
+  user: AppAuthenticatedUser,
+): Promise<void> {
+  const payload = adminEmailInvitationInputSchema.parse({ email: user.email });
 
   await mysqlPool.execute(
     `
-      insert into admin_email_invitations (
-        email,
-        is_active,
-        invited_by,
-        accepted_at,
-        accepted_by
-      )
-      values (?, false, ?, current_timestamp(3), ?)
-      on duplicate key update
-        is_active = false,
-        accepted_at = coalesce(accepted_at, current_timestamp(3)),
-        accepted_by = values(accepted_by)
+      update admin_users
+      set email = ?,
+          display_name = ?,
+          last_login_at = current_timestamp(3)
+      where user_id = ?
+        and role = 'admin'
     `,
-    [payload.email, params.userId, params.userId],
+    [payload.email, user.displayName, user.id],
+  );
+  await mysqlPool.execute(
+    `
+      update admin_email_invitations
+      set is_active = false,
+          accepted_at = coalesce(accepted_at, current_timestamp(3)),
+          accepted_by = coalesce(accepted_by, ?)
+      where email = ?
+        and is_active = true
+        and accepted_at is null
+    `,
+    [user.id, payload.email],
   );
 }
 
@@ -291,7 +275,15 @@ export async function setAdminUserActive(
 async function getAdminUserById(userId: string): Promise<AdminUserSummary | null> {
   const [rows] = await mysqlPool.execute<AdminUserRow[]>(
     `
-      select user_id, role, is_active, created_at, created_by
+      select
+        user_id,
+        email,
+        display_name,
+        role,
+        is_active,
+        created_at,
+        created_by,
+        last_login_at
       from admin_users
       where user_id = ?
       limit 1
@@ -304,7 +296,7 @@ async function getAdminUserById(userId: string): Promise<AdminUserSummary | null
     return null;
   }
 
-  return mapAdminUser(row, await getAcceptedInvitationEmailsByUserId(), null);
+  return mapAdminUser(row);
 }
 
 async function getAdminEmailInvitationByEmail(
@@ -322,31 +314,6 @@ async function getAdminEmailInvitationByEmail(
   const [row] = rows;
 
   return row ? mapAdminEmailInvitation(row) : null;
-}
-
-async function getCurrentAuthUser() {
-  const session = await getXtecSessionState();
-
-  if (session.status !== "authenticated") {
-    return null;
-  }
-
-  return session.user;
-}
-
-async function getAcceptedInvitationEmailsByUserId(): Promise<Map<string, string>> {
-  const [rows] = await mysqlPool.execute<
-    Array<RowDataPacket & { accepted_by: string; email: string }>
-  >(
-    `
-      select accepted_by, email
-      from admin_email_invitations
-      where accepted_by is not null
-      order by accepted_at asc, created_at asc
-    `,
-  );
-
-  return new Map(rows.map((row) => [row.accepted_by, row.email]));
 }
 
 function mapAdminEmailInvitation(

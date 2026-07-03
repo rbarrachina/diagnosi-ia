@@ -87,8 +87,8 @@ Aquest mode:
   `LOCAL_AUTH_ALLOW_PRODUCTION=true` per verificar `npm start` en local;
 - exigeix que `LOCAL_AUTH_EMAIL` acabi en `@xtec.cat`;
 - usa `LOCAL_AUTH_USER_ID` com a identificador opac de creador o administrador;
-- no crea comptes per al professorat participant;
-- no desa nom, cognoms ni email a `admin_users`.
+- pot usar `LOCAL_AUTH_DISPLAY_NAME` com a nom visible en administracio;
+- no crea comptes per al professorat participant.
 
 ### Google OAuth sense Supabase
 
@@ -112,7 +112,9 @@ http://localhost:3000/auth/callback
 El servidor valida el `id_token` amb Google, exigeix email `@xtec.cat` i crea
 una cookie de sessio `httpOnly` signada. L'identificador que es desa com
 `owner_user_id` o `admin_users.user_id` és un UUID opac derivat amb HMAC de
-l'identificador de Google. No es desa l'email a MySQL.
+l'identificador de Google. En administracio, `admin_users` desa també el correu,
+el nom visible i la darrera entrada. Per a creadors comuns, participants,
+submissions, answers i espais de diagnosi no es desa l'email.
 
 `AUTH_USER_ID_SECRET` s'ha de mantenir estable entre desplegaments. Si canvia,
 canviarà l'UUID opac derivat per al mateix compte Google.

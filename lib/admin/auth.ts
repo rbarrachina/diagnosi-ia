@@ -5,7 +5,7 @@ import type { RowDataPacket } from "mysql2/promise";
 import type { AppAuthenticatedUser } from "@/lib/auth/local";
 import {
   acceptAdminEmailInvitationForUser,
-  rememberAdminEmailForUser,
+  updateAdminLoginProfile,
 } from "@/lib/admin/admin-users";
 import { getXtecSessionState } from "@/lib/auth/session";
 import { mysqlPool } from "@/lib/db/client";
@@ -51,7 +51,7 @@ async function isActiveAdminUser(userId: string): Promise<boolean> {
   return Boolean(rows[0]);
 }
 
-async function bootstrapFirstAdmin(userId: string, email: string): Promise<boolean> {
+async function bootstrapFirstAdmin(user: AppAuthenticatedUser): Promise<boolean> {
   const connection = await mysqlPool.getConnection();
 
   try {
@@ -76,27 +76,18 @@ async function bootstrapFirstAdmin(userId: string, email: string): Promise<boole
 
     await connection.execute(
       `
-        insert into admin_users (user_id, role, is_active, created_by)
-        values (?, 'admin', true, null)
-      `,
-      [userId],
-    );
-    await connection.execute(
-      `
-        insert into admin_email_invitations (
+        insert into admin_users (
+          user_id,
           email,
+          display_name,
+          role,
           is_active,
-          invited_by,
-          accepted_at,
-          accepted_by
+          created_by,
+          last_login_at
         )
-        values (?, false, ?, current_timestamp(3), ?)
-        on duplicate key update
-          is_active = false,
-          accepted_at = coalesce(accepted_at, current_timestamp(3)),
-          accepted_by = values(accepted_by)
+        values (?, ?, ?, 'admin', true, null, current_timestamp(3))
       `,
-      [email, userId, userId],
+      [user.id, user.email, user.displayName],
     );
     await connection.commit();
 
@@ -125,10 +116,7 @@ export async function getAdminSessionState(options: {
 
   try {
     if (await isActiveAdminUser(session.user.id)) {
-      await rememberAdminEmailForUser({
-        email: session.user.email,
-        userId: session.user.id,
-      });
+      await updateAdminLoginProfile(session.user);
 
       return {
         status: "authenticated",
@@ -138,10 +126,7 @@ export async function getAdminSessionState(options: {
     }
 
     if (
-      await acceptAdminEmailInvitationForUser({
-        email: session.user.email,
-        userId: session.user.id,
-      })
+      await acceptAdminEmailInvitationForUser(session.user)
     ) {
       return {
         status: "authenticated",
@@ -151,14 +136,11 @@ export async function getAdminSessionState(options: {
     }
 
     const bootstrapped = options.allowBootstrap
-      ? await bootstrapFirstAdmin(session.user.id, session.user.email)
+      ? await bootstrapFirstAdmin(session.user)
       : false;
 
     if (bootstrapped || (await isActiveAdminUser(session.user.id))) {
-      await rememberAdminEmailForUser({
-        email: session.user.email,
-        userId: session.user.id,
-      });
+      await updateAdminLoginProfile(session.user);
 
       return {
         status: "authenticated",

@@ -30,10 +30,13 @@ Només es preveuen:
 
 - Identificador d'usuari autenticat del creador XTEC (`owner_user_id`).
 - Identificador d'usuari autenticat dels administradors autoritzats.
-- Correus `@xtec.cat` introduïts per administradors actius només per crear
+- Nom visible, correu `@xtec.cat` i darrera entrada dels administradors
+  autoritzats. Els administradors no són anònims i aquestes dades només poden
+  servir per gestionar l'accés d'administracio.
+- Correus `@xtec.cat` introduïts per administradors actius per crear
   invitacions d'administracio pendents. Aquests correus no poden pertànyer a
-  professorat participant en qualitat de participant, no es poden barrejar amb
-  respostes i no es copien a `admin_users`.
+  professorat participant en qualitat de participant i no es poden barrejar amb
+  respostes.
 - Configuracio global no personal per decidir si els responsables poden ser
   qualsevol compte `@xtec.cat` o només comptes de centre XTEC.
 - Codi públic anònim de l'espai.
@@ -58,17 +61,16 @@ i altres administradors. La seva autoritzacio es basa en el seu identificador
 de Supabase Auth i s'ha de mantenir separada de les submissions anònimes.
 
 A `migration/mysql`, Supabase Auth queda substituit per una capa server-side
-pròpia. La taula `admin_users` ha de continuar guardant nomes un identificador
-opac d'usuari i metadades de rol. No ha de copiar nom, cognoms ni email.
+pròpia. La taula `admin_users` guarda la identitat administrativa necessària:
+identificador opac d'usuari, correu, nom visible, estat, creador i darrera
+entrada. Els administradors no són anònims i poden veure el nom i correu dels
+altres administradors dins la pantalla d'administracio.
 
-La pantalla d'administracio pot mostrar el correu dels administradors convidats
-o acceptats només dins del context d'administracio, perquè els administradors
-puguin gestionar qui té accés. En `migration/mysql`, les invitacions i els
-correus dels administradors acceptats es desen a `admin_email_invitations`.
-Quan un administrador actiu inicia sessio, aquesta taula pot actualitzar el
-correu conegut d'aquell compte. Aquesta dada no s'ha de copiar a `admin_users`,
-no s'ha de barrejar amb submissions o answers i no pot servir per filtrar
-resultats.
+Les invitacions pendents es desen a `admin_email_invitations`. Quan la persona
+convidada inicia sessio amb Google OAuth, el servidor valida que el correu
+coincideix amb la invitacio, crea o reactiva la fila a `admin_users` i marca la
+invitacio com acceptada. Ni `admin_users` ni `admin_email_invitations` no es
+poden barrejar amb submissions o answers ni servir per filtrar resultats.
 
 L'administracio no pot:
 
@@ -76,7 +78,8 @@ L'administracio no pot:
 - exportar respostes individuals;
 - filtrar resultats per atributs que identifiquin centres o persones;
 - crear respostes obertes;
-- afegir camps de centre, persona, email, IP, dispositiu o user agent.
+- afegir camps de centre, persona, email, IP, dispositiu o user agent a
+  submissions, answers, espais de diagnosi, resultats o PDF.
 
 L'administracio pot consultar resultats globals per versio de qüestionari només
 amb consultes agregades. Aquesta vista pot sumar totes les respostes d'una
@@ -214,11 +217,12 @@ de privacitat passen a dependre de la capa d'aplicacio:
 - Els resultats i el PDF s'han de construir nomes amb dades agregades.
 
 Els modes d'autenticacio de `migration/mysql` nomes poden servir per a
-creadors i administradors. No poden crear comptes de professorat participant ni
-afegir identificadors personals a submissions o answers. El mode Google desa a
-MySQL nomes un UUID opac derivat amb HMAC del subject de Google; l'email només
-viu a la sessio server-side/browser `httpOnly` i no es copia a les taules de
-l'aplicacio.
+creadors i administradors, i per bloquejar respostes repetides sense identificar
+participants. No poden crear comptes de professorat participant ni afegir
+identificadors personals a submissions o answers. El mode Google desa a MySQL
+nomes un UUID opac derivat amb HMAC del subject de Google per a creadors i
+participants; en administracio també desa email, nom visible i darrera entrada
+a `admin_users`.
 
 ## Bloqueig de resposta repetida
 

@@ -35,10 +35,11 @@ No s'ha trobat cap endpoint que retorni files individuals de `submissions` o `an
 
 - No s'han afegit filtres per centre, persona, docent, dispositiu, IP o user
   agent.
-- La gestio d'administradors usa `auth.users.id`. No es desa email a
-  `admin_users`.
-- La pantalla `/admin` pot mostrar el correu del compte OAuth autenticat actual
-  com a estat de sessio, pero no mostra dades de participants.
+- La gestio d'administradors desa identitat administrativa a `admin_users`
+  perquè els administradors no són anònims: identificador opac, email, nom
+  visible i darrera entrada.
+- La pantalla `/admin` pot mostrar noms i correus dels administradors, pero no
+  mostra dades de participants.
 - Les mutacions d'administracio validen sessio i rol al servidor abans de
   cridar les RPCs o serveis amb `service_role`.
 - Les correccions sobre versions actives o amb respostes passen per la RPC

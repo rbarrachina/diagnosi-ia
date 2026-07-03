@@ -23,12 +23,14 @@ describe("local provisional auth", () => {
     expect(getLocalAuthUser()).toEqual({
       id: "00000000-0000-4000-8000-000000000001",
       email: "usuari.prova@xtec.cat",
+      displayName: "Usuari local XTEC",
     });
     expect(session).toEqual({
       status: "authenticated",
       user: {
         id: "00000000-0000-4000-8000-000000000001",
         email: "usuari.prova@xtec.cat",
+        displayName: "Usuari local XTEC",
       },
     });
   });

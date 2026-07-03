@@ -172,7 +172,10 @@ Amb `AUTH_MODE=local`, l'usuari local `LOCAL_AUTH_EMAIL` actua com a creador
 XTEC provisional. Amb `AUTH_MODE=google`, `/auth/login` redirigeix a Google
 OAuth, valida el `id_token` server-side, exigeix email `@xtec.cat` i crea una
 sessio `httpOnly` signada. L'identificador desat a MySQL és un UUID opac
-derivat amb HMAC; no es desa l'email a `admin_users` ni a `diagnostic_spaces`.
+derivat amb HMAC. Per a creadors comuns i participants no es desa l'email a
+`diagnostic_spaces`, submissions ni answers. En administracio, `admin_users`
+desa email, nom visible i darrera entrada perquè els administradors no són
+anònims.
 
 Per verificar `npm start` en local cal activar explícitament
 `LOCAL_AUTH_ALLOW_PRODUCTION=true` en el procés. No s'ha d'activar en un
@@ -191,13 +194,11 @@ Flux principal:
    `/crear`.
 
 També es pot accedir a `/admin?section=admins` per fer el bootstrap local del
-primer administrador a `admin_users`. Aquesta taula desa només
-`LOCAL_AUTH_USER_ID` com identificador opac i metadades de rol; no copia nom,
-cognoms ni email. Els administradors nous es poden convidar per correu
-`@xtec.cat`; aquestes invitacions es desen separadament i només serveixen per
-activar el rol quan la persona inicia sessio. Els correus d'administradors
-acceptats també es mantenen en aquesta taula separada perquè la pantalla
-d'administracio pugui mostrar qui té accés sense copiar emails a `admin_users`.
+primer administrador a `admin_users`. Aquesta taula desa l'identificador opac,
+el correu, el nom visible, el rol i la darrera entrada dels administradors. Els
+administradors nous es conviden per correu `@xtec.cat`; les invitacions es
+desen a `admin_email_invitations` fins que la persona inicia sessio i queda
+activada a `admin_users`.
 
 Regles de configuracio:
 

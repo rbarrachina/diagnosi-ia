@@ -640,12 +640,13 @@ function AdminUsersPanel({
       )}
 
       <div className="mt-5 overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-sm">
+        <table className="w-full min-w-[880px] text-left text-sm">
           <thead className="border-b border-line text-xs uppercase text-slate-500">
             <tr>
               <th className="py-2 pr-3 font-semibold">Nom</th>
               <th className="py-2 pr-3 font-semibold">Correu</th>
               <th className="py-2 pr-3 font-semibold">Creat</th>
+              <th className="py-2 pr-3 font-semibold">Darrer accés</th>
               <th className="py-2 pr-3 font-semibold">Estat</th>
               <th className="py-2 pr-3 font-semibold">Acció</th>
             </tr>
@@ -663,6 +664,9 @@ function AdminUsersPanel({
                     {admin.email ?? "No disponible"}
                   </td>
                   <td className="py-3 pr-3 text-slate-600">{formatDate(admin.createdAt)}</td>
+                  <td className="py-3 pr-3 text-slate-600">
+                    {admin.lastLoginAt ? formatDate(admin.lastLoginAt) : "No disponible"}
+                  </td>
                   <td className="py-3 pr-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <span

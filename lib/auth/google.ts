@@ -30,6 +30,7 @@ export type GoogleIdTokenInfo = {
   email_verified: string | boolean;
   exp: string | number;
   nonce?: string;
+  name?: string;
 };
 
 export function isGoogleAuthEnabled(): boolean {
@@ -66,7 +67,7 @@ export function buildGoogleAuthorizationUrl(params: {
   url.searchParams.set("client_id", config.clientId);
   url.searchParams.set("redirect_uri", params.redirectUri);
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "openid email");
+  url.searchParams.set("scope", "openid email profile");
   url.searchParams.set("state", params.state);
   url.searchParams.set("nonce", params.nonce);
   url.searchParams.set("hd", XTEC_HOSTED_DOMAIN);
@@ -140,15 +141,23 @@ export async function verifyGoogleIdToken(params: {
   return {
     ...tokenInfo,
     email: tokenInfo.email.toLowerCase(),
+    name:
+      typeof tokenInfo.name === "string" && tokenInfo.name.trim()
+        ? tokenInfo.name.trim()
+        : undefined,
   };
 }
 
 export function googleTokenInfoToAppUser(
-  tokenInfo: Pick<GoogleIdTokenInfo, "iss" | "sub" | "email">,
+  tokenInfo: Pick<GoogleIdTokenInfo, "iss" | "sub" | "email" | "name">,
 ): AppAuthenticatedUser {
   return {
     id: createOpaqueGoogleUserId(tokenInfo.iss, tokenInfo.sub),
     email: tokenInfo.email.toLowerCase(),
+    displayName:
+      typeof tokenInfo.name === "string" && tokenInfo.name.trim()
+        ? tokenInfo.name.trim()
+        : null,
   };
 }
 

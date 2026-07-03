@@ -86,6 +86,7 @@ export function createSessionCookieValue(user: AppAuthenticatedUser): string {
   return createSignedCookieValue({
     id: user.id,
     email: user.email,
+    displayName: user.displayName,
     expiresAt: Date.now() + getSessionMaxAgeSeconds() * 1000,
   } satisfies SessionCookiePayload);
 }
@@ -108,6 +109,10 @@ export function parseSessionCookieValue(
   return {
     id: payload.id,
     email: payload.email.toLowerCase(),
+    displayName:
+      typeof payload.displayName === "string" && payload.displayName.trim()
+        ? payload.displayName.trim()
+        : null,
   };
 }
 

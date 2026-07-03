@@ -6,6 +6,7 @@ type Session =
       user: {
         id: string;
         email: string;
+        displayName: string | null;
       };
     }
   | { status: "forbidden"; email: string | null }
@@ -28,10 +29,13 @@ type ConnectionMock = {
 let currentSession: Session;
 let adminRows: Array<{
   user_id: string;
+  email: string | null;
+  display_name: string | null;
   role: "admin";
   is_active: number;
   created_at: string;
   created_by: string | null;
+  last_login_at: string | null;
 }>;
 let invitationRows: Array<{
   email: string;
@@ -73,7 +77,6 @@ vi.mock("@/lib/db/client", () => ({
 
 const { getAdminSessionState } = await import("@/lib/admin/auth");
 const {
-  addOrReactivateAdminUser,
   inviteAdminByEmail,
   listAdminEmailInvitations,
   listAdminUsers,
@@ -86,6 +89,7 @@ describe("local admin auth with MySQL admin_users", () => {
       user: {
         id: "00000000-0000-4000-8000-000000000001",
         email: "usuari.prova@xtec.cat",
+        displayName: "Usuari Prova",
       },
     };
     adminRows = [];
@@ -108,45 +112,35 @@ describe("local admin auth with MySQL admin_users", () => {
     expect(adminRows).toEqual([
       expect.objectContaining({
         user_id: "00000000-0000-4000-8000-000000000001",
+        email: "usuari.prova@xtec.cat",
+        display_name: "Usuari Prova",
         role: "admin",
         is_active: 1,
         created_by: null,
+        last_login_at: "2026-06-15 11:00:00.000",
       }),
     ]);
-    expect(JSON.stringify(adminRows)).not.toContain("usuari.prova@xtec.cat");
-    expect(invitationRows).toEqual([
-      expect.objectContaining({
-        email: "usuari.prova@xtec.cat",
-        is_active: 0,
-        accepted_by: "00000000-0000-4000-8000-000000000001",
-      }),
-    ]);
+    expect(invitationRows).toEqual([]);
     await expect(listAdminUsers()).resolves.toEqual([
       expect.objectContaining({
         userId: "00000000-0000-4000-8000-000000000001",
         email: "usuari.prova@xtec.cat",
+        displayName: "Usuari Prova",
       }),
     ]);
   });
 
-  it("uses MySQL admin_users and accepted invitations for admin listing", async () => {
+  it("uses MySQL admin_users profiles for admin listing", async () => {
     adminRows = [
       {
         user_id: "00000000-0000-4000-8000-000000000001",
+        email: "usuari.prova@xtec.cat",
+        display_name: "Usuari Prova",
         role: "admin",
         is_active: 1,
         created_at: "2026-06-15 10:00:00.000",
         created_by: null,
-      },
-    ];
-    invitationRows = [
-      {
-        email: "usuari.prova@xtec.cat",
-        is_active: 0,
-        created_at: "2026-06-15 09:00:00.000",
-        invited_by: "00000000-0000-4000-8000-000000000000",
-        accepted_at: "2026-06-15 10:00:00.000",
-        accepted_by: "00000000-0000-4000-8000-000000000001",
+        last_login_at: "2026-06-15 11:00:00.000",
       },
     ];
 
@@ -154,23 +148,10 @@ describe("local admin auth with MySQL admin_users", () => {
       expect.objectContaining({
         userId: "00000000-0000-4000-8000-000000000001",
         email: "usuari.prova@xtec.cat",
+        displayName: "Usuari Prova",
+        lastLoginAt: "2026-06-15 11:00:00.000",
       }),
     ]);
-  });
-
-  it("adds admin users without copying personal fields into admin_users", async () => {
-    await addOrReactivateAdminUser(
-      { userId: "00000000-0000-4000-8000-000000000002" },
-      "00000000-0000-4000-8000-000000000001",
-    );
-
-    expect(adminRows).toEqual([
-      expect.objectContaining({
-        user_id: "00000000-0000-4000-8000-000000000002",
-        created_by: "00000000-0000-4000-8000-000000000001",
-      }),
-    ]);
-    expect(JSON.stringify(adminRows)).not.toMatch(/email|nom|cognom|usuari\.prova/);
   });
 
   it("creates pending admin invitations by XTEC email", async () => {
@@ -199,10 +180,13 @@ describe("local admin auth with MySQL admin_users", () => {
     adminRows = [
       {
         user_id: "00000000-0000-4000-8000-000000000001",
+        email: "usuari.prova@xtec.cat",
+        display_name: "Usuari Prova",
         role: "admin",
         is_active: 1,
         created_at: "2026-06-15 10:00:00.000",
         created_by: null,
+        last_login_at: "2026-06-15 11:00:00.000",
       },
     ];
     invitationRows = [
@@ -220,6 +204,7 @@ describe("local admin auth with MySQL admin_users", () => {
       user: {
         id: "00000000-0000-4000-8000-000000000002",
         email: "nova.admin@xtec.cat",
+        displayName: "Nova Admin",
       },
     };
 
@@ -232,8 +217,11 @@ describe("local admin auth with MySQL admin_users", () => {
       expect.arrayContaining([
         expect.objectContaining({
           user_id: "00000000-0000-4000-8000-000000000002",
+          email: "nova.admin@xtec.cat",
+          display_name: "Nova Admin",
           role: "admin",
           is_active: 1,
+          last_login_at: "2026-06-15 10:00:00.000",
         }),
       ]),
     );
@@ -243,7 +231,6 @@ describe("local admin auth with MySQL admin_users", () => {
         accepted_by: "00000000-0000-4000-8000-000000000002",
       }),
     );
-    expect(JSON.stringify(adminRows)).not.toContain("nova.admin@xtec.cat");
   });
 
   it("rejects non-XTEC sessions before admin checks", async () => {
@@ -301,23 +288,44 @@ async function executePoolQuery(query: string, values: unknown[] = []) {
 
   if (normalizedQuery.includes("insert into admin_users")) {
     const userId = String(values[0]);
-    const createdBy = values[1] === undefined ? null : String(values[1]);
+    const email = String(values[1]);
+    const displayName = values[2] ? String(values[2]) : null;
     const existing = adminRows.find((row) => row.user_id === userId);
 
     if (existing) {
       existing.is_active = 1;
-      existing.created_by = createdBy;
+      existing.email = email;
+      existing.display_name = displayName;
+      existing.last_login_at = "2026-06-15 10:00:00.000";
     } else {
       adminRows.push({
         user_id: userId,
+        email,
+        display_name: displayName,
         role: "admin",
         is_active: 1,
         created_at: "2026-06-15 10:00:00.000",
-        created_by: createdBy,
+        created_by: null,
+        last_login_at: "2026-06-15 10:00:00.000",
       });
     }
 
     return [{ affectedRows: 1 }];
+  }
+
+  if (normalizedQuery.includes("update admin_users")) {
+    const email = String(values[0]);
+    const displayName = values[1] ? String(values[1]) : null;
+    const userId = String(values[2]);
+    const existing = adminRows.find((row) => row.user_id === userId);
+
+    if (existing) {
+      existing.email = email;
+      existing.display_name = displayName;
+      existing.last_login_at = "2026-06-15 11:00:00.000";
+    }
+
+    return [{ affectedRows: existing ? 1 : 0 }];
   }
 
   if (normalizedQuery.includes("insert into admin_email_invitations")) {
@@ -347,6 +355,22 @@ async function executePoolQuery(query: string, values: unknown[] = []) {
     return [{ affectedRows: 1 }];
   }
 
+  if (normalizedQuery.includes("update admin_email_invitations")) {
+    const userId = String(values[0]);
+    const email = String(values[1]);
+    const invitation = invitationRows.find(
+      (row) => row.email === email && row.is_active === 1 && row.accepted_at === null,
+    );
+
+    if (invitation) {
+      invitation.is_active = 0;
+      invitation.accepted_at = "2026-06-15 11:00:00.000";
+      invitation.accepted_by = userId;
+    }
+
+    return [{ affectedRows: invitation ? 1 : 0 }];
+  }
+
   throw new Error(`Unexpected pool query: ${query}`);
 }
 
@@ -373,17 +397,25 @@ function createConnectionMock(): ConnectionMock {
 
       if (normalizedQuery.includes("insert into admin_users")) {
         const userId = String(values[0]);
+        const email = String(values[1]);
+        const displayName = values[2] ? String(values[2]) : null;
         const existing = adminRows.find((row) => row.user_id === userId);
 
         if (existing) {
           existing.is_active = 1;
+          existing.email = email;
+          existing.display_name = displayName;
+          existing.last_login_at = "2026-06-15 10:00:00.000";
         } else {
           adminRows.push({
             user_id: userId,
+            email,
+            display_name: displayName,
             role: "admin",
             is_active: 1,
             created_at: "2026-06-15 10:00:00.000",
             created_by: null,
+            last_login_at: "2026-06-15 10:00:00.000",
           });
         }
         return [{ affectedRows: 1 }];

@@ -57,10 +57,11 @@ La gestio d'administradors permet convidar un compte `@xtec.cat` per correu.
 La invitacio queda limitada a l'administracio global i no es pot barrejar amb
 respostes, espais ni professorat participant. Quan la persona convidada accedeix
 amb Google OAuth, el servidor crea o reactiva el seu registre a `admin_users`
-amb l'identificador opac derivat del compte Google. `admin_users` no copia mai
-el correu. Els correus dels administradors acceptats es mantenen separats a
-`admin_email_invitations` perquè la pantalla d'administracio pugui mostrar qui
-té accés, inclòs el primer administrador creat per bootstrap.
+amb l'identificador opac derivat del compte Google, el correu i el nom visible
+del compte. Els administradors no són anònims: qualsevol administrador actiu pot
+veure el nom i correu dels altres administradors per gestionar l'accés. Aquesta
+identificacio queda limitada a l'administracio i no es pot barrejar amb
+respostes, espais ni professorat participant.
 
 Eliminar un administrador només elimina el rol d'administracio de `admin_users`;
 no elimina ni modifica el compte Google de la persona.
@@ -172,7 +173,9 @@ Cada usuari autenticat pot tenir un únic espai anònim. El servidor genera:
 
 A `migration/mysql`, la capa d'autenticacio és server-side i independent de
 Supabase. El mode `AUTH_MODE=google` valida el `id_token` amb Google, exigeix
-email `@xtec.cat` i desa a MySQL nomes un identificador opac derivat amb HMAC.
+email `@xtec.cat` i desa a MySQL nomes un identificador opac derivat amb HMAC
+per a creadors i participants. En el cas dels administradors, també desa el
+correu i el nom visible a `admin_users` perquè l'administracio no és anònima.
 El mode `AUTH_MODE=local` queda com a ajuda de desenvolupament.
 
 Resultat mostrat després de crear l'espai i recuperable des de la gestio del creador:

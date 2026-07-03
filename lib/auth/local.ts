@@ -5,6 +5,7 @@ import { isXtecEmail } from "@/lib/auth/xtec";
 export type AppAuthenticatedUser = {
   id: string;
   email: string;
+  displayName: string | null;
 };
 
 export function isLocalAuthEnabled(): boolean {
@@ -22,6 +23,7 @@ export function getLocalAuthUser(): AppAuthenticatedUser | null {
 
   const id = process.env.LOCAL_AUTH_USER_ID?.trim();
   const email = process.env.LOCAL_AUTH_EMAIL?.trim().toLowerCase();
+  const displayName = process.env.LOCAL_AUTH_DISPLAY_NAME?.trim() || "Usuari local XTEC";
 
   if (!id || !email) {
     return null;
@@ -30,6 +32,7 @@ export function getLocalAuthUser(): AppAuthenticatedUser | null {
   return {
     id,
     email,
+    displayName,
   };
 }
 

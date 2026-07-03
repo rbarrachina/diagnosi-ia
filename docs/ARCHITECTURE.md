@@ -53,8 +53,9 @@ qüestionari funcionen amb MySQL i codi server-side.
   buida.
 - Els administradors nous a `migration/mysql` es conviden per correu
   `@xtec.cat` en una taula separada d'invitacions. En iniciar sessio, el correu
-  convidat es transforma en un `admin_users.user_id` opac; `admin_users` no desa
-  correus.
+  convidat es transforma en un administrador real a `admin_users`, on es desa
+  `user_id`, correu, nom visible i darrera entrada. Els administradors no són
+  anònims i poden veure la resta d'administradors.
 - L'administracio del qüestionari no pot exposar `submissions` ni `answers`
   individuals al navegador.
 - A `migration/mysql`, les garanties de RLS i RPCs de Supabase s'han de
@@ -65,11 +66,12 @@ qüestionari funcionen amb MySQL i codi server-side.
   `AUTH_MODE=google` fa OAuth real amb Google sense Supabase.
 - L'auth local provisional de `migration/mysql` s'activa només en
   desenvolupament amb variables d'entorn (`AUTH_MODE=local`,
-  `LOCAL_AUTH_USER_ID`, `LOCAL_AUTH_EMAIL`). No desa nom, cognoms ni email a
-  `admin_users`.
+  `LOCAL_AUTH_USER_ID`, `LOCAL_AUTH_EMAIL`, `LOCAL_AUTH_DISPLAY_NAME`).
 - El mode `AUTH_MODE=google` valida el `id_token` server-side, exigeix email
   `@xtec.cat`, crea una cookie `httpOnly` signada i desa a MySQL nomes un UUID
-  opac derivat amb HMAC del subject de Google.
+  opac derivat amb HMAC del subject de Google, excepte quan el mateix compte
+  actua com a administrador: en aquest cas `admin_users` desa també email, nom
+  visible i darrera entrada.
 
 ## Estructura prevista
 
@@ -240,7 +242,7 @@ Flux:
 3. Si `admin_users` és buida, crear aquest usuari com a primer administrador
    dins una operacio atòmica server-side i permetre l'accés.
 4. Si `admin_users` no és buida, permetre l'accés només si l'usuari té una fila
-   activa a `admin_users`.
+   activa a `admin_users` o una invitacio pendent pel seu correu.
 5. Si l'usuari no és administrador actiu, mostrar accés denegat sense revelar
    metadades d'altres administradors.
 
@@ -269,7 +271,10 @@ La vista de gestio d'usuaris mostra la gestio d'administradors per
 `auth.users.id`. Per fer la seleccio usable, el servidor pot consultar
 Supabase Auth Admin amb `service_role`, cercar comptes XTEC per nom, cognoms o
 correu i retornar només els camps necessaris per triar l'administrador. La taula
-`admin_users` continua desant només l'identificador d'Auth i metadades de rol.
+`admin_users` desa la identitat administrativa: identificador opac d'Auth,
+correu, nom visible, metadades de rol i darrera entrada. Aquesta identitat és
+visible només dins la pantalla d'administracio i no pot relacionar-se amb
+respostes individuals.
 
 La vista de resultats d'administracio mostra un selector de versio de
 qüestionari i calcula resultats agregats acumulats de totes les enquestes

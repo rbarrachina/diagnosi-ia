@@ -63,8 +63,8 @@ que no s'han executat proves de runtime perque no hi ha canvis de codi.
   es crea un esquema MySQL net des de l'estat final actual, no una traduccio
   literal de cada migracio historica.
 - `admin_users` tambe forma part de la migracio. A MySQL ha de guardar un
-  identificador opac d'usuari autenticat, pero no ha de tenir FK a
-  `auth.users`.
+  identificador opac d'usuari autenticat, email, nom visible i darrera entrada
+  dels administradors, pero no ha de tenir FK a `auth.users`.
 - La validacio de submissions no ha de codificar sempre "20 preguntes". Ha de
   validar exactament totes les preguntes del qüestionari assignat a l'espai. El
   seed inicial `2026.2` si que ha de crear 5 blocs i 20 preguntes.
@@ -152,7 +152,8 @@ Criteris d'acceptacio:
 - El seed crea el qüestionari actiu `2026.2`.
 - No existeix cap taula `centres`.
 - No hi ha camps identificatius prohibits.
-- `admin_users` existeix sense copiar nom, cognoms ni email.
+- `admin_users` existeix amb identitat administrativa, però no hi ha camps
+  identificatius a submissions, answers ni espais de diagnosi.
 - L'esquema permet submissions atomiques i resultats agregats.
 
 ## Fase 3: repositoris i lectura del qüestionari
@@ -270,7 +271,8 @@ Aplica la Fase 7: encapsula o substitueix Supabase Auth per un mode local provis
 - adapta /auth/login, /auth/callback, /auth/logout o documenta rutes equivalents locals;
 - adapta l'administracio per usar admin_users a MySQL;
 - mantingues el bootstrap del primer administrador de manera atomica;
-- no copiïs nom, cognoms ni email a admin_users;
+- desa a admin_users email, nom visible i darrera entrada només per a
+  administradors;
 - documenta clarament que aquesta auth local es provisional i no es la solucio final del Departament;
 - executa lint, tests, typecheck i build.
 ```
@@ -279,7 +281,7 @@ Criteris d'acceptacio:
 
 - `/crear` funciona localment sense Supabase Auth.
 - L'administracio pot fer bootstrap local del primer administrador.
-- `admin_users` no conte dades personals copiades.
+- `admin_users` conte només dades identificatives d'administradors.
 - El professorat participant continua sense compte d'usuari.
 
 ## Fase 8: eliminar Supabase del flux principal
