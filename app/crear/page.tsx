@@ -5,7 +5,7 @@ import {
 } from "@/components/auth/auth-actions";
 import { CreateSpaceForm } from "@/components/create-space/create-space-form";
 import { ParticipantInfoCard } from "@/components/create-space/participant-info-card";
-import { getResponsibleAccessMode } from "@/lib/auth/responsible-access";
+import type { ResponsibleAccessMode } from "@/lib/auth/responsible-access";
 import { getResponsibleSessionState } from "@/lib/auth/session";
 import { getServerAppUrl } from "@/lib/http/server-app-url";
 import { listOwnerSpaces } from "@/lib/spaces/manage-spaces";
@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function CreatePage() {
   const session = await getResponsibleSessionState();
-  const responsibleAccessMode = await getResponsibleAccessMode();
+  const responsibleAccessMode = await getResponsibleAccessModeForNotice();
   const ownerSpaces =
     session.status === "authenticated"
       ? await listOwnerSpaces(session.user.id, await getServerAppUrl())
@@ -80,4 +80,16 @@ export default async function CreatePage() {
       </section>
     </main>
   );
+}
+
+async function getResponsibleAccessModeForNotice(): Promise<ResponsibleAccessMode> {
+  try {
+    const { getResponsibleAccessMode } = await import(
+      "@/lib/auth/responsible-access"
+    );
+
+    return await getResponsibleAccessMode();
+  } catch {
+    return "all_xtec";
+  }
 }
