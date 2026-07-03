@@ -195,7 +195,9 @@ primer administrador a `admin_users`. Aquesta taula desa només
 `LOCAL_AUTH_USER_ID` com identificador opac i metadades de rol; no copia nom,
 cognoms ni email. Els administradors nous es poden convidar per correu
 `@xtec.cat`; aquestes invitacions es desen separadament i només serveixen per
-activar el rol quan la persona inicia sessio.
+activar el rol quan la persona inicia sessio. Els correus d'administradors
+acceptats també es mantenen en aquesta taula separada perquè la pantalla
+d'administracio pugui mostrar qui té accés sense copiar emails a `admin_users`.
 
 Regles de configuracio:
 

@@ -3,7 +3,10 @@ import "server-only";
 import type { RowDataPacket } from "mysql2/promise";
 
 import type { AppAuthenticatedUser } from "@/lib/auth/local";
-import { acceptAdminEmailInvitationForUser } from "@/lib/admin/admin-users";
+import {
+  acceptAdminEmailInvitationForUser,
+  rememberAdminEmailForUser,
+} from "@/lib/admin/admin-users";
 import { getXtecSessionState } from "@/lib/auth/session";
 import { mysqlPool } from "@/lib/db/client";
 
@@ -48,7 +51,7 @@ async function isActiveAdminUser(userId: string): Promise<boolean> {
   return Boolean(rows[0]);
 }
 
-async function bootstrapFirstAdmin(userId: string): Promise<boolean> {
+async function bootstrapFirstAdmin(userId: string, email: string): Promise<boolean> {
   const connection = await mysqlPool.getConnection();
 
   try {
@@ -78,6 +81,23 @@ async function bootstrapFirstAdmin(userId: string): Promise<boolean> {
       `,
       [userId],
     );
+    await connection.execute(
+      `
+        insert into admin_email_invitations (
+          email,
+          is_active,
+          invited_by,
+          accepted_at,
+          accepted_by
+        )
+        values (?, false, ?, current_timestamp(3), ?)
+        on duplicate key update
+          is_active = false,
+          accepted_at = coalesce(accepted_at, current_timestamp(3)),
+          accepted_by = values(accepted_by)
+      `,
+      [email, userId, userId],
+    );
     await connection.commit();
 
     return true;
@@ -105,6 +125,11 @@ export async function getAdminSessionState(options: {
 
   try {
     if (await isActiveAdminUser(session.user.id)) {
+      await rememberAdminEmailForUser({
+        email: session.user.email,
+        userId: session.user.id,
+      });
+
       return {
         status: "authenticated",
         user: session.user,
@@ -126,10 +151,15 @@ export async function getAdminSessionState(options: {
     }
 
     const bootstrapped = options.allowBootstrap
-      ? await bootstrapFirstAdmin(session.user.id)
+      ? await bootstrapFirstAdmin(session.user.id, session.user.email)
       : false;
 
     if (bootstrapped || (await isActiveAdminUser(session.user.id))) {
+      await rememberAdminEmailForUser({
+        email: session.user.email,
+        userId: session.user.id,
+      });
+
       return {
         status: "authenticated",
         user: session.user,

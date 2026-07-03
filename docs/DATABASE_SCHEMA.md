@@ -289,7 +289,8 @@ Restriccions:
 
 ### `admin_email_invitations`
 
-Desa invitacions d'administracio pendents per correu XTEC.
+Desa invitacions d'administracio pendents i correus d'administradors acceptats
+per correu XTEC.
 
 Columnes proposades a MySQL:
 
@@ -315,6 +316,9 @@ Flux:
 - Quan aquesta persona inicia sessio amb Google OAuth, el servidor valida el
   correu, crea o reactiva `admin_users.user_id` amb l'identificador opac i marca
   la invitacio com acceptada.
+- Quan un administrador actiu inicia sessio, el servidor pot registrar o
+  actualitzar el seu correu en aquesta taula com a acceptat. Això permet mostrar
+  els administradors coneguts sense copiar emails a `admin_users`.
 - Els resultats i PDFs no poden consultar aquesta taula.
 
 ### `app_settings`

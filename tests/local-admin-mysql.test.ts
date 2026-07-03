@@ -114,6 +114,19 @@ describe("local admin auth with MySQL admin_users", () => {
       }),
     ]);
     expect(JSON.stringify(adminRows)).not.toContain("usuari.prova@xtec.cat");
+    expect(invitationRows).toEqual([
+      expect.objectContaining({
+        email: "usuari.prova@xtec.cat",
+        is_active: 0,
+        accepted_by: "00000000-0000-4000-8000-000000000001",
+      }),
+    ]);
+    await expect(listAdminUsers()).resolves.toEqual([
+      expect.objectContaining({
+        userId: "00000000-0000-4000-8000-000000000001",
+        email: "usuari.prova@xtec.cat",
+      }),
+    ]);
   });
 
   it("uses MySQL admin_users and accepted invitations for admin listing", async () => {
@@ -310,21 +323,24 @@ async function executePoolQuery(query: string, values: unknown[] = []) {
   if (normalizedQuery.includes("insert into admin_email_invitations")) {
     const email = String(values[0]);
     const invitedBy = String(values[1]);
+    const acceptedBy = values[2] ? String(values[2]) : null;
     const existing = invitationRows.find((row) => row.email === email);
 
     if (existing) {
-      existing.is_active = 1;
+      existing.is_active = acceptedBy ? 0 : 1;
       existing.invited_by = invitedBy;
-      existing.accepted_at = null;
-      existing.accepted_by = null;
+      existing.accepted_at = acceptedBy
+        ? (existing.accepted_at ?? "2026-06-15 11:00:00.000")
+        : null;
+      existing.accepted_by = acceptedBy;
     } else {
       invitationRows.push({
         email,
-        is_active: 1,
+        is_active: acceptedBy ? 0 : 1,
         created_at: "2026-06-15 10:00:00.000",
         invited_by: invitedBy,
-        accepted_at: null,
-        accepted_by: null,
+        accepted_at: acceptedBy ? "2026-06-15 11:00:00.000" : null,
+        accepted_by: acceptedBy,
       });
     }
 
@@ -370,6 +386,33 @@ function createConnectionMock(): ConnectionMock {
             created_by: null,
           });
         }
+        return [{ affectedRows: 1 }];
+      }
+
+      if (normalizedQuery.includes("insert into admin_email_invitations")) {
+        const email = String(values[0]);
+        const invitedBy = String(values[1]);
+        const acceptedBy = values[2] ? String(values[2]) : null;
+        const existing = invitationRows.find((row) => row.email === email);
+
+        if (existing) {
+          existing.is_active = acceptedBy ? 0 : 1;
+          existing.invited_by = invitedBy;
+          existing.accepted_at = acceptedBy
+            ? (existing.accepted_at ?? "2026-06-15 11:00:00.000")
+            : null;
+          existing.accepted_by = acceptedBy;
+        } else {
+          invitationRows.push({
+            email,
+            is_active: acceptedBy ? 0 : 1,
+            created_at: "2026-06-15 10:00:00.000",
+            invited_by: invitedBy,
+            accepted_at: acceptedBy ? "2026-06-15 11:00:00.000" : null,
+            accepted_by: acceptedBy,
+          });
+        }
+
         return [{ affectedRows: 1 }];
       }
 

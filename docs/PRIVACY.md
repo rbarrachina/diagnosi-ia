@@ -62,11 +62,13 @@ pròpia. La taula `admin_users` ha de continuar guardant nomes un identificador
 opac d'usuari i metadades de rol. No ha de copiar nom, cognoms ni email.
 
 La pantalla d'administracio pot mostrar el correu dels administradors convidats
-o acceptats només dins del context d'administracio. En `migration/mysql`, les
-invitacions es desen a `admin_email_invitations` i s'accepten quan el compte
-convidat inicia sessio amb Google OAuth. Aquesta dada no s'ha de copiar a
-`admin_users`, no s'ha de barrejar amb submissions o answers i no pot servir
-per filtrar resultats.
+o acceptats només dins del context d'administracio, perquè els administradors
+puguin gestionar qui té accés. En `migration/mysql`, les invitacions i els
+correus dels administradors acceptats es desen a `admin_email_invitations`.
+Quan un administrador actiu inicia sessio, aquesta taula pot actualitzar el
+correu conegut d'aquell compte. Aquesta dada no s'ha de copiar a `admin_users`,
+no s'ha de barrejar amb submissions o answers i no pot servir per filtrar
+resultats.
 
 L'administracio no pot:
 

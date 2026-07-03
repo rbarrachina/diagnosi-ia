@@ -211,6 +211,31 @@ export async function acceptAdminEmailInvitationForUser(params: {
   }
 }
 
+export async function rememberAdminEmailForUser(params: {
+  email: string;
+  userId: string;
+}): Promise<void> {
+  const payload = adminEmailInvitationInputSchema.parse({ email: params.email });
+
+  await mysqlPool.execute(
+    `
+      insert into admin_email_invitations (
+        email,
+        is_active,
+        invited_by,
+        accepted_at,
+        accepted_by
+      )
+      values (?, false, ?, current_timestamp(3), ?)
+      on duplicate key update
+        is_active = false,
+        accepted_at = coalesce(accepted_at, current_timestamp(3)),
+        accepted_by = values(accepted_by)
+    `,
+    [payload.email, params.userId, params.userId],
+  );
+}
+
 export async function deleteAdminUser(
   input: AdminUserInput,
   actorUserId: string,
@@ -317,6 +342,7 @@ async function getAcceptedInvitationEmailsByUserId(): Promise<Map<string, string
       select accepted_by, email
       from admin_email_invitations
       where accepted_by is not null
+      order by accepted_at asc, created_at asc
     `,
   );
 

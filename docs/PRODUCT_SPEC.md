@@ -58,7 +58,9 @@ La invitacio queda limitada a l'administracio global i no es pot barrejar amb
 respostes, espais ni professorat participant. Quan la persona convidada accedeix
 amb Google OAuth, el servidor crea o reactiva el seu registre a `admin_users`
 amb l'identificador opac derivat del compte Google. `admin_users` no copia mai
-el correu.
+el correu. Els correus dels administradors acceptats es mantenen separats a
+`admin_email_invitations` perquè la pantalla d'administracio pugui mostrar qui
+té accés, inclòs el primer administrador creat per bootstrap.
 
 Eliminar un administrador només elimina el rol d'administracio de `admin_users`;
 no elimina ni modifica el compte Google de la persona.
