@@ -277,6 +277,38 @@ export const adminUsers = mysqlTable(
   ],
 );
 
+export const adminEmailInvitations = mysqlTable(
+  "admin_email_invitations",
+  {
+    email: varchar("email", { length: 254 }).notNull().primaryKey(),
+    isActive: boolean("is_active").notNull().default(true),
+    invitedBy: varchar("invited_by", { length: 191 }).notNull(),
+    createdAt: createdAt(),
+    acceptedAt: datetime("accepted_at", { mode: "string", fsp: 3 }),
+    acceptedBy: varchar("accepted_by", { length: 191 }),
+  },
+  (table) => [
+    index("admin_email_invitations_invited_by_idx").on(table.invitedBy),
+    index("admin_email_invitations_accepted_by_idx").on(table.acceptedBy),
+    check(
+      "admin_email_invitations_email_format_check",
+      sql`${table.email} regexp '^[^@[:space:]]+@xtec\\.cat$'`,
+    ),
+    check(
+      "admin_email_invitations_invited_by_not_blank_check",
+      sql`trim(${table.invitedBy}) <> ''`,
+    ),
+    check(
+      "admin_email_invitations_accepted_by_not_blank_check",
+      sql`${table.acceptedBy} is null or trim(${table.acceptedBy}) <> ''`,
+    ),
+    check(
+      "admin_email_invitations_acceptance_check",
+      sql`(${table.acceptedAt} is null and ${table.acceptedBy} is null) or (${table.acceptedAt} is not null and ${table.acceptedBy} is not null)`,
+    ),
+  ],
+);
+
 export const appSettings = mysqlTable(
   "app_settings",
   {

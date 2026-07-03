@@ -8,10 +8,13 @@ export type AdminUserSummary = {
   email: string | null;
 };
 
-export type AdminUserSearchResult = {
-  userId: string;
-  displayName: string | null;
+export type AdminEmailInvitationSummary = {
   email: string;
+  isActive: boolean;
+  createdAt: string;
+  invitedBy: string;
+  acceptedAt: string | null;
+  acceptedBy: string | null;
 };
 
 export type AdminQuestionSummary = {

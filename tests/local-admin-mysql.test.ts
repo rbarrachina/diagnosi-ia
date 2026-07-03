@@ -33,6 +33,14 @@ let adminRows: Array<{
   created_at: string;
   created_by: string | null;
 }>;
+let invitationRows: Array<{
+  email: string;
+  is_active: number;
+  created_at: string;
+  invited_by: string;
+  accepted_at: string | null;
+  accepted_by: string | null;
+}>;
 let connection: ConnectionMock;
 let poolCalls: ExecuteCall[];
 
@@ -66,8 +74,9 @@ vi.mock("@/lib/db/client", () => ({
 const { getAdminSessionState } = await import("@/lib/admin/auth");
 const {
   addOrReactivateAdminUser,
+  inviteAdminByEmail,
+  listAdminEmailInvitations,
   listAdminUsers,
-  searchAuthUsersForAdmin,
 } = await import("@/lib/admin/admin-users");
 
 describe("local admin auth with MySQL admin_users", () => {
@@ -80,6 +89,7 @@ describe("local admin auth with MySQL admin_users", () => {
       },
     };
     adminRows = [];
+    invitationRows = [];
     poolCalls = [];
     connection = createConnectionMock();
   });
@@ -106,7 +116,7 @@ describe("local admin auth with MySQL admin_users", () => {
     expect(JSON.stringify(adminRows)).not.toContain("usuari.prova@xtec.cat");
   });
 
-  it("uses MySQL admin_users for admin listing and local search profiles", async () => {
+  it("uses MySQL admin_users and accepted invitations for admin listing", async () => {
     adminRows = [
       {
         user_id: "00000000-0000-4000-8000-000000000001",
@@ -116,6 +126,16 @@ describe("local admin auth with MySQL admin_users", () => {
         created_by: null,
       },
     ];
+    invitationRows = [
+      {
+        email: "usuari.prova@xtec.cat",
+        is_active: 0,
+        created_at: "2026-06-15 09:00:00.000",
+        invited_by: "00000000-0000-4000-8000-000000000000",
+        accepted_at: "2026-06-15 10:00:00.000",
+        accepted_by: "00000000-0000-4000-8000-000000000001",
+      },
+    ];
 
     await expect(listAdminUsers()).resolves.toEqual([
       expect.objectContaining({
@@ -123,7 +143,6 @@ describe("local admin auth with MySQL admin_users", () => {
         email: "usuari.prova@xtec.cat",
       }),
     ]);
-    await expect(searchAuthUsersForAdmin("prova")).resolves.toHaveLength(1);
   });
 
   it("adds admin users without copying personal fields into admin_users", async () => {
@@ -139,6 +158,79 @@ describe("local admin auth with MySQL admin_users", () => {
       }),
     ]);
     expect(JSON.stringify(adminRows)).not.toMatch(/email|nom|cognom|usuari\.prova/);
+  });
+
+  it("creates pending admin invitations by XTEC email", async () => {
+    await inviteAdminByEmail(
+      { email: "NOVA.ADMIN@xtec.cat" },
+      "00000000-0000-4000-8000-000000000001",
+    );
+
+    expect(invitationRows).toEqual([
+      expect.objectContaining({
+        email: "nova.admin@xtec.cat",
+        is_active: 1,
+        invited_by: "00000000-0000-4000-8000-000000000001",
+        accepted_at: null,
+        accepted_by: null,
+      }),
+    ]);
+    await expect(listAdminEmailInvitations()).resolves.toEqual([
+      expect.objectContaining({
+        email: "nova.admin@xtec.cat",
+      }),
+    ]);
+  });
+
+  it("accepts a pending email invitation when the invited user signs in", async () => {
+    adminRows = [
+      {
+        user_id: "00000000-0000-4000-8000-000000000001",
+        role: "admin",
+        is_active: 1,
+        created_at: "2026-06-15 10:00:00.000",
+        created_by: null,
+      },
+    ];
+    invitationRows = [
+      {
+        email: "nova.admin@xtec.cat",
+        is_active: 1,
+        created_at: "2026-06-15 10:00:00.000",
+        invited_by: "00000000-0000-4000-8000-000000000001",
+        accepted_at: null,
+        accepted_by: null,
+      },
+    ];
+    currentSession = {
+      status: "authenticated",
+      user: {
+        id: "00000000-0000-4000-8000-000000000002",
+        email: "nova.admin@xtec.cat",
+      },
+    };
+
+    await expect(getAdminSessionState({ allowBootstrap: true })).resolves.toEqual({
+      status: "authenticated",
+      user: currentSession.status === "authenticated" ? currentSession.user : null,
+      bootstrapped: false,
+    });
+    expect(adminRows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          user_id: "00000000-0000-4000-8000-000000000002",
+          role: "admin",
+          is_active: 1,
+        }),
+      ]),
+    );
+    expect(invitationRows[0]).toEqual(
+      expect.objectContaining({
+        is_active: 0,
+        accepted_by: "00000000-0000-4000-8000-000000000002",
+      }),
+    );
+    expect(JSON.stringify(adminRows)).not.toContain("nova.admin@xtec.cat");
   });
 
   it("rejects non-XTEC sessions before admin checks", async () => {
@@ -171,6 +263,29 @@ async function executePoolQuery(query: string, values: unknown[] = []) {
     return [adminRows];
   }
 
+  if (
+    normalizedQuery.includes("from admin_email_invitations") &&
+    normalizedQuery.includes("accepted_by is not null")
+  ) {
+    return [invitationRows.filter((row) => row.accepted_by !== null)];
+  }
+
+  if (
+    normalizedQuery.includes("from admin_email_invitations") &&
+    normalizedQuery.includes("accepted_at is null")
+  ) {
+    return [
+      invitationRows.filter((row) => row.is_active === 1 && row.accepted_at === null),
+    ];
+  }
+
+  if (
+    normalizedQuery.includes("from admin_email_invitations") &&
+    normalizedQuery.includes("where email =")
+  ) {
+    return [invitationRows.filter((row) => row.email === values[0])];
+  }
+
   if (normalizedQuery.includes("insert into admin_users")) {
     const userId = String(values[0]);
     const createdBy = values[1] === undefined ? null : String(values[1]);
@@ -186,6 +301,30 @@ async function executePoolQuery(query: string, values: unknown[] = []) {
         is_active: 1,
         created_at: "2026-06-15 10:00:00.000",
         created_by: createdBy,
+      });
+    }
+
+    return [{ affectedRows: 1 }];
+  }
+
+  if (normalizedQuery.includes("insert into admin_email_invitations")) {
+    const email = String(values[0]);
+    const invitedBy = String(values[1]);
+    const existing = invitationRows.find((row) => row.email === email);
+
+    if (existing) {
+      existing.is_active = 1;
+      existing.invited_by = invitedBy;
+      existing.accepted_at = null;
+      existing.accepted_by = null;
+    } else {
+      invitationRows.push({
+        email,
+        is_active: 1,
+        created_at: "2026-06-15 10:00:00.000",
+        invited_by: invitedBy,
+        accepted_at: null,
+        accepted_by: null,
       });
     }
 
@@ -217,14 +356,49 @@ function createConnectionMock(): ConnectionMock {
       }
 
       if (normalizedQuery.includes("insert into admin_users")) {
-        adminRows.push({
-          user_id: String(values[0]),
-          role: "admin",
-          is_active: 1,
-          created_at: "2026-06-15 10:00:00.000",
-          created_by: null,
-        });
+        const userId = String(values[0]);
+        const existing = adminRows.find((row) => row.user_id === userId);
+
+        if (existing) {
+          existing.is_active = 1;
+        } else {
+          adminRows.push({
+            user_id: userId,
+            role: "admin",
+            is_active: 1,
+            created_at: "2026-06-15 10:00:00.000",
+            created_by: null,
+          });
+        }
         return [{ affectedRows: 1 }];
+      }
+
+      if (
+        normalizedQuery.includes("from admin_email_invitations") &&
+        normalizedQuery.includes("for update")
+      ) {
+        return [
+          invitationRows.filter(
+            (row) =>
+              row.email === values[0] &&
+              row.is_active === 1 &&
+              row.accepted_at === null,
+          ),
+        ];
+      }
+
+      if (normalizedQuery.includes("update admin_email_invitations")) {
+        const userId = String(values[0]);
+        const email = String(values[1]);
+        const invitation = invitationRows.find((row) => row.email === email);
+
+        if (invitation) {
+          invitation.is_active = 0;
+          invitation.accepted_at = "2026-06-15 11:00:00.000";
+          invitation.accepted_by = userId;
+        }
+
+        return [{ affectedRows: invitation ? 1 : 0 }];
       }
 
       if (normalizedQuery.includes("release_lock")) {

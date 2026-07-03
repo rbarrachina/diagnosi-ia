@@ -205,7 +205,17 @@ export const adminUserInputSchema = z
   })
   .strict();
 
-export const adminUserSearchQuerySchema = z.string().trim().min(2).max(80);
+export const adminEmailInvitationInputSchema = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email()
+      .max(254)
+      .refine((email) => email.endsWith("@xtec.cat")),
+  })
+  .strict();
 
 export const setAdminUserActiveInputSchema = z
   .object({
@@ -246,7 +256,9 @@ export type DeleteQuestionnaireVersionInput = z.infer<
   typeof deleteQuestionnaireVersionInputSchema
 >;
 export type AdminUserInput = z.infer<typeof adminUserInputSchema>;
-export type AdminUserSearchQuery = z.infer<typeof adminUserSearchQuerySchema>;
+export type AdminEmailInvitationInput = z.infer<
+  typeof adminEmailInvitationInputSchema
+>;
 export type SetAdminUserActiveInput = z.infer<typeof setAdminUserActiveInputSchema>;
 export type ResponsibleAccessModeInput = z.infer<typeof responsibleAccessModeSchema>;
 export type AdminResultsMinimumSubmissionsInput = z.infer<

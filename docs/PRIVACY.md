@@ -30,6 +30,10 @@ Només es preveuen:
 
 - Identificador d'usuari autenticat del creador XTEC (`owner_user_id`).
 - Identificador d'usuari autenticat dels administradors autoritzats.
+- Correus `@xtec.cat` introduïts per administradors actius només per crear
+  invitacions d'administracio pendents. Aquests correus no poden pertànyer a
+  professorat participant en qualitat de participant, no es poden barrejar amb
+  respostes i no es copien a `admin_users`.
 - Configuracio global no personal per decidir si els responsables poden ser
   qualsevol compte `@xtec.cat` o només comptes de centre XTEC.
 - Codi públic anònim de l'espai.
@@ -57,11 +61,12 @@ A `migration/mysql`, Supabase Auth queda substituit per una capa server-side
 pròpia. La taula `admin_users` ha de continuar guardant nomes un identificador
 opac d'usuari i metadades de rol. No ha de copiar nom, cognoms ni email.
 
-La pantalla d'administracio pot mostrar nom, cognoms i correu dels comptes
-administradors o candidats a administrador llegint-los server-side de Supabase
-Auth. Aquesta visualitzacio és només per identificar a qui es concedeixen
-permisos; l'aplicacio no ha de copiar aquests camps a `admin_users` ni
-barrejar-los amb respostes.
+La pantalla d'administracio pot mostrar el correu dels administradors convidats
+o acceptats només dins del context d'administracio. En `migration/mysql`, les
+invitacions es desen a `admin_email_invitations` i s'accepten quan el compte
+convidat inicia sessio amb Google OAuth. Aquesta dada no s'ha de copiar a
+`admin_users`, no s'ha de barrejar amb submissions o answers i no pot servir
+per filtrar resultats.
 
 L'administracio no pot:
 

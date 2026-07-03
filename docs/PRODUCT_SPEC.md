@@ -53,14 +53,15 @@ Funcionalitats previstes:
 - consultar resultats globals agregats per versio de qüestionari i descarregar
   un PDF agregat d'administracio.
 
-La gestio d'administradors permet cercar comptes XTEC existents per nom,
-cognoms o correu i seleccionar quin usuari rep permisos. La pantalla pot
-mostrar nom, cognoms i correu llegits server-side de Supabase Auth per facilitar
-la identificacio de l'administrador, però aquestes dades no es copien a
-`admin_users`.
+La gestio d'administradors permet convidar un compte `@xtec.cat` per correu.
+La invitacio queda limitada a l'administracio global i no es pot barrejar amb
+respostes, espais ni professorat participant. Quan la persona convidada accedeix
+amb Google OAuth, el servidor crea o reactiva el seu registre a `admin_users`
+amb l'identificador opac derivat del compte Google. `admin_users` no copia mai
+el correu.
 
 Eliminar un administrador només elimina el rol d'administracio de `admin_users`;
-no elimina ni modifica el compte de Supabase Auth de la persona.
+no elimina ni modifica el compte Google de la persona.
 
 Les versions noves es creen des d'un únic formulari on l'administrador tria si
 vol començar amb un qüestionari en blanc o copiar una versio existent. El títol
@@ -81,7 +82,8 @@ que accedeix a la pantalla d'administracio quan encara no existeix cap fila a
 
 Un cop existeix almenys un administrador, cap altre usuari pot accedir a
 l'administracio pel simple fet de tenir un compte XTEC. Els nous
-administradors només poden ser afegits o reactivats per un administrador actiu.
+administradors només poden ser convidats, afegits o reactivats per un
+administrador actiu.
 
 Aquest bootstrap inicial no s'ha de barrejar amb la creació d'espais de
 diagnosi. Crear un qüestionari o un espai no concedeix permisos

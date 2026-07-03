@@ -283,9 +283,39 @@ Restriccions:
 
 - `role in ('admin')` inicialment.
 - No desar noms, cognoms, emails ni cap dada de participants.
-- La gestio d'administradors ha d'identificar usuaris pel seu `auth.users.id`.
-  Si cal mostrar correus d'administradors, s'han d'obtenir server-side des de
-  Supabase Auth i no copiar-los a la base de dades de l'aplicació.
+- La gestio d'administradors ha d'identificar usuaris pel seu identificador
+  autenticat opac. Si cal convidar una persona per correu a `migration/mysql`,
+  el correu s'ha de desar a `admin_email_invitations`, no a `admin_users`.
+
+### `admin_email_invitations`
+
+Desa invitacions d'administracio pendents per correu XTEC.
+
+Columnes proposades a MySQL:
+
+- `email varchar(254) primary key`
+- `is_active boolean not null default true`
+- `invited_by varchar(191) not null`
+- `created_at datetime(3) not null default current_timestamp(3)`
+- `accepted_at datetime(3)`
+- `accepted_by varchar(191)`
+
+Restriccions:
+
+- `email` ha d'acabar en `@xtec.cat`.
+- `invited_by` no pot ser blanc.
+- `accepted_at` i `accepted_by` han de ser tots dos nuls o tots dos informats.
+- La taula només pot contenir correus necessaris per donar permisos
+  d'administracio. No pot contenir correus del professorat participant en
+  qualitat de participant ni cap dada de respostes.
+
+Flux:
+
+- Un administrador actiu introdueix un correu `@xtec.cat`.
+- Quan aquesta persona inicia sessio amb Google OAuth, el servidor valida el
+  correu, crea o reactiva `admin_users.user_id` amb l'identificador opac i marca
+  la invitacio com acceptada.
+- Els resultats i PDFs no poden consultar aquesta taula.
 
 ### `app_settings`
 
@@ -327,6 +357,9 @@ Nota per a MySQL:
 - `admin_users` no ha de copiar nom, cognoms ni email. Si el mode local
   provisional necessita mostrar un email per debug, aquest valor no s'ha de
   persistir a la taula.
+- `admin_email_invitations` és l'únic lloc on es pot persistir un correu
+  d'administracio pendent o acceptat, i només per al flux d'autoritzacio
+  d'administradors.
 
 ## RLS
 

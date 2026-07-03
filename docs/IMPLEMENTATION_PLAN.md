@@ -12,8 +12,9 @@ El pla està dividit en fases petites i verificables. No s'hauria de començar u
   recuperació d'enllaç privat i reinici d'espai amb rotació d'enllaços i
   assignacio de la versio activa.
 - Administracio global implementada a `migration/mysql`: bootstrap i gestio
-  d'administradors a MySQL, lectura de versions i mutacions server-side per
-  crear, copiar, editar, activar i eliminar versions de qüestionari.
+  d'administradors a MySQL, incloent invitacions per correu `@xtec.cat` en una
+  taula separada de `admin_users`; lectura de versions i mutacions server-side
+  per crear, copiar, editar, activar i eliminar versions de qüestionari.
 - Resultats d'administracio implementats a `migration/mysql`: vista agregada
   per versio de qüestionari i PDF agregat, sense files individuals.
 - Configuracio global de responsables implementada a `migration/mysql`:
@@ -48,7 +49,9 @@ Decisions de treball:
   transaccions MySQL.
 - Substituir RLS de Supabase per control d'acces server-side i repositoris.
 - Incloure `admin_users` dins l'abast de migracio, sense copiar nom, cognoms ni
-  email a la base de dades.
+  email a aquesta taula. Les invitacions pendents d'administracio poden desar
+  correus `@xtec.cat` en una taula separada, sense relacio amb respostes o
+  professorat participant.
 - Incloure `app_settings` només per configuracio global no personal, sense noms
   ni codis de centre.
 - Validar submissions contra totes les preguntes del qüestionari assignat a

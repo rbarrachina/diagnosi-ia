@@ -20,6 +20,8 @@ aquesta branca, el flux principal local funciona amb Next.js i MySQL local:
 - resultats agregats;
 - generacio de PDF;
 - bootstrap i gestio bàsica de `admin_users` a MySQL;
+- invitacions d'administradors per correu `@xtec.cat`, separades de
+  `admin_users`;
 - gestio avançada de versions de qüestionari a MySQL.
 
 La carpeta `supabase/` es conserva intacta com a referencia historica de
@@ -191,7 +193,9 @@ Flux principal:
 També es pot accedir a `/admin?section=admins` per fer el bootstrap local del
 primer administrador a `admin_users`. Aquesta taula desa només
 `LOCAL_AUTH_USER_ID` com identificador opac i metadades de rol; no copia nom,
-cognoms ni email.
+cognoms ni email. Els administradors nous es poden convidar per correu
+`@xtec.cat`; aquestes invitacions es desen separadament i només serveixen per
+activar el rol quan la persona inicia sessio.
 
 Regles de configuracio:
 

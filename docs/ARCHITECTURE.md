@@ -51,6 +51,10 @@ qüestionari funcionen amb MySQL i codi server-side.
 - L'administracio global requereix sessió OAuth i autoritzacio explicita com a
   administrador, excepte el bootstrap inicial quan `admin_users` encara és
   buida.
+- Els administradors nous a `migration/mysql` es conviden per correu
+  `@xtec.cat` en una taula separada d'invitacions. En iniciar sessio, el correu
+  convidat es transforma en un `admin_users.user_id` opac; `admin_users` no desa
+  correus.
 - L'administracio del qüestionari no pot exposar `submissions` ni `answers`
   individuals al navegador.
 - A `migration/mysql`, les garanties de RLS i RPCs de Supabase s'han de

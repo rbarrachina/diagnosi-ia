@@ -3,6 +3,7 @@ import "server-only";
 import type { RowDataPacket } from "mysql2/promise";
 
 import type { AppAuthenticatedUser } from "@/lib/auth/local";
+import { acceptAdminEmailInvitationForUser } from "@/lib/admin/admin-users";
 import { getXtecSessionState } from "@/lib/auth/session";
 import { mysqlPool } from "@/lib/db/client";
 
@@ -104,6 +105,19 @@ export async function getAdminSessionState(options: {
 
   try {
     if (await isActiveAdminUser(session.user.id)) {
+      return {
+        status: "authenticated",
+        user: session.user,
+        bootstrapped: false,
+      };
+    }
+
+    if (
+      await acceptAdminEmailInvitationForUser({
+        email: session.user.email,
+        userId: session.user.id,
+      })
+    ) {
       return {
         status: "authenticated",
         user: session.user,

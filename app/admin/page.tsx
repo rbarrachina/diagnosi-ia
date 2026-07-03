@@ -13,7 +13,10 @@ import {
 } from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/app/admin/activation-button";
 import { QuestionnaireEditorForm } from "@/app/admin/questionnaire-editor-form";
-import { listAdminUsers, searchAuthUsersForAdmin } from "@/lib/admin/admin-users";
+import {
+  listAdminEmailInvitations,
+  listAdminUsers,
+} from "@/lib/admin/admin-users";
 import { getAdminSessionState } from "@/lib/admin/auth";
 import { isLocalAuthEnabled } from "@/lib/auth/local";
 import {
@@ -22,9 +25,9 @@ import {
   type ResponsibleAccessMode,
 } from "@/lib/auth/responsible-access";
 import type {
+  AdminEmailInvitationSummary,
   AdminQuestionnaireDetail,
   AdminQuestionnaireSummary,
-  AdminUserSearchResult,
   AdminUserSummary,
 } from "@/lib/admin/types";
 import {
@@ -35,7 +38,6 @@ import { getAggregatedResultsForQuestionnaireVersion } from "@/lib/results/get-r
 import {
   MAX_QUESTION_BLOCKS,
   MAX_QUESTIONS_PER_BLOCK,
-  adminUserSearchQuerySchema,
   questionnaireIdSchema,
 } from "@/lib/validation/schemas";
 
@@ -44,7 +46,6 @@ export const dynamic = "force-dynamic";
 type AdminPageProps = {
   searchParams: Promise<{
     error?: string;
-    adminSearch?: string;
     questionnaireId?: string;
     section?: string;
     status?: string;
@@ -53,7 +54,7 @@ type AdminPageProps = {
 
 const statusMessages: Record<string, string> = {
   activated: "Versió activada.",
-  "admin-added": "Administrador afegit o reactivat.",
+  "admin-added": "Invitació d'administrador creada.",
   "admin-deleted": "Rol d'administrador eliminat.",
   "admin-updated": "Estat de l'administrador actualitzat.",
   copied: "Versió copiada.",
@@ -66,7 +67,7 @@ const statusMessages: Record<string, string> = {
 const errorMessages: Record<string, string> = {
   "activation-confirmation": "Cal confirmar l'activació.",
   activate: "No s'ha pogut activar la versió. Revisa que sigui completa.",
-  "admin-add": "No s'ha pogut afegir l'administrador.",
+  "admin-add": "No s'ha pogut crear la invitació. Revisa que sigui un correu @xtec.cat.",
   "admin-delete": "No s'ha pogut eliminar el rol d'administrador.",
   "admin-update": "No s'ha pogut actualitzar l'administrador.",
   copy: "No s'ha pogut copiar la versió.",
@@ -568,93 +569,73 @@ function QuestionnaireEditor({ detail }: { detail: AdminQuestionnaireDetail | nu
 
 function AdminUsersPanel({
   admins,
-  searchQuery,
-  searchResults,
-  searchWasSubmitted,
   currentUserId,
+  invitations,
 }: {
   admins: AdminUserSummary[];
-  searchQuery: string;
-  searchResults: AdminUserSearchResult[];
-  searchWasSubmitted: boolean;
   currentUserId: string;
+  invitations: AdminEmailInvitationSummary[];
 }) {
-  const adminByUserId = new Map(admins.map((admin) => [admin.userId, admin]));
-
   return (
     <section className="rounded-md border border-line bg-white p-5 shadow-sm">
       <h2 className="text-lg font-semibold text-ink">Administradors</h2>
-      <form action="/admin" className="mt-4 flex flex-col gap-3 sm:flex-row">
-        <input name="section" type="hidden" value="admins" />
+      <form action={addAdminUserAction} className="mt-4 flex flex-col gap-3 sm:flex-row">
         <label className="flex-1 text-sm font-medium text-slate-700">
-          Cerca per nom, cognom o correu
+          Correu XTEC de la persona administradora
           <input
             className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm"
-            defaultValue={searchQuery}
-            name="adminSearch"
-            placeholder="nom o correu @xtec.cat"
+            name="email"
+            placeholder="persona@xtec.cat"
             required
+            type="email"
           />
         </label>
         <button
           className="self-end rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-[#1f5d68]"
           type="submit"
         >
-          Cerca
+          Convida
         </button>
       </form>
+      <p className="mt-3 text-sm text-slate-600">
+        La persona quedarà autoritzada quan accedeixi amb aquest compte Google
+        XTEC. El correu només s&apos;usa per a aquesta invitació
+        d&apos;administració.
+      </p>
 
-      {searchWasSubmitted ? (
+      {invitations.length > 0 ? (
         <div className="mt-5 rounded-md border border-line bg-slate-50 p-4">
-          <h3 className="text-sm font-semibold text-ink">Resultats de cerca</h3>
-          {searchResults.length > 0 ? (
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-sm">
-                <thead className="border-b border-line text-xs uppercase text-slate-500">
-                  <tr>
-                    <th className="py-2 pr-3 font-semibold">Nom</th>
-                    <th className="py-2 pr-3 font-semibold">Correu</th>
-                    <th className="py-2 pr-3 font-semibold">Acció</th>
+          <h3 className="text-sm font-semibold text-ink">Invitacions pendents</h3>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-[520px] text-left text-sm">
+              <thead className="border-b border-line text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="py-2 pr-3 font-semibold">Correu</th>
+                  <th className="py-2 pr-3 font-semibold">Creada</th>
+                  <th className="py-2 pr-3 font-semibold">Estat</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {invitations.map((invitation) => (
+                  <tr key={invitation.email}>
+                    <td className="py-3 pr-3 text-slate-700">{invitation.email}</td>
+                    <td className="py-3 pr-3 text-slate-600">
+                      {formatDate(invitation.createdAt)}
+                    </td>
+                    <td className="py-3 pr-3">
+                      <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                        Pendent
+                      </span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {searchResults.map((result) => {
-                    const admin = adminByUserId.get(result.userId);
-
-                    return (
-                      <tr key={result.userId}>
-                        <td className="py-3 pr-3 text-slate-700">
-                          {result.displayName ?? "Sense nom"}
-                        </td>
-                        <td className="py-3 pr-3 text-slate-700">{result.email}</td>
-                        <td className="py-3 pr-3">
-                          <form action={addAdminUserAction}>
-                            <input name="userId" type="hidden" value={result.userId} />
-                            <button
-                              className="rounded-md border border-action px-3 py-1.5 text-xs font-semibold text-action hover:bg-[#eef7f8] disabled:border-slate-300 disabled:text-slate-400"
-                              disabled={admin?.isActive}
-                              type="submit"
-                            >
-                              {admin?.isActive ? "Ja és administrador" : "Dona permisos"}
-                            </button>
-                          </form>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="mt-3 text-sm text-slate-600">
-              No s&apos;ha trobat cap compte XTEC amb aquesta cerca.
-            </p>
-          )}
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <p className="mt-3 text-sm text-slate-600">
-          Escriu almenys 2 caràcters per trobar comptes XTEC i donar permisos
-          d&apos;administració.
+          Encara no hi ha invitacions d&apos;administració pendents.
         </p>
       )}
 
@@ -931,6 +912,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const [
     versions,
     admins,
+    adminInvitations,
     responsibleAccessMode,
     minimumResponseCount,
   ] = await Promise.all([
@@ -938,6 +920,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       ? listQuestionnaireVersions()
       : Promise.resolve([]),
     activeSection === "admins" ? listAdminUsers() : Promise.resolve([]),
+    activeSection === "admins" ? listAdminEmailInvitations() : Promise.resolve([]),
     activeSection === "settings"
       ? getResponsibleAccessMode()
       : Promise.resolve<ResponsibleAccessMode>("all_xtec"),
@@ -958,16 +941,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       ? await getQuestionnaireVersionDetail(selectedQuestionnaireId)
       : null
     : null;
-  const parsedAdminSearch = adminUserSearchQuerySchema.safeParse(params.adminSearch);
-  const adminSearchQuery = parsedAdminSearch.success
-    ? parsedAdminSearch.data
-    : params.adminSearch ?? "";
-  const searchWasSubmitted = Boolean(params.adminSearch);
-  let adminSearchResults: AdminUserSearchResult[] = [];
-
-  if (activeSection === "admins" && parsedAdminSearch.success) {
-    adminSearchResults = await searchAuthUsersForAdmin(parsedAdminSearch.data);
-  }
 
   return (
     <main className="min-h-screen scroll-mt-0 bg-paper" id="admin-top">
@@ -1023,9 +996,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <AdminUsersPanel
             admins={admins}
             currentUserId={session.user.id}
-            searchQuery={adminSearchQuery}
-            searchResults={adminSearchResults}
-            searchWasSubmitted={searchWasSubmitted}
+            invitations={adminInvitations}
           />
         ) : activeSection === "results" ? (
           <AdminResultsPanel

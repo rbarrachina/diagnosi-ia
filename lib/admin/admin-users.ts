@@ -2,15 +2,18 @@ import "server-only";
 
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
-import type { AdminUserSearchResult, AdminUserSummary } from "@/lib/admin/types";
+import type {
+  AdminEmailInvitationSummary,
+  AdminUserSummary,
+} from "@/lib/admin/types";
 import { getXtecSessionState } from "@/lib/auth/session";
 import { mysqlPool } from "@/lib/db/client";
 import {
+  adminEmailInvitationInputSchema,
   adminUserInputSchema,
-  adminUserSearchQuerySchema,
   setAdminUserActiveInputSchema,
+  type AdminEmailInvitationInput,
   type AdminUserInput,
-  type AdminUserSearchQuery,
   type SetAdminUserActiveInput,
 } from "@/lib/validation/schemas";
 
@@ -22,6 +25,15 @@ type AdminUserRow = RowDataPacket & {
   created_by: string | null;
 };
 
+type AdminEmailInvitationRow = RowDataPacket & {
+  email: string;
+  is_active: number | boolean;
+  created_at: string | Date;
+  invited_by: string;
+  accepted_at: string | Date | null;
+  accepted_by: string | null;
+};
+
 export class AdminUserOperationError extends Error {
   constructor(message = "Could not manage administrator") {
     super(message);
@@ -31,16 +43,19 @@ export class AdminUserOperationError extends Error {
 
 function mapAdminUser(
   row: AdminUserRow,
-  profile?: AdminUserSearchResult | null,
+  profiles: Map<string, string>,
+  currentEmail: string | null,
 ): AdminUserSummary {
+  const email = profiles.get(row.user_id) ?? currentEmail;
+
   return {
     userId: row.user_id,
     role: row.role,
     isActive: toBoolean(row.is_active),
     createdAt: formatDateTime(row.created_at),
     createdBy: row.created_by,
-    displayName: profile?.userId === row.user_id ? profile.displayName : null,
-    email: profile?.userId === row.user_id ? profile.email : null,
+    displayName: null,
+    email,
   };
 }
 
@@ -52,27 +67,62 @@ export async function listAdminUsers(): Promise<AdminUserSummary[]> {
       order by created_at asc
     `,
   );
-  const currentProfile = await getCurrentAuthUserSearchProfile();
+  const currentUser = await getCurrentAuthUser();
+  const currentEmailByUserId =
+    currentUser && currentUser.email ? new Map([[currentUser.id, currentUser.email]]) : new Map();
+  const invitationEmailsByUserId = await getAcceptedInvitationEmailsByUserId();
 
-  return rows.map((row) => mapAdminUser(row, currentProfile));
+  return rows.map((row) =>
+    mapAdminUser(
+      row,
+      invitationEmailsByUserId,
+      currentEmailByUserId.get(row.user_id) ?? null,
+    ),
+  );
 }
 
-export async function searchAuthUsersForAdmin(
-  query: AdminUserSearchQuery,
-): Promise<AdminUserSearchResult[]> {
-  const parsedQuery = adminUserSearchQuerySchema.parse(query).toLowerCase();
-  const currentProfile = await getCurrentAuthUserSearchProfile();
+export async function listAdminEmailInvitations(): Promise<
+  AdminEmailInvitationSummary[]
+> {
+  const [rows] = await mysqlPool.execute<AdminEmailInvitationRow[]>(
+    `
+      select email, is_active, created_at, invited_by, accepted_at, accepted_by
+      from admin_email_invitations
+      where is_active = true
+        and accepted_at is null
+      order by created_at asc
+    `,
+  );
 
-  if (!currentProfile) {
-    return [];
+  return rows.map(mapAdminEmailInvitation);
+}
+
+export async function inviteAdminByEmail(
+  input: AdminEmailInvitationInput,
+  actorUserId: string,
+): Promise<AdminEmailInvitationSummary> {
+  const payload = adminEmailInvitationInputSchema.parse(input);
+
+  await mysqlPool.execute(
+    `
+      insert into admin_email_invitations (email, is_active, invited_by)
+      values (?, true, ?)
+      on duplicate key update
+        is_active = true,
+        invited_by = values(invited_by),
+        accepted_at = null,
+        accepted_by = null
+    `,
+    [payload.email, actorUserId],
+  );
+
+  const invitation = await getAdminEmailInvitationByEmail(payload.email);
+
+  if (!invitation) {
+    throw new AdminUserOperationError();
   }
 
-  const searchable = [currentProfile.userId, currentProfile.email, currentProfile.displayName]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  return searchable.includes(parsedQuery) ? [currentProfile] : [];
+  return invitation;
 }
 
 export async function addOrReactivateAdminUser(
@@ -100,6 +150,65 @@ export async function addOrReactivateAdminUser(
   }
 
   return admin;
+}
+
+export async function acceptAdminEmailInvitationForUser(params: {
+  email: string;
+  userId: string;
+}): Promise<boolean> {
+  const payload = adminEmailInvitationInputSchema.parse({ email: params.email });
+  const connection = await mysqlPool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [invitationRows] = await connection.execute<AdminEmailInvitationRow[]>(
+      `
+        select email
+        from admin_email_invitations
+        where email = ?
+          and is_active = true
+          and accepted_at is null
+        limit 1
+        for update
+      `,
+      [payload.email],
+    );
+
+    if (!invitationRows[0]) {
+      await connection.commit();
+      return false;
+    }
+
+    await connection.execute(
+      `
+        insert into admin_users (user_id, role, is_active, created_by)
+        values (?, 'admin', true, null)
+        on duplicate key update
+          role = 'admin',
+          is_active = true
+      `,
+      [params.userId],
+    );
+    await connection.execute(
+      `
+        update admin_email_invitations
+        set is_active = false,
+            accepted_at = current_timestamp(3),
+            accepted_by = ?
+        where email = ?
+      `,
+      [params.userId, payload.email],
+    );
+    await connection.commit();
+
+    return true;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 export async function deleteAdminUser(
@@ -166,20 +275,64 @@ async function getAdminUserById(userId: string): Promise<AdminUserSummary | null
   );
   const [row] = rows;
 
-  return row ? mapAdminUser(row, await getCurrentAuthUserSearchProfile()) : null;
+  if (!row) {
+    return null;
+  }
+
+  return mapAdminUser(row, await getAcceptedInvitationEmailsByUserId(), null);
 }
 
-async function getCurrentAuthUserSearchProfile(): Promise<AdminUserSearchResult | null> {
+async function getAdminEmailInvitationByEmail(
+  email: string,
+): Promise<AdminEmailInvitationSummary | null> {
+  const [rows] = await mysqlPool.execute<AdminEmailInvitationRow[]>(
+    `
+      select email, is_active, created_at, invited_by, accepted_at, accepted_by
+      from admin_email_invitations
+      where email = ?
+      limit 1
+    `,
+    [email],
+  );
+  const [row] = rows;
+
+  return row ? mapAdminEmailInvitation(row) : null;
+}
+
+async function getCurrentAuthUser() {
   const session = await getXtecSessionState();
 
   if (session.status !== "authenticated") {
     return null;
   }
 
+  return session.user;
+}
+
+async function getAcceptedInvitationEmailsByUserId(): Promise<Map<string, string>> {
+  const [rows] = await mysqlPool.execute<
+    Array<RowDataPacket & { accepted_by: string; email: string }>
+  >(
+    `
+      select accepted_by, email
+      from admin_email_invitations
+      where accepted_by is not null
+    `,
+  );
+
+  return new Map(rows.map((row) => [row.accepted_by, row.email]));
+}
+
+function mapAdminEmailInvitation(
+  row: AdminEmailInvitationRow,
+): AdminEmailInvitationSummary {
   return {
-    userId: session.user.id,
-    displayName: "Usuari XTEC",
-    email: session.user.email,
+    email: row.email,
+    isActive: toBoolean(row.is_active),
+    createdAt: formatDateTime(row.created_at),
+    invitedBy: row.invited_by,
+    acceptedAt: row.accepted_at ? formatDateTime(row.accepted_at) : null,
+    acceptedBy: row.accepted_by,
   };
 }
 

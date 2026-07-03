@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
-  addOrReactivateAdminUser,
   deleteAdminUser,
+  inviteAdminByEmail,
   setAdminUserActive,
 } from "@/lib/admin/admin-users";
 import { getRequiredAdminUser } from "@/lib/admin/auth";
@@ -18,6 +18,7 @@ import {
 } from "@/lib/admin/questionnaires";
 import {
   activateQuestionnaireVersionInputSchema,
+  adminEmailInvitationInputSchema,
   adminUserInputSchema,
   adminResultsMinimumSubmissionsSchema,
   createQuestionnaireVersionInputSchema,
@@ -229,10 +230,10 @@ export async function addAdminUserAction(formData: FormData) {
   const actorUserId = await requireAdminActorId();
 
   try {
-    const payload = adminUserInputSchema.parse({
-      userId: getRequiredFormString(formData, "userId"),
+    const payload = adminEmailInvitationInputSchema.parse({
+      email: getRequiredFormString(formData, "email"),
     });
-    await addOrReactivateAdminUser(payload, actorUserId);
+    await inviteAdminByEmail(payload, actorUserId);
   } catch {
     redirect(adminPath({ error: "admin-add", section: "admins" }));
   }

@@ -12,13 +12,25 @@ const mysqlScaleMigration = readFileSync(
 describe("MySQL schema privacy constraints", () => {
   it("does not define centres or participant identity fields", () => {
     expect(schema).not.toMatch(/\bcentres?\b/i);
-    expect(schema).not.toMatch(/teacher|participant|email|ip_address|user_agent|device/i);
+    expect(schema).not.toMatch(/teacher|participant|ip_address|user_agent|device/i);
+    expect(schema).not.toMatch(/submission.*email|answer.*email|diagnostic.*email/i);
   });
 
   it("defines admin users without copied personal fields", () => {
     expect(schema).toContain('"admin_users"');
     expect(schema).toContain("userId");
-    expect(schema).not.toMatch(/first_name|last_name|full_name|email/i);
+    const adminUsersDefinition = schema.slice(
+      schema.indexOf("export const adminUsers"),
+      schema.indexOf("export const adminEmailInvitations"),
+    );
+
+    expect(adminUsersDefinition).not.toMatch(/first_name|last_name|full_name|email/i);
+  });
+
+  it("keeps administrator email invitations separate from admin user ids", () => {
+    expect(schema).toContain('"admin_email_invitations"');
+    expect(schema).toContain("email: varchar(\"email\"");
+    expect(schema).toContain("admin_email_invitations_email_format_check");
   });
 
   it("keeps answers keyed by anonymous submission and question", () => {

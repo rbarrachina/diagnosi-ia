@@ -1,5 +1,5 @@
 import {
-  adminUserSearchQuerySchema,
+  adminEmailInvitationInputSchema,
   adminUserInputSchema,
   copyQuestionnaireVersionInputSchema,
   createQuestionnaireDraftInputSchema,
@@ -176,9 +176,24 @@ describe("admin validation schemas", () => {
     ).toThrow();
   });
 
-  it("validates administrator search queries", () => {
-    expect(adminUserSearchQuerySchema.parse(" rbarrach ")).toBe("rbarrach");
-    expect(() => adminUserSearchQuerySchema.parse("r")).toThrow();
-    expect(() => adminUserSearchQuerySchema.parse("x".repeat(81))).toThrow();
+  it("validates administrator email invitations", () => {
+    expect(
+      adminEmailInvitationInputSchema.parse({
+        email: " NOVA.ADMIN@xtec.cat ",
+      }),
+    ).toEqual({ email: "nova.admin@xtec.cat" });
+
+    expect(() =>
+      adminEmailInvitationInputSchema.parse({
+        email: "admin@example.test",
+      }),
+    ).toThrow();
+
+    expect(() =>
+      adminEmailInvitationInputSchema.parse({
+        email: "admin@xtec.cat",
+        userId: "11111111-1111-4111-8111-111111111111",
+      }),
+    ).toThrow();
   });
 });
