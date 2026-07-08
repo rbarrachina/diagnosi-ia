@@ -462,7 +462,18 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
   );
 }
 
-function QuestionnaireEditor({ detail }: { detail: AdminQuestionnaireDetail | null }) {
+type QuestionnaireEditorFeedback = {
+  message: string;
+  tone: "error" | "success";
+};
+
+function QuestionnaireEditor({
+  detail,
+  feedback,
+}: {
+  detail: AdminQuestionnaireDetail | null;
+  feedback?: QuestionnaireEditorFeedback | null;
+}) {
   if (!detail) {
     return (
       <section className="rounded-md border border-line bg-white p-5 shadow-sm">
@@ -565,6 +576,7 @@ function QuestionnaireEditor({ detail }: { detail: AdminQuestionnaireDetail | nu
 
       <QuestionnaireEditorForm
         detail={detail}
+        feedback={feedback}
         isLocked={isAssignedToSpace}
         key={detail.id}
       />
@@ -987,6 +999,18 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       ? await getQuestionnaireVersionDetail(selectedQuestionnaireId)
       : null
     : null;
+  const questionnaireEditorFeedback =
+    activeSection === "questionnaires" && params.status === "saved"
+      ? {
+          message: statusMessages.saved,
+          tone: "success" as const,
+        }
+      : activeSection === "questionnaires" && params.error === "save"
+        ? {
+            message: errorMessages.save,
+            tone: "error" as const,
+          }
+        : null;
 
   return (
     <main className="min-h-screen scroll-mt-0 bg-paper" id="admin-top">
@@ -1035,7 +1059,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               <DraftForms versions={versions} />
             </div>
             <div className="space-y-6">
-              <QuestionnaireEditor detail={selectedDetail} />
+              <QuestionnaireEditor
+                detail={selectedDetail}
+                feedback={questionnaireEditorFeedback}
+              />
             </div>
           </div>
         ) : activeSection === "admins" ? (

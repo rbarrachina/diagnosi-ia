@@ -19,6 +19,11 @@ type EditableBlock = {
   questions: EditableQuestion[];
 };
 
+type EditorFeedback = {
+  message: string;
+  tone: "error" | "success";
+};
+
 function newId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
@@ -49,9 +54,11 @@ function initialBlocks(detail: AdminQuestionnaireDetail): EditableBlock[] {
 
 export function QuestionnaireEditorForm({
   detail,
+  feedback,
   isLocked,
 }: {
   detail: AdminQuestionnaireDetail;
+  feedback?: EditorFeedback | null;
   isLocked: boolean;
 }) {
   const [title, setTitle] = useState(detail.title);
@@ -301,6 +308,21 @@ export function QuestionnaireEditorForm({
           );
         })}
       </div>
+
+      {feedback ? (
+        <div
+          className={`rounded-md border px-4 py-3 text-sm font-medium ${
+            feedback.tone === "success"
+              ? "border-green-200 bg-green-50 text-green-900"
+              : "border-red-200 bg-red-50 text-red-900"
+          }`}
+          id="questionnaire-editor-feedback"
+        >
+          {feedback.message}
+        </div>
+      ) : (
+        <span className="sr-only" id="questionnaire-editor-feedback" />
+      )}
 
       <div className="flex flex-wrap items-center gap-3">
         {canChangeStructure && blocks.length < MAX_QUESTION_BLOCKS ? (

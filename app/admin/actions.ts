@@ -154,7 +154,7 @@ export async function saveQuestionnaireContentAction(formData: FormData) {
     redirect(
       adminPath({
         error: "save",
-        hash: "admin-top",
+        hash: "questionnaire-editor-feedback",
         questionnaireId,
         section: "questionnaires",
       }),
@@ -164,7 +164,7 @@ export async function saveQuestionnaireContentAction(formData: FormData) {
   revalidatePath("/admin");
   redirect(
     adminPath({
-      hash: "admin-top",
+      hash: "questionnaire-editor-feedback",
       questionnaireId,
       section: "questionnaires",
       status: "saved",
