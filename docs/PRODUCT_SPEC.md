@@ -6,10 +6,10 @@ Diagnosi IA permet crear un espai anònim de diagnosi sobre l'ús educatiu de la
 
 L'aplicació no desa ni mostra el nom del centre. Tampoc avalua docents individualment.
 
-Nota de branca: `main` continua sent la versio estable amb
-Supabase/PostgreSQL. La branca `migration/mysql` és experimental i té com a
-objectiu immediat fer funcionar el mateix producte en local amb MySQL. Aquesta
-migracio no canvia l'abast funcional ni les regles d'anonimat del producte.
+Nota de branca: `main` conté actualment el flux local amb MySQL. La carpeta
+`supabase/` es conserva com a referencia historica de la implementacio anterior
+amb Supabase/PostgreSQL. Aquest canvi d'infraestructura no modifica l'abast
+funcional ni les regles d'anonimat del producte.
 
 ## Objectius
 
@@ -50,6 +50,9 @@ Funcionalitats previstes:
 - gestionar administradors;
 - configurar si l'accés de responsables admet qualsevol compte `@xtec.cat` o
   només comptes de centre XTEC.
+- configurar el comunicat global que els responsables poden obrir al correu web
+  per compartir l'enllaç públic amb el professorat, sense preomplir
+  destinataris.
 - consultar resultats globals agregats per versio de qüestionari i descarregar
   un PDF agregat d'administracio.
 
@@ -117,6 +120,16 @@ respostes igual o inferior al llindar no s'inclouen en els totals, percentatges
 ni PDF d'administracio. La pantalla de resultats mostra una frase inicial que
 explica el llindar aplicat.
 
+La configuracio també inclou el comunicat global per compartir el qüestionari:
+títol del correu i text del missatge. El text pot contenir la marca
+`{URL_QUESTIONARI}`, que se substitueix a la pantalla del responsable per
+l'enllaç públic específic del seu espai. Si la marca no hi és, l'aplicacio
+afegeix l'enllaç al final del missatge. El botó de la gestio del creador mostra
+primer el compte emissor previst i després permet obrir Gmail/Google Workspace
+en una pestanya nova amb assumpte i cos preomplerts, però sense destinataris.
+La confirmacio recorda al responsable que ha d'afegir manualment al camp `Per a`
+els correus dels docents del centre abans d'enviar el missatge.
+
 ### Regla de correccions menors
 
 Una versio del qüestionari sense espais assignats es pot corregir directament.
@@ -159,9 +172,8 @@ versio i no inclou tokens ni codis publics d'espais.
 
 Ruta: `/crear`
 
-La persona responsable inicia sessió amb compte XTEC autoritzat. A `main` això es fa amb
-Google OAuth mitjançant Supabase Auth. A `migration/mysql` això es fa amb
-Google OAuth directe, sense Supabase, o amb mode local provisional de
+La persona responsable inicia sessió amb compte XTEC autoritzat. A `main` això
+es fa amb Google OAuth directe, sense Supabase, o amb mode local provisional de
 desenvolupament. Només s'accepten comptes amb correu acabat en `@xtec.cat`;
 segons la configuracio global, l'accés de responsables pot quedar limitat als
 comptes de centre XTEC. Els administradors actius poden crear i gestionar el
@@ -171,16 +183,18 @@ Cada usuari autenticat pot tenir un únic espai anònim. El servidor genera:
 - Codi públic llegible amb format `C-7KX9-M2Q8`.
 - Token privat llarg i criptograficament segur.
 
-A `migration/mysql`, la capa d'autenticacio és server-side i independent de
-Supabase. El mode `AUTH_MODE=google` valida el `id_token` amb Google, exigeix
-email `@xtec.cat` i desa a MySQL nomes un identificador opac derivat amb HMAC
-per a creadors i participants. En el cas dels administradors, també desa el
-correu i el nom visible a `admin_users` perquè l'administracio no és anònima.
-El mode `AUTH_MODE=local` queda com a ajuda de desenvolupament.
+La capa d'autenticacio és server-side i independent de Supabase. El mode
+`AUTH_MODE=google` valida el `id_token` amb Google, exigeix email `@xtec.cat` i
+desa a MySQL nomes un identificador opac derivat amb HMAC per a creadors i
+participants. En el cas dels administradors, també desa el correu i el nom
+visible a `admin_users` perquè l'administracio no és anònima. El mode
+`AUTH_MODE=local` queda com a ajuda de desenvolupament.
 
 Resultat mostrat després de crear l'espai i recuperable des de la gestio del creador:
 
 - Enllaç públic: `/q/[publicCode]`
+- Botó per obrir el correu web amb el comunicat global i l'enllaç públic
+  específic de l'espai.
 - Enllaç privat compartit: `/resultats/compartit/[publicCode]#token=[privateToken]`
 - Enllaç de resultats del creador: `/espais/[publicCode]/resultats`
 - Previsualització del qüestionari en mode lectura:

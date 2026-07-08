@@ -8,11 +8,11 @@ Aplicació en funcionament: https://diagnosi-ia.vercel.app/
 
 ## Estat del projecte
 
-`main` continua sent la versio estable historica amb Vercel i
-Supabase/PostgreSQL.
+`main` conté actualment el flux local amb Next.js i MySQL. La carpeta
+`supabase/` es conserva com a referencia historica de la implementacio anterior
+amb Supabase/PostgreSQL.
 
-La branca `migration/mysql` és la branca experimental de migracio local. En
-aquesta branca, el flux principal local funciona amb Next.js i MySQL local:
+El flux principal local funciona amb Next.js i MySQL local:
 
 - carrega del qüestionari públic;
 - creacio i gestio d'espais amb auth local provisional;
@@ -24,11 +24,10 @@ aquesta branca, el flux principal local funciona amb Next.js i MySQL local:
   `admin_users`;
 - gestio avançada de versions de qüestionari a MySQL.
 
-La carpeta `supabase/` es conserva intacta com a referencia historica de
-`main`. El flux principal local de `migration/mysql` no necessita Supabase ni
-Vercel.
+La carpeta `supabase/` es conserva intacta com a referencia historica. El flux
+principal local de `main` no necessita Supabase ni Vercel.
 
-L'autenticacio de `migration/mysql` ja no depen de Supabase. Es pot usar
+L'autenticacio local ja no depen de Supabase. Es pot usar
 `AUTH_MODE=local` per desenvolupament ràpid o `AUTH_MODE=google` per fer login
 real amb Google OAuth i comptes `@xtec.cat`.
 
@@ -42,7 +41,7 @@ Abans d'implementar funcionalitat, cal mantenir com a referència:
 - [docs/LOCAL_MYSQL_SETUP.md](docs/LOCAL_MYSQL_SETUP.md)
 - [docs/MYSQL_MIGRATION_WORK_INSTRUCTIONS.md](docs/MYSQL_MIGRATION_WORK_INSTRUCTIONS.md)
 
-## Arquitectura a `migration/mysql`
+## Arquitectura local a `main`
 
 - Next.js amb App Router
 - TypeScript estricte
@@ -78,12 +77,6 @@ Abans d'implementar funcionalitat, cal mantenir com a referència:
 - `POST /api/reports/pdf/owner`
 
 ## Executar localment amb MySQL
-
-Canvia a la branca experimental:
-
-```bash
-git checkout migration/mysql
-```
 
 Instal·la dependències:
 

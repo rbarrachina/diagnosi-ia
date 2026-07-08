@@ -1,10 +1,8 @@
 # Esquema de base de dades
 
-Base de dades prevista a `main`: PostgreSQL a Supabase.
-
-Base de dades prevista a `migration/mysql`: MySQL 8.4 local, amb esquema net
-equivalent a l'estat funcional actual. Aquesta branca és experimental i no
-substitueix `main` fins que el flux local complet estigui verificat.
+Base de dades actual a `main`: MySQL 8.4 local, amb esquema net equivalent a
+l'estat funcional actual. La carpeta `supabase/` es conserva com a referencia
+historica de la implementacio anterior amb PostgreSQL/Supabase.
 
 La taula principal d'espais s'anomena `diagnostic_spaces`. No ha d'existir cap taula `centres`.
 
@@ -330,7 +328,7 @@ Desa configuracio global no personal de l'aplicacio.
 Columnes proposades:
 
 - `setting_key varchar(64) primary key`
-- `setting_value varchar(64) not null`
+- `setting_value text not null`
 - `updated_at datetime(3) not null default current_timestamp(3)` a MySQL.
 
 Restriccions:
@@ -340,12 +338,19 @@ Restriccions:
   `all_xtec` o `centre_xtec`.
 - Per `setting_key = 'admin_results_minimum_submissions'`, `setting_value` ha
   de ser un enter entre `0` i `10`.
+- Per `setting_key = 'communication_subject'`, `setting_value` és el títol
+  global del correu de difusio del qüestionari.
+- Per `setting_key = 'communication_body'`, `setting_value` és el text global
+  del correu de difusio del qüestionari i pot contenir la marca
+  `{URL_QUESTIONARI}`.
 
 Aquesta taula no pot desar noms de centre, codis de centre, correus ni cap
 dada de participants. L'opcio `centre_xtec` només activa la comprovacio del
 format del correu autenticat (`[a-e][0-9]{7}@xtec.cat`) en codi server-side.
 L'opcio `admin_results_minimum_submissions` només desa un llindar agregat per
-filtrar els resultats globals d'administracio.
+filtrar els resultats globals d'administracio. Les opcions de comunicat només
+desen text global no personal; l'URL concreta es substitueix per l'enllaç
+públic de cada espai en temps d'interficie.
 
 RLS i permisos:
 

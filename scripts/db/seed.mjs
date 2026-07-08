@@ -86,6 +86,19 @@ const questionSeed = [
   text,
 }));
 
+const communicationSubject =
+  "Qüestionari de diagnosi sobre competència digital docent en IA";
+const communicationBody = `Benvolgudes i benvolguts,
+
+Us convidem a respondre el qüestionari de diagnosi sobre l'ús educatiu de la intel·ligència artificial.
+
+Podeu accedir-hi des d'aquest enllaç:
+{URL_QUESTIONARI}
+
+Les respostes són anònimes i els resultats es tractaran sempre de manera agregada.
+
+Gràcies per la vostra participació.`;
+
 try {
   await connection.beginTransaction();
 
@@ -180,6 +193,21 @@ try {
       `Invalid questionnaire seed shape: blocks ${shape.block_count}, questions ${shape.question_count}, invalid blocks ${shape.invalid_block_count}`,
     );
   }
+
+  await connection.execute(
+    `
+      insert into app_settings (setting_key, setting_value)
+      values (?, ?), (?, ?)
+      on duplicate key update
+        setting_value = setting_value
+    `,
+    [
+      "communication_subject",
+      communicationSubject,
+      "communication_body",
+      communicationBody,
+    ],
+  );
 
   await connection.commit();
   console.log("Seeded questionnaire 2026.2 with 5 blocks and 20 questions.");

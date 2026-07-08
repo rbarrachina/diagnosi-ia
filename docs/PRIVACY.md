@@ -4,9 +4,9 @@
 
 Diagnosi IA ha de minimitzar dades. La resposta del professorat funciona sense identificar centres ni docents. Els creadors d'espais s'autentiquen amb compte XTEC autoritzat per gestionar els espais propis. Els resultats només existeixen en conjunt.
 
-La branca `migration/mysql` no canvia aquest principi. La migracio de
-Supabase/PostgreSQL a MySQL ha de preservar les mateixes garanties
-d'anonimat, encara que canviïn els mecanismes tècnics.
+El flux local actual amb MySQL no canvia aquest principi. La migracio de
+Supabase/PostgreSQL a MySQL preserva les mateixes garanties d'anonimat, encara
+que canviïn els mecanismes tècnics.
 
 ## Dades prohibides
 
@@ -39,6 +39,9 @@ Només es preveuen:
   respostes.
 - Configuracio global no personal per decidir si els responsables poden ser
   qualsevol compte `@xtec.cat` o només comptes de centre XTEC.
+- Configuracio global no personal del comunicat de difusio del qüestionari:
+  títol i text del correu, amb una marca tècnica per inserir l'enllaç públic de
+  cada espai.
 - Codi públic anònim de l'espai.
 - Hash o HMAC del token privat.
 - Token privat xifrat per poder reconstruir l'enllaç compartit al creador autenticat.
@@ -60,7 +63,7 @@ Els administradors només poden gestionar l'estructura del qüestionari versiona
 i altres administradors. La seva autoritzacio es basa en el seu identificador
 de Supabase Auth i s'ha de mantenir separada de les submissions anònimes.
 
-A `migration/mysql`, Supabase Auth queda substituit per una capa server-side
+En el flux MySQL local, Supabase Auth queda substituit per una capa server-side
 pròpia. La taula `admin_users` guarda la identitat administrativa necessària:
 identificador opac d'usuari, correu, nom visible, estat, creador i darrera
 entrada. Els administradors no són anònims i poden veure el nom i correu dels
@@ -89,11 +92,13 @@ de contenir el mateix model agregat i no pot incloure codis publics d'espais ni
 tokens.
 
 La configuracio global només desa valors no personals: el mode d'acces de
-responsables i el llindar agregat de respostes mínimes per computar resultats
-d'administracio. No desa el nom del centre, codis oficials, correus, dominis
+responsables, el llindar agregat de respostes mínimes per computar resultats
+d'administracio i el comunicat global per compartir l'enllaç públic del
+qüestionari. No desa el nom del centre, codis oficials, correus, dominis
 derivats ni cap llista de comptes de centre. La comprovacio del format de
 compte de centre es fa sobre el correu autenticat de la sessio i no es copia a
-les taules de l'aplicacio.
+les taules de l'aplicacio. El comunicat no preomple destinataris i l'enllaç
+específic de cada espai es calcula a la pantalla del responsable.
 
 Les correccions menors del qüestionari es poden aplicar directament sobre una
 versio assignada només després d'un avís explícit a l'administrador. Quan una
@@ -148,7 +153,7 @@ La implementació actual retorna només aquest model de dades de conjunt a `POST
 
 El recompte intern de respostes es fa a PostgreSQL amb una RPC server-only que retorna només totals per pregunta i valor de resposta. El servidor no necessita carregar totes les files individuals d'`answers` per calcular el tauler o el PDF.
 
-A `migration/mysql`, aquest recompte s'ha de fer amb consultes agregades MySQL
+En el flux MySQL local, aquest recompte s'ha de fer amb consultes agregades MySQL
 server-side. La consulta ha de retornar nomes totals per pregunta i valor de
 resposta, sense `submission_id`, timestamps individuals ni combinacions de
 respostes d'una mateixa persona.
@@ -203,7 +208,7 @@ navegador.
 
 ## MySQL i control server-side
 
-A `migration/mysql`, MySQL no ofereix RLS equivalent a Supabase. Les garanties
+En el flux MySQL local, MySQL no ofereix RLS equivalent a Supabase. Les garanties
 de privacitat passen a dependre de la capa d'aplicacio:
 
 - El client MySQL nomes pot existir en codi server-side.
@@ -216,7 +221,7 @@ de privacitat passen a dependre de la capa d'aplicacio:
   suficient per evitar superar el limit en concurrencia.
 - Els resultats i el PDF s'han de construir nomes amb dades agregades.
 
-Els modes d'autenticacio de `migration/mysql` nomes poden servir per a
+Els modes d'autenticacio del flux MySQL local nomes poden servir per a
 creadors i administradors, i per bloquejar respostes repetides sense identificar
 participants. No poden crear comptes de professorat participant ni afegir
 identificadors personals a submissions o answers. El mode Google desa a MySQL

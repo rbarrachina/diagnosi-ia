@@ -325,7 +325,7 @@ export const appSettings = mysqlTable(
   "app_settings",
   {
     settingKey: varchar("setting_key", { length: 64 }).notNull().primaryKey(),
-    settingValue: varchar("setting_value", { length: 64 }).notNull(),
+    settingValue: text("setting_value").notNull(),
     updatedAt: createdAt("updated_at"),
   },
   (table) => [

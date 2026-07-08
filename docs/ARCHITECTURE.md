@@ -4,20 +4,8 @@
 
 ### `main`
 
-- Next.js App Router
-- TypeScript estricte
-- Tailwind CSS
-- Vercel
-- PostgreSQL a Supabase
-- Supabase Auth amb Google OAuth per a creadors XTEC
-- Recharts per a gràfiques web
-- `@react-pdf/renderer` per generar PDF al servidor
-
-### `migration/mysql`
-
-La branca `migration/mysql` és experimental i prepara l'execucio local sense
-Supabase ni Vercel. L'objectiu immediat és executar l'aplicacio amb Next.js en
-Node.js i MySQL local.
+`main` conté actualment el flux local sense Supabase ni Vercel. L'objectiu
+immediat és executar l'aplicacio amb Next.js en Node.js i MySQL local.
 
 - Next.js App Router
 - TypeScript estricte
@@ -27,11 +15,8 @@ Node.js i MySQL local.
 - Recharts per a gràfiques web
 - `@react-pdf/renderer` per generar PDF al servidor
 
-En aquesta branca, `main` continua sent la versio estable amb
-Supabase/PostgreSQL. Els fitxers `supabase/` es conserven com a referencia de
-la implementacio estable mentre la migracio no estigui completada.
-
-El flux principal local de `migration/mysql` no depen de Supabase: càrrega del
+Els fitxers `supabase/` es conserven com a referencia historica de la
+implementacio anterior. El flux principal local no depen de Supabase: càrrega del
 qüestionari, creació d'espais, submissions, resultats agregats, PDF, auth
 server-side pròpia, `admin_users` i la gestio avançada de versions de
 qüestionari funcionen amb MySQL i codi server-side.
@@ -58,13 +43,16 @@ qüestionari funcionen amb MySQL i codi server-side.
   anònims i poden veure la resta d'administradors.
 - L'administracio del qüestionari no pot exposar `submissions` ni `answers`
   individuals al navegador.
-- A `migration/mysql`, les garanties de RLS i RPCs de Supabase s'han de
+- L'administracio pot configurar un comunicat global no personal. La pantalla
+  del responsable substitueix `{URL_QUESTIONARI}` per l'enllaç públic del seu
+  espai i obre Gmail/Google Workspace en una pestanya nova sense destinataris.
+- En el flux MySQL local, les garanties de RLS i RPCs de Supabase s'han de
   substituir per repositoris server-side, validacio estricta i transaccions
   MySQL. El navegador no ha de tenir acces directe a MySQL.
-- A `migration/mysql`, Supabase Auth queda substituit per una capa d'auth
+- En el flux MySQL local, Supabase Auth queda substituit per una capa d'auth
   server-side pròpia. `AUTH_MODE=local` serveix per desenvolupament ràpid i
   `AUTH_MODE=google` fa OAuth real amb Google sense Supabase.
-- L'auth local provisional de `migration/mysql` s'activa només en
+- L'auth local provisional s'activa només en
   desenvolupament amb variables d'entorn (`AUTH_MODE=local`,
   `LOCAL_AUTH_USER_ID`, `LOCAL_AUTH_EMAIL`, `LOCAL_AUTH_DISPLAY_NAME`).
 - El mode `AUTH_MODE=google` valida el `id_token` server-side, exigeix email
@@ -142,7 +130,7 @@ Responsabilitats:
 - Encapsular consultes sensibles.
 - Evitar que components client importin clients amb privilegis.
 
-Nota per a `migration/mysql`:
+Nota per al flux MySQL local:
 
 - La nova capa de dades s'ha de separar a `lib/db` i `lib/repositories`.
 - `lib/db/client.ts` ha de llegir `DATABASE_URL` i crear una connexio o pool
@@ -226,7 +214,7 @@ del client Supabase amb `service_role` al servidor. Els endpoints
 `app/api/admin/**` només són necessaris si cal exposar una API HTTP interna
 separada de la pantalla `/admin`.
 
-Nota per a `migration/mysql`: les mateixes garanties s'han de mantenir amb la
+Nota per al flux MySQL local: les mateixes garanties s'han de mantenir amb la
 capa MySQL server-side. Quan un flux afecti diverses taules, la mutacio s'ha de
 fer dins una transaccio MySQL. Els endpoints no poden retornar files
 individuals de `submissions` o `answers`.

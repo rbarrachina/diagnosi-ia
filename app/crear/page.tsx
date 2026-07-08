@@ -6,6 +6,7 @@ import {
 import { CreateSpaceForm } from "@/components/create-space/create-space-form";
 import { ParticipantInfoCard } from "@/components/create-space/participant-info-card";
 import type { ResponsibleAccessMode } from "@/lib/auth/responsible-access";
+import { getCommunicationTemplate } from "@/lib/admin/communication-settings";
 import { getResponsibleSessionState } from "@/lib/auth/session";
 import { getServerAppUrl } from "@/lib/http/server-app-url";
 import { listOwnerSpaces } from "@/lib/spaces/manage-spaces";
@@ -19,6 +20,10 @@ export default async function CreatePage() {
     session.status === "authenticated"
       ? await listOwnerSpaces(session.user.id, await getServerAppUrl())
       : [];
+  const communicationTemplate =
+    session.status === "authenticated"
+      ? await getCommunicationTemplate()
+      : { subject: "", body: "" };
   const existingSpace = ownerSpaces[0] ?? null;
 
   return (
@@ -73,7 +78,11 @@ export default async function CreatePage() {
               <LogoutButton next="/crear" />
             </div>
             <div className="w-full max-w-2xl">
-              <CreateSpaceForm existingSpace={existingSpace} />
+              <CreateSpaceForm
+                communicationTemplate={communicationTemplate}
+                existingSpace={existingSpace}
+                responsibleEmail={session.user.email}
+              />
             </div>
           </>
         ) : null}

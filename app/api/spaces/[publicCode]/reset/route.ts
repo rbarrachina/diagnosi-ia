@@ -52,6 +52,6 @@ export async function POST(
 
 function getResponsibleAccessErrorMessage(reason: "not_xtec" | "not_centre_xtec") {
   return reason === "not_centre_xtec"
-    ? "Només es permet l'accés a responsables amb un compte de centre XTEC o amb un administrador actiu."
+    ? "Cal accedir amb un correu electrònic de centre @xtec.cat amb codi de centre, o amb un compte administrador actiu."
     : "Només es permet l'accés amb un compte XTEC.";
 }

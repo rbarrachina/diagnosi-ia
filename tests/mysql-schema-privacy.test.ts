@@ -36,6 +36,16 @@ describe("MySQL schema privacy constraints", () => {
     expect(schema).toContain("admin_email_invitations_email_format_check");
   });
 
+  it("stores global app settings without participant or centre identifiers", () => {
+    const appSettingsDefinition = schema.slice(schema.indexOf("export const appSettings"));
+
+    expect(schema).toContain('"app_settings"');
+    expect(schema).toContain("settingValue: text(\"setting_value\").notNull()");
+    expect(appSettingsDefinition).not.toMatch(
+      /email|participant|ip_address|user_agent|device/i,
+    );
+  });
+
   it("keeps answers keyed by anonymous submission and question", () => {
     expect(schema).toContain('"answers"');
     expect(schema).toContain("columns: [table.submissionId, table.questionId]");

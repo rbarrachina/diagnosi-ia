@@ -21,6 +21,7 @@ import {
   adminEmailInvitationInputSchema,
   adminUserInputSchema,
   adminResultsMinimumSubmissionsSchema,
+  communicationTemplateInputSchema,
   createQuestionnaireVersionInputSchema,
   deleteQuestionnaireVersionInputSchema,
   responsibleAccessModeSchema,
@@ -30,6 +31,7 @@ import {
   setAdminResultsMinimumSubmissions,
   setResponsibleAccessMode,
 } from "@/lib/auth/responsible-access";
+import { setCommunicationTemplate } from "@/lib/admin/communication-settings";
 
 type AdminActionStatus =
   | "activated"
@@ -291,8 +293,13 @@ export async function setResponsibleAccessModeAction(formData: FormData) {
     const minimumSubmissions = adminResultsMinimumSubmissionsSchema.parse(
       getRequiredFormString(formData, "minimumResponseCount"),
     );
+    const communicationTemplate = communicationTemplateInputSchema.parse({
+      subject: getRequiredFormString(formData, "communicationSubject"),
+      body: getRequiredFormString(formData, "communicationBody"),
+    });
     await setResponsibleAccessMode(mode);
     await setAdminResultsMinimumSubmissions(minimumSubmissions);
+    await setCommunicationTemplate(communicationTemplate);
   } catch {
     redirect(adminPath({ error: "settings", section: "settings" }));
   }

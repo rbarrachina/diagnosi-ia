@@ -11,22 +11,25 @@ El pla està dividit en fases petites i verificables. No s'hauria de començar u
 - Gestio de creador implementada: un únic espai per usuari autenticat,
   recuperació d'enllaç privat i reinici d'espai amb rotació d'enllaços i
   assignacio de la versio activa.
-- Administracio global implementada a `migration/mysql`: bootstrap i gestio
+- Administracio global implementada a `main`: bootstrap i gestio
   d'administradors a MySQL, incloent invitacions per correu `@xtec.cat` en una
   taula separada i identitat administrativa a `admin_users`; lectura de versions i mutacions server-side
   per crear, copiar, editar, activar i eliminar versions de qüestionari.
-- Resultats d'administracio implementats a `migration/mysql`: vista agregada
+- Resultats d'administracio implementats a `main`: vista agregada
   per versio de qüestionari i PDF agregat, sense files individuals.
-- Configuracio global de responsables implementada a `migration/mysql`:
+- Configuracio global de responsables implementada a `main`:
   l'administracio pot triar entre qualsevol compte `@xtec.cat` o només comptes
   de centre XTEC, i els administradors actius mantenen accés de responsable en
   tots dos modes.
+- Configuracio global del comunicat implementada a `main`: l'administracio pot
+  editar títol i text, i la gestio del creador pot obrir Gmail amb l'enllaç
+  públic específic de l'espai sense preomplir destinataris.
 - Fora d'abast actual: rate limiting, anti-bots, retenció de dades i tancament d'espais.
 
-## Branca `migration/mysql`
+## Flux local MySQL a `main`
 
-La branca `migration/mysql` és experimental. `main` continua sent la versio
-estable actual amb Supabase/PostgreSQL.
+`main` conté actualment el flux local amb MySQL. La branca `migration/mysql`
+queda com a referencia històrica de la migracio.
 
 Objectiu immediat:
 

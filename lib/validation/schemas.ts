@@ -230,6 +230,12 @@ export const adminResultsMinimumSubmissionsSchema = z.coerce
   .int()
   .min(0)
   .max(10);
+export const communicationTemplateInputSchema = z
+  .object({
+    subject: z.string().trim().min(1).max(160),
+    body: z.string().trim().min(1).max(4000),
+  })
+  .strict();
 
 export type SubmissionAnswerInput = z.infer<typeof submissionAnswerSchema>;
 export type SubmissionRequestInput = z.infer<typeof submissionRequestSchema>;
@@ -258,6 +264,9 @@ export type DeleteQuestionnaireVersionInput = z.infer<
 export type AdminUserInput = z.infer<typeof adminUserInputSchema>;
 export type AdminEmailInvitationInput = z.infer<
   typeof adminEmailInvitationInputSchema
+>;
+export type CommunicationTemplateInput = z.infer<
+  typeof communicationTemplateInputSchema
 >;
 export type SetAdminUserActiveInput = z.infer<typeof setAdminUserActiveInputSchema>;
 export type ResponsibleAccessModeInput = z.infer<typeof responsibleAccessModeSchema>;

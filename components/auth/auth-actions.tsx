@@ -53,8 +53,8 @@ export function XtecAccessNotice({
         <p className="mx-auto max-w-md text-sm leading-6 text-slate-700">
           {isCentreOnly ? (
             <strong className="font-semibold text-ink">
-              Només poden accedir amb email de centre XTEC, per exemple{" "}
-              a0123456@xtec.cat.
+              Només poden accedir amb un correu electrònic de centre
+              @xtec.cat amb codi de centre, per exemple a0123456@xtec.cat.
             </strong>
           ) : (
             "Per crear i gestionar qüestionaris cal accedir amb un compte XTEC."
@@ -94,7 +94,7 @@ export function ResponsibleForbiddenNotice({
       <h2 className="text-xl font-semibold">Accés no autoritzat</h2>
       <p className="mt-3 text-sm leading-6">
         {reason === "not_centre_xtec"
-          ? "Només es permet l'accés a responsables amb un compte de centre XTEC o amb un administrador actiu."
+          ? "Cal accedir amb un correu electrònic de centre @xtec.cat amb codi de centre, o amb un compte administrador actiu."
           : "Només es permet l'accés amb un compte XTEC."}
       </p>
       <div className="mt-5 flex justify-center">

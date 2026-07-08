@@ -24,6 +24,11 @@ import {
   getResponsibleAccessMode,
   type ResponsibleAccessMode,
 } from "@/lib/auth/responsible-access";
+import { getCommunicationTemplate } from "@/lib/admin/communication-settings";
+import {
+  QUESTIONNAIRE_URL_PLACEHOLDER,
+  type CommunicationTemplate,
+} from "@/lib/communication/email-template";
 import type {
   AdminEmailInvitationSummary,
   AdminQuestionnaireDetail,
@@ -794,9 +799,11 @@ function ResponsibleAccessOption({
 }
 
 function SettingsPanel({
+  communicationTemplate,
   minimumResponseCount,
   responsibleAccessMode,
 }: {
+  communicationTemplate: CommunicationTemplate;
   minimumResponseCount: number;
   responsibleAccessMode: ResponsibleAccessMode;
 }) {
@@ -871,6 +878,37 @@ function SettingsPanel({
             </div>
           </div>
         </fieldset>
+        <fieldset>
+          <legend className="text-sm font-semibold text-ink">Comunicat</legend>
+          <div className="mt-3 space-y-4 rounded-md border border-line bg-white p-4 text-sm text-slate-700">
+            <label className="block">
+              <span className="font-semibold text-ink">Títol del correu</span>
+              <input
+                className="mt-2 w-full rounded-md border border-line px-3 py-2 text-sm"
+                defaultValue={communicationTemplate.subject}
+                maxLength={160}
+                name="communicationSubject"
+                required
+                type="text"
+              />
+            </label>
+            <label className="block">
+              <span className="font-semibold text-ink">Text del missatge</span>
+              <textarea
+                className="mt-2 min-h-56 w-full rounded-md border border-line px-3 py-2 text-sm leading-6"
+                defaultValue={communicationTemplate.body}
+                maxLength={4000}
+                name="communicationBody"
+                required
+              />
+            </label>
+            <p className="text-xs leading-5 text-slate-600">
+              La marca <code>{QUESTIONNAIRE_URL_PLACEHOLDER}</code> se substituirà
+              automàticament per l&apos;enllaç públic específic de cada espai. Si
+              no hi és, l&apos;aplicació afegirà l&apos;enllaç al final del missatge.
+            </p>
+          </div>
+        </fieldset>
         <button
           className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-[#1f5d68]"
           type="submit"
@@ -919,6 +957,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     adminInvitations,
     responsibleAccessMode,
     minimumResponseCount,
+    communicationTemplate,
   ] = await Promise.all([
     activeSection === "questionnaires" || activeSection === "results"
       ? listQuestionnaireVersions()
@@ -931,6 +970,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     activeSection === "settings" || activeSection === "results"
       ? getAdminResultsMinimumSubmissions()
       : Promise.resolve(0),
+    activeSection === "settings"
+      ? getCommunicationTemplate()
+      : Promise.resolve({ subject: "", body: "" }),
   ]);
   const selectedQuestionnaireId = getSelectedQuestionnaireId(
     params.questionnaireId,
@@ -1010,6 +1052,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           />
         ) : (
           <SettingsPanel
+            communicationTemplate={communicationTemplate}
             minimumResponseCount={minimumResponseCount}
             responsibleAccessMode={responsibleAccessMode}
           />

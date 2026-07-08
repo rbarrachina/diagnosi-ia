@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import {
+  buildGmailComposeUrl,
+  type CommunicationTemplate,
+} from "@/lib/communication/email-template";
 
 type CreatedSpaceResponse = {
   publicCode: string;
@@ -21,18 +25,32 @@ type FormState =
 type CopyState = "idle" | "public" | "shared";
 
 type CreateSpaceFormProps = {
+  communicationTemplate: CommunicationTemplate;
   existingSpace?: CreatedSpaceResponse | null;
+  responsibleEmail: string;
 };
 
-export function CreateSpaceForm({ existingSpace = null }: CreateSpaceFormProps) {
+export function CreateSpaceForm({
+  communicationTemplate,
+  existingSpace = null,
+  responsibleEmail,
+}: CreateSpaceFormProps) {
   const [state, setState] = useState<FormState>({ status: "idle" });
   const [space, setSpace] = useState<CreatedSpaceResponse | null>(existingSpace);
   const [copyState, setCopyState] = useState<CopyState>("idle");
   const [regenerating, setRegenerating] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
 
   const displayedSpace = space;
+  const gmailComposeUrl = displayedSpace
+    ? buildGmailComposeUrl({
+        ...communicationTemplate,
+        publicUrl: displayedSpace.publicUrl,
+        senderEmail: responsibleEmail,
+      })
+    : null;
 
   async function copyToClipboard(value: string, target: Exclude<CopyState, "idle">) {
     try {
@@ -208,7 +226,7 @@ export function CreateSpaceForm({ existingSpace = null }: CreateSpaceFormProps) 
             <span className="text-sm font-semibold text-ink">
               Enllaç públic per al professorat
             </span>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row">
               <input
                 className="min-w-0 flex-1 rounded-md border border-line bg-white px-3 py-2 text-sm text-ink"
                 readOnly
@@ -221,7 +239,34 @@ export function CreateSpaceForm({ existingSpace = null }: CreateSpaceFormProps) 
               >
                 {copyState === "public" ? "Copiat" : "Copia"}
               </button>
+              <button
+                className="rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-action hover:text-action"
+                onClick={() => setShowEmailConfirmation((current) => !current)}
+                type="button"
+              >
+                Envia correu web
+              </button>
             </div>
+            {showEmailConfirmation && gmailComposeUrl ? (
+              <div className="mt-3 rounded-md border border-line bg-white p-3 text-xs leading-5 text-slate-700">
+                <p>
+                  Gmail s&apos;obrirà amb el compte{" "}
+                  <strong className="text-ink">{responsibleEmail}</strong>.
+                </p>
+                <p className="mt-1">
+                  Afegeix al camp “Per a” els correus dels docents del centre
+                  abans d&apos;enviar el missatge.
+                </p>
+                <a
+                  className="mt-3 inline-flex rounded-md bg-action px-3 py-2 font-semibold text-white transition hover:bg-[#1f5d68]"
+                  href={gmailComposeUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  Obre Gmail
+                </a>
+              </div>
+            ) : null}
           </label>
 
           <label className="block">
