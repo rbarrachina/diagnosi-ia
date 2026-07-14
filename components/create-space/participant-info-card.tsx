@@ -1,6 +1,6 @@
 export function ParticipantInfoCard() {
   return (
-    <div className="flex h-full flex-col justify-center rounded-md border border-line bg-white p-6 text-center shadow-sm">
+    <div className="flex h-full flex-col justify-start rounded-md border border-line bg-white p-6 text-center shadow-sm">
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
           Respondre qüestionari
