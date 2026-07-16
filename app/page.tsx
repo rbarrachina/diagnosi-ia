@@ -43,22 +43,31 @@ export default async function Home() {
         <div className="mt-9 w-full">
           <div className="mx-auto max-w-3xl text-lg leading-8 text-slate-700">
             <p>Aquesta diagnosi s’organitza segons el rol de cada usuari.</p>
-            <p className="mt-2">
-              🏫 El responsable del centre genera el qüestionari per al claustre
-              i en consulta els resultats de conjunt.
-            </p>
-            <p className="mt-1">
-              🧑‍🏫 El professorat respon des de l’enllaç facilitat pel
-              responsable.
-            </p>
           </div>
 
           <div className="mt-6 grid w-full grid-cols-1 gap-5 md:grid-cols-2">
-            <XtecAccessNotice
-              next="/crear"
-              responsibleAccessMode={responsibleAccessMode}
-            />
-            <ParticipantInfoCard />
+            <div className="flex h-full flex-col">
+              <p className="mb-4 flex items-center justify-center text-lg leading-8 text-slate-700 md:min-h-16">
+                🏫 El responsable del centre genera el qüestionari per al
+                claustre i en consulta els resultats de conjunt.
+              </p>
+              <div className="flex-1">
+                <XtecAccessNotice
+                  next="/crear"
+                  responsibleAccessMode={responsibleAccessMode}
+                />
+              </div>
+            </div>
+
+            <div className="flex h-full flex-col">
+              <p className="mb-4 flex items-center justify-center text-lg leading-8 text-slate-700 md:min-h-16">
+                🧑‍🏫 El professorat respon des de l’enllaç facilitat pel
+                responsable.
+              </p>
+              <div className="flex-1">
+                <ParticipantInfoCard />
+              </div>
+            </div>
           </div>
         </div>
       </section>
