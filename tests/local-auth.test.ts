@@ -16,7 +16,7 @@ describe("local provisional auth", () => {
     process.env.LOCAL_AUTH_EMAIL = "usuari.prova@xtec.cat";
   });
 
-  it("authenticates a local XTEC user without Supabase Auth", async () => {
+  it("authenticates a local XTEC development user", async () => {
     const session = await getXtecSessionState();
 
     expect(isLocalAuthEnabled()).toBe(true);

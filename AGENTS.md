@@ -6,7 +6,9 @@ Aquest repositori conté una aplicació de diagnosi anònima sobre l'ús educati
 
 L'aplicació treballa amb espais de diagnosi anònims, no amb centres identificats. La prioritat tècnica principal és preservar l'anonimat del professorat participant i evitar que la implementació introdueixi identificadors directes o indirectes en les respostes.
 
-Els creadors d'espais poden autenticar-se amb Supabase Auth i Google OAuth, limitat a comptes `@xtec.cat`, només per crear i gestionar els espais propis.
+Els creadors d'espais s'autentiquen amb Google OAuth, limitat a comptes
+`@xtec.cat`, només per crear i gestionar els espais propis. En desenvolupament
+es pot usar el mode local controlat per variables d'entorn.
 
 ## Regles de privacitat
 
@@ -31,13 +33,11 @@ Els creadors d'espais poden autenticar-se amb Supabase Auth i Google OAuth, limi
 - Next.js App Router.
 - TypeScript en mode estricte.
 - Tailwind CSS per a la UI.
-- PostgreSQL a Supabase.
-- Desplegament a Vercel.
+- MySQL 8.4.
+- Drizzle ORM amb `mysql2`.
 - Route Handlers o server functions per a totes les operacions sensibles.
-- La clau secreta de Supabase no es pot exposar al navegador.
-- Row Level Security activat a les taules exposades.
-- No hi ha d'haver polítiques públiques de lectura sobre respostes.
-- No hi ha d'haver polítiques públiques de lectura sobre `diagnostic_spaces`, `submissions` ni `answers`.
+- El client MySQL i `DATABASE_URL` només poden existir en codi server-side.
+- No es pot donar accés directe del navegador a cap taula de MySQL.
 - Validacio d'entrada al servidor amb esquemes estrictes.
 - Transaccions de base de dades per crear enviaments i respostes.
 
@@ -45,8 +45,8 @@ Els creadors d'espais poden autenticar-se amb Supabase Auth i Google OAuth, limi
 
 - El qüestionari és fix i versionat.
 - La versió inicial és `2026.1`; la versió activa corregida és `2026.2`.
-- Te 20 preguntes, 5 blocs i 3 opcions de resposta.
-- Els valors valids són `0`, `1` i `2`.
+- Té 20 preguntes, 5 blocs i 4 opcions de resposta.
+- Els valors vàlids són `0`, `1`, `2` i `3`.
 - No editar preguntes d'una versió que ja tingui respostes.
 
 ## Documents normatius
@@ -102,3 +102,8 @@ En cada canvi comprova:
 - Actualitzar la documentació quan canviï el comportament.
 - Explicar els riscos o decisions pendents.
 - Prioritzar una solució senzilla i segura.
+- Treballar en una branca curta i integrar els canvis mitjançant Pull Request.
+- Seguir els tipus de Conventional Commits (`feat`, `fix`, `docs`, `test`,
+  `refactor`, `chore`, `ci`).
+- Mantenir `CHANGELOG.md` i la documentació de versions quan hi hagi canvis
+  visibles o una nova versió.

@@ -4,13 +4,9 @@ Aplicació web per conèixer el grau d'ús educatiu de la intel·ligència artif
 
 Diagnosi IA no identifica centres ni docents. No és una eina d'avaluació individual del professorat, sinó una eina de diagnosi global per orientar decisions de centre.
 
-Aplicació en funcionament: https://diagnosi-ia.vercel.app/
-
 ## Estat del projecte
 
-`main` conté actualment el flux local amb Next.js i MySQL. La carpeta
-`supabase/` es conserva com a referencia historica de la implementacio anterior
-amb Supabase/PostgreSQL.
+`main` conté l'aplicació amb Next.js i MySQL.
 
 El flux principal local funciona amb Next.js i MySQL local:
 
@@ -24,10 +20,7 @@ El flux principal local funciona amb Next.js i MySQL local:
   `admin_users`;
 - gestio avançada de versions de qüestionari a MySQL.
 
-La carpeta `supabase/` es conserva intacta com a referencia historica. El flux
-principal local de `main` no necessita Supabase ni Vercel.
-
-L'autenticacio local ja no depen de Supabase. Es pot usar
+L'autenticació usa una capa server-side pròpia. Es pot usar
 `AUTH_MODE=local` per desenvolupament ràpid o `AUTH_MODE=google` per fer login
 real amb Google OAuth i comptes `@xtec.cat`.
 
@@ -39,7 +32,6 @@ Abans d'implementar funcionalitat, cal mantenir com a referència:
 - [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md)
 - [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)
 - [docs/LOCAL_MYSQL_SETUP.md](docs/LOCAL_MYSQL_SETUP.md)
-- [docs/MYSQL_MIGRATION_WORK_INSTRUCTIONS.md](docs/MYSQL_MIGRATION_WORK_INSTRUCTIONS.md)
 
 ## Arquitectura local a `main`
 
@@ -109,7 +101,7 @@ AUTH_SESSION_SECRET=replace-with-at-least-32-random-characters
 AUTH_USER_ID_SECRET=replace-with-at-least-32-random-characters
 ```
 
-Per provar login real amb Google sense Supabase:
+Per provar login real amb Google:
 
 ```bash
 AUTH_MODE=google
@@ -202,8 +194,6 @@ Regles de configuracio:
 - `RESULTS_TOKEN_ENCRYPTION_KEY` només pot existir al servidor i ha de ser una clau base64url de 32 bytes.
 - Cap secret pot exposar-se amb prefix `NEXT_PUBLIC_`.
 - El token privat no s'ha d'incloure mai en query params ni logs.
-- No cal cap variable `NEXT_PUBLIC_SUPABASE_*` ni `SUPABASE_SERVICE_ROLE_KEY`
-  per al flux local.
 
 Comprovacions:
 
@@ -213,6 +203,15 @@ npm run typecheck
 npm test
 npm run build
 ```
+
+## Desenvolupament i versions
+
+Els canvis es fan en branques curtes i s'integren a `main` mitjançant Pull
+Request. La CI executa lint, type check, proves i build abans de fusionar.
+
+Consulta [CONTRIBUTING.md](CONTRIBUTING.md) per al flux de treball i
+[docs/RELEASES.md](docs/RELEASES.md) per a la política de versions. Els canvis
+publicats es documenten a [CHANGELOG.md](CHANGELOG.md).
 
 ## Privacitat
 

@@ -180,9 +180,8 @@ describe("MySQL diagnostic spaces repository", () => {
     expect(state.resetUpdates[0]).not.toContain("clear-token-1");
   });
 
-  it("keeps Supabase out of the migrated space services", () => {
+  it("keeps space persistence in server-only MySQL repositories", () => {
     expect(repositorySource).toContain('import "server-only"');
-    expect(repositorySource).not.toContain("createSupabaseAdminClient");
     expect(repositorySource).not.toContain("reset_owner_diagnostic_space");
     expect(repositorySource).not.toContain(".rpc(");
     expect(createSpaceFacadeSource).toContain("@/lib/repositories/diagnostic-spaces");

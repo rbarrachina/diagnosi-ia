@@ -6,10 +6,8 @@ Diagnosi IA permet crear un espai anònim de diagnosi sobre l'ús educatiu de la
 
 L'aplicació no desa ni mostra el nom del centre. Tampoc avalua docents individualment.
 
-Nota de branca: `main` conté actualment el flux local amb MySQL. La carpeta
-`supabase/` es conserva com a referencia historica de la implementacio anterior
-amb Supabase/PostgreSQL. Aquest canvi d'infraestructura no modifica l'abast
-funcional ni les regles d'anonimat del producte.
+`main` conté l'aplicació activa amb MySQL. Aquesta arquitectura no modifica
+l'abast funcional ni les regles d'anonimat del producte.
 
 ## Objectius
 
@@ -173,7 +171,7 @@ versio i no inclou tokens ni codis publics d'espais.
 Ruta: `/crear`
 
 La persona responsable inicia sessió amb compte XTEC autoritzat. A `main` això
-es fa amb Google OAuth directe, sense Supabase, o amb mode local provisional de
+  es fa amb Google OAuth directe o amb mode local provisional de
 desenvolupament. Només s'accepten comptes amb correu acabat en `@xtec.cat`;
 segons la configuracio global, l'accés de responsables pot quedar limitat als
 comptes de centre XTEC. Els administradors actius poden crear i gestionar el
@@ -183,7 +181,7 @@ Cada usuari autenticat pot tenir un únic espai anònim. El servidor genera:
 - Codi públic llegible amb format `C-7KX9-M2Q8`.
 - Token privat llarg i criptograficament segur.
 
-La capa d'autenticacio és server-side i independent de Supabase. El mode
+La capa d'autenticació és server-side. El mode
 `AUTH_MODE=google` valida el `id_token` amb Google, exigeix email `@xtec.cat` i
 desa a MySQL nomes un identificador opac derivat amb HMAC per a creadors i
 participants. En el cas dels administradors, també desa el correu i el nom
