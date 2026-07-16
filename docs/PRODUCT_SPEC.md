@@ -255,6 +255,9 @@ El formulari ha de mostrar:
 - Indicacio que cal respondre una sola vegada.
 - Emoji de rellotge amb els minuts estimats necessaris per respondre el
   qüestionari.
+- Versio i temps estimat com a metadades informatives, sense aparença de botó.
+- Avís amb emoji quan l'usuari ja ha respost, diferenciat visualment de les
+  accions.
 
 Per obrir el formulari, el docent ha d'iniciar sessio amb un compte
 `@xtec.cat`. Aquesta sessio no crea un compte de professorat a la base de dades
