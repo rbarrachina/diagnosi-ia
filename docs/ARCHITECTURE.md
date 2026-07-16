@@ -122,7 +122,9 @@ respostes, correus de participants, IPs ni informació de dispositiu.
 - `/` és l'única portada informativa. Mostra objectiu, indicador, controls
   accessibles de privacitat i d'informació del projecte, rols i accés del
   responsable. La versió mostrada prové de `package.json` i els panells
-  informatius són mútuament excloents.
+  informatius són mútuament excloents. Un listener de `pointerdown`, actiu
+  només mentre hi ha un panell obert, el tanca quan la interacció es produeix
+  fora del contenidor dels controls.
 - `/crear` és la pantalla autenticada de creació i gestió de l'espai. Si no
   hi ha sessió, redirigeix a `/`.
 - `/q/[publicCode]` és l'entrada del professorat mitjançant l'enllaç específic

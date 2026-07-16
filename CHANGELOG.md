@@ -12,6 +12,7 @@ Semantic Versioning.
 - Afegits a la portada controls accessibles per consultar les garanties de
   privacitat i la informació de versió, estat beta, llicència i repositori.
 - Adoptada la llicència Apache 2.0.
+- Els panells informatius de la portada es tanquen en clicar fora.
 
 ## [0.1.0] - 2026-07-16
 
