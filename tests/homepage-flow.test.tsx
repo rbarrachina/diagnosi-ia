@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import packageJson from "@/package.json";
 
 vi.mock("server-only", () => ({}));
 
@@ -85,7 +86,9 @@ describe("initial page", () => {
     fireEvent.click(projectButton);
 
     expect(projectButton).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByText("Versió 0.1.0")).toBeInTheDocument();
+    expect(
+      screen.getByText(`Versió ${packageJson.version}`),
+    ).toBeInTheDocument();
     expect(screen.getByText(/versió beta i pot contenir errors/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Apache-2.0" })).toHaveAttribute(
       "href",
