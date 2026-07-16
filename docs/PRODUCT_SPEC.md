@@ -171,8 +171,10 @@ versio i no inclou tokens ni codis publics d'espais.
 Ruta: `/`
 
 La portada és l'única pantalla inicial. Reuneix l'objectiu de l'eina,
-l'indicador OIA-12, un control accessible amb les garanties de privacitat,
-l'explicació dels rols i les targetes de responsable i docent.
+l'indicador OIA-12, controls accessibles amb les garanties de privacitat i la
+informació de versió, estat beta, llicència i repositori, l'explicació dels
+rols i les targetes de responsable i docent. Només es mostra un panell
+informatiu alhora.
 
 El responsable inicia l'accés XTEC des de la portada i, un cop autenticat,
 arriba a `/crear` per crear o gestionar el seu espai. El professorat accedeix

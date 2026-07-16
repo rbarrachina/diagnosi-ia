@@ -1,7 +1,8 @@
 import { XtecAccessNotice } from "@/components/auth/auth-actions";
 import { ParticipantInfoCard } from "@/components/create-space/participant-info-card";
-import { PrivacyInfo } from "@/components/home/privacy-info";
+import { HeaderInfoControls } from "@/components/home/header-info-controls";
 import type { ResponsibleAccessMode } from "@/lib/auth/responsible-access";
+import packageJson from "@/package.json";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-paper">
       <section className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col items-center justify-center px-6 py-10 text-center sm:py-14">
-        <PrivacyInfo />
+        <HeaderInfoControls version={packageJson.version} />
 
         <header className="max-w-3xl pt-8 sm:pt-0">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">

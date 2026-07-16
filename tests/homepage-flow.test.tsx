@@ -21,6 +21,17 @@ describe("initial page", () => {
       screen.getByRole("button", { name: "Informació de privacitat" }),
     ).toHaveAttribute("aria-expanded", "false");
     expect(
+      screen.getByRole("button", { name: "Informació de versió i projecte" }),
+    ).toHaveAttribute("aria-expanded", "false");
+    expect(
+      screen
+        .getAllByRole("button")
+        .map((button) => button.getAttribute("aria-label")),
+    ).toEqual([
+      "Informació de privacitat",
+      "Informació de versió i projecte",
+    ]);
+    expect(
       screen.getByRole("heading", { level: 2, name: "Soc responsable" }),
     ).toBeInTheDocument();
     expect(
@@ -59,5 +70,40 @@ describe("initial page", () => {
       }),
     );
     expect(privacyButton).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("shows the beta version, license and repository without overlapping panels", async () => {
+    render(await Home());
+
+    const projectButton = screen.getByRole("button", {
+      name: "Informació de versió i projecte",
+    });
+    const privacyButton = screen.getByRole("button", {
+      name: "Informació de privacitat",
+    });
+
+    fireEvent.click(projectButton);
+
+    expect(projectButton).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText("Versió 0.1.0")).toBeInTheDocument();
+    expect(screen.getByText(/versió beta i pot contenir errors/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Apache-2.0" })).toHaveAttribute(
+      "href",
+      "https://www.apache.org/licenses/LICENSE-2.0",
+    );
+    expect(
+      screen.getByRole("link", { name: "repositori a GitHub" }),
+    ).toHaveAttribute("href", "https://github.com/rbarrachina/diagnosi-ia");
+
+    fireEvent.click(privacyButton);
+
+    expect(projectButton).toHaveAttribute("aria-expanded", "false");
+    expect(privacyButton).toHaveAttribute("aria-expanded", "true");
+    expect(
+      screen.queryByRole("heading", { level: 2, name: "Versió i projecte" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Privacitat i anonimat" }),
+    ).toBeInTheDocument();
   });
 });
