@@ -239,9 +239,8 @@ describe("MySQL submission repository", () => {
     expect(currentConnection.insertedSubmissions).toHaveLength(0);
   });
 
-  it("removes the Supabase RPC dependency from the public submission service", () => {
+  it("uses the MySQL repository from the public submission service", () => {
     expect(serviceSource).toContain("@/lib/repositories/submissions");
-    expect(serviceSource).not.toContain("createSupabaseAdminClient");
     expect(serviceSource).not.toContain("create_submission_with_answers");
     expect(serviceSource).not.toContain(".rpc(");
   });

@@ -5,20 +5,20 @@ import { resolveAppUrl } from "@/lib/http/app-url";
 describe("resolveAppUrl", () => {
   it("uses the configured production URL when present", () => {
     expect(
-      resolveAppUrl("https://preview.vercel.app/api/spaces", "https://diagnosi-ia.vercel.app/"),
-    ).toBe("https://diagnosi-ia.vercel.app");
+      resolveAppUrl("https://preview.example.org/api/spaces", "https://diagnosi.example.org/"),
+    ).toBe("https://diagnosi.example.org");
   });
 
   it("uses the request origin when no URL is configured", () => {
-    expect(resolveAppUrl("https://diagnosi-ia.vercel.app/api/spaces")).toBe(
-      "https://diagnosi-ia.vercel.app",
+    expect(resolveAppUrl("https://diagnosi.example.org/api/spaces")).toBe(
+      "https://diagnosi.example.org",
     );
   });
 
   it("ignores a local configured URL for production requests", () => {
     expect(
-      resolveAppUrl("https://diagnosi-ia.vercel.app/api/spaces", "http://localhost:3000"),
-    ).toBe("https://diagnosi-ia.vercel.app");
+      resolveAppUrl("https://diagnosi.example.org/api/spaces", "http://localhost:3000"),
+    ).toBe("https://diagnosi.example.org");
   });
 
   it("ignores a private-network configured URL for public tunnel requests", () => {
@@ -55,8 +55,8 @@ describe("resolveAppUrl", () => {
   });
 
   it("falls back to the request origin when the configured URL is invalid", () => {
-    expect(resolveAppUrl("https://diagnosi-ia.vercel.app/api/spaces", "not-a-url")).toBe(
-      "https://diagnosi-ia.vercel.app",
+    expect(resolveAppUrl("https://diagnosi.example.org/api/spaces", "not-a-url")).toBe(
+      "https://diagnosi.example.org",
     );
   });
 });

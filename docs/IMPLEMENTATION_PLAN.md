@@ -1,568 +1,122 @@
 # Pla d'implementació
 
-El pla està dividit en fases petites i verificables. No s'hauria de començar una fase si els criteris de la fase anterior no estan validats.
-
 ## Estat actual
 
-- Fase 1 completada: bootstrap tècnic.
-- Fase 2 completada: esquema Supabase, seed del qüestionari, restriccions i RLS.
-- Fase 3 implementada en aquest canvi: criptografia, creació d'espais, formulari públic i submissions atomiques.
-- Fase 4 implementada en aquest canvi: resultats de conjunt, validació de token de resultats, gràfiques web i PDF.
-- Gestio de creador implementada: un únic espai per usuari autenticat,
-  recuperació d'enllaç privat i reinici d'espai amb rotació d'enllaços i
-  assignacio de la versio activa.
-- Administracio global implementada a `main`: bootstrap i gestio
-  d'administradors a MySQL, incloent invitacions per correu `@xtec.cat` en una
-  taula separada i identitat administrativa a `admin_users`; lectura de versions i mutacions server-side
-  per crear, copiar, editar, activar i eliminar versions de qüestionari.
-- Resultats d'administracio implementats a `main`: vista agregada
-  per versio de qüestionari i PDF agregat, sense files individuals.
-- Configuracio global de responsables implementada a `main`:
-  l'administracio pot triar entre qualsevol compte `@xtec.cat` o només comptes
-  de centre XTEC, i els administradors actius mantenen accés de responsable en
-  tots dos modes.
-- Configuracio global del comunicat implementada a `main`: l'administracio pot
-  editar títol i text, i la gestio del creador pot obrir Gmail amb l'enllaç
-  públic específic de l'espai sense preomplir destinataris.
-- Fora d'abast actual: rate limiting, anti-bots, retenció de dades i tancament d'espais.
-
-## Flux local MySQL a `main`
-
-`main` conté actualment el flux local amb MySQL. La branca `migration/mysql`
-queda com a referencia històrica de la migracio.
-
-Objectiu immediat:
-
-- Fer funcionar l'aplicacio completament en local amb MySQL 8.4.
-- No preparar encara Vercel, Vercel Preview ni allowlists d'IPs.
-- No connectar encara amb el MySQL real del Departament.
-- Mantenir el mateix producte i les mateixes garanties d'anonimat.
-
-Decisions de treball:
-
-- Migrar progressivament i no eliminar Supabase de cop si aixo trenca
-  l'aplicacio.
-- Separar la migracio de base de dades de la substitucio de Supabase Auth.
-- Usar una capa d'auth server-side pròpia: `AUTH_MODE=local` per
-  desenvolupament ràpid i `AUTH_MODE=google` per login real amb Google OAuth
-  sense Supabase.
-- Crear un esquema MySQL net equivalent a l'estat final actual, no una
-  traduccio literal de totes les migracions PostgreSQL historiques.
-- Substituir RPCs PostgreSQL per funcions TypeScript server-side amb
-  transaccions MySQL.
-- Substituir RLS de Supabase per control d'acces server-side i repositoris.
-- Incloure `admin_users` dins l'abast de migracio com a taula d'administradors
-  reals identificats. Pot desar email, nom visible i darrera entrada dels
-  administradors, perquè no són anònims. Les invitacions pendents
-  d'administracio desen correus `@xtec.cat` en una taula separada, sense relacio
-  amb respostes o professorat participant.
-- Incloure `app_settings` només per configuracio global no personal, sense noms
-  ni codis de centre.
-- Validar submissions contra totes les preguntes del qüestionari assignat a
-  l'espai; no hardcodejar sempre 20 preguntes fora del seed inicial.
-
-Guia operativa:
-
-- Les instruccions detallades fase a fase són a
-  `docs/MYSQL_MIGRATION_WORK_INSTRUCTIONS.md`.
-- Cada fase s'ha de completar, verificar i revisar abans de començar la
-  següent.
-
-Seqüencia prevista:
-
-1. Fase 0: documentacio i arquitectura de migracio.
-2. Fase 1: MySQL local, entorn i Drizzle.
-3. Fase 2: esquema MySQL i seed local.
-4. Fase 3: repositoris i lectura del qüestionari.
-5. Fase 4: submissions atomiques amb MySQL.
-6. Fase 5: resultats agregats i PDF.
-7. Fase 6: creacio, gestio i reset d'espais.
-8. Fase 7: auth local provisional i administracio.
-9. Fase 8: eliminar Supabase del flux principal local.
-10. Fase 9: proves funcionals locals i README.
-
-## Fase 0: Validacio documental
-
-Objectiu:
-
-- Revisar que producte, privacitat, arquitectura i base de dades són coherents abans d'escriure codi.
-
-Fitxers:
-
-- `README.md`
-- `AGENTS.md`
-- `.env.example`
-- `docs/PRODUCT_SPEC.md`
-- `docs/ARCHITECTURE.md`
-- `docs/PRIVACY.md`
-- `docs/DATABASE_SCHEMA.md`
-- `docs/IMPLEMENTATION_PLAN.md`
-
-Criteris d'acceptacio:
-
-- No es proposa ni es crea cap taula `centres`.
-- La taula principal és `diagnostic_spaces`.
-- Les rutes previstes estan documentades.
-- El token privat només apareix com fragment `#token=`.
-- Els resultats estan definits com a resultats de conjunt.
-- `.env.example` no conté secrets reals.
+L'aplicació funciona amb Next.js i MySQL i disposa de:
 
-Proves:
+- qüestionari públic versionat;
+- Google OAuth i mode local de desenvolupament;
+- creació, gestió i reinici d'un espai per creador;
+- enviaments atòmics amb bloqueig contra respostes repetides;
+- resultats agregats i PDF;
+- administració de versions, responsables, administradors i comunicat global;
+- resultats globals agregats per versió.
 
-- Revisio manual de documents.
-- Cerca textual de termes prohibits abans de codificar.
+Queden fora de l'abast actual el rate limiting, la protecció anti-bots, la
+retenció automàtica i el tancament d'espais.
 
-Riscos o decisions pendents:
+## Fase 0 — Governança del repositori
 
-- Aprovar el llindar d'avís de poques respostes.
-- Decidir `zod` o validació manual.
-- Decidir RPC SQL o connexió `pg` per transaccions.
-- Administracio aprovada com a nou abast: només pot gestionar qüestionaris i
-  administradors, no respostes individuals.
-- Regla aprovada per correccions menors: una versio assignada a espais es pot
-  editar només després d'un avís i confirmacio explícita. Si està activa o ja té
-  respostes, només es poden corregir títols i textos mantenint l'estructura.
-- Els esborranys sense espais assignats poden tenir estructura parcial durant
-  l'edició; poden arribar a 10 blocs i 10 preguntes per bloc, i l'activacio
-  exigeix almenys 1 bloc amb almenys 1 pregunta per bloc.
+Objectiu: establir un flux de canvis verificable.
 
-## Fase 1: Bootstrap tècnic
+- `main` és la branca estable.
+- Cada canvi es fa en una branca curta.
+- Els commits segueixen Conventional Commits.
+- Cada integració passa per Pull Request.
+- La CI executa lint, type check, proves i build.
+- `CHANGELOG.md` i les versions de l'aplicació segueixen SemVer.
 
-Objectiu:
+## Fase 1 — Base tècnica
 
-- Crear el projecte Next.js amb TypeScript estricte, Tailwind i estructura base.
+Estat: completada.
 
-Fitxers:
+- Next.js, TypeScript estricte i Tailwind.
+- MySQL 8.4, Drizzle ORM i `mysql2`.
+- Variables d'entorn server-side.
+- Estructura de proves amb Vitest.
 
-- `package.json`
-- `next.config.ts`
-- `tsconfig.json`
-- `tailwind.config.ts`
-- `postcss.config.js`
-- `app/layout.tsx`
-- `app/page.tsx`
-- `.env.example`
-- `.gitignore`
+## Fase 2 — Esquema i qüestionari
 
-Criteris d'acceptacio:
+Estat: completada.
 
-- `strict: true` a TypeScript.
-- `.env.example` no conté secrets reals.
-- La pagina inicial compila.
-- No hi ha clients Supabase amb service role en codi client.
+- Esquema MySQL a `lib/db/schema.ts`.
+- Migracions Drizzle a `drizzle/`.
+- Seed de la versió activa.
+- Restriccions de pertinença entre versions.
+- Cap taula o camp identificatiu de centre.
 
-Proves:
+## Fase 3 — Criptografia i validació
 
-- `npm run lint`
-- `npm run build`
+Estat: completada.
 
-Riscos o decisions pendents:
+- Codis públics sense caràcters ambigus.
+- Tokens aleatoris de 32 bytes.
+- HMAC per validar i xifrat per recuperar tokens.
+- Esquemes estrictes que rebutgen camps addicionals.
 
-- Escollir gestor de paquets.
-- Confirmar versions exactes de Next.js i React.
+## Fase 4 — Espais i autenticació
 
-## Fase 2: Base de dades i seed del qüestionari
+Estat: completada.
 
-Objectiu:
+- Google OAuth amb comptes XTEC.
+- Mode local només per desenvolupament.
+- Identificadors opacs derivats amb HMAC.
+- Un espai per creador.
+- Regeneració de token i reinici transaccional.
 
-- Crear migracions Supabase i seed del qüestionari.
+## Fase 5 — Submissions
 
-Fitxers:
+Estat: completada.
 
-- `supabase/migrations/0001_initial_schema.sql`
-- `supabase/seed.sql`
-- `docs/DATABASE_SCHEMA.md` si cal ajustar decisions
+- Sessió XTEC requerida per respondre.
+- Bloqueig HMAC separat de submissions i answers.
+- Validació de totes les preguntes de la versió assignada.
+- Valors 0, 1, 2 i 3.
+- Límit de 300 respostes.
+- Inserció transaccional amb bloqueig de concurrència.
 
-Criteris d'acceptacio:
+## Fase 6 — Resultats i PDF
 
-- Existeixen `questionnaires`, `question_blocks`, `questions`, `diagnostic_spaces`, `submissions`, `answers`.
-- No existeix `centres`.
-- RLS està activat a totes les taules.
-- No hi ha polítiques públiques de lectura per `diagnostic_spaces`, `submissions`, `answers`.
-- El seed crea 5 blocs i 20 preguntes per a la versió activa del qüestionari.
+Estat: completada.
 
-Proves:
+- Validació de propietat o token al servidor.
+- Consultes MySQL agregades.
+- Tauler i PDF sense files individuals.
+- Token privat només al fragment de l'enllaç i al cos POST.
+- Avís metodològic amb poques respostes.
 
-- Aplicar migracions en entorn local Supabase.
-- Executar consultes de comprovacio de recompte.
-- Test de consistencia del seed si s'afegeix harness de tests.
+## Fase 7 — Administració
 
-Riscos o decisions pendents:
+Estat: completada.
 
-- Definir el text definitiu de les 20 preguntes.
-- Decidir quan una correccio sobre versions assignades requereix nova versio.
+- Bootstrap atòmic del primer administrador.
+- Invitacions per correu XTEC separades de les respostes.
+- Gestió de versions, blocs, preguntes i configuració.
+- Edició protegida de versions assignades.
+- Resultats globals i PDF agregats per versió.
 
-## Fase 3: Criptografia i validació
+## Fase 8 — Enduriment pendent
 
-Objectiu:
+- Afegir rate limiting sense desar IPs a la base de dades.
+- Definir protecció anti-bots compatible amb l'anonimat.
+- Aprovar política de retenció i eliminació.
+- Definir tancament o caducitat d'espais.
+- Fer revisió legal o DPO.
+- Definir infraestructura, còpies de seguretat i recuperació.
 
-- Implementar generació de codis, tokens i esquemes de validació.
+Cada canvi d'aquesta fase ha d'actualitzar els documents normatius, afegir
+proves i superar la checklist de privacitat.
 
-Fitxers:
+## Qualitat obligatòria
 
-- `lib/crypto/públic-code.ts`
-- `lib/crypto/private-token.ts`
-- `lib/validation/schemas.ts`
-- `tests/crypto.test.ts`
-- `tests/validation.test.ts`
+Abans d'integrar qualsevol canvi:
 
-Criteris d'acceptacio:
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
 
-- Els codis tenen 8 caràcters útils i format `C-XXXX-XXXX`.
-- L'alfabet exclou `0`, `O`, `1`, `I`, `L`.
-- No s'usa `Math.random()`.
-- Els tokens tenen com a mínim 32 bytes aleatoris.
-- El token es desa només com HMAC o hash amb secret.
-- Els esquemes rebutgen camps addicionals.
-
-Proves:
-
-- `npm test -- crypto`
-- `npm test -- validation`
-- `npm run lint`
-
-Riscos o decisions pendents:
-
-- Confirmar estrategia de comparacio segura compatible amb runtime Node de Vercel.
-- Confirmar si el projecte usara Node runtime per endpoints de PDF i crypto.
-
-Estat: implementada amb `crypto.randomInt`, `crypto.randomBytes`, HMAC-SHA256 i esquemes `zod` estrictes.
-
-## Fase 4: Creacio d'espais
-
-Objectiu:
-
-- Implementar `/crear` i `POST /api/spaces`.
-
-Fitxers:
-
-- `app/crear/page.tsx`
-- `app/api/spaces/route.ts`
-- `lib/database/server.ts`
-- `lib/spaces/create-space.ts`
-- `tests/spaces.test.ts`
-
-Criteris d'acceptacio:
-
-- Es crea un espai anònim amb autenticació OAuth XTEC del creador.
-- Cada creador autenticat pot tenir com a màxim un espai.
-- Es retorna codi públic, enllaç públic i enllaç privat amb fragment.
-- El token privat no queda desat en text pla.
-- Les col·lisions de `public_code` es reintenten.
-- No es registra el token.
-- Si l'usuari ja té un espai, la UI el deriva a la gestio de l'espai existent.
-- El reinici elimina respostes anònimes, conserva propietari i espai, assigna
-  la versio activa, i regenera codi públic i token privat.
-
-Proves:
-
-- `npm test -- spaces`
-- Prova manual de creació a `/crear`.
-- `npm run build`
-
-Riscos o decisions pendents:
-
-- Tractament UX si la persona perd l'enllaç privat.
-- Nombre màxim de reintents per col·lisió.
-
-Estat: implementada. El nombre màxim actual de reintents per col·lisió és 8.
-
-## Fase 5: Formulari públic i submissions
-
-Objectiu:
-
-- Implementar `/q/[publicCode]` i `POST /api/submissions`.
-
-Fitxers:
-
-- `app/q/[publicCode]/page.tsx`
-- `components/questionnaire/*`
-- `app/api/submissions/route.ts`
-- `lib/questionnaire/load-questionnaire.ts`
-- `lib/submissions/create-submission.ts`
-- `supabase/migrations/0002_submission_rpc.sql` si s'usa RPC
-- `tests/submissions.test.ts`
-
-Criteris d'acceptacio:
-
-- La ruta `/q/[publicCode]` exigeix sessio XTEC abans de mostrar el formulari.
-- El formulari mostra els avisos d'anonimat i tractament de les dades en conjunt.
-- Totes les preguntes de la versio assignada són obligatories.
-- El servidor valida exactament una resposta per cada pregunta de la versio
-  assignada.
-- El servidor desa un HMAC a `submission_locks` per impedir una segona resposta
-  del mateix compte al mateix enllaç, sense copiar correu ni vincular-lo a
-  `submissions` o `answers`.
-- El servidor rebutja duplicats, valors fora de rang i camps inesperats.
-- L'espai ha d'existir i estar actiu.
-- L'espai no pot superar 300 submissions completes.
-- La inserció de submission i answers és atòmica.
-
-Proves:
-
-- `npm test -- submissions`
-- Proves manuals amb payload vàlid i payloads invàlids.
-- `npm run lint`
-- `npm run build`
-
-Riscos o decisions pendents:
-
-- El bloqueig d'una sola resposta depen de la sessio XTEC i del secret HMAC.
-  Si el secret es rota, els comptes poden tornar a respondre.
-- Anti-bots queda per fase 2 del producte.
-
-Estat: implementada a MySQL amb Route Handler server-side, transaccio,
-`submission_locks`, límit de 300 submissions completes i validacio estricta de
-totes les respostes.
-
-## Fase 6: Agregacio i resultats web
-
-Objectiu:
-
-- Implementar validació de token, càlcul de resultats de conjunt i tauler de resultats.
-
-Fitxers:
-
-- `app/resultats/[publicCode]/page.tsx`
-- `components/results/*`
-- `app/api/results/route.ts`
-- `lib/results/get-results.ts`
-- `lib/aggregation/calculate-results.ts`
-- `tests/aggregation.test.ts`
-- `tests/results-auth.test.ts`
-
-Criteris d'acceptacio:
-
-- La pagina llegeix `#token=` al navegador i fa `POST`.
-- El token no es mostra ni s'inclou en query params.
-- El servidor valida el token.
-- La resposta conté només dades de conjunt.
-- El tauler mostra codi, versió, total, percentatge global, blocs, preguntes,
-  distribucions i interpretació.
-- Amb poques respostes mostra avís de prudència.
-- No mostra submissions, timestamps individuals ni combinacions per persona.
-
-Proves:
-
-- `npm test -- aggregation`
-- `npm test -- results-auth`
-- Prova manual amb token vàlid i invàlid.
-- `npm run build`
-
-Riscos o decisions pendents:
-
-- Definir textos d'interpretació exactes.
-- Rate limiting i proteccio anti-bots continuen fora d'abast d'aquesta fase.
-
-Estat: implementada. PostgreSQL calcula els recomptes agregats amb la RPC server-only `public.get_diagnostic_answer_counts(uuid)` i TypeScript construeix el model final del tauler i del PDF a partir d'aquests totals. No es carreguen files individuals d'`answers` per generar resultats.
-
-## Fase 7: Informe PDF
-
-Objectiu:
-
-- Generar PDF de conjunt server-side després de validar token.
-
-Fitxers:
-
-- `app/api/reports/pdf/route.ts`
-- `lib/pdf/report-document.tsx`
-- `lib/pdf/render-report.ts`
-- `components` o helpers compartits per dades de conjunt
-- `tests/pdf.test.ts`
-
-Criteris d'acceptacio:
-
-- El PDF es genera només amb token vàlid.
-- Inclou títol, codi anònim, versió, data, nombre de respostes, escala, gràfiques, fortaleses, millores, nota metodològica i avís.
-- No inclou token, dades personals ni respostes individuals.
-- La generació funciona a runtime server compatible amb Vercel.
-
-Proves:
-
-- `npm test -- pdf`
-- Prova manual de descarrega.
-- Revisio visual del PDF.
-- `npm run build`
-
-Riscos o decisions pendents:
-
-- Limitacions de `@react-pdf/renderer` amb gràfiques complexes.
-- Pot caldre renderitzar gràfiques simplificades directament en PDF en lloc de reutilitzar Recharts.
-
-Estat: implementada amb gràfiques simplificades directament al PDF.
-
-## Fase 8: Enduriment de seguretat i qualitat
-
-Objectiu:
-
-- Revisio final de privacitat, seguretat i qualitat abans de desplegar.
-
-Fitxers:
-
-- `README.md`
-- `docs/PRIVACY.md`
-- `docs/ARCHITECTURE.md`
-- tests addicionals
-- configuració Vercel/Supabase documentada
-
-Criteris d'acceptacio:
-
-- Cap secret exposat al client.
-- Cap endpoint sensible accepta camps addicionals.
-- RLS activat.
-- No hi ha polítiques públiques indegudes.
-- No hi ha exportacio individual.
-- Els logs no contenen tokens.
-- Documentacio d'execució completa.
-
-Proves:
-
-- `npm run lint`
-- `npm test`
-- `npm run build`
-- Revisio manual de variables d'entorn.
-- Revisio manual de payloads de xarxa.
-
-Riscos o decisions pendents:
-
-- Rate limiting.
-- Proteccio anti-bots.
-- Monitoratge sense dades personals.
-- Politica de retenció.
-- Procediment d'esborrat d'espais.
-
-## Fase 8A: Administracio del qüestionari
-
-Objectiu:
-
-- Afegir una administracio global per gestionar versions, blocs, preguntes i
-  administradors sense exposar respostes individuals ni dades identificatives.
-
-Fitxers:
-
-- `docs/PRODUCT_SPEC.md`
-- `docs/ARCHITECTURE.md`
-- `docs/PRIVACY.md`
-- `docs/DATABASE_SCHEMA.md`
-- `docs/IMPLEMENTATION_PLAN.md`
-- `supabase/migrations/*_add_questionnaire_admin.sql`
-- `app/admin/**`
-- `app/api/admin/**` si cal una API HTTP separada de la UI
-- `lib/admin/**`
-- `lib/questionnaire/**`
-- `lib/validation/schemas.ts`
-- `tests/admin*.test.ts`
-- `tests/questionnaire*.test.ts`
-
-Criteris d'acceptacio:
-
-- Existeix una autoritzacio explicita d'administradors separada dels creadors
-  d'espais.
-- L'accés d'administracio requereix OAuth i usuari administrador actiu.
-- Es poden crear noves versions del qüestionari.
-- La creació de versio usa un únic formulari amb opcio d'esborrany en blanc o
-  copia d'una versio existent.
-- El títol de cada versio és obligatori i únic.
-- Es poden gestionar blocs i preguntes tancades fins a 10 blocs i 10 preguntes
-  per bloc, mantenint valors `0`, `1`, `2`, `3`.
-- Es pot activar una versio concreta i només una versio queda activa.
-- Es pot eliminar una versio no activa amb avís i confirmacio explícita; això
-  elimina també espais, respostes, blocs i preguntes associats.
-- Les correccions in-place sobre versions assignades exigeixen un avís i una
-  confirmacio explícita.
-- Si una versio està activa o ja té respostes, l'API rebutja canvis d'estructura
-  i només permet corregir títols i textos existents.
-- L'activacio d'una nova versio no modifica els espais ja creats ni les
-  submissions existents.
-- Cap endpoint d'administracio retorna files individuals de `submissions` o
-  `answers`.
-- La vista `Resultats` d'administracio calcula només totals agregats per versio
-  de qüestionari i el PDF reutilitza aquest mateix model agregat.
-- Si la UI usa server actions en comptes de Route Handlers, les accions han de
-  validar sessio, rol i payload al servidor amb les mateixes garanties.
-- No es desa ni es mostra cap nom de centre, codi de centre, nom de docent,
-  email de participant, IP, user agent ni informació de dispositiu.
-
-Proves:
-
-- `npm run lint`
-- `npm test`
-- `npm run typecheck`
-- `npm run build`
-- Tests de migració per RLS i permisos d'administrador.
-- Tests de validació per crear versions, editar versions sense espais assignats,
-  exigir confirmacio en versions assignades i rebutjar canvis d'estructura quan
-  ja hi ha respostes.
-- Tests d'activacio per garantir una única versio activa.
-- Revisio manual del diff per comprovar que no s'exposen secrets ni dades
-  identificatives.
-
-Riscos o decisions pendents:
-
-- Bootstrap inicial definit: el primer usuari autenticat `@xtec.cat` que
-  accedeix correctament a `/admin` esdevé administrador si `admin_users` és
-  buida. La insercio s'ha de fer server-side i només ha de desar el seu
-  `auth.users.id`.
-- Crear un espai de diagnosi no concedeix permisos d'administracio.
-- El bootstrap automàtic del primer administrador ha de ser atòmic, amb RPC o
-  bloqueig transaccional, per evitar que dos primers logins simultanis a
-  `/admin` obtinguin el rol.
-- La gestio d'administradors queda limitada inicialment a `auth.users.id`. Si
-  cal mostrar correus, s'han de llegir server-side de Supabase Auth sense
-  duplicar-los a la base de dades de l'aplicacio.
-- Decidir si es vol conservar historial d'activacions de versions. Si es fa,
-  ha de ser historial de metadades, mai de respostes individuals.
-
-Estat parcial:
-
-- Implementada la taula `admin_users`.
-- Implementada lectura RLS de metadades per administradors actius.
-- Implementades RPCs server-only per bootstrap, crear esborranys, copiar
-  versions, reemplaçar contingut i activar versions.
-- Implementats serveis server-side `lib/admin/auth.ts`,
-  `lib/admin/questionnaires.ts` i `lib/admin/admin-users.ts`.
-- Implementada la ruta `/admin` amb llista de versions, editor de
-  blocs/preguntes, activacio amb confirmacio i gestio d'administradors per
-  `auth.users.id`.
-- Pendent: endpoints `app/api/admin/**` només si cal consumir aquestes
-  operacions fora de la UI.
-
-## Fase 9: Desplegament
-
-Objectiu:
-
-- Desplegar a Vercel amb Supabase configurat.
-
-Fitxers:
-
-- Documentacio de desplegament al `README.md`
-- Configuracio de variables a Vercel
-- Migracions aplicades a Supabase
-
-Criteris d'acceptacio:
-
-- L'app desplegada pot crear espais.
-- L'enllaç públic accepta respostes.
-- L'enllaç privat mostra resultats de conjunt.
-- El PDF es descarrega.
-- Cap taula sensible es pot llegir públicament.
-
-Proves:
-
-- Smoke test complet en producció.
-- Test de token invàlid.
-- Test de codi inexistent.
-- Verificacio de RLS amb clau anon.
-
-Riscos o decisions pendents:
-
-- Configurar backups i retenció a Supabase.
-- Revisar límits de Vercel per generació PDF.
-
-## Incoherències o decisions a revisar abans de programar
-
-1. "Cal respondre una sola vegada" no es pot garantir tècnicament sense algun identificador, cookie, login, IP o fingerprint. Per preservar l'anonimat, s'ha de tractar com una instrucció de bon ús, no com una restricció forta.
-2. Mostrar resultats des de la primera resposta és coherent amb el requisit, però augmenta el risc interpretatiu. La mitigació mínima és l'avís de prudència; es podria revisar si cal ocultar algunes distribucions amb volums molt baixos.
-3. Els timestamps de submissions no estan prohibits explícitament, però no s'han de mostrar. Si es vol maximitzar anonimat, es pot considerar no desar-los o truncar-los.
-4. Cal decidir aviat si les transaccions es faran amb RPC SQL a Supabase o amb connexió Postgres directa. Aquesta decisió afecta dependències, tests i desplegament.
-5. El text exacte de les 20 preguntes encara s'ha de definir i revisar abans del seed.
+També cal revisar el diff, cercar secrets i confirmar que no s'han introduït
+dades identificatives ni endpoints individuals.

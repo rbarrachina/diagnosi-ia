@@ -110,7 +110,7 @@ describe("admin privacy review", () => {
     expect(adminSource).not.toMatch(/\bconsole\.(log|debug|info|warn|error)\s*\(/);
     expect(adminSource).not.toMatch(/\b(privateToken|resultsToken|tokenHash)\b/i);
     expect(adminSource).not.toMatch(
-      /\b(SUPABASE_SERVICE_ROLE_KEY|PRIVATE_TOKEN_HMAC_SECRET|RESULTS_TOKEN_ENCRYPTION_KEY)\b/,
+      /\b(DATABASE_URL|PRIVATE_TOKEN_HMAC_SECRET|RESULTS_TOKEN_ENCRYPTION_KEY)\b/,
     );
   });
 

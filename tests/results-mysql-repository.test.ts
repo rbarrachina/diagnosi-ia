@@ -176,8 +176,7 @@ describe("MySQL aggregated results repository", () => {
     expect(adminPdfRouteSource).not.toMatch(/searchParams|nextUrl|request\.url/);
   });
 
-  it("removes the Supabase results RPC dependency", () => {
-    expect(repositorySource).not.toContain("createSupabaseAdminClient");
+  it("calculates result counts directly with the MySQL repository", () => {
     expect(repositorySource).not.toContain("get_diagnostic_answer_counts");
     expect(repositorySource).not.toContain(".rpc(");
   });

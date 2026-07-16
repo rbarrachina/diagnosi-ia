@@ -15,7 +15,7 @@ import {
 
 const originalEnv = { ...process.env };
 
-describe("Google OAuth without Supabase", () => {
+describe("Google OAuth", () => {
   beforeEach(() => {
     process.env = {
       ...originalEnv,
@@ -43,7 +43,7 @@ describe("Google OAuth without Supabase", () => {
     expect(url.searchParams.get("nonce")).toBe("nonce-value");
   });
 
-  it("exchanges an authorization code without Supabase", async () => {
+  it("exchanges a Google authorization code", async () => {
     const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
       expect(url).toBe("https://oauth2.googleapis.com/token");
       expect(init?.method).toBe("POST");

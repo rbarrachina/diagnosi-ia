@@ -17,7 +17,6 @@ describe("public questionnaire MySQL loader", () => {
     expect(loaderSource).toContain("@/lib/repositories/questionnaires");
     expect(loaderSource).toContain("getDiagnosticSpaceByPublicCode");
     expect(loaderSource).toContain("getQuestionnaireById");
-    expect(loaderSource).not.toContain("createSupabaseAdminClient");
     expect(loaderSource).not.toContain(".from(");
     expect(loaderSource).not.toContain(".rpc(");
   });
