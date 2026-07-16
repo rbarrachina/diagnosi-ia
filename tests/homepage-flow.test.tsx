@@ -95,6 +95,11 @@ describe("initial page", () => {
       screen.getByRole("link", { name: "repositori a GitHub" }),
     ).toHaveAttribute("href", "https://github.com/rbarrachina/diagnosi-ia");
 
+    fireEvent.pointerDown(
+      screen.getByRole("region", { name: "Versió i projecte" }),
+    );
+    expect(projectButton).toHaveAttribute("aria-expanded", "true");
+
     fireEvent.click(privacyButton);
 
     expect(projectButton).toHaveAttribute("aria-expanded", "false");
@@ -105,5 +110,14 @@ describe("initial page", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: "Privacitat i anonimat" }),
     ).toBeInTheDocument();
+
+    fireEvent.pointerDown(document.body);
+    expect(privacyButton).toHaveAttribute("aria-expanded", "false");
+    expect(
+      screen.queryByRole("heading", {
+        level: 2,
+        name: "Privacitat i anonimat",
+      }),
+    ).not.toBeInTheDocument();
   });
 });

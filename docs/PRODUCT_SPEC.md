@@ -174,7 +174,8 @@ La portada és l'única pantalla inicial. Reuneix l'objectiu de l'eina,
 l'indicador OIA-12, controls accessibles amb les garanties de privacitat i la
 informació de versió, estat beta, llicència i repositori, l'explicació dels
 rols i les targetes de responsable i docent. Només es mostra un panell
-informatiu alhora.
+informatiu alhora. El panell obert es tanca en prémer el seu botó, la creu o
+qualsevol punt de la pàgina exterior als controls i al mateix panell.
 
 El responsable inicia l'accés XTEC des de la portada i, un cop autenticat,
 arriba a `/crear` per crear o gestionar el seu espai. El professorat accedeix

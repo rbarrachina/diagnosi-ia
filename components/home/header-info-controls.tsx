@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 type OpenPanel = "project" | "privacy" | null;
 
@@ -10,6 +10,7 @@ type HeaderInfoControlsProps = {
 
 export function HeaderInfoControls({ version }: HeaderInfoControlsProps) {
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
+  const controlsRef = useRef<HTMLDivElement>(null);
   const projectPanelId = useId();
   const projectTitleId = useId();
   const privacyPanelId = useId();
@@ -19,8 +20,32 @@ export function HeaderInfoControls({ version }: HeaderInfoControlsProps) {
     setOpenPanel((current) => (current === panel ? null : panel));
   }
 
+  useEffect(() => {
+    if (openPanel === null) {
+      return;
+    }
+
+    function closePanelOnOutsidePointer(event: PointerEvent) {
+      if (
+        event.target instanceof Node &&
+        !controlsRef.current?.contains(event.target)
+      ) {
+        setOpenPanel(null);
+      }
+    }
+
+    document.addEventListener("pointerdown", closePanelOnOutsidePointer);
+
+    return () => {
+      document.removeEventListener("pointerdown", closePanelOnOutsidePointer);
+    };
+  }, [openPanel]);
+
   return (
-    <div className="absolute right-4 top-4 z-20 text-left sm:right-8 sm:top-8">
+    <div
+      className="absolute right-4 top-4 z-20 text-left sm:right-8 sm:top-8"
+      ref={controlsRef}
+    >
       <div className="flex justify-end gap-2">
         <InfoButton
           ariaControls={privacyPanelId}
