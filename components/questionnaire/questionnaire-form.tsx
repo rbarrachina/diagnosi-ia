@@ -292,19 +292,29 @@ function IntroPage({
         </p>
       </div>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:items-start">
-        <div className="space-y-3">
-          <p className="inline-flex items-center gap-2 rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-900">
-            <span aria-hidden="true">📋</span>
-            Versió del qüestionari: {questionnaire.questionnaireVersion}
-          </p>
-          <p className="inline-flex items-center gap-2 rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-900">
-            <span aria-hidden="true">⏱️</span>
-            Temps estimat: {questionnaire.estimatedMinutes} minuts
-          </p>
-        </div>
+        <dl className="space-y-2 text-sm leading-6 text-slate-700">
+          <div className="flex items-center gap-2">
+            <dt className="flex items-center gap-2 font-semibold text-ink">
+              <span aria-hidden="true">📋</span>
+              Versió del qüestionari:
+            </dt>
+            <dd>{questionnaire.questionnaireVersion}</dd>
+          </div>
+          <div className="flex items-center gap-2">
+            <dt className="flex items-center gap-2 font-semibold text-ink">
+              <span aria-hidden="true">⏱️</span>
+              Temps estimat:
+            </dt>
+            <dd>{questionnaire.estimatedMinutes} minuts</dd>
+          </div>
+        </dl>
         <div className="flex flex-col gap-3 sm:items-end">
           {alreadySubmitted ? (
-            <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-5 text-amber-900">
+            <p
+              className="max-w-md text-sm font-semibold leading-5 text-amber-900 sm:text-right"
+              role="status"
+            >
+              <span aria-hidden="true">✅</span>{" "}
               Aquest usuari ja ha respost l&apos;enquesta i no la pot tornar a fer.
             </p>
           ) : null}

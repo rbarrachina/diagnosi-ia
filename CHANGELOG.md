@@ -6,6 +6,11 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- Aclarida la jerarquia visual de la introducció del qüestionari perquè només
+  l'acció principal tingui aparença de botó.
+
 ## [0.2.0] - 2026-07-16
 
 ### Changed
