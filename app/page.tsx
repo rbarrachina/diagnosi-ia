@@ -1,5 +1,6 @@
 import { XtecAccessNotice } from "@/components/auth/auth-actions";
 import { ParticipantInfoCard } from "@/components/create-space/participant-info-card";
+import { PrivacyInfo } from "@/components/home/privacy-info";
 import type { ResponsibleAccessMode } from "@/lib/auth/responsible-access";
 
 export const dynamic = "force-dynamic";
@@ -9,8 +10,10 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-paper">
-      <section className="mx-auto flex min-h-screen w-full max-w-5xl flex-col items-center justify-center px-6 py-10 text-center sm:py-14">
-        <header className="max-w-3xl">
+      <section className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col items-center justify-center px-6 py-10 text-center sm:py-14">
+        <PrivacyInfo />
+
+        <header className="max-w-3xl pt-8 sm:pt-0">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
             Competència digital docent en IA
           </p>
@@ -34,11 +37,6 @@ export default async function Home() {
             del claustre.
           </p>
         </div>
-
-        <p className="mt-5 max-w-3xl text-sm leading-6 text-slate-600">
-          Les respostes són anònimes, no s&apos;hi introdueix el nom del centre
-          i els resultats es consulten només en conjunt.
-        </p>
 
         <div className="mt-9 w-full">
           <div className="mx-auto max-w-3xl text-lg leading-8 text-slate-700">

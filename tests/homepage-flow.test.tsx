@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -18,8 +18,8 @@ describe("initial page", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Indicador OIA-12")).toBeInTheDocument();
     expect(
-      screen.getByText(/Les respostes són anònimes/),
-    ).toBeInTheDocument();
+      screen.getByRole("button", { name: "Informació de privacitat" }),
+    ).toHaveAttribute("aria-expanded", "false");
     expect(
       screen.getByRole("heading", { level: 2, name: "Soc responsable" }),
     ).toBeInTheDocument();
@@ -34,5 +34,30 @@ describe("initial page", () => {
     expect(
       screen.getByRole("link", { name: "Accedeix amb el compte XTEC" }),
     ).toHaveAttribute("href", "/auth/login?next=%2Fcrear");
+  });
+
+  it("explains the privacy guarantees from the privacy control", async () => {
+    render(await Home());
+
+    const privacyButton = screen.getByRole("button", {
+      name: "Informació de privacitat",
+    });
+    fireEvent.click(privacyButton);
+
+    expect(privacyButton).toHaveAttribute("aria-expanded", "true");
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Privacitat i anonimat" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Les respostes són anònimes/)).toBeInTheDocument();
+    expect(
+      screen.getByText("No es desa ni es mostra el nom del centre."),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Tanca la informació de privacitat",
+      }),
+    );
+    expect(privacyButton).toHaveAttribute("aria-expanded", "false");
   });
 });
