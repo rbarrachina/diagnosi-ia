@@ -6,6 +6,8 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-07-16
+
 ### Added
 
 - Flux de treball amb branques, Pull Requests i Conventional Commits.
@@ -23,3 +25,4 @@ Semantic Versioning.
   l'aplicació.
 
 [Unreleased]: https://github.com/rbarrachina/diagnosi-ia/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/rbarrachina/diagnosi-ia/releases/tag/v0.1.0
