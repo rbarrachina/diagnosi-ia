@@ -311,14 +311,11 @@ function IntroPage({
         <div className="flex flex-col gap-3 sm:items-end">
           {alreadySubmitted ? (
             <p
-              className="flex items-start gap-2 text-sm font-semibold leading-5 text-amber-900 sm:text-right"
+              className="max-w-md text-sm font-semibold leading-5 text-amber-900 sm:text-right"
               role="status"
             >
-              <span aria-hidden="true">✅</span>
-              <span>
-                Aquest usuari ja ha respost l&apos;enquesta i no la pot tornar a
-                fer.
-              </span>
+              <span aria-hidden="true">✅</span>{" "}
+              Aquest usuari ja ha respost l&apos;enquesta i no la pot tornar a fer.
             </p>
           ) : null}
           <button
