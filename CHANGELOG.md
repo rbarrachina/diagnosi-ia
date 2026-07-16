@@ -6,6 +6,8 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-07-16
+
 ### Changed
 
 - Aclarida la jerarquia visual de la introducció del qüestionari perquè només
@@ -39,6 +41,7 @@ Semantic Versioning.
 - Artefactes i proves de la infraestructura històrica que ja no forma part de
   l'aplicació.
 
-[Unreleased]: https://github.com/rbarrachina/diagnosi-ia/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/rbarrachina/diagnosi-ia/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/rbarrachina/diagnosi-ia/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/rbarrachina/diagnosi-ia/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/rbarrachina/diagnosi-ia/releases/tag/v0.1.0
