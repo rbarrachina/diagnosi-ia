@@ -8,6 +8,9 @@ Diagnosi IA no identifica centres ni docents. No és una eina d'avaluació indiv
 
 `main` conté l'aplicació amb Next.js i MySQL.
 
+La versió publicada actual és la `0.1.0`. El projecte es troba en fase beta i
+pot contenir errors.
+
 El flux principal local funciona amb Next.js i MySQL local:
 
 - carrega del qüestionari públic;
@@ -237,4 +240,4 @@ d'usuari.
 
 ## Llicència
 
-Pendent de decidir.
+Aquest projecte es distribueix sota la [llicència Apache 2.0](LICENSE).

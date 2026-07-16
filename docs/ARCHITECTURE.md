@@ -117,6 +117,17 @@ s'agrupen per versió i no admeten filtres per espai, creador, persona o data.
 Els errors visibles són genèrics. No es registren tokens, payloads complets de
 respostes, correus de participants, IPs ni informació de dispositiu.
 
+## Pàgines d'entrada
+
+- `/` és l'única portada informativa. Mostra objectiu, indicador, controls
+  accessibles de privacitat i d'informació del projecte, rols i accés del
+  responsable. La versió mostrada prové de `package.json` i els panells
+  informatius són mútuament excloents.
+- `/crear` és la pantalla autenticada de creació i gestió de l'espai. Si no
+  hi ha sessió, redirigeix a `/`.
+- `/q/[publicCode]` és l'entrada del professorat mitjançant l'enllaç específic
+  compartit pel responsable.
+
 ## Decisions pendents
 
 - Rate limiting i protecció anti-bots.

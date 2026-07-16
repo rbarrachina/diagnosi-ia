@@ -6,6 +6,13 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- Unificades la portada i la selecció de rol en una única pantalla inicial.
+- Afegits a la portada controls accessibles per consultar les garanties de
+  privacitat i la informació de versió, estat beta, llicència i repositori.
+- Adoptada la llicència Apache 2.0.
+
 ## [0.1.0] - 2026-07-16
 
 ### Added

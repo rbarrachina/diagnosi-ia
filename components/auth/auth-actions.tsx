@@ -76,7 +76,7 @@ export function XtecForbiddenNotice() {
         Només es permet l’accés amb un compte XTEC.
       </p>
       <div className="mt-5 flex justify-center">
-        <LogoutButton next="/crear" />
+        <LogoutButton next="/" />
       </div>
     </div>
   );
@@ -98,7 +98,7 @@ export function ResponsibleForbiddenNotice({
           : "Només es permet l'accés amb un compte XTEC."}
       </p>
       <div className="mt-5 flex justify-center">
-        <LogoutButton next="/crear" />
+        <LogoutButton next="/" />
       </div>
     </div>
   );

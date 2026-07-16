@@ -166,13 +166,29 @@ versio i no inclou tokens ni codis publics d'espais.
 
 ## Fluxos principals
 
+### Portada i accés
+
+Ruta: `/`
+
+La portada és l'única pantalla inicial. Reuneix l'objectiu de l'eina,
+l'indicador OIA-12, controls accessibles amb les garanties de privacitat i la
+informació de versió, estat beta, llicència i repositori, l'explicació dels
+rols i les targetes de responsable i docent. Només es mostra un panell
+informatiu alhora.
+
+El responsable inicia l'accés XTEC des de la portada i, un cop autenticat,
+arriba a `/crear` per crear o gestionar el seu espai. El professorat accedeix
+al qüestionari des de l'enllaç específic rebut. Un accés directe a `/crear`
+sense sessió redirigeix a la portada.
+
 ### Creacio d'espai
 
 Ruta: `/crear`
 
-La persona responsable inicia sessió amb compte XTEC autoritzat. A `main` això
-  es fa amb Google OAuth directe o amb mode local provisional de
-desenvolupament. Només s'accepten comptes amb correu acabat en `@xtec.cat`;
+La persona responsable ja ha iniciat sessió des de la portada amb un compte
+XTEC autoritzat. A `main` això es fa amb Google OAuth directe o amb mode local
+provisional de desenvolupament. Només s'accepten comptes amb correu acabat en
+`@xtec.cat`;
 segons la configuracio global, l'accés de responsables pot quedar limitat als
 comptes de centre XTEC. Els administradors actius poden crear i gestionar el
 seu espai en qualsevol dels dos modes.
