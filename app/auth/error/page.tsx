@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type AuthErrorPageProps = {
   searchParams: Promise<{
     reason?: string;
@@ -17,12 +19,12 @@ export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps
         <div className="rounded-md border border-red-200 bg-red-50 p-6 text-red-900 shadow-sm">
           <h1 className="text-2xl font-semibold">Accés no autoritzat</h1>
           <p className="mt-3 text-sm leading-6">{message}</p>
-          <a
+          <Link
             className="mt-6 inline-flex rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
-            href="/crear"
+            href="/"
           >
             Torna a l’inici
-          </a>
+          </Link>
         </div>
       </section>
     </main>
