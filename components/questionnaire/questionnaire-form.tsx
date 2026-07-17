@@ -262,7 +262,7 @@ function IntroPage({
   return (
     <div>
       <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
-        {isReadOnly ? "Mode lectura" : "Competència digital docent en IA"}
+        {questionnaire.centreName}
       </p>
       <h1 className="mt-3 text-3xl font-semibold tracking-normal text-ink">
         {isReadOnly ? "Previsualització del qüestionari" : "Qüestionari"}

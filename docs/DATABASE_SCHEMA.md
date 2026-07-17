@@ -3,8 +3,9 @@
 La base de dades activa és MySQL 8.4. L'esquema executable és
 `lib/db/schema.ts` i les migracions generades es desen a `drizzle/`.
 
-La taula principal d'espais s'anomena `diagnostic_spaces`. No ha d'existir cap
-taula `centres`.
+La taula principal d'espais s'anomena `diagnostic_spaces`. Les identitats
+institucionals es desen a `centres` i `centre_accounts`, separades de les
+respostes.
 
 ## Principis
 
@@ -23,6 +24,8 @@ erDiagram
   questionnaires ||--o{ question_blocks : contains
   question_blocks ||--o{ questions : contains
   questionnaires ||--o{ diagnostic_spaces : assigned_to
+  centres ||--o{ centre_accounts : authorizes
+  centres ||--o| diagnostic_spaces : owns
   diagnostic_spaces ||--o{ submission_locks : limits
   diagnostic_spaces ||--o{ submissions : receives
   submissions ||--o{ answers : contains
@@ -50,12 +53,31 @@ Preguntes tancades amb UUID, versió, bloc, posició global, posició dins del b
 i text. L'escala vàlida és fixa de 0 a 3. Cada bloc admet entre 1 i 10 preguntes
 i cada versió fins a 100.
 
+### `centres`
+
+Centres identificats amb correu institucional únic, codi oficial opcional, nom
+oficial, municipi, àrea territorial, servei educatiu, estat de sincronització,
+darrer intent i darrera actualització correcta. El correu és la clau estable
+quan Dades Obertes encara no ha retornat cap fitxa.
+
+També conté l'estat de l'alta (`profile_confirmed_at` i
+`email_policy_configured_at`) i la política docent: `allow_xtec` i un únic
+`custom_domain` opcional. El domini es desa en minúscules i s'aplica per
+coincidència exacta. Aquestes dades descriuen el centre, no identifiquen cap
+docent.
+
+### `centre_accounts`
+
+Comptes responsables amb identificador Google opac, correu i nom visible. Un
+compte de centre s'associa al seu centre. Els administradors amb compte
+personal tenen també una fila de fitxa institucional per gestionar l'espai de
+prova; la consulta a Dades Obertes normalment queda amb estat `not_found`.
+
 ### `diagnostic_spaces`
 
-Espais anònims amb UUID, codi públic, propietari opac, versió assignada, estat i
-metadades del token de resultats. El codi públic i el propietari són únics. No
-conté nom ni codi de centre, correu de participant o cap altre camp
-identificatiu.
+Espais amb UUID, codi públic, propietari opac, centre opcional, versió
+assignada, estat i metadades del token de resultats. El codi públic, el
+propietari i el centre són únics. No conté correu de participant.
 
 El token de resultats es conserva com HMAC i, quan s'ha de recuperar per al
 creador, també xifrat amb una clau server-side.
@@ -96,9 +118,9 @@ Configuració global no personal:
 - `communication_subject`: assumpte global del comunicat.
 - `communication_body`: text global amb la marca opcional
   `{URL_QUESTIONARI}`.
+- El comunicat també admet `{NOM_CENTRE}`.
 
-No pot contenir noms o codis de centre, llistes de comptes o dades de
-participants.
+No pot contenir dades de participants.
 
 ## Regles de versionat del qüestionari
 
@@ -113,8 +135,10 @@ participants.
 
 ## Transaccions
 
-La creació de submissions bloqueja la fila de l'espai abans de comprovar el
-límit i insereix bloqueig, submission i respostes dins la mateixa transacció.
+La creació de submissions bloqueja la fila de l'espai, torna a consultar la
+política de domini del centre i després comprova el límit i insereix bloqueig,
+submission i respostes dins la mateixa transacció. El correu docent no
+s'insereix en cap taula.
 
 El reinici d'un espai elimina bloquejos i respostes, assigna la versió activa i
 rota codi i token dins una transacció. No modifica el qüestionari versionat.

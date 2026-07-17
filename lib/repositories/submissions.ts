@@ -9,6 +9,8 @@ import {
   MAX_SUBMISSIONS_PER_SPACE,
   type SubmissionRequestInput,
 } from "@/lib/validation/schemas";
+import type { AppAuthenticatedUser } from "@/lib/auth/local";
+import { isEmailAllowedByCentrePolicy } from "@/lib/centres/email-policy";
 
 export class InvalidSubmissionRepositoryError extends Error {
   constructor() {
@@ -34,6 +36,9 @@ export class DuplicateSubmissionRepositoryError extends Error {
 type DiagnosticSpaceRow = RowDataPacket & {
   diagnostic_space_id: string;
   questionnaire_id: string;
+  allow_xtec: number | boolean;
+  custom_domain: string | null;
+  email_policy_configured_at: string | Date | null;
 };
 
 type SubmissionCountRow = RowDataPacket & {
@@ -90,7 +95,7 @@ export async function hasAccountSubmittedToPublicQuestionnaire(params: {
 
 export async function createSubmissionWithAnswers(
   payload: SubmissionRequestInput,
-  accountId: string,
+  user: Pick<AppAuthenticatedUser, "id" | "email">,
 ): Promise<void> {
   const connection = await mysqlPool.getConnection();
 
@@ -98,8 +103,17 @@ export async function createSubmissionWithAnswers(
     await connection.beginTransaction();
 
     const space = await lockActiveDiagnosticSpace(connection, payload);
+    if (
+      !isEmailAllowedByCentrePolicy(user.email, {
+        allowXtec: Boolean(space.allow_xtec),
+        customDomain: space.custom_domain,
+        configured: Boolean(space.email_policy_configured_at),
+      })
+    ) {
+      throw new InvalidSubmissionRepositoryError();
+    }
     await insertSubmissionLock(connection, {
-      accountId,
+      accountId: user.id,
       diagnosticSpaceId: space.diagnostic_space_id,
       publicCode: payload.publicCode,
     });
@@ -175,8 +189,12 @@ async function lockActiveDiagnosticSpace(
     `
       select
         diagnostic_spaces.id as diagnostic_space_id,
-        diagnostic_spaces.questionnaire_id as questionnaire_id
+        diagnostic_spaces.questionnaire_id as questionnaire_id,
+        centres.allow_xtec,
+        centres.custom_domain,
+        centres.email_policy_configured_at
       from diagnostic_spaces
+      inner join centres on centres.id = diagnostic_spaces.centre_id
       inner join questionnaires
         on questionnaires.id = diagnostic_spaces.questionnaire_id
       where diagnostic_spaces.public_code = ?

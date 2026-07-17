@@ -152,7 +152,7 @@ export async function canUseResponsibleAccess(
   return isActiveAdminUser(user.id);
 }
 
-async function isActiveAdminUser(userId: string): Promise<boolean> {
+export async function isActiveAdminUser(userId: string): Promise<boolean> {
   const [rows] = await mysqlPool.execute<AdminUserRow[]>(
     `
       select user_id

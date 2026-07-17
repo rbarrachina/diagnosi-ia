@@ -62,12 +62,15 @@ comparteixen amb el client.
 
 ## Autenticació i autorització
 
-`AUTH_MODE=google` inicia el flux OAuth, valida el token de Google al servidor,
-exigeix un correu `@xtec.cat` i crea una cookie `httpOnly` signada.
+`AUTH_MODE=google` inicia el flux OAuth, valida el token de Google al servidor i
+crea una cookie `httpOnly` signada. Els responsables han de tenir correu
+`@xtec.cat`. El professorat ha de coincidir exactament amb `@xtec.cat` o amb el
+domini de Google Workspace configurat pel centre.
 
-L'identificador desat per a creadors i bloquejos de resposta és un UUID opac
-derivat amb HMAC. El correu no es copia a `diagnostic_spaces`,
-`submission_locks`, `submissions` ni `answers`.
+L'identificador desat per a responsables i bloquejos de resposta és un UUID
+opac derivat amb HMAC. El correu i nom del responsable es desen a
+`centre_accounts`, però no es copien a `submission_locks`, `submissions` ni
+`answers`.
 
 `AUTH_MODE=local` és exclusiu de desenvolupament. En producció queda
 desactivat, tret d'una habilitació explícita destinada només a verificacions
@@ -83,18 +86,36 @@ respostes.
 ### Creació d'espai
 
 1. Validar la sessió XTEC i el mode d'accés configurat.
-2. Verificar que el creador no tingui ja un espai.
-3. Generar codi públic i token privat.
-4. Calcular l'HMAC i xifrar el token.
-5. Crear l'espai amb la versió activa dins una operació server-side.
-6. Retornar només els enllaços necessaris.
+2. Per a correus de centre i administradors, crear o actualitzar el compte i la
+   fitxa institucional amb consultes server-side a les fonts públiques.
+3. Verificar que el centre no tingui ja un espai.
+4. Generar codi públic i token privat.
+5. Calcular l'HMAC i xifrar el token.
+6. Crear l'espai amb la versió activa dins una operació server-side.
+7. Retornar només els enllaços necessaris.
+
+### Fonts de centres
+
+La integració amb Socrata i amb la font versionada de serveis educatius és
+server-only. Les respostes externes es validen amb esquemes estrictes i només
+se seleccionen els camps necessaris. La base de dades conserva el darrer intent
+de consulta, la darrera actualització correcta i un estat genèric d'error.
+
+Fonts i atribució:
+
+- Directori de centres docents anual, Departament d'Educació:
+  `https://analisi.transparenciacatalunya.cat/d/kvmv-ahh4`.
+- Relació pública de Serveis Educatius de Zona, incorporada mitjançant la
+  instantània atribuïda a
+  `https://github.com/rbarrachina/fitxa-centres-educatius`.
 
 ### Enviament de respostes
 
-1. Validar sessió, codi públic i payload.
+1. Validar sessió Google, codi públic, domini configurat i payload.
 2. Iniciar una transacció MySQL.
 3. Bloquejar la fila de l'espai.
-4. Validar estat, versió, preguntes, duplicats i límit de 300 respostes.
+4. Tornar a validar dins la transacció el domini exacte vigent, l'estat, la
+   versió, les preguntes, els duplicats i el límit de 300 respostes.
 5. Crear el bloqueig HMAC contra repeticions.
 6. Inserir `submission` i `answers`.
 7. Confirmar o revertir la transacció.

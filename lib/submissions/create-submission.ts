@@ -6,6 +6,7 @@ import {
   SubmissionLimitReachedRepositoryError,
 } from "@/lib/repositories/submissions";
 import type { SubmissionRequestInput } from "@/lib/validation/schemas";
+import type { AppAuthenticatedUser } from "@/lib/auth/local";
 
 export class SubmissionLimitReachedError extends Error {
   constructor() {
@@ -23,10 +24,10 @@ export class DuplicateSubmissionError extends Error {
 
 export async function createSubmission(
   payload: SubmissionRequestInput,
-  accountId: string,
+  user: Pick<AppAuthenticatedUser, "id" | "email">,
 ): Promise<void> {
   try {
-    await createSubmissionWithAnswers(payload, accountId);
+    await createSubmissionWithAnswers(payload, user);
   } catch (error) {
     if (error instanceof SubmissionLimitReachedRepositoryError) {
       throw new SubmissionLimitReachedError();

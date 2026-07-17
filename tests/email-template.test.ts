@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  CENTRE_NAME_PLACEHOLDER,
   QUESTIONNAIRE_URL_PLACEHOLDER,
   buildGmailComposeUrl,
   renderCommunicationBody,
@@ -41,5 +42,19 @@ describe("communication email template", () => {
     );
     expect(url.searchParams.get("authuser")).toBe("a1234567@xtec.cat");
     expect(url.searchParams.has("to")).toBe(false);
+  });
+
+  it("renders the centre name in the subject and body", () => {
+    const url = new URL(
+      buildGmailComposeUrl({
+        subject: `Diagnosi · ${CENTRE_NAME_PLACEHOLDER}`,
+        body: `Benvolgut ${CENTRE_NAME_PLACEHOLDER}\n${QUESTIONNAIRE_URL_PLACEHOLDER}`,
+        publicUrl: "https://example.test/q/C-AAAA-BBBB",
+        centreName: "Institut de Prova",
+      }),
+    );
+
+    expect(url.searchParams.get("su")).toBe("Diagnosi · Institut de Prova");
+    expect(url.searchParams.get("body")).toContain("Benvolgut Institut de Prova");
   });
 });

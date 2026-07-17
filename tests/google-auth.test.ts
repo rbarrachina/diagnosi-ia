@@ -30,6 +30,7 @@ describe("Google OAuth", () => {
 
   it("builds a Google authorization URL for XTEC accounts", () => {
     const url = buildGoogleAuthorizationUrl({
+      hostedDomain: "xtec.cat",
       nonce: "nonce-value",
       redirectUri: "http://localhost:3000/auth/callback",
       state: "state-value",
@@ -41,6 +42,17 @@ describe("Google OAuth", () => {
     expect(url.searchParams.get("scope")).toBe("openid email profile");
     expect(url.searchParams.get("hd")).toBe("xtec.cat");
     expect(url.searchParams.get("nonce")).toBe("nonce-value");
+  });
+
+  it("allows the Google account chooser when two domains are admitted", () => {
+    const url = buildGoogleAuthorizationUrl({
+      hostedDomain: null,
+      nonce: "nonce-value",
+      redirectUri: "http://localhost:3000/auth/callback",
+      state: "state-value",
+    });
+
+    expect(url.searchParams.has("hd")).toBe(false);
   });
 
   it("exchanges a Google authorization code", async () => {

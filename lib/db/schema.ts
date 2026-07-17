@@ -119,6 +119,84 @@ export const questions = mysqlTable(
   ],
 );
 
+export const centres = mysqlTable(
+  "centres",
+  {
+    id: uuid("id").notNull().primaryKey(),
+    email: varchar("email", { length: 254 }).notNull(),
+    officialCode: char("official_code", { length: 8 }),
+    officialName: varchar("official_name", { length: 255 }),
+    municipality: varchar("municipality", { length: 255 }),
+    territorialArea: varchar("territorial_area", { length: 255 }),
+    educationalService: varchar("educational_service", { length: 255 }),
+    sourceStatus: varchar("source_status", { length: 24 }).notNull().default("pending"),
+    lastAttemptAt: datetime("last_attempt_at", { mode: "string", fsp: 3 }),
+    lastSuccessAt: datetime("last_success_at", { mode: "string", fsp: 3 }),
+    profileConfirmedAt: datetime("profile_confirmed_at", { mode: "string", fsp: 3 }),
+    allowXtec: boolean("allow_xtec").notNull().default(true),
+    customDomain: varchar("custom_domain", { length: 253 }),
+    emailPolicyConfiguredAt: datetime("email_policy_configured_at", {
+      mode: "string",
+      fsp: 3,
+    }),
+    createdAt: createdAt(),
+    updatedAt: createdAt("updated_at"),
+  },
+  (table) => [
+    uniqueIndex("centres_email_unique_idx").on(table.email),
+    uniqueIndex("centres_official_code_unique_idx").on(table.officialCode),
+    check(
+      "centres_email_format_check",
+      sql`${table.email} regexp '^[^@[:space:]]+@xtec\\.cat$'`,
+    ),
+    check(
+      "centres_official_code_format_check",
+      sql`${table.officialCode} is null or ${table.officialCode} regexp '^[0-9]{8}$'`,
+    ),
+    check(
+      "centres_source_status_check",
+      sql`${table.sourceStatus} in ('pending', 'ok', 'not_found', 'unavailable')`,
+    ),
+    check(
+      "centres_custom_domain_format_check",
+      sql`${table.customDomain} is null or ${table.customDomain} regexp '^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$'`,
+    ),
+    check(
+      "centres_email_policy_check",
+      sql`${table.emailPolicyConfiguredAt} is null or ${table.allowXtec} = true or ${table.customDomain} is not null`,
+    ),
+  ],
+);
+
+export const centreAccounts = mysqlTable(
+  "centre_accounts",
+  {
+    userId: varchar("user_id", { length: 191 }).notNull().primaryKey(),
+    centreId: uuid("centre_id").notNull(),
+    email: varchar("email", { length: 254 }).notNull(),
+    displayName: varchar("display_name", { length: 255 }),
+    createdAt: createdAt(),
+    lastLoginAt: createdAt("last_login_at"),
+  },
+  (table) => [
+    uniqueIndex("centre_accounts_email_unique_idx").on(table.email),
+    uniqueIndex("centre_accounts_centre_id_unique_idx").on(table.centreId),
+    foreignKey({
+      name: "centre_accounts_centre_id_fkey",
+      columns: [table.centreId],
+      foreignColumns: [centres.id],
+    }).onDelete("cascade"),
+    check(
+      "centre_accounts_email_format_check",
+      sql`${table.email} regexp '^[^@[:space:]]+@xtec\\.cat$'`,
+    ),
+    check(
+      "centre_accounts_display_name_not_blank_check",
+      sql`${table.displayName} is null or trim(${table.displayName}) <> ''`,
+    ),
+  ],
+);
+
 export const diagnosticSpaces = mysqlTable(
   "diagnostic_spaces",
   {
@@ -134,6 +212,7 @@ export const diagnosticSpaces = mysqlTable(
       mode: "string",
       fsp: 3,
     }),
+    centreId: uuid("centre_id"),
     questionnaireId: questionnaireId("questionnaire_id").notNull(),
     isActive: boolean("is_active").notNull().default(true),
     createdAt: createdAt(),
@@ -143,8 +222,14 @@ export const diagnosticSpaces = mysqlTable(
     uniqueIndex("diagnostic_spaces_public_code_key").on(table.publicCode),
     uniqueIndex("diagnostic_spaces_id_questionnaire_unique").on(table.id, table.questionnaireId),
     uniqueIndex("diagnostic_spaces_owner_user_id_unique_idx").on(table.ownerUserId),
+    uniqueIndex("diagnostic_spaces_centre_id_unique_idx").on(table.centreId),
     index("diagnostic_spaces_questionnaire_id_idx").on(table.questionnaireId),
     index("diagnostic_spaces_owner_public_code_idx").on(table.ownerUserId, table.publicCode),
+    foreignKey({
+      name: "diagnostic_spaces_centre_id_fkey",
+      columns: [table.centreId],
+      foreignColumns: [centres.id],
+    }).onDelete("restrict"),
     foreignKey({
       name: "diagnostic_spaces_questionnaire_id_fkey",
       columns: [table.questionnaireId],

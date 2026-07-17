@@ -1,16 +1,20 @@
 import type { ResponsibleAccessMode } from "@/lib/auth/responsible-access";
 
 type LoginButtonProps = {
+  label?: string;
   next?: string;
 };
 
-export function LoginButton({ next = "/crear" }: LoginButtonProps) {
+export function LoginButton({
+  label = "Accedeix amb el compte XTEC",
+  next = "/crear",
+}: LoginButtonProps) {
   return (
     <a
       className="inline-flex rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
       href={`/auth/login?next=${encodeURIComponent(next)}`}
     >
-      Accedeix amb el compte XTEC
+      {label}
     </a>
   );
 }

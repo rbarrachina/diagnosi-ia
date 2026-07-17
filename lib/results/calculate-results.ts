@@ -213,6 +213,7 @@ export function calculateAggregatedResults(params: {
 }
 
 export function calculateAggregatedResultsFromCounts(params: {
+  centreName?: string;
   publicCode: string;
   scopeLabel?: string;
   questionnaireVersion: string;
@@ -281,6 +282,7 @@ export function calculateAggregatedResultsFromCounts(params: {
   const globalAverage = weightedAveragePercentage(globalCounts);
 
   return {
+    centreName: params.centreName,
     publicCode: params.publicCode,
     scopeLabel: params.scopeLabel,
     questionnaireVersion: params.questionnaireVersion,

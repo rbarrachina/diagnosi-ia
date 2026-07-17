@@ -12,6 +12,9 @@ L'aplicació funciona amb Next.js i MySQL i disposa de:
 - administració de versions, responsables, administradors i comunicat global;
 - resultats globals agregats per versió.
 
+La versió 0.3.0 incorpora centres identificats, comptes responsables registrats
+i una fitxa territorial sincronitzable, mantenint anònim el professorat.
+
 Queden fora de l'abast actual el rate limiting, la protecció anti-bots, la
 retenció automàtica i el tancament d'espais.
 
@@ -43,7 +46,7 @@ Estat: completada.
 - Migracions Drizzle a `drizzle/`.
 - Seed de la versió activa.
 - Restriccions de pertinença entre versions.
-- Cap taula o camp identificatiu de centre.
+- Identitat del centre separada de submissions i answers.
 
 ## Fase 3 — Criptografia i validació
 
@@ -58,17 +61,17 @@ Estat: completada.
 
 Estat: completada.
 
-- Google OAuth amb comptes XTEC.
+- Google OAuth amb comptes XTEC per a responsables.
 - Mode local només per desenvolupament.
 - Identificadors opacs derivats amb HMAC.
-- Un espai per creador.
+- Un espai per centre o per compte de prova autoritzat.
 - Regeneració de token i reinici transaccional.
 
 ## Fase 5 — Submissions
 
 Estat: completada.
 
-- Sessió XTEC requerida per respondre.
+- Sessió Google d'un domini admès pel centre requerida per respondre.
 - Bloqueig HMAC separat de submissions i answers.
 - Validació de totes les preguntes de la versió assignada.
 - Valors 0, 1, 2 i 3.
@@ -103,6 +106,24 @@ Estat: completada.
 - Definir tancament o caducitat d'espais.
 - Fer revisió legal o DPO.
 - Definir infraestructura, còpies de seguretat i recuperació.
+
+## Fase 9 — Centres identificats
+
+- Crear `centres` i `centre_accounts`.
+- Associar un únic espai a cada centre.
+- Consultar Dades Obertes per a correus de centre i administradors que creen
+  espais.
+- Incorporar i atribuir la font de serveis educatius.
+- Mostrar la fitxa i el nom del centre a totes les superfícies específiques del
+  centre.
+- Conservar espais de prova per a administradors amb fitxa institucional i
+  estat de Dades Obertes.
+- Mantenir la identitat del professorat fora de la base de dades.
+- Afegir l'alta guiada de confirmació de fitxa i configuració dels dominis
+  docents.
+- Permetre `@xtec.cat`, un domini propi exacte de Google Workspace o tots dos.
+- Validar el domini després de l'OAuth i novament dins la transacció de
+  resposta, sense persistir el correu docent.
 
 Cada canvi d'aquesta fase ha d'actualitzar els documents normatius, afegir
 proves i superar la checklist de privacitat.

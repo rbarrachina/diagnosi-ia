@@ -11,6 +11,8 @@ export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps
   const message =
     reason === "xtec"
       ? "Només es permet l’accés amb un compte XTEC."
+      : reason === "participant-domain"
+        ? "Aquest compte Google no pertany a cap dels dominis admesos pel centre."
       : "No s’ha pogut completar l’autenticació.";
 
   return (

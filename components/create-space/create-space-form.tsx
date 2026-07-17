@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   buildGmailComposeUrl,
   type CommunicationTemplate,
@@ -25,16 +26,19 @@ type FormState =
 type CopyState = "idle" | "public" | "shared";
 
 type CreateSpaceFormProps = {
+  centreName: string;
   communicationTemplate: CommunicationTemplate;
   existingSpace?: CreatedSpaceResponse | null;
   responsibleEmail: string;
 };
 
 export function CreateSpaceForm({
+  centreName,
   communicationTemplate,
   existingSpace = null,
   responsibleEmail,
 }: CreateSpaceFormProps) {
+  const router = useRouter();
   const [state, setState] = useState<FormState>({ status: "idle" });
   const [space, setSpace] = useState<CreatedSpaceResponse | null>(existingSpace);
   const [copyState, setCopyState] = useState<CopyState>("idle");
@@ -47,6 +51,7 @@ export function CreateSpaceForm({
   const gmailComposeUrl = displayedSpace
     ? buildGmailComposeUrl({
         ...communicationTemplate,
+        centreName,
         publicUrl: displayedSpace.publicUrl,
         senderEmail: responsibleEmail,
       })
@@ -85,6 +90,7 @@ export function CreateSpaceForm({
       const data = (await response.json()) as CreatedSpaceResponse;
       setSpace(data);
       setState({ status: "idle" });
+      router.refresh();
     } catch (error) {
       setState({
         status: "error",

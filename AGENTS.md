@@ -4,20 +4,31 @@
 
 Aquest repositori conté una aplicació de diagnosi anònima sobre l'ús educatiu de la intel·ligència artificial.
 
-L'aplicació treballa amb espais de diagnosi anònims, no amb centres identificats. La prioritat tècnica principal és preservar l'anonimat del professorat participant i evitar que la implementació introdueixi identificadors directes o indirectes en les respostes.
+L'aplicació treballa amb centres identificats i espais de diagnosi associats. La
+prioritat tècnica principal és preservar l'anonimat del professorat participant
+i evitar que la identificació del centre o del responsable es barregi amb les
+respostes.
 
 Els creadors d'espais s'autentiquen amb Google OAuth, limitat a comptes
-`@xtec.cat`, només per crear i gestionar els espais propis. En desenvolupament
-es pot usar el mode local controlat per variables d'entorn.
+`@xtec.cat`, només per crear i gestionar els espais propis. El professorat
+s'autentica amb Google i el centre pot admetre `@xtec.cat`, un domini propi
+exacte de Google Workspace o tots dos. En desenvolupament es pot usar el mode
+local controlat per variables d'entorn.
 
 ## Regles de privacitat
 
-- No crear cap taula anomenada `centres`.
-- No afegir mai camps per desar el nom del centre.
-- No desar ni mostrar el nom del centre.
+- Es poden desar el codi, nom oficial, municipi, àrea territorial i servei
+  educatiu del centre, separats de les respostes.
+- Es poden desar el correu i el nom visible del compte Google responsable,
+  separats de les respostes.
+- El nom oficial del centre es pot mostrar a les pàgines, correus i informes
+  vinculats exclusivament al seu espai.
 - No recollir noms, cognoms, correus electrònics, identificadors personals, IPs ni informació del dispositiu del professorat participant.
 - No crear comptes d'usuari per al professorat participant.
-- Els comptes OAuth de creadors només poden servir per propietat i gestio d'espais; no s'han de barrejar amb respostes individuals.
+- No desar el correu del professorat: només es pot usar transitòriament per
+  validar el domini i derivar el bloqueig HMAC contra repeticions.
+- Els comptes OAuth de responsables només poden servir per propietat i gestio
+  del centre i dels seus espais; no s'han de barrejar amb respostes individuals.
 - No afegir respostes obertes.
 - No mostrar ni exportar respostes individuals.
 - No crear endpoints que retornin files individuals de `submissions` o `answers`.
@@ -27,6 +38,11 @@ es pot usar el mode local controlat per variables d'entorn.
 - Si cal recuperar un token compartit per al creador, s'ha de guardar xifrat amb una clau server-side i també com HMAC per validacio; mai en text pla.
 - Tots els resultats s'han de presentar sempre en conjunt.
 - No afegir filtres que puguin facilitar la identificacio indirecta de persones.
+- Un centre només pot tenir un espai. Els administradors amb correu no
+  corresponent a un centre poden mantenir un espai de prova amb una fitxa
+  institucional basada en el seu compte Google.
+- La consulta a Dades Obertes es fa per comptes de centre i també per
+  administradors que accedeixen a crear un espai. Sempre es fa des del servidor.
 
 ## Arquitectura
 
@@ -72,6 +88,8 @@ Abans de considerar una tasca finalitzada:
 - Revisar el diff.
 - Comprovar que no s'han exposat secrets.
 - Comprovar que no s'han introduit dades identificatives.
+- Comprovar que les dades identificatives noves pertanyen exclusivament al
+  centre o al responsable i no es poden relacionar amb una resposta individual.
 
 Quan el projecte estigui implementat, les comandes previstes són:
 
@@ -87,7 +105,8 @@ npm run build
 En cada canvi comprova:
 
 - Les dades noves són estrictament necessaries?
-- Poden identificar directament o indirectament un centre o una persona?
+- Les dades del centre o responsable estan separades de les respostes?
+- Poden identificar directament o indirectament un docent participant?
 - El navegador pot accedir a dades que haurien de quedar només en format de conjunt?
 - Hi ha validació equivalent al servidor?
 - Els resultats retornen només dades de conjunt?

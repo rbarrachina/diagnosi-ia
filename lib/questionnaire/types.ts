@@ -13,6 +13,7 @@ export type QuestionBlock = {
 };
 
 export type PublicQuestionnaire = {
+  centreName: string;
   publicCode: string;
   questionnaireVersion: string;
   estimatedMinutes: number;

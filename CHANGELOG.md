@@ -6,6 +6,40 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-17
+
+### Added
+
+- Centres identificats amb fitxa territorial sincronitzable des de Dades
+  Obertes i una font versionada de serveis educatius.
+- Registre separat del correu i el nom visible dels comptes responsables.
+- Nom del centre a les pàgines, comunicats i informes específics del centre.
+- Alta guiada per confirmar la fitxa i configurar els dominis docents.
+- Política per centre que admet `@xtec.cat`, un domini propi exacte de Google
+  Workspace o tots dos.
+
+### Changed
+
+- Un únic espai de diagnosi per centre, amb espais de prova conservats per als
+  administradors.
+- La fitxa del centre queda plegada en un botó de la barra de sessió quan
+  l'espai ja té un qüestionari creat.
+- Els administradors que creen un espai de prova disposen també de fitxa i
+  intent de consulta a Dades Obertes.
+- Política de privacitat actualitzada per identificar el centre sense
+  identificar el professorat participant.
+- L'accés docent passa a Google OAuth amb el domini configurat pel centre i es
+  torna a validar abans de desar cada resposta, sense persistir el correu.
+- El botó de la fitxa es diu `Fitxa` i s'afegeix `Correu` per modificar la
+  configuració.
+- La fitxa i la configuració de correu comencen plegades a la pantalla de
+  gestió, també abans de crear el qüestionari.
+
+### Removed
+
+- Centres, espais i respostes locals anteriors a la nova alta de la versió
+  0.3.0.
+
 ## [0.2.1] - 2026-07-16
 
 ### Changed
@@ -41,7 +75,8 @@ Semantic Versioning.
 - Artefactes i proves de la infraestructura històrica que ja no forma part de
   l'aplicació.
 
-[Unreleased]: https://github.com/rbarrachina/diagnosi-ia/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/rbarrachina/diagnosi-ia/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/rbarrachina/diagnosi-ia/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/rbarrachina/diagnosi-ia/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/rbarrachina/diagnosi-ia/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/rbarrachina/diagnosi-ia/releases/tag/v0.1.0

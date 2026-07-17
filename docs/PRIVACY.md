@@ -2,14 +2,14 @@
 
 ## Principi rector
 
-Diagnosi IA minimitza dades. Els espais no identifiquen centres, les respostes
-no identifiquen docents i els resultats només existeixen en conjunt.
+Diagnosi IA identifica el centre promotor i minimitza les dades del professorat.
+Les respostes no identifiquen docents i els resultats només existeixen en
+conjunt.
 
 ## Dades prohibides
 
 No es pot recollir ni desar del professorat participant:
 
-- nom o codi del centre;
 - nom o cognoms;
 - correu electrònic;
 - comptes o perfils a la base de dades de diagnosi;
@@ -17,16 +17,15 @@ No es pot recollir ni desar del professorat participant:
 - IP, user agent o informació del dispositiu;
 - respostes obertes.
 
-No es pot crear una taula `centres`.
-
 ## Dades estrictament permeses
 
-- Identificador opac del creador.
+- Codi, nom oficial, municipi, àrea territorial i servei educatiu del centre.
+- Identificador opac, correu XTEC i nom visible del compte responsable.
 - Identificador opac dels administradors.
 - Nom visible, correu XTEC i darrera entrada només dels administradors.
 - Correus XTEC d'invitacions d'administració, separats de les respostes.
 - Configuració global no personal.
-- Codi públic anònim de l'espai.
+- Codi públic de l'espai.
 - HMAC i valor xifrat del token privat.
 - Versió i estat del qüestionari.
 - Submissions i respostes tancades amb identificadors tècnics.
@@ -35,12 +34,19 @@ No es pot crear una taula `centres`.
 
 ## Separació d'identitats
 
-Els creadors s'autentiquen per gestionar el seu espai. El seu identificador opac
-no s'uneix amb `submissions` o `answers`.
+Els responsables s'autentiquen per gestionar l'espai del centre. La seva
+identitat institucional no s'uneix amb `submissions` o `answers`.
 
-El professorat inicia sessió amb un compte XTEC només per impedir una segona
-resposta al mateix espai. El servidor deriva un HMAC i no desa el correu, nom o
-perfil. `submission_locks` no conté `submission_id` ni respostes.
+El professorat inicia sessió amb un compte Google d'un domini admès pel centre
+només per validar l'accés i impedir una segona resposta del mateix compte al
+mateix espai. El servidor usa el correu transitòriament, deriva un HMAC i no
+desa el correu, nom o perfil a MySQL. `submission_locks` no conté
+`submission_id` ni respostes.
+
+Quan un centre admet alhora `@xtec.cat` i un domini propi, una mateixa persona
+podria respondre amb dos comptes Google diferents. La interfície ho adverteix;
+evitar-ho exigiria relacionar identitats docents, cosa incompatible amb el
+principi d'anonimat.
 
 Els administradors no són anònims. Les seves dades identificatives queden
 limitades a `admin_users` i `admin_email_invitations` i no poden servir per
@@ -73,9 +79,9 @@ La pàgina llegeix el fragment, l'elimina visualment i envia el token per POST.
 
 ## Submissions
 
-La creació és transaccional. El servidor valida l'espai, la versió, totes les
-preguntes, els valors 0-3, els duplicats, el bloqueig HMAC i el límit de 300
-respostes.
+La creació és transaccional. El servidor torna a validar el domini docent vigent
+del centre, l'espai, la versió, totes les preguntes, els valors 0-3, els
+duplicats, el bloqueig HMAC i el límit de 300 respostes.
 
 `submissions` no conté usuari, correu, IP o dispositiu. `answers` només conté
 les claus tècniques i el valor tancat.
@@ -97,7 +103,7 @@ No poden mostrar:
 - dates o hores de cada resposta;
 - combinacions de respostes d'una persona;
 - llistes o codis d'espais en resultats globals;
-- creadors, participants o comptes;
+- participants o comptes;
 - token privat.
 
 Les consultes agrupen directament a MySQL per pregunta i valor. El servidor no
@@ -115,8 +121,8 @@ llindar configurat, sense revelar quins espais han estat exclosos.
 ## Administració
 
 L'administració pot gestionar qüestionaris, configuració i administradors, però
-no pot veure o exportar respostes individuals ni filtrar per centre, espai,
-creador, docent, data o compte.
+no pot veure o exportar respostes individuals ni filtrar resultats per centre,
+espai, responsable, docent, data o compte.
 
 Una versió activa o amb respostes només permet correccions textuals que
 mantinguin identificadors i estructura. Els canvis estructurals exigeixen una
