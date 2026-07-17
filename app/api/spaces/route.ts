@@ -6,6 +6,8 @@ import {
 import { resolveAppUrl } from "@/lib/http/app-url";
 import { readJsonRequestBody } from "@/lib/http/request";
 import { createSpaceRequestSchema } from "@/lib/validation/schemas";
+import { registerCentreAccount } from "@/lib/centres/centre-profiles";
+import { isActiveAdminUser } from "@/lib/auth/responsible-access";
 
 export const runtime = "nodejs";
 
@@ -30,9 +32,13 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
+    const centre = await registerCentreAccount(session.user, {
+      allowNonCentre: await isActiveAdminUser(session.user.id),
+    });
     const createdSpace = await createDiagnosticSpace(
       resolveAppUrl(request.url, process.env.NEXT_PUBLIC_APP_URL),
       session.user.id,
+      centre?.id ?? null,
     );
 
     return Response.json(
@@ -53,7 +59,7 @@ export async function POST(request: Request): Promise<Response> {
       return Response.json(
         {
           error:
-            "Aquest usuari ja té un qüestionari. El pots gestionar o reiniciar des d'aquesta pantalla.",
+            "Aquest centre o compte administrador ja té un qüestionari. El pots gestionar o reiniciar des d'aquesta pantalla.",
         },
         { status: 409 },
       );

@@ -62,7 +62,7 @@ describe("initial page", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Les respostes són anònimes/)).toBeInTheDocument();
     expect(
-      screen.getByText("No es desa ni es mostra el nom del centre."),
+      screen.getByText(/El centre promotor està identificat/),
     ).toBeInTheDocument();
 
     fireEvent.click(

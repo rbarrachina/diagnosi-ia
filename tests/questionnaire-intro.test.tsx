@@ -4,6 +4,7 @@ import { QuestionnaireForm } from "@/components/questionnaire/questionnaire-form
 import type { PublicQuestionnaire } from "@/lib/questionnaire/types";
 
 const questionnaire: PublicQuestionnaire = {
+  centreName: "Institut de Prova",
   publicCode: "C-TEST-1234",
   questionnaireVersion: "2026.2",
   estimatedMinutes: 10,

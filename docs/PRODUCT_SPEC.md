@@ -2,26 +2,33 @@
 
 ## Resum
 
-Diagnosi IA permet crear un espai anònim de diagnosi sobre l'ús educatiu de la intel·ligència artificial. Una persona responsable autenticada amb compte XTEC autoritzat crea l'espai, comparteix un enllaç públic amb el professorat i consulta resultats de conjunt amb OAuth o amb un enllaç privat.
+Diagnosi IA permet crear un espai de diagnosi identificat amb un centre sobre
+l'ús educatiu de la intel·ligència artificial. Una persona responsable
+autenticada amb el compte XTEC del centre crea l'espai, comparteix un enllaç
+públic amb el professorat i consulta resultats de conjunt amb OAuth o amb un
+enllaç privat.
 
-L'aplicació no desa ni mostra el nom del centre. Tampoc avalua docents individualment.
+L'aplicació desa i mostra la identitat institucional del centre i del compte
+responsable, però no avalua ni identifica docents individualment.
 
 `main` conté l'aplicació activa amb MySQL. Aquesta arquitectura no modifica
 l'abast funcional ni les regles d'anonimat del producte.
 
 ## Objectius
 
-- Crear espais anònims amb autenticació OAuth per al creador XTEC autoritzat.
+- Crear un únic espai per centre amb autenticació OAuth del compte XTEC del
+  centre.
 - Recollir respostes anònimes d'un qüestionari fix i versionat, amb accés
-  autenticat XTEC del professorat només per evitar respostes repetides.
+  autenticat amb Google del professorat només per validar el domini admès i
+  evitar respostes repetides.
 - Mostrar resultats de conjunt des de la primera resposta.
 - Generar un informe PDF de conjunt.
-- Evitar la recollida de dades personals o identificadors de centre.
+- Separar estrictament la identitat del centre i del responsable de les
+  respostes anònimes.
 
 ## Fora d'abast
 
 - Perfils, gestio o emmagatzematge de correus del professorat participant.
-- Gestio de centres identificats.
 - Seguiment individual del professorat.
 - Respostes obertes.
 - Exportacio de dades individuals.
@@ -30,8 +37,8 @@ l'abast funcional ni les regles d'anonimat del producte.
 ## Administracio del qüestionari
 
 L'aplicació inclou una administracio global limitada al manteniment del
-qüestionari versionat i dels comptes administradors. Aquesta administracio no
-pot accedir a respostes individuals, no pot identificar centres i no pot crear
+  qüestionari versionat i dels comptes administradors. Aquesta administracio no
+  pot accedir a respostes individuals i no pot crear
 filtres o exportacions que facilitin la reidentificacio de persones.
 
 Funcionalitats previstes:
@@ -159,7 +166,7 @@ distribucions agregades. Si hi ha definit un llindar de respostes mínimes per
 computar resultats globals, només s'hi inclouen les enquestes que superen
 aquest llindar.
 
-La vista no mostra espais individuals, centres, creadors, docents, timestamps
+La vista no mostra espais individuals, responsables, docents, timestamps
 individuals, `submission_id`, `answer_id` ni combinacions de respostes d'una
 mateixa persona. El PDF d'administracio repeteix la mateixa agregacio per
 versio i no inclou tokens ni codis publics d'espais.
@@ -193,17 +200,47 @@ provisional de desenvolupament. Només s'accepten comptes amb correu acabat en
 segons la configuracio global, l'accés de responsables pot quedar limitat als
 comptes de centre XTEC. Els administradors actius poden crear i gestionar el
 seu espai en qualsevol dels dos modes.
-Cada usuari autenticat pot tenir un únic espai anònim. El servidor genera:
+Cada centre autenticat pot tenir un únic espai. Els administradors actius amb
+correu no corresponent a un centre poden crear un espai de prova amb una fitxa
+institucional. També s'intenta consultar Dades Obertes amb el seu correu; si no
+hi ha coincidència, la fitxa mostra el nom i correu Google i l'estat de centre
+no trobat. El servidor genera:
 
 - Codi públic llegible amb format `C-7KX9-M2Q8`.
 - Token privat llarg i criptograficament segur.
 
 La capa d'autenticació és server-side. El mode
-`AUTH_MODE=google` valida el `id_token` amb Google, exigeix email `@xtec.cat` i
-desa a MySQL nomes un identificador opac derivat amb HMAC per a creadors i
-participants. En el cas dels administradors, també desa el correu i el nom
-visible a `admin_users` perquè l'administracio no és anònima. El mode
+`AUTH_MODE=google` valida el `id_token` amb Google. Per als responsables exigeix
+email `@xtec.cat`; per al professorat exigeix el domini exacte configurat pel
+centre.
+Per als responsables desa a MySQL l'identificador opac, el correu i el nom
+visible del compte, separats de les respostes. Per als participants només usa
+un identificador opac derivat amb HMAC. El mode
 `AUTH_MODE=local` queda com a ajuda de desenvolupament.
+
+Quan el correu té format de centre XTEC, o quan el compte és administrador i
+accedeix a crear un espai, el servidor consulta per correu el dataset
+`kvmv-ahh4` de Dades Obertes i desa codi, nom oficial, municipi i àrea
+territorial. El servei educatiu es resol amb la font pública versionada al
+repositori. Si la consulta falla o no troba el centre, es conserva l'accés,
+s'indica que no hi ha dades i s'ofereix un botó de recàrrega. La fitxa mostra
+la data del darrer intent i de la darrera actualització correcta.
+
+El nom de capçalera és el nom oficial de Dades Obertes, el nom visible del
+compte Google o, com a últim recurs, el correu del centre. Apareix només a les
+pàgines, correus i informes vinculats al centre.
+
+Abans de crear o gestionar el qüestionari, el responsable confirma la fitxa i
+configura els dominis docents. Pot admetre `@xtec.cat`, un únic domini propi de
+Google Workspace o tots dos. `@xtec.cat` és l'opció inicial, recomanada i
+activada per defecte. El domini propi es normalitza a minúscules i només
+coincideix exactament: autoritzar `escola.cat` no autoritza
+`subdomini.escola.cat`.
+
+Si s'activen les dues opcions, la pantalla avisa que una mateixa persona podria
+respondre amb dos comptes Google diferents. Aquesta limitació és conseqüència
+de l'anonimat: l'aplicació no desa correus docents ni pot relacionar les dues
+identitats. La configuració es pot modificar després amb el botó `Correu`.
 
 Resultat mostrat després de crear l'espai i recuperable des de la gestio del creador:
 
@@ -218,6 +255,11 @@ Resultat mostrat després de crear l'espai i recuperable des de la gestio del cr
 El token privat es desa com HMAC per validar-lo i xifrat per poder reconstruir l'enllaç per al creador autenticat. No es desa mai en text pla.
 
 Si l'usuari ja té un espai creat, no pot crear-ne un segon. La mateixa pantalla `/crear` mostra els enllaços, el nombre agregat de respostes, l'accés als resultats, la regeneració de l'enllaç privat i el reinici del qüestionari.
+
+Després de confirmar la fitxa i configurar els correus, la pantalla de gestió
+mostra inicialment plegats tant `Fitxa` com `Correu`, encara que el qüestionari
+no s'hagi creat. Així, el contingut principal visible és el quadre de creació o
+gestió del qüestionari.
 
 La gestio del creador també ofereix un botó per veure el qüestionari assignat a
 l'espai en mode lectura. Aquesta previsualització exigeix sessió XTEC i
@@ -250,7 +292,8 @@ El formulari ha de mostrar:
 
 - Objectiu de la diagnosi.
 - Respostes anònimes.
-- No recollida de noms, correus, centre, IP, dispositiu ni respostes obertes.
+- Identificació del centre promotor, però no recollida de noms, correus, IP,
+  dispositiu ni respostes obertes del professorat.
 - Resultats només de conjunt.
 - Indicacio que cal respondre una sola vegada.
 - Emoji de rellotge amb els minuts estimats necessaris per respondre el
@@ -319,7 +362,7 @@ Endpoint: `POST /api/reports/pdf`
 El servidor valida novament el token i genera un PDF de conjunt amb:
 
 - Titol de la diagnosi.
-- Codi anònim de l'espai.
+- Nom del centre i codi tècnic de l'espai.
 - Versio del qüestionari.
 - Data de generació.
 - Nombre de respostes.

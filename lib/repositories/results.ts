@@ -30,6 +30,7 @@ type SpaceRow = RowDataPacket & {
   is_active: number | boolean;
   questionnaire_id: string;
   questionnaire_version: string;
+  centre_name: string;
 };
 
 type QuestionnaireRow = RowDataPacket & {
@@ -120,9 +121,20 @@ async function loadSpaceByPublicCode(publicCode: string): Promise<SpaceRow> {
         diagnostic_spaces.is_active,
         questionnaires.id as questionnaire_id,
         questionnaires.version as questionnaire_version
+        , coalesce(
+            centres.official_name,
+            centre_accounts.display_name,
+            centres.email,
+            admin_users.display_name,
+            admin_users.email,
+            'Centre educatiu'
+          ) as centre_name
       from diagnostic_spaces
       inner join questionnaires
         on questionnaires.id = diagnostic_spaces.questionnaire_id
+      left join centres on centres.id = diagnostic_spaces.centre_id
+      left join centre_accounts on centre_accounts.centre_id = centres.id
+      left join admin_users on admin_users.user_id = diagnostic_spaces.owner_user_id
       where diagnostic_spaces.public_code = ?
       limit 1
     `,
@@ -153,9 +165,20 @@ async function loadOwnerSpace(
         diagnostic_spaces.is_active,
         questionnaires.id as questionnaire_id,
         questionnaires.version as questionnaire_version
+        , coalesce(
+            centres.official_name,
+            centre_accounts.display_name,
+            centres.email,
+            admin_users.display_name,
+            admin_users.email,
+            'Centre educatiu'
+          ) as centre_name
       from diagnostic_spaces
       inner join questionnaires
         on questionnaires.id = diagnostic_spaces.questionnaire_id
+      left join centres on centres.id = diagnostic_spaces.centre_id
+      left join centre_accounts on centre_accounts.centre_id = centres.id
+      left join admin_users on admin_users.user_id = diagnostic_spaces.owner_user_id
       where diagnostic_spaces.public_code = ?
         and diagnostic_spaces.owner_user_id = ?
       limit 1
@@ -245,7 +268,9 @@ async function getAggregatedResultsForSpace(space: SpaceRow) {
   ]);
 
   return calculateAggregatedResultsFromCounts({
+    centreName: space.centre_name,
     publicCode: space.public_code,
+    scopeLabel: space.centre_name,
     questionnaireVersion: space.questionnaire_version,
     generatedAt: new Date().toISOString(),
     totalSubmissions: Number(submissionCounts[0]?.submission_count ?? 0),

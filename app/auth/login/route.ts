@@ -19,6 +19,7 @@ import {
 } from "@/lib/auth/session-cookie";
 import { resolveAppUrl } from "@/lib/http/app-url";
 import { safeRelativePath } from "@/lib/http/redirect";
+import { isPublicCode } from "@/lib/crypto/public-code";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,18 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const next = safeRelativePath(requestUrl.searchParams.get("next"), "/crear");
   const appUrl = resolveAppUrl(request.url, process.env.NEXT_PUBLIC_APP_URL);
+  const publicCode = getQuestionnairePublicCode(next);
+  const policy = publicCode
+    ? await (
+        await import("@/lib/centres/email-policy")
+      ).getCentreEmailPolicyForPublicCode(publicCode)
+    : null;
+
+  if (publicCode && !policy?.configured) {
+    return NextResponse.redirect(
+      new URL("/auth/error?reason=participant-domain", appUrl),
+    );
+  }
 
   if (isLocalAuthEnabled()) {
     return NextResponse.redirect(new URL(next, appUrl));
@@ -41,6 +54,13 @@ export async function GET(request: NextRequest) {
   const nonce = createOAuthRandomValue();
   const redirectUri = getGoogleRedirectUri(request.url);
   const authorizationUrl = buildGoogleAuthorizationUrl({
+    hostedDomain: publicCode
+      ? policy?.allowXtec && !policy.customDomain
+        ? "xtec.cat"
+        : !policy?.allowXtec && policy?.customDomain
+          ? policy.customDomain
+          : null
+      : "xtec.cat",
     nonce,
     redirectUri,
     state,
@@ -54,6 +74,8 @@ export async function GET(request: NextRequest) {
       next,
       nonce,
       state,
+      purpose: publicCode ? "participant" : "responsible",
+      publicCode,
     } satisfies OAuthStateCookiePayload),
     {
       httpOnly: true,
@@ -65,4 +87,9 @@ export async function GET(request: NextRequest) {
   );
 
   return response;
+}
+
+function getQuestionnairePublicCode(next: string): string | null {
+  const match = /^\/q\/([^/?#]+)$/.exec(next);
+  return match?.[1] && isPublicCode(match[1]) ? match[1] : null;
 }

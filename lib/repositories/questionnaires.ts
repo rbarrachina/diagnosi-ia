@@ -1,8 +1,11 @@
 import "server-only";
 
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import {
+  adminUsers,
+  centreAccounts,
+  centres,
   diagnosticSpaces,
   questionBlocks,
   questionnaires,
@@ -20,6 +23,7 @@ export type QuestionnaireWithContent = {
 };
 
 export type PublicDiagnosticSpaceRecord = {
+  centreName: string;
   publicCode: string;
   isActive: boolean;
   questionnaireId: string;
@@ -157,12 +161,23 @@ export async function getDiagnosticSpaceByPublicCode(
   const rows = await db
     .select({
       publicCode: diagnosticSpaces.publicCode,
+      centreName: sql<string>`coalesce(
+        ${centres.officialName},
+        ${centreAccounts.displayName},
+        ${centres.email},
+        ${adminUsers.displayName},
+        ${adminUsers.email},
+        'Centre educatiu'
+      )`,
       isActive: diagnosticSpaces.isActive,
       questionnaireId: diagnosticSpaces.questionnaireId,
       questionnaireVersion: questionnaires.version,
     })
     .from(diagnosticSpaces)
     .innerJoin(questionnaires, eq(questionnaires.id, diagnosticSpaces.questionnaireId))
+    .leftJoin(centres, eq(centres.id, diagnosticSpaces.centreId))
+    .leftJoin(centreAccounts, eq(centreAccounts.centreId, centres.id))
+    .leftJoin(adminUsers, eq(adminUsers.userId, diagnosticSpaces.ownerUserId))
     .where(eq(diagnosticSpaces.publicCode, publicCode))
     .limit(1);
 

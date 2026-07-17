@@ -1,5 +1,5 @@
 import { readJsonRequestBody } from "@/lib/http/request";
-import { getXtecSessionState } from "@/lib/auth/session";
+import { getCurrentAuthenticatedUser } from "@/lib/auth/session";
 import {
   createSubmission,
   DuplicateSubmissionError,
@@ -9,24 +9,21 @@ import {
   MAX_SUBMISSIONS_PER_SPACE,
   submissionRequestSchema,
 } from "@/lib/validation/schemas";
+import {
+  getCentreEmailPolicyForPublicCode,
+  isEmailAllowedByCentrePolicy,
+} from "@/lib/centres/email-policy";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request): Promise<Response> {
   try {
-    const session = await getXtecSessionState();
+    const user = await getCurrentAuthenticatedUser();
 
-    if (session.status === "unauthenticated") {
+    if (!user) {
       return Response.json(
-        { error: "Cal iniciar sessió amb un compte XTEC per respondre." },
+        { error: "Cal iniciar sessió amb Google per respondre." },
         { status: 401 },
-      );
-    }
-
-    if (session.status === "forbidden") {
-      return Response.json(
-        { error: "Només es permet respondre amb un compte XTEC." },
-        { status: 403 },
       );
     }
 
@@ -35,13 +32,22 @@ export async function POST(request: Request): Promise<Response> {
         maxBytes: 64_000,
       }),
     );
-    await createSubmission(payload, session.user.id);
+    const policy = await getCentreEmailPolicyForPublicCode(payload.publicCode);
+
+    if (!policy || !isEmailAllowedByCentrePolicy(user.email, policy)) {
+      return Response.json(
+        { error: "Aquest compte Google no pertany a un domini admès." },
+        { status: 403 },
+      );
+    }
+
+    await createSubmission(payload, user);
 
     return Response.json({ ok: true }, { status: 201 });
   } catch (error) {
     if (error instanceof DuplicateSubmissionError) {
       return Response.json(
-        { error: "Aquest compte XTEC ja ha enviat una resposta per aquest qüestionari." },
+        { error: "Aquest compte Google ja ha enviat una resposta per aquest qüestionari." },
         { status: 409 },
       );
     }

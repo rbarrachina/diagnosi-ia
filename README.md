@@ -2,13 +2,15 @@
 
 Aplicació web per conèixer el grau d'ús educatiu de la intel·ligència artificial en centres educatius a partir de respostes anònimes i resultats de conjunt.
 
-Diagnosi IA no identifica centres ni docents. No és una eina d'avaluació individual del professorat, sinó una eina de diagnosi global per orientar decisions de centre.
+Diagnosi IA identifica el centre promotor, però no identifica docents. No és
+una eina d'avaluació individual del professorat, sinó una eina de diagnosi
+global per orientar decisions de centre.
 
 ## Estat del projecte
 
 `main` conté l'aplicació amb Next.js i MySQL.
 
-La versió publicada actual és la `0.2.1`. El projecte es troba en fase beta i
+La versió preparada actual és la `0.3.0`. El projecte es troba en fase beta i
 pot contenir errors.
 
 El flux principal local funciona amb Next.js i MySQL local:
@@ -159,11 +161,13 @@ LOCAL_AUTH_ALLOW_PRODUCTION=true npm start
 Amb `AUTH_MODE=local`, l'usuari local `LOCAL_AUTH_EMAIL` actua com a creador
 XTEC provisional. Amb `AUTH_MODE=google`, `/auth/login` redirigeix a Google
 OAuth, valida el `id_token` server-side, exigeix email `@xtec.cat` i crea una
-sessio `httpOnly` signada. L'identificador desat a MySQL és un UUID opac
-derivat amb HMAC. Per a creadors comuns i participants no es desa l'email a
-`diagnostic_spaces`, submissions ni answers. En administracio, `admin_users`
-desa email, nom visible i darrera entrada perquè els administradors no són
-anònims.
+sessio `httpOnly` signada per als responsables. El professorat usa Google OAuth
+amb `@xtec.cat`, un domini propi exacte configurat pel centre o tots dos.
+L'identificador desat a MySQL és un UUID opac
+derivat amb HMAC. Per als responsables de centre es desen el correu, el nom
+visible i la fitxa institucional a `centre_accounts` i `centres`. Aquestes
+dades no es desen a `submissions` ni `answers`. El professorat participant
+continua sense perfil ni correu a la base de dades.
 
 Per verificar `npm start` en local cal activar explícitament
 `LOCAL_AUTH_ALLOW_PRODUCTION=true` en el procés. No s'ha d'activar en un
@@ -172,10 +176,11 @@ servidor real.
 Flux principal:
 
 1. Obre `/crear`.
-2. Crea un espai de diagnosi.
-3. Copia l'enllaç públic `/q/[publicCode]`.
-4. Respon el qüestionari.
-5. Consulta els resultats des de l'enllaç privat compartit o des de
+2. Confirma la fitxa i configura els dominis docents.
+3. Crea un espai de diagnosi.
+4. Copia l'enllaç públic `/q/[publicCode]`.
+5. Respon el qüestionari.
+6. Consulta els resultats des de l'enllaç privat compartit o des de
    `/espais/[publicCode]/resultats`.
 6. Genera el PDF des de la pantalla de resultats.
 7. Prova la regeneracio de l'enllaç privat i el reset de l'espai des de
@@ -218,10 +223,10 @@ publicats es documenten a [CHANGELOG.md](CHANGELOG.md).
 
 ## Privacitat
 
-L'aplicació no ha de recollir ni desar per al professorat participant:
+L'aplicació pot desar el codi, nom i dades territorials del centre, i el correu
+i nom visible del compte responsable. No ha de recollir ni desar del professorat
+participant:
 
-- nom del centre
-- codi oficial del centre
 - nom o cognoms dels docents
 - correus electrònics
 - comptes d'usuari
@@ -230,13 +235,15 @@ L'aplicació no ha de recollir ni desar per al professorat participant:
 - adreces IP a la base de dades de l'aplicació
 - respostes obertes
 
-No ha d'existir cap taula anomenada `centres`. La taula principal d'espais anònims s'ha d'anomenar `diagnostic_spaces`.
+`centres` i `centre_accounts` estan separades de `submissions`, `answers` i
+`submission_locks`. La identitat institucional només serveix per crear i
+gestionar l'espai del centre. El professorat participant continua sense compte
+intern ni perfil.
 
-Els creadors d'espais s'autentiquen amb el mode local provisional a
-`migration/mysql`. Només s'accepta un email acabat en `@xtec.cat`. Aquest
-identificador només serveix per crear i gestionar espais propis, no per
-identificar participants. El professorat participant continua sense compte
-d'usuari.
+El correu docent només s'usa transitòriament per validar el domini exacte i
+derivar el bloqueig HMAC contra repeticions; no s'insereix a MySQL. Si el centre
+admet dos dominis, s'adverteix que una persona amb dos comptes Google podria
+respondre dues vegades perquè les identitats no es relacionen.
 
 ## Llicència
 

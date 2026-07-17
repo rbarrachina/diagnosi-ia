@@ -23,6 +23,12 @@ import {
 import { resolveAppUrl } from "@/lib/http/app-url";
 import { safeRelativePath } from "@/lib/http/redirect";
 import { isXtecEmail } from "@/lib/auth/xtec";
+import { registerCentreAccount } from "@/lib/centres/centre-profiles";
+import { isActiveAdminUser } from "@/lib/auth/responsible-access";
+import {
+  getCentreEmailPolicyForPublicCode,
+  isEmailAllowedByCentrePolicy,
+} from "@/lib/centres/email-policy";
 
 export const runtime = "nodejs";
 
@@ -73,13 +79,37 @@ export async function GET(request: NextRequest) {
     });
     const user = googleTokenInfoToAppUser(tokenInfo);
 
-    if (!isXtecEmail(user.email)) {
+    const participantPolicy =
+      statePayload.purpose === "participant" && statePayload.publicCode
+        ? await getCentreEmailPolicyForPublicCode(statePayload.publicCode)
+        : null;
+    const isParticipantAllowed =
+      statePayload.purpose === "participant" &&
+      participantPolicy &&
+      isEmailAllowedByCentrePolicy(user.email, participantPolicy);
+
+    if (
+      (statePayload.purpose === "participant" && !isParticipantAllowed) ||
+      (statePayload.purpose !== "participant" && !isXtecEmail(user.email))
+    ) {
       const response = NextResponse.redirect(
-        new URL("/auth/error?reason=xtec", appUrl),
+        new URL(
+          statePayload.purpose === "participant"
+            ? "/auth/error?reason=participant-domain"
+            : "/auth/error?reason=xtec",
+          appUrl,
+        ),
       );
       response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
       response.cookies.delete(SESSION_COOKIE_NAME);
       return response;
+    }
+
+    if (statePayload.next === "/crear" || statePayload.next.startsWith("/espais/")) {
+      await registerCentreAccount(user, {
+        allowNonCentre: await isActiveAdminUser(user.id),
+        refresh: true,
+      });
     }
 
     const response = NextResponse.redirect(new URL(statePayload.next, appUrl));

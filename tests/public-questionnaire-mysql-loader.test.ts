@@ -31,7 +31,7 @@ describe("public questionnaire MySQL loader", () => {
     expect(publicSpaceFunction).toContain("diagnosticSpaces.questionnaireId");
     expect(publicSpaceFunction).toContain("questionnaires.version");
     expect(publicSpaceFunction).not.toMatch(
-      /privateTokenHmac|resultsTokenHash|resultsTokenEncrypted|ownerUserId/,
+      /privateTokenHmac|resultsTokenHash|resultsTokenEncrypted/,
     );
   });
 

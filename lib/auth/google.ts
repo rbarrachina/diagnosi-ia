@@ -9,7 +9,6 @@ const GOOGLE_AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo";
 const GOOGLE_ISSUERS = new Set(["https://accounts.google.com", "accounts.google.com"]);
-const XTEC_HOSTED_DOMAIN = "xtec.cat";
 
 type GoogleOAuthConfig = {
   clientId: string;
@@ -57,6 +56,7 @@ export function getGoogleRedirectUri(requestUrl: string): string {
 }
 
 export function buildGoogleAuthorizationUrl(params: {
+  hostedDomain?: string | null;
   nonce: string;
   redirectUri: string;
   state: string;
@@ -70,7 +70,9 @@ export function buildGoogleAuthorizationUrl(params: {
   url.searchParams.set("scope", "openid email profile");
   url.searchParams.set("state", params.state);
   url.searchParams.set("nonce", params.nonce);
-  url.searchParams.set("hd", XTEC_HOSTED_DOMAIN);
+  if (params.hostedDomain) {
+    url.searchParams.set("hd", params.hostedDomain);
+  }
 
   return url;
 }

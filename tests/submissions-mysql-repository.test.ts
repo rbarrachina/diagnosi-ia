@@ -67,6 +67,7 @@ const validPayload = {
     value: 1 as const,
   })),
 };
+const testUser = { id: "account-1", email: "docent@xtec.cat" };
 
 const serviceSource = readFileSync(
   join(process.cwd(), "lib/submissions/create-submission.ts"),
@@ -84,7 +85,7 @@ describe("MySQL submission repository", () => {
   });
 
   it("creates a valid submission and all answers in one transaction", async () => {
-    await createSubmissionWithAnswers(validPayload, "account-1");
+    await createSubmissionWithAnswers(validPayload, testUser);
 
     expect(currentConnection.beginTransaction).toHaveBeenCalledOnce();
     expect(currentConnection.commit).toHaveBeenCalledOnce();
@@ -122,7 +123,7 @@ describe("MySQL submission repository", () => {
   });
 
   it("locks the diagnostic space row before writing the one-response lock", async () => {
-    await createSubmissionWithAnswers(validPayload, "account-1");
+    await createSubmissionWithAnswers(validPayload, testUser);
 
     const spaceLockIndex = currentConnection.calls.findIndex((call) =>
       call.query.includes("for update"),
@@ -142,13 +143,26 @@ describe("MySQL submission repository", () => {
   it("rejects a second response from the same account before creating a submission", async () => {
     currentConnection = createConnectionMock({ duplicateLock: true });
 
-    await expect(createSubmissionWithAnswers(validPayload, "account-1")).rejects.toBeInstanceOf(
+    await expect(createSubmissionWithAnswers(validPayload, testUser)).rejects.toBeInstanceOf(
       DuplicateSubmissionRepositoryError,
     );
     expect(currentConnection.rollback).toHaveBeenCalledOnce();
     expect(currentConnection.commit).not.toHaveBeenCalled();
     expect(currentConnection.insertedSubmissions).toHaveLength(0);
     expect(currentConnection.insertedAnswers).toHaveLength(0);
+  });
+
+  it("revalidates the current email domain inside the transaction", async () => {
+    await expect(
+      createSubmissionWithAnswers(validPayload, {
+        id: "account-2",
+        email: "docent@un altre.cat",
+      }),
+    ).rejects.toBeInstanceOf(InvalidSubmissionRepositoryError);
+
+    expect(currentConnection.rollback).toHaveBeenCalledOnce();
+    expect(currentConnection.insertedLocks).toHaveLength(0);
+    expect(currentConnection.insertedSubmissions).toHaveLength(0);
   });
 
   it("rejects duplicate answers and rolls back", async () => {
@@ -160,7 +174,7 @@ describe("MySQL submission repository", () => {
       ],
     };
 
-    await expect(createSubmissionWithAnswers(duplicatePayload, "account-1")).rejects.toBeInstanceOf(
+    await expect(createSubmissionWithAnswers(duplicatePayload, testUser)).rejects.toBeInstanceOf(
       InvalidSubmissionRepositoryError,
     );
     expect(currentConnection.rollback).toHaveBeenCalledOnce();
@@ -179,7 +193,7 @@ describe("MySQL submission repository", () => {
     };
 
     await expect(
-      createSubmissionWithAnswers(invalidValuePayload as typeof validPayload, "account-1"),
+      createSubmissionWithAnswers(invalidValuePayload as typeof validPayload, testUser),
     ).rejects.toBeInstanceOf(InvalidSubmissionRepositoryError);
     expect(currentConnection.rollback).toHaveBeenCalledOnce();
     expect(currentConnection.insertedSubmissions).toHaveLength(0);
@@ -194,7 +208,7 @@ describe("MySQL submission repository", () => {
       ],
     };
 
-    await expect(createSubmissionWithAnswers(alienQuestionPayload, "account-1")).rejects.toBeInstanceOf(
+    await expect(createSubmissionWithAnswers(alienQuestionPayload, testUser)).rejects.toBeInstanceOf(
       InvalidSubmissionRepositoryError,
     );
     expect(currentConnection.rollback).toHaveBeenCalledOnce();
@@ -211,7 +225,7 @@ describe("MySQL submission repository", () => {
     };
 
     await expect(
-      createSubmissionWithAnswers(extraFieldPayload as typeof validPayload, "account-1"),
+      createSubmissionWithAnswers(extraFieldPayload as typeof validPayload, testUser),
     ).rejects.toBeInstanceOf(InvalidSubmissionRepositoryError);
     expect(currentConnection.rollback).toHaveBeenCalledOnce();
     expect(currentConnection.insertedSubmissions).toHaveLength(0);
@@ -220,7 +234,7 @@ describe("MySQL submission repository", () => {
   it("rolls back when an answer insert fails", async () => {
     currentConnection = createConnectionMock({ failOnAnswerInsert: true });
 
-    await expect(createSubmissionWithAnswers(validPayload, "account-1")).rejects.toThrow(
+    await expect(createSubmissionWithAnswers(validPayload, testUser)).rejects.toThrow(
       "answer insert failed",
     );
     expect(currentConnection.rollback).toHaveBeenCalledOnce();
@@ -231,7 +245,7 @@ describe("MySQL submission repository", () => {
   it("rejects submissions when the diagnostic space has reached 300 responses", async () => {
     currentConnection = createConnectionMock({ submissionCount: 300 });
 
-    await expect(createSubmissionWithAnswers(validPayload, "account-1")).rejects.toBeInstanceOf(
+    await expect(createSubmissionWithAnswers(validPayload, testUser)).rejects.toBeInstanceOf(
       SubmissionLimitReachedRepositoryError,
     );
     expect(currentConnection.rollback).toHaveBeenCalledOnce();
@@ -288,6 +302,9 @@ function createConnectionMock(options: ConnectionOptions = {}): ConnectionMock {
             {
               diagnostic_space_id: "11111111-1111-4111-8111-111111111111",
               questionnaire_id: "002",
+              allow_xtec: 1,
+              custom_domain: null,
+              email_policy_configured_at: "2026-07-17T13:25:00.000Z",
             },
           ],
         ];

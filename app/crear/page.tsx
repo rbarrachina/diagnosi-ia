@@ -1,14 +1,20 @@
 import { redirect } from "next/navigation";
 
 import {
-  LogoutButton,
   ResponsibleForbiddenNotice,
 } from "@/components/auth/auth-actions";
+import { CentreManagementHeader } from "@/components/create-space/centre-management-header";
+import { CentreOnboarding } from "@/components/create-space/centre-onboarding";
 import { CreateSpaceForm } from "@/components/create-space/create-space-form";
 import { getCommunicationTemplate } from "@/lib/admin/communication-settings";
 import { getResponsibleSessionState } from "@/lib/auth/session";
+import { isActiveAdminUser } from "@/lib/auth/responsible-access";
 import { getServerAppUrl } from "@/lib/http/server-app-url";
 import { listOwnerSpaces } from "@/lib/spaces/manage-spaces";
+import {
+  getCentreProfileForUser,
+  registerCentreAccount,
+} from "@/lib/centres/centre-profiles";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +25,16 @@ export default async function CreatePage() {
     redirect("/");
   }
 
+  const isAdmin =
+    session.status === "authenticated"
+      ? await isActiveAdminUser(session.user.id)
+      : false;
+  const centre =
+    session.status === "authenticated"
+      ? (await registerCentreAccount(session.user, {
+          allowNonCentre: isAdmin,
+        })) ?? (await getCentreProfileForUser(session.user.id))
+      : null;
   const ownerSpaces =
     session.status === "authenticated"
       ? await listOwnerSpaces(session.user.id, await getServerAppUrl())
@@ -47,17 +63,24 @@ export default async function CreatePage() {
           </div>
         ) : null}
 
-        {session.status === "authenticated" ? (
+        {session.status === "authenticated" && centre && (
+          !centre.profileConfirmedAt || !centre.emailPolicyConfiguredAt
+        ) ? (
+          <CentreOnboarding centre={centre} email={session.user.email} />
+        ) : null}
+
+        {session.status === "authenticated" &&
+        (!centre || (centre.profileConfirmedAt && centre.emailPolicyConfiguredAt)) ? (
           <>
-            <div className="mb-4 flex w-full max-w-2xl items-center justify-between rounded-md border border-line bg-white px-4 py-3 text-left text-sm text-slate-700 shadow-sm">
-              <span>
-                Sessió iniciada com <strong>{session.user.email}</strong>
-              </span>
-              <LogoutButton next="/" />
-            </div>
             <div className="w-full max-w-2xl">
+              <CentreManagementHeader
+                centre={centre}
+                collapseCentreProfile
+                email={session.user.email}
+              />
               <CreateSpaceForm
                 communicationTemplate={communicationTemplate}
+                centreName={centre?.displayName ?? session.user.displayName ?? session.user.email}
                 existingSpace={existingSpace}
                 responsibleEmail={session.user.email}
               />

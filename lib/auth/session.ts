@@ -58,6 +58,6 @@ export async function getRequiredXtecUser(): Promise<AppAuthenticatedUser> {
   return session.user;
 }
 
-async function getCurrentAuthenticatedUser(): Promise<AppAuthenticatedUser | null> {
+export async function getCurrentAuthenticatedUser(): Promise<AppAuthenticatedUser | null> {
   return getLocalAuthUser() ?? (await getSessionCookieUser());
 }

@@ -29,7 +29,8 @@ server-side i no poden tenir prefix `NEXT_PUBLIC_`.
 ## Autenticació
 
 - `AUTH_MODE=local`: desenvolupament ràpid.
-- `AUTH_MODE=google`: OAuth real amb comptes `@xtec.cat`.
+- `AUTH_MODE=google`: OAuth real; els responsables usen `@xtec.cat` i el
+  professorat els dominis Google configurats pel centre.
 
 El mode local queda desactivat en producció. L'excepció
 `LOCAL_AUTH_ALLOW_PRODUCTION=true` només serveix per verificar localment

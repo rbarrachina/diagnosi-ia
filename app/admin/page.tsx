@@ -893,6 +893,11 @@ function SettingsPanel({
         <fieldset>
           <legend className="text-sm font-semibold text-ink">Comunicat</legend>
           <div className="mt-3 space-y-4 rounded-md border border-line bg-white p-4 text-sm text-slate-700">
+            <p className="text-xs leading-5 text-slate-600">
+              Pots usar <code>{"{NOM_CENTRE}"}</code> al títol o al cos i{" "}
+              <code>{"{URL_QUESTIONARI}"}</code> al cos. Si no hi poses el nom
+              del centre, s’afegeix automàticament.
+            </p>
             <label className="block">
               <span className="font-semibold text-ink">Títol del correu</span>
               <input

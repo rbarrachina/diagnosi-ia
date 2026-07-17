@@ -1,6 +1,6 @@
 # Revisió de seguretat i privacitat
 
-Data de revisió: 2026-07-16.
+Data de revisió: 2026-07-17.
 
 ## Abast
 
@@ -24,8 +24,14 @@ Data de revisió: 2026-07-16.
 - El PDF revalida la propietat o el token i reutilitza el model agregat.
 - Els tokens es validen amb HMAC i no s'inclouen en query strings o logs.
 - Les dades dels administradors estan separades de les respostes.
-- No s'han afegit noms o codis de centre, dades de participants, IPs o
-  informació de dispositiu.
+- Les dades identificatives dels centres i responsables estan separades de
+  `submissions`, `answers` i `submission_locks`.
+- No s'han afegit noms, correus, IPs o informació de dispositiu del professorat
+  participant.
+- El domini docent es valida després de Google OAuth i es torna a validar dins
+  la transacció abans d'inserir la resposta.
+- El correu docent només existeix transitòriament a la sessió signada i no
+  s'insereix en cap taula.
 
 ## Controls que s'han de repetir a cada PR
 
@@ -34,6 +40,8 @@ Data de revisió: 2026-07-16.
 - Cercar secrets i variables públiques indegudes.
 - Confirmar que cap endpoint retorna dades individuals.
 - Confirmar que cap canvi permet reconstruir respostes personals.
+- Confirmar que les dades de centre o responsable no s'uneixen amb respostes
+  individuals.
 - Revisar qualsevol nova dada, filtre, exportació o log.
 
 ## Pendents

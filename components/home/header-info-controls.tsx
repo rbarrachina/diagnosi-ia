@@ -165,7 +165,10 @@ export function HeaderInfoControls({ version }: HeaderInfoControlsProps) {
             conjunt.
           </p>
           <ul className="mt-3 list-disc space-y-2 pl-5">
-            <li>No es desa ni es mostra el nom del centre.</li>
+            <li>
+              El centre promotor està identificat, però aquesta identitat no es
+              vincula a cap resposta individual.
+            </li>
             <li>
               No es recullen noms, correus, IPs ni informació del dispositiu
               del professorat.

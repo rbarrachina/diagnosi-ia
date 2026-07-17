@@ -8,4 +8,6 @@ export type OAuthStateCookiePayload = {
   next: string;
   nonce: string;
   state: string;
+  purpose: "responsible" | "participant";
+  publicCode: string | null;
 };

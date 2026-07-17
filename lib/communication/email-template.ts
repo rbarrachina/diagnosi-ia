@@ -1,4 +1,5 @@
 export const QUESTIONNAIRE_URL_PLACEHOLDER = "{URL_QUESTIONARI}";
+export const CENTRE_NAME_PLACEHOLDER = "{NOM_CENTRE}";
 
 export const DEFAULT_COMMUNICATION_SUBJECT =
   "Qüestionari de diagnosi sobre competència digital docent en IA";
@@ -19,25 +20,48 @@ export type CommunicationTemplate = {
   body: string;
 };
 
-export function renderCommunicationBody(bodyTemplate: string, publicUrl: string): string {
-  if (bodyTemplate.includes(QUESTIONNAIRE_URL_PLACEHOLDER)) {
-    return bodyTemplate.replaceAll(QUESTIONNAIRE_URL_PLACEHOLDER, publicUrl);
+export function renderCommunicationBody(
+  bodyTemplate: string,
+  publicUrl: string,
+  centreName = "",
+): string {
+  const withCentreName = bodyTemplate.includes(CENTRE_NAME_PLACEHOLDER)
+    ? bodyTemplate.replaceAll(CENTRE_NAME_PLACEHOLDER, centreName)
+    : centreName
+      ? `${centreName}\n\n${bodyTemplate}`
+      : bodyTemplate;
+
+  if (withCentreName.includes(QUESTIONNAIRE_URL_PLACEHOLDER)) {
+    return withCentreName.replaceAll(QUESTIONNAIRE_URL_PLACEHOLDER, publicUrl);
   }
 
-  return `${bodyTemplate.trim()}\n\n${publicUrl}`;
+  return `${withCentreName.trim()}\n\n${publicUrl}`;
 }
 
 export function buildGmailComposeUrl({
   body,
+  centreName,
   publicUrl,
   senderEmail,
   subject,
-}: CommunicationTemplate & { publicUrl: string; senderEmail?: string }): string {
+}: CommunicationTemplate & {
+  centreName?: string;
+  publicUrl: string;
+  senderEmail?: string;
+}): string {
   const url = new URL("https://mail.google.com/mail/");
   url.searchParams.set("view", "cm");
   url.searchParams.set("fs", "1");
-  url.searchParams.set("su", subject);
-  url.searchParams.set("body", renderCommunicationBody(body, publicUrl));
+  const renderedSubject = subject.includes(CENTRE_NAME_PLACEHOLDER)
+    ? subject.replaceAll(CENTRE_NAME_PLACEHOLDER, centreName ?? "")
+    : centreName
+      ? `${centreName} · ${subject}`
+      : subject;
+  url.searchParams.set("su", renderedSubject);
+  url.searchParams.set(
+    "body",
+    renderCommunicationBody(body, publicUrl, centreName),
+  );
 
   if (senderEmail) {
     url.searchParams.set("authuser", senderEmail);

@@ -10,10 +10,12 @@ const mysqlScaleMigration = readFileSync(
 );
 
 describe("MySQL schema privacy constraints", () => {
-  it("does not define centres or participant identity fields", () => {
-    expect(schema).not.toMatch(/\bcentres?\b/i);
+  it("keeps centre identity separate from participant identity fields", () => {
+    expect(schema).toContain('"centres"');
+    expect(schema).toContain('"centre_accounts"');
+    expect(schema).toContain("^[^@[:space:]]+@xtec");
     expect(schema).not.toMatch(/teacher|participant|ip_address|user_agent|device/i);
-    expect(schema).not.toMatch(/submission.*email|answer.*email|diagnostic.*email/i);
+    expect(schema).not.toMatch(/submission.*email|answer.*email/i);
   });
 
   it("defines admin users with explicit administrator identity fields", () => {

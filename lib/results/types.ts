@@ -28,6 +28,7 @@ export type BlockResult = {
 };
 
 export type AggregatedResults = {
+  centreName?: string;
   publicCode: string;
   scopeLabel?: string;
   questionnaireVersion: string;

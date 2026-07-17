@@ -90,6 +90,7 @@ type MysqlDuplicateError = {
 export async function createDiagnosticSpace(
   appUrl: string,
   ownerUserId: string,
+  centreId: string | null = null,
 ): Promise<CreatedDiagnosticSpace> {
   const existingSpace = await getExistingOwnerSpace(ownerUserId);
 
@@ -115,9 +116,10 @@ export async function createDiagnosticSpace(
             results_token_encrypted,
             results_token_enabled,
             results_token_expires_at,
+            centre_id,
             questionnaire_id,
             is_active
-          ) values (?, ?, ?, ?, ?, ?, true, null, ?, true)
+          ) values (?, ?, ?, ?, ?, ?, true, null, ?, ?, true)
         `,
         [
           randomUUID(),
@@ -126,6 +128,7 @@ export async function createDiagnosticSpace(
           ownerUserId,
           resultsToken.hash,
           resultsToken.encrypted,
+          centreId,
           questionnaire.id,
         ],
       );
@@ -138,6 +141,10 @@ export async function createDiagnosticSpace(
       });
     } catch (error) {
       if (isDuplicateForIndex(error, "diagnostic_spaces_owner_user_id_unique_idx")) {
+        throw new OwnerSpaceAlreadyExistsError();
+      }
+
+      if (isDuplicateForIndex(error, "diagnostic_spaces_centre_id_unique_idx")) {
         throw new OwnerSpaceAlreadyExistsError();
       }
 
