@@ -3,9 +3,10 @@ import { redirect } from "next/navigation";
 import {
   ResponsibleForbiddenNotice,
 } from "@/components/auth/auth-actions";
-import { CentreManagementHeader } from "@/components/create-space/centre-management-header";
+import { CentreAppShell } from "@/components/create-space/centre-app-shell";
 import { CentreOnboarding } from "@/components/create-space/centre-onboarding";
-import { CreateSpaceForm } from "@/components/create-space/create-space-form";
+import { CentreWorkspace } from "@/components/create-space/centre-workspace";
+import { SiteFooter } from "@/components/home/site-footer";
 import { getCommunicationTemplate } from "@/lib/admin/communication-settings";
 import { getResponsibleSessionState } from "@/lib/auth/session";
 import { isActiveAdminUser } from "@/lib/auth/responsible-access";
@@ -18,7 +19,16 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function CreatePage() {
+type CreatePageProps = {
+  searchParams: Promise<{ view?: string }>;
+};
+
+export default async function CreatePage({ searchParams }: CreatePageProps) {
+  const requestedView = (await searchParams).view;
+  const initialView =
+    requestedView === "profile" || requestedView === "settings"
+      ? requestedView
+      : "questionnaire";
   const session = await getResponsibleSessionState();
 
   if (session.status === "unauthenticated") {
@@ -44,50 +54,62 @@ export default async function CreatePage() {
       ? await getCommunicationTemplate()
       : { subject: "", body: "" };
   const existingSpace = ownerSpaces[0] ?? null;
+  const accountName = session.status === "authenticated"
+    ? session.user.displayName ?? centre?.accountDisplayName ?? session.user.email
+    : "";
 
   return (
-    <main className="min-h-screen bg-paper">
-      <section className="mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-center px-6 py-12 text-center">
-        <div className="mb-8 max-w-4xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
-            Competència digital docent en IA
-          </p>
-          <h1 className="mt-4 text-4xl font-semibold tracking-normal text-ink sm:text-5xl">
-            Diagnosi IA
-          </h1>
-        </div>
+    <CentreAppShell
+      account={
+        session.status === "authenticated"
+          ? { email: session.user.email, name: accountName }
+          : undefined
+      }
+    >
 
-        {session.status === "forbidden" ? (
+      {session.status === "forbidden" ? (
+        <section className="relative mx-auto flex min-h-screen w-full max-w-3xl flex-col px-5 pb-24 pt-32 sm:px-8 lg:px-10">
           <div className="w-full max-w-xl">
             <ResponsibleForbiddenNotice reason={session.reason} />
           </div>
-        ) : null}
+        </section>
+      ) : null}
 
-        {session.status === "authenticated" && centre && (
-          !centre.profileConfirmedAt || !centre.emailPolicyConfiguredAt
-        ) ? (
-          <CentreOnboarding centre={centre} email={session.user.email} />
-        ) : null}
+      {session.status === "authenticated" && centre && (
+        !centre.profileConfirmedAt || !centre.emailPolicyConfiguredAt
+      ) ? (
+        <section className="relative mx-auto flex min-h-screen w-full max-w-4xl flex-col px-5 pb-24 pt-28 sm:px-8 lg:px-10">
+          <div className="mb-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-action">
+              Espai del centre
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-ink">
+              Configuració inicial
+            </h1>
+          </div>
+          <CentreOnboarding centre={centre} />
+        </section>
+      ) : null}
 
-        {session.status === "authenticated" &&
-        (!centre || (centre.profileConfirmedAt && centre.emailPolicyConfiguredAt)) ? (
-          <>
-            <div className="w-full max-w-2xl">
-              <CentreManagementHeader
-                centre={centre}
-                collapseCentreProfile
-                email={session.user.email}
-              />
-              <CreateSpaceForm
-                communicationTemplate={communicationTemplate}
-                centreName={centre?.displayName ?? session.user.displayName ?? session.user.email}
-                existingSpace={existingSpace}
-                responsibleEmail={session.user.email}
-              />
-            </div>
-          </>
-        ) : null}
-      </section>
-    </main>
+      {session.status === "authenticated" &&
+      (!centre || (centre.profileConfirmedAt && centre.emailPolicyConfiguredAt)) ? (
+        <CentreWorkspace
+          centre={centre}
+          communicationTemplate={communicationTemplate}
+          centreName={centre?.displayName ?? session.user.displayName ?? session.user.email}
+          existingSpace={existingSpace}
+          footer={<SiteFooter />}
+          initialView={centre ? initialView : "questionnaire"}
+          responsibleEmail={session.user.email}
+        />
+      ) : null}
+
+      {session.status === "forbidden" ||
+      (session.status === "authenticated" &&
+        centre &&
+        (!centre.profileConfirmedAt || !centre.emailPolicyConfiguredAt)) ? (
+        <SiteFooter />
+      ) : null}
+    </CentreAppShell>
   );
 }

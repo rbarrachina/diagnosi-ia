@@ -18,12 +18,14 @@ type SubmitState =
 
 type QuestionnaireFormProps = {
   alreadySubmitted?: boolean;
+  appearance?: "default" | "workspace";
   questionnaire: PublicQuestionnaire;
   mode?: "response" | "readOnly";
 };
 
 export function QuestionnaireForm({
   alreadySubmitted: alreadySubmittedByAccount = false,
+  appearance = "default",
   questionnaire,
   mode = "response",
 }: QuestionnaireFormProps) {
@@ -32,6 +34,7 @@ export function QuestionnaireForm({
   const [submittedInCurrentSession, setSubmittedInCurrentSession] = useState(false);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
   const isReadOnly = mode === "readOnly";
+  const isWorkspaceAppearance = appearance === "workspace";
 
   const questions = useMemo(
     () => questionnaire.blocks.flatMap((block) => block.questions),
@@ -155,9 +158,12 @@ export function QuestionnaireForm({
 
   if (submitState.status === "submitted") {
     return (
-      <div className="rounded-md border border-line bg-white p-8 text-center shadow-sm">
-        <h1 className="text-2xl font-semibold text-ink">Gràcies</h1>
-        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-700">
+      <div className="questionnaire-panel p-8 text-center sm:p-10">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action">
+          Qüestionari completat
+        </p>
+        <h1 className="mt-4 text-3xl font-bold tracking-[-0.035em] text-ink">Gràcies</h1>
+        <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted sm:text-base">
           Les respostes s&apos;han enregistrat correctament.
         </p>
         <ProgressBar percentage={progressPercentage} />
@@ -166,7 +172,13 @@ export function QuestionnaireForm({
   }
 
   return (
-    <section className="rounded-md border border-line bg-white p-6 shadow-sm">
+    <section
+      className={
+        isWorkspaceAppearance
+          ? "border-y border-line py-6 sm:py-8"
+          : "questionnaire-panel p-6 sm:p-8 lg:p-10"
+      }
+    >
       {currentStep === 0 ? (
         <IntroPage
           alreadySubmitted={alreadySubmitted}
@@ -190,7 +202,7 @@ export function QuestionnaireForm({
       ) : null}
 
       {submitState.status === "error" ? (
-        <p className="mt-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <p className="mt-6 rounded-xl border border-danger-border bg-danger-bg px-4 py-3 text-sm text-danger-text">
           {submitState.message}
         </p>
       ) : null}
@@ -198,7 +210,7 @@ export function QuestionnaireForm({
       {currentStep > 0 ? (
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
-            className="rounded-md border border-line bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action disabled:cursor-not-allowed disabled:text-slate-400"
+            className="rounded-xl border border-line bg-surface px-5 py-3 text-sm font-semibold text-muted transition hover:border-action hover:text-action disabled:cursor-not-allowed disabled:text-muted"
             disabled={submitState.status === "submitting"}
             onClick={() => {
               setSubmitState({ status: "idle" });
@@ -211,7 +223,7 @@ export function QuestionnaireForm({
 
           {isReadOnly && isLastBlock ? (
             <button
-              className="rounded-md border border-line bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
+              className="rounded-xl border border-line bg-surface px-5 py-3 text-sm font-semibold text-muted transition hover:border-action hover:text-action"
               onClick={() => {
                 setSubmitState({ status: "idle" });
                 setCurrentStep(0);
@@ -222,7 +234,7 @@ export function QuestionnaireForm({
             </button>
           ) : isLastBlock ? (
             <button
-              className="rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-muted"
               disabled={submitState.status === "submitting"}
               onClick={submitAnswers}
               type="button"
@@ -231,7 +243,7 @@ export function QuestionnaireForm({
             </button>
           ) : (
             <button
-              className="rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
+              className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover"
               onClick={goToNextStep}
               type="button"
             >
@@ -261,19 +273,19 @@ function IntroPage({
 }) {
   return (
     <div>
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action sm:text-sm">
         {questionnaire.centreName}
       </p>
-      <h1 className="mt-3 text-3xl font-semibold tracking-normal text-ink">
+      <h1 className="mt-4 text-3xl font-bold tracking-[-0.04em] text-ink sm:text-4xl">
         {isReadOnly ? "Previsualització del qüestionari" : "Qüestionari"}
       </h1>
       {isReadOnly ? (
-        <p className="mt-4 rounded-md border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold leading-6 text-sky-900">
+        <p className="mt-4 rounded-md border border-info-border bg-info-bg px-4 py-3 text-sm font-semibold leading-6 text-info-text">
           Aquesta pantalla només serveix per visualitzar el qüestionari. No es
           pot respondre, no es desa cap resposta i no compta com una participació.
         </p>
       ) : null}
-      <div className="mt-5 grid gap-4 text-sm leading-6 text-slate-700 sm:grid-cols-2">
+      <div className="mt-7 grid gap-x-8 gap-y-5 text-sm leading-6 text-muted sm:grid-cols-2 sm:text-base sm:leading-7">
         <p>
           L&apos;objectiu és conèixer el grau d&apos;ús educatiu de la IA al
           centre a partir de dades de conjunt.
@@ -291,8 +303,8 @@ function IntroPage({
           docent l’ha de respondre una sola vegada.
         </p>
       </div>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:items-start">
-        <dl className="space-y-2 text-sm leading-6 text-slate-700">
+      <div className="mt-8 grid gap-5 border-t border-line pt-7 sm:grid-cols-2 sm:items-start">
+        <dl className="space-y-2 text-sm leading-6 text-muted">
           <div className="flex items-center gap-2">
             <dt className="flex items-center gap-2 font-semibold text-ink">
               <span aria-hidden="true">📋</span>
@@ -311,7 +323,7 @@ function IntroPage({
         <div className="flex flex-col gap-3 sm:items-end">
           {alreadySubmitted ? (
             <p
-              className="max-w-md text-sm font-semibold leading-5 text-amber-900 sm:text-right"
+              className="max-w-md text-sm font-semibold leading-5 text-warning-text sm:text-right"
               role="status"
             >
               <span aria-hidden="true">✅</span>{" "}
@@ -319,7 +331,7 @@ function IntroPage({
             </p>
           ) : null}
           <button
-            className="rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-muted"
             disabled={alreadySubmitted}
             onClick={onStart}
             type="button"
@@ -345,29 +357,43 @@ function BlockPage({
 }) {
   return (
     <div>
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action sm:text-sm">
         Bloc {block.position}
       </p>
-      <h2 className="mt-3 text-2xl font-semibold text-ink">{block.title}</h2>
+      <h2 className="mt-4 text-2xl font-bold tracking-[-0.03em] text-ink sm:text-3xl">
+        {block.title}
+      </h2>
 
-      <div className="mt-6 space-y-7">
-        {block.questions.map((question) => (
-          <fieldset key={question.id}>
-            <legend className="text-sm font-semibold leading-6 text-ink">
-              {block.position}.{question.blockPosition}. {question.text}
+      <div className="mt-8 space-y-8">
+        {block.questions.map((question) => {
+          const questionCopy = splitQuestionCopy(question.text);
+          const questionNumber = `${block.position}.${question.blockPosition}.`;
+
+          return (
+          <fieldset className="questionnaire-question" key={question.id}>
+            <legend className="w-full text-ink">
+              <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-action sm:text-sm">
+                {questionNumber}
+                {questionCopy.description
+                  ? ` ${questionCopy.description}`
+                  : null}
+              </span>
+              <span className="mt-2 block text-base font-semibold leading-7 sm:text-lg">
+                {questionCopy.prompt}
+              </span>
             </legend>
-            <div className="mt-1 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {SCALE_OPTIONS.map((option) => (
                 isReadOnly ? (
                   <div
-                    className={`flex min-h-12 items-center rounded-md border px-3 py-2 text-sm text-ink ${option.formClasses}`}
+                    className={`flex min-h-14 items-center rounded-xl border px-4 py-3 text-sm text-ink ${option.formClasses}`}
                     key={option.value}
                   >
                     {option.label}
                   </div>
                 ) : (
                   <label
-                    className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm text-ink transition ${option.formClasses}`}
+                    className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm text-ink transition ${option.formClasses}`}
                     key={option.value}
                   >
                     <input
@@ -384,22 +410,43 @@ function BlockPage({
               ))}
             </div>
           </fieldset>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
 
+function splitQuestionCopy(text: string): {
+  description: string | null;
+  prompt: string;
+} {
+  const separatorIndex = text.indexOf(":");
+
+  if (separatorIndex <= 0) {
+    return { description: null, prompt: text };
+  }
+
+  const description = text.slice(0, separatorIndex).trim();
+  const prompt = text.slice(separatorIndex + 1).trim();
+
+  if (!description || !prompt) {
+    return { description: null, prompt: text };
+  }
+
+  return { description, prompt };
+}
+
 function ProgressBar({ percentage }: { percentage: number }) {
   return (
     <div className="mt-6">
-      <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
+      <div className="flex items-center justify-between text-xs font-semibold text-muted">
         <span>Progrés</span>
         <span>{percentage}%</span>
       </div>
-      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-100">
+      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-accent-soft shadow-inner">
         <div
-          className="h-full rounded-full bg-sky-200 transition-all"
+          className="h-full rounded-full bg-action transition-all"
           style={{ width: `${percentage}%` }}
         />
       </div>

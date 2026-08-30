@@ -11,6 +11,23 @@
 - Recharts per a les gràfiques web.
 - `@react-pdf/renderer` per als informes PDF.
 
+### Arquitectura visual
+
+- `app/globals.css` conté exclusivament les directives base de Tailwind.
+- `app/styles/tokens.css` defineix els tokens semàntics de color i les dues
+  paletes de l'aplicació. `tailwind.config.ts` consumeix aquests tokens, de
+  manera que classes com `bg-surface`, `text-muted`, `border-line` o
+  `bg-action` funcionen igual a totes les rutes i canvien amb el tema sense
+  selectors correctius.
+- `app/styles/shell.css`, `home.css`, `questionnaire.css` i `workspace.css`
+  separen respectivament la carcassa compartida, la portada, les escales del
+  qüestionari i la navegació o els gràfics de l'espai autenticat.
+- `AppHeader`, `AppLogoLink`, `AppLogoMark` i `CentreAppShell` són els únics
+  orígens del patró de capçalera, marca i fons autenticat. Les pàgines passen
+  només el contingut i les dades del compte; no reprodueixen les capes visuals.
+- Els estils inline queden reservats a valors calculats en temps d'execució,
+  com l'amplada del progrés i els colors de les sèries dels gràfics.
+
 ## Principis
 
 - El navegador no es connecta directament a MySQL.
@@ -132,6 +149,11 @@ Fonts i atribució:
 Les lectures i mutacions d'administració validen sessió i rol al servidor.
 L'edició de qüestionaris manté les regles de versionat. Els resultats globals
 s'agrupen per versió i no admeten filtres per espai, creador, persona o data.
+La ruta `/admin` conserva aquesta lògica al servidor i presenta les quatre
+seccions dins la carcassa visual compartida de l'aplicació. La navegació lateral
+només construeix enllaços amb `section` i `questionnaireId`; no replica ni mou
+cap lectura, formulari o mutació al client. L'estat plegat del menú és una
+preferència visual local independent de les dades administratives.
 
 ## Gestió d'errors i observabilitat
 
@@ -140,16 +162,65 @@ respostes, correus de participants, IPs ni informació de dispositiu.
 
 ## Pàgines d'entrada
 
-- `/` és l'única portada informativa. Mostra objectiu, indicador, controls
-  accessibles de privacitat i d'informació del projecte, rols i accés del
-  responsable. La versió mostrada prové de `package.json` i els panells
-  informatius són mútuament excloents. Un listener de `pointerdown`, actiu
-  només mentre hi ha un panell obert, el tanca quan la interacció es produeix
-  fora del contenidor dels controls.
-- `/crear` és la pantalla autenticada de creació i gestió de l'espai. Si no
-  hi ha sessió, redirigeix a `/`.
+- `/` és l'única portada informativa. Mostra objectiu, indicador, un control
+  accessible de privacitat, rols i accés del responsable. La versió mostrada
+  prové de `package.json`; l'estat beta, la llicència i el repositori són al
+  peu de pàgina. Un listener de `pointerdown`, actiu només mentre el panell de
+  privacitat és obert, el tanca quan la interacció es produeix fora del
+  contenidor del control. La capçalera fixa activa progressivament
+  una superfície translúcida i desenfocada després d'un marge inicial de
+  `scrollY`. La intensitat s'interpola durant el tram següent i una pseudo-capa
+  degradada suavitza el límit inferior. La corba smoothstep amplificada manté
+  l'inici subtil, accelera el tram central i arriba a un estat final més opac i
+  desenfocat. La capa de `backdrop-filter` usa una màscara vertical perquè el
+  contingut entri transparent per sota i es difumini progressivament cap a la
+  part superior. El selector clar/fosc desa la
+  preferència a `localStorage`; no envia aquesta preferència al servidor. El
+  selector d'idioma és informatiu, es presenta només com a `CA` desplegable i
+  no modifica la llengua de la pàgina. La mostra de pregunta situada al final
+  de la portada és JSX estàtic: copia la primera pregunta i les opcions de la
+  versió `2026.2`, no carrega dades de MySQL i no renderitza cap control que
+  pugui enviar una resposta. Els accessos de responsable obren un diàleg
+  client nadiu que explica el requisit de compte institucional de centre abans
+  de continuar cap a la mateixa ruta de Google OAuth. El diàleg no valida ni
+  desa dades: la validació efectiva es manté exclusivament al servidor.
+- El layout arrel executa un inicialitzador mínim de tema abans de pintar el
+  cos del document. Llegeix la mateixa preferència local del selector i aplica
+  `data-theme` i `color-scheme` abans de la hidratació per evitar superfícies
+  clares transitòries durant la navegació completa.
+- `/crear` és la pantalla autenticada de creació i gestió de l'espai. Reutilitza
+  la capçalera fixa de la portada i substitueix l'accés pel menú del compte,
+  amb el tancament de sessió. Un contenidor client manté muntades les vistes
+  centrals de qüestionari, fitxa i configuració de correus per preservar-ne
+  l'estat local mentre s'alterna entre totes tres. El mateix estat governa una
+  sidebar plegable a escriptori, un rail a tauleta i la navegació inferior en
+  mòbil. La previsualització del qüestionari i els resultats del propietari són
+  enllaços directes d'aquesta navegació; s'actualitzen si la creació o el
+  reinici de l'espai genera rutes noves. La preferència de la sidebar
+  s'emmagatzema a `localStorage` després de la hidratació i no s'envia al
+  servidor. En escriptori i tauleta, la carcassa ocupa l'alçada visible: la
+  capçalera i la navegació lateral no formen part del contenidor desplaçable i
+  només el contingut principal té desplaçament vertical. Si no hi ha sessió,
+  redirigeix a `/`.
+  L'inicialitzador del layout arrel aplica també la preferència local de la
+  sidebar al document abans del primer pintat, de manera que l'amplada es
+  conserva sense salts visuals en navegar entre rutes.
+  El peu forma part del flux del contenidor desplaçable: un layout flex
+  l'empeny fins al límit inferior quan hi ha poc contingut i el situa després
+  del contingut quan la vista és llarga.
+- `/espais/[publicCode]/questionari` i
+  `/espais/[publicCode]/resultats` conserven les URL dedicades i repeteixen la
+  validació de sessió i propietat al servidor, però renderitzen el contingut
+  dins la mateixa carcassa autenticada de `/crear`. La capçalera, la
+  navegació responsive i el peu es mantenen visibles; la ruta activa queda
+  marcada al menú. La navegació cap a fitxa o configuració torna a
+  `/crear?view=profile` o `/crear?view=settings`, respectivament.
 - `/q/[publicCode]` és l'entrada del professorat mitjançant l'enllaç específic
-  compartit pel responsable.
+  compartit pel responsable. És una experiència pública independent de la
+  gestió del centre: conserva només la capçalera comuna amb el logotip, el nom
+  de l'aplicació i el selector de tema. No incorpora sidebar ni peu de pàgina.
+  El formulari reutilitza els tokens, superfícies i estils de resposta de la
+  resta de l'aplicació sense traslladar cap validació o enviament al layout.
 
 ## Decisions pendents
 

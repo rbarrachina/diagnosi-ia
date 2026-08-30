@@ -1,0 +1,42 @@
+.admin-content {
+  color: var(--color-ink);
+}
+
+.admin-panel {
+  border: 1px solid var(--color-line);
+  border-radius: 1rem;
+  background: var(--color-surface-soft);
+  box-shadow: 0 16px 48px var(--app-shadow);
+  backdrop-filter: blur(16px);
+}
+
+.admin-content input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.admin-content select,
+.admin-content textarea {
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.admin-content input::placeholder,
+.admin-content textarea::placeholder {
+  color: var(--color-muted);
+  opacity: 0.72;
+}
+
+.admin-content input:disabled,
+.admin-content select:disabled,
+.admin-content textarea:disabled {
+  background: var(--color-accent-soft);
+  color: var(--color-muted);
+}
+
+.admin-content code {
+  border-radius: 0.35rem;
+  background: var(--color-accent-soft);
+  padding: 0.1rem 0.3rem;
+  color: var(--color-action);
+}
+
+.admin-content table {
+  color: var(--color-ink);
+}

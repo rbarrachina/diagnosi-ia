@@ -130,7 +130,7 @@ export function ResultsClient({ publicCode }: ResultsClientProps) {
   if (state.status === "loading") {
     return (
       <section className="mx-auto w-full max-w-5xl px-6 py-12">
-        <p className="rounded-md border border-line bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">
+        <p className="rounded-md border border-line bg-surface px-4 py-3 text-sm text-muted shadow-sm">
           Carregant resultats de conjunt...
         </p>
       </section>

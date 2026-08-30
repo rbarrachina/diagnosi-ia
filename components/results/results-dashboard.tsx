@@ -34,6 +34,7 @@ const ORDERED_SCALE_OPTIONS = [...SCALE_OPTIONS].sort(
 const CHART_INITIAL_DIMENSION = { height: 1, width: 1 } as const;
 
 type ResultsDashboardProps = {
+  integrated?: boolean;
   results: AggregatedResults;
   eyebrow?: string;
   isDownloading: boolean;
@@ -124,7 +125,7 @@ function QuestionDistributionTooltip({
   }
 
   return (
-    <div className="max-w-sm border border-line bg-white px-3 py-2 shadow-sm">
+    <div className="max-w-sm border border-line bg-surface px-3 py-2 shadow-sm">
       <p className="text-sm font-semibold leading-5 text-ink">
         {question.name}. {question.questionText}
       </p>
@@ -143,6 +144,7 @@ function QuestionDistributionTooltip({
 }
 
 export function ResultsDashboard({
+  integrated = false,
   eyebrow = "Resultats de conjunt",
   results,
   isDownloading,
@@ -152,8 +154,14 @@ export function ResultsDashboard({
   onDownloadPdf,
   title = "Diagnosi IA",
 }: ResultsDashboardProps) {
+  const chartAccent = "var(--color-action)";
+
   return (
-    <section className="mx-auto w-full max-w-6xl px-6 py-10">
+    <section
+      className={`mx-auto w-full max-w-6xl ${
+        integrated ? "px-0 py-0" : "px-6 py-10"
+      }`}
+    >
       <div className="flex flex-col gap-4 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
@@ -162,7 +170,7 @@ export function ResultsDashboard({
           <h1 className="mt-3 text-3xl font-semibold tracking-normal text-ink">
             {title}
           </h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-muted">
             {metadataText ??
               `${results.scopeLabel ?? `Codi ${results.publicCode}`} · Qüestionari ${results.questionnaireVersion}`}
           </p>
@@ -170,7 +178,7 @@ export function ResultsDashboard({
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <button
-            className="rounded-md bg-action px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="rounded-md bg-action px-4 py-3 text-sm font-semibold text-white transition hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-muted"
             disabled={isDownloading}
             onClick={onDownloadPdf}
             type="button"
@@ -179,7 +187,7 @@ export function ResultsDashboard({
           </button>
           {managementHref ? (
             <a
-              className="rounded-md bg-action px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
+              className="rounded-md bg-action px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-action-hover"
               href={managementHref}
             >
               Torna a la gestió
@@ -189,13 +197,13 @@ export function ResultsDashboard({
       </div>
 
       {noticeText ? (
-        <div className="mt-6 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-950">
+        <div className="mt-6 rounded-md border border-info-border bg-info-bg px-4 py-3 text-sm leading-6 text-info-text">
           {noticeText}
         </div>
       ) : null}
 
       {results.lowResponseWarning ? (
-        <div className="mt-6 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
+        <div className="mt-6 rounded-md border border-warning-border bg-warning-bg px-4 py-3 text-sm leading-6 text-warning-text">
           Poques respostes: interpreta els resultats amb prudència.
         </div>
       ) : null}
@@ -208,8 +216,8 @@ export function ResultsDashboard({
         }`}
       >
         {results.diagnosticSpaceCount !== undefined ? (
-          <div className="rounded-md border border-line bg-white p-4 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <div className="rounded-md border border-line bg-surface p-4 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
               Centres
             </p>
             <p className="mt-2 text-3xl font-semibold text-ink">
@@ -217,27 +225,27 @@ export function ResultsDashboard({
             </p>
           </div>
         ) : null}
-        <div className="rounded-md border border-line bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+        <div className="rounded-md border border-line bg-surface p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
             Respostes
           </p>
           <p className="mt-2 text-3xl font-semibold text-ink">
             {results.totalSubmissions}
           </p>
         </div>
-        <div className="rounded-md border border-line bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+        <div className="rounded-md border border-line bg-surface p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
             Percentatge global
           </p>
           <p className="mt-2 text-3xl font-semibold text-ink">
             {formatPercentage(results.globalAverage)}
           </p>
         </div>
-        <div className="rounded-md border border-line bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+        <div className="rounded-md border border-line bg-surface p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
             Escala
           </p>
-          <p className="mt-2 text-sm leading-6 text-slate-700">
+          <p className="mt-2 text-sm leading-6 text-muted">
             {ORDERED_SCALE_OPTIONS.map((option) => (
               <span className="mr-3 inline-flex items-center gap-1" key={option.value}>
                 <span
@@ -252,7 +260,7 @@ export function ResultsDashboard({
         </div>
       </div>
 
-      <div className="mt-6 rounded-md border border-line bg-white p-5 shadow-sm">
+      <div className="mt-6 rounded-md border border-line bg-surface p-5 shadow-sm">
         <h2 className="text-center text-lg font-semibold text-ink">
           Percentatge per blocs
         </h2>
@@ -269,7 +277,7 @@ export function ResultsDashboard({
                 <XAxis dataKey="name" />
                 <YAxis domain={[0, 100]} unit="%" />
                 <Tooltip />
-                <Bar dataKey="percentatge" fill="#256f7c" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="percentatge" fill={chartAccent} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -287,17 +295,17 @@ export function ResultsDashboard({
                 <Tooltip />
                 <Radar
                   dataKey="percentatge"
-                  fill="#256f7c"
+                  fill={chartAccent}
                   fillOpacity={0.24}
                   name="Percentatge"
-                  stroke="#256f7c"
+                  stroke={chartAccent}
                   strokeWidth={2}
                 />
               </RadarChart>
             </ResponsiveContainer>
           </div>
         </div>
-        <dl className="mt-5 grid gap-3 border-t border-line pt-4 text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-3">
+        <dl className="mt-5 grid gap-3 border-t border-line pt-4 text-sm text-muted sm:grid-cols-2 lg:grid-cols-3">
           {results.blocks.map((block) => (
             <div className="flex gap-2" key={block.position}>
               <dt className="shrink-0 font-semibold text-ink">Bloc {block.position}</dt>
@@ -307,23 +315,23 @@ export function ResultsDashboard({
         </dl>
       </div>
 
-      <div className="mt-6 rounded-md border border-line bg-white p-5 shadow-sm">
+      <div className="mt-6 rounded-md border border-line bg-surface p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-ink">Interpretació breu</h2>
-        <p className="mt-3 text-sm leading-6 text-slate-700">{results.interpretation}</p>
+        <p className="mt-3 text-sm leading-6 text-muted">{results.interpretation}</p>
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+        <section className="rounded-md border border-line bg-surface p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-ink">Fortaleses</h2>
-          <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+          <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
             {results.strengths.map((strength) => (
               <li key={strength}>{strength}</li>
             ))}
           </ul>
         </section>
-        <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+        <section className="rounded-md border border-line bg-surface p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-ink">Marge de millora</h2>
-          <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+          <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
             {results.improvementAreas.map((area) => (
               <li key={area}>{area}</li>
             ))}
@@ -334,14 +342,14 @@ export function ResultsDashboard({
       <div className="mt-6 space-y-6">
         {results.blocks.map((block) => (
           <section
-            className="rounded-md border border-line bg-white p-5 shadow-sm"
+            className="rounded-md border border-line bg-surface p-5 shadow-sm"
             key={block.position}
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
               <h2 className="text-lg font-semibold text-ink">
                 {block.position}. {block.title}
               </h2>
-              <p className="text-sm font-semibold text-slate-700">
+              <p className="text-sm font-semibold text-muted">
                 Percentatge {formatPercentage(block.average)}
               </p>
             </div>
@@ -381,7 +389,7 @@ export function ResultsDashboard({
                   ))}
                 </colgroup>
                 <thead>
-                  <tr className="border-b border-line text-xs uppercase tracking-[0.08em] text-slate-500">
+                  <tr className="border-b border-line text-xs uppercase tracking-[0.08em] text-muted">
                     <th className="py-2 pr-4">Pregunta</th>
                     <th className="whitespace-nowrap py-2 pr-4">Percentatge</th>
                     {ORDERED_SCALE_OPTIONS.map((option) => (
@@ -397,7 +405,7 @@ export function ResultsDashboard({
                 <tbody>
                   {block.questions.map((question) => (
                     <tr className="border-b border-line last:border-b-0" key={question.position}>
-                      <td className="py-3 pr-4 text-slate-800">
+                      <td className="py-3 pr-4 text-muted">
                         {block.position}.{question.blockPosition}. {question.text}
                       </td>
                       <td className="whitespace-nowrap py-3 pr-4 font-semibold text-ink">
@@ -407,7 +415,7 @@ export function ResultsDashboard({
                         const bucket = distributionForOption(question, option.value);
 
                         return (
-                          <td className="whitespace-nowrap py-3 pr-4 text-slate-700" key={option.value}>
+                          <td className="whitespace-nowrap py-3 pr-4 text-muted" key={option.value}>
                             {bucket.count} ({bucket.percentage.toFixed(1)}%)
                           </td>
                         );

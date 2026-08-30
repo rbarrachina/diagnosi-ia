@@ -10,7 +10,7 @@ global per orientar decisions de centre.
 
 `main` conté l'aplicació amb Next.js i MySQL.
 
-La versió preparada actual és la `0.3.0`. El projecte es troba en fase beta i
+La versió preparada actual és la `0.4.0`. El projecte es troba en fase beta i
 pot contenir errors.
 
 El flux principal local funciona amb Next.js i MySQL local:

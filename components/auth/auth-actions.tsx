@@ -20,17 +20,23 @@ export function LoginButton({
 }
 
 type LogoutButtonProps = {
+  className?: string;
+  label?: string;
   next?: string;
 };
 
-export function LogoutButton({ next = "/" }: LogoutButtonProps) {
+export function LogoutButton({
+  className = "inline-flex h-10 items-center rounded-md border border-line bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action",
+  label = "Tanca sessió",
+  next = "/",
+}: LogoutButtonProps) {
   return (
     <form action={`/auth/logout?next=${encodeURIComponent(next)}`} method="post">
       <button
-        className="inline-flex h-10 items-center rounded-md border border-line bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
+        className={className}
         type="submit"
       >
-        Tanca sessió
+        {label}
       </button>
     </form>
   );

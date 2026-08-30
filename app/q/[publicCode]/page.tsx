@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { LoginButton, LogoutButton } from "@/components/auth/auth-actions";
+import { ThemeToggle } from "@/components/home/theme-toggle";
+import { AppHeader } from "@/components/layout/app-header";
 import { QuestionnaireForm } from "@/components/questionnaire/questionnaire-form";
 import { getCurrentAuthenticatedUser } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
@@ -47,8 +49,23 @@ export default async function QuestionnairePage({ params }: QuestionnairePagePro
       : false;
 
   return (
-    <main className="min-h-screen bg-paper">
-      <section className="mx-auto w-full max-w-4xl px-6 py-10">
+    <main className="app-shell relative min-h-screen overflow-hidden text-ink">
+      <AppHeader
+        brandHref="/"
+        brandOpensInNewTab
+        showBrandLabelOnMobile
+      >
+        <ThemeToggle />
+      </AppHeader>
+
+      <div
+        aria-hidden="true"
+        className="app-grid pointer-events-none fixed inset-0 opacity-50"
+      />
+      <div aria-hidden="true" className="app-orb app-orb-left fixed" />
+      <div aria-hidden="true" className="app-orb app-orb-right fixed" />
+
+      <section className="relative mx-auto w-full max-w-5xl px-5 pb-16 pt-28 sm:px-8 sm:pb-24 sm:pt-32">
         {!user ? (
           <QuestionnaireLoginNotice
             acceptedDomains={acceptedDomainLabels(policy)}
@@ -81,19 +98,19 @@ function QuestionnaireLoginNotice({
   publicCode: string;
 }) {
   return (
-    <div className="rounded-md border border-line bg-white p-8 text-center shadow-sm">
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
+    <div className="questionnaire-panel mx-auto max-w-3xl p-7 text-center sm:p-10">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action sm:text-sm">
         {centreName}
       </p>
-      <h1 className="mt-3 text-2xl font-semibold text-ink">
+      <h1 className="mt-4 text-3xl font-bold tracking-[-0.035em] text-ink sm:text-4xl">
         Inicia sessió amb Google
       </h1>
-      <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-slate-700">
+      <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted sm:text-base sm:leading-7">
         Cal validar un compte dels dominis {formatDomains(acceptedDomains)} per
         evitar més d’una resposta per compte. L’aplicació no desa el correu ni
         el vincula a les respostes.
       </p>
-      <div className="mt-6">
+      <div className="mt-7">
         <LoginButton label="Accedeix amb Google" next={`/q/${publicCode}`} />
       </div>
     </div>
@@ -108,8 +125,13 @@ function QuestionnaireForbiddenNotice({
   publicCode: string;
 }) {
   return (
-    <div className="rounded-md border border-red-200 bg-red-50 p-8 text-center text-red-900 shadow-sm">
-      <h1 className="text-2xl font-semibold">Accés no autoritzat</h1>
+    <div className="mx-auto max-w-3xl rounded-3xl border border-danger-border bg-danger-bg p-8 text-center text-danger-text shadow-[0_18px_60px_var(--app-shadow)] backdrop-blur-xl sm:p-10">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+        Accés al qüestionari
+      </p>
+      <h1 className="mt-4 text-3xl font-bold tracking-[-0.035em]">
+        Accés no autoritzat
+      </h1>
       <p className="mx-auto mt-3 max-w-lg text-sm leading-6">
         Només es permet respondre amb un compte dels dominis{" "}
         {formatDomains(acceptedDomains)}.

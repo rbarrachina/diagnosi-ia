@@ -178,16 +178,45 @@ versio i no inclou tokens ni codis publics d'espais.
 Ruta: `/`
 
 La portada és l'única pantalla inicial. Reuneix l'objectiu de l'eina,
-l'indicador OIA-12, controls accessibles amb les garanties de privacitat i la
-informació de versió, estat beta, llicència i repositori, l'explicació dels
-rols i les targetes de responsable i docent. Només es mostra un panell
-informatiu alhora. El panell obert es tanca en prémer el seu botó, la creu o
-qualsevol punt de la pàgina exterior als controls i al mateix panell.
+l'indicador OIA-12, un control accessible amb les garanties de privacitat,
+l'explicació dels rols i les targetes de responsable i docent. La informació
+de versió, estat beta, llicència i repositori es mostra al peu de pàgina. El
+panell de privacitat es tanca en prémer el seu botó, la creu o qualsevol punt
+de la pàgina exterior al control i al mateix panell.
+
+La portada presenta primer una capçalera fixa amb accés XTEC, selector de tema
+clar o fosc, selector d'idioma i control de privacitat, seguida d'un bloc
+principal a pantalla completa amb una única acció destacada per accedir amb el
+compte de centre. La capçalera és
+transparent a l'inici i passa suaument a una superfície translúcida amb
+desenfocament després d'un marge inicial de desplaçament sense efecte. La
+intensitat augmenta progressivament i el límit inferior es dissol amb un
+degradat perquè el contingut no quedi tallat de manera sobtada. La capçalera
+guanya opacitat i desenfocament de manera accelerada al tram central i arriba a
+un estat final amb el contingut de sota fortament difuminat. Una màscara
+vertical manté transparent la vora inferior, fa translúcid el centre i aplica
+una opacitat reforçada al centre i el màxim difuminat a la part superior. La informació
+metodològica, l'indicador i l'explicació dels rols queden a continuació i no
+apareixen en el primer viewport. El tema triat es conserva només com a
+preferència visual local del navegador. El selector d'idioma és informatiu:
+mostra només `CA` en repòs i desplega el català i la resta de llengües
+previstes, però no modifica l'idioma de la pàgina.
+
+Després de l'explicació dels rols, la portada mostra una previsualització
+estàtica de la primera pregunta de la versió `2026.2` i de les seves quatre
+opcions de resposta. Aquesta mostra és una còpia editorial fixa, no consulta la
+base de dades, no conté controls de formulari i no pot enviar ni desar cap
+resposta. També resumeix que el qüestionari consta de 20 preguntes repartides
+en cinc blocs.
 
 El responsable inicia l'accés XTEC des de la portada i, un cop autenticat,
 arriba a `/crear` per crear o gestionar el seu espai. El professorat accedeix
 al qüestionari des de l'enllaç específic rebut. Un accés directe a `/crear`
-sense sessió redirigeix a la portada.
+sense sessió redirigeix a la portada. Abans de sortir cap a Google OAuth,
+qualsevol accés de responsable de la portada obre un diàleg amb el logotip de
+l'aplicació i la pàgina desenfocada. El diàleg informa que només s'hi admet el
+compte institucional `@xtec.cat` assignat al centre; no substitueix la
+validació de servidor ni modifica el flux d'autenticació.
 
 ### Creacio d'espai
 
@@ -240,7 +269,8 @@ coincideix exactament: autoritzar `escola.cat` no autoritza
 Si s'activen les dues opcions, la pantalla avisa que una mateixa persona podria
 respondre amb dos comptes Google diferents. Aquesta limitació és conseqüència
 de l'anonimat: l'aplicació no desa correus docents ni pot relacionar les dues
-identitats. La configuració es pot modificar després amb el botó `Correu`.
+identitats. La configuració es pot modificar després des de la vista central
+`Configuració`.
 
 Resultat mostrat després de crear l'espai i recuperable des de la gestio del creador:
 
@@ -256,15 +286,37 @@ El token privat es desa com HMAC per validar-lo i xifrat per poder reconstruir l
 
 Si l'usuari ja té un espai creat, no pot crear-ne un segon. La mateixa pantalla `/crear` mostra els enllaços, el nombre agregat de respostes, l'accés als resultats, la regeneració de l'enllaç privat i el reinici del qüestionari.
 
-Després de confirmar la fitxa i configurar els correus, la pantalla de gestió
-mostra inicialment plegats tant `Fitxa` com `Correu`, encara que el qüestionari
-no s'hagi creat. Així, el contingut principal visible és el quadre de creació o
-gestió del qüestionari.
+Després de confirmar la fitxa i configurar els correus, `/crear` conserva la
+capçalera visual de la portada. El botó d'accés se substitueix pel nom visible
+del compte i obre un menú amb la identificació de la sessió i `Surt`. En
+pantalles d'escriptori, la navegació de `Qüestionari`, `Fitxa` i `Configuració`
+es presenta en una barra lateral que es pot plegar fins a un rail d'icones. En
+tauleta el rail és la presentació predeterminada i en mòbil se substitueix per
+una navegació inferior fixa amb respecte per la zona segura del dispositiu. La
+mateixa navegació incorpora els enllaços `Veure qüestionari` i `Ves als
+resultats`; aquests accessos no es repeteixen a la zona central. La
+preferència expandida o plegada es conserva localment al navegador. La zona
+central mostra inicialment la gestió del qüestionari, sense contenidors de
+targeta superposats. Canviar de vista no reinicialitza l'estat local de la
+gestió ni elimina cap funcionalitat. El control de plegat és una única icona a
+la part superior de la barra, abans del nom del centre. La capçalera i la barra
+lateral es mantenen fixes a la pantalla; el desplaçament vertical queda limitat
+al contingut principal. El peu de pàgina no és flotant ni fix: queda al final
+del contingut i només apareix d'entrada quan la vista és prou curta. El tema
+desat s'aplica abans del primer pintat per evitar un flaix clar quan es navega
+entre rutes en mode fosc.
 
-La gestio del creador també ofereix un botó per veure el qüestionari assignat a
-l'espai en mode lectura. Aquesta previsualització exigeix sessió XTEC i
+La gestió del creador també ofereix al menú un accés per veure el qüestionari
+assignat a l'espai en mode lectura. Aquesta previsualització exigeix sessió XTEC i
 propietat de l'espai, mostra un avís clar que no es pot respondre i no inclou
 cap botó d'enviament.
+
+La previsualització i els resultats del propietari mantenen les seves URL
+dedicades per permetre recàrrega, navegació enrere i enllaç directe. Totes dues
+pantalles formen part visualment de l'espai del centre: conserven capçalera,
+menú responsive i peu de pàgina, indiquen l'accés actiu i respecten la paleta
+blava dels temes clar i fosc. Canviar l'aparença no redueix les validacions de
+sessió, propietat o agregació de resultats.
 
 La regeneració de l'enllaç privat es mostra al costat de l'enllaç privat compartit i demana confirmació abans d'invalidar l'enllaç anterior.
 
@@ -287,6 +339,12 @@ No s'eliminen ni es modifiquen les preguntes del qüestionari versionat.
 ### Resposta del professorat
 
 Ruta: `/q/[publicCode]`
+
+La ruta pública presenta una capçalera mínima amb la marca `Diagnosi IA` i el
+selector clar o fosc. No mostra navegació lateral ni peu de pàgina, perquè el
+docent només ha de seguir el flux del qüestionari. La paleta, les superfícies,
+els botons i les opcions de resposta comparteixen el sistema visual de la resta
+de l'aplicació.
 
 El formulari ha de mostrar:
 

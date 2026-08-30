@@ -1,0 +1,111 @@
+.home-title-gradient {
+  background: linear-gradient(105deg, #246fc3 4%, #5fa9f4 58%, #317dce 96%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+html[data-theme="dark"] .home-title-gradient {
+  background-image: linear-gradient(105deg, #91c9ff 4%, #4e9ff1 58%, #b0d8ff 96%);
+}
+
+.home-card {
+  background: linear-gradient(145deg, var(--app-surface-strong), var(--app-surface));
+  box-shadow: 0 20px 70px var(--app-shadow);
+}
+
+.home-question-showcase {
+  background:
+    radial-gradient(circle at 50% 48%, rgb(80 157 239 / 18%), transparent 34rem),
+    linear-gradient(180deg, var(--app-section) 0%, var(--app-bg) 100%);
+}
+
+.home-question-grid {
+  background-image:
+    linear-gradient(to right, var(--app-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--app-line) 1px, transparent 1px);
+  background-size: 72px 72px;
+  opacity: 0.34;
+  -webkit-mask-image: radial-gradient(circle at center, black, transparent 72%);
+  mask-image: radial-gradient(circle at center, black, transparent 72%);
+}
+
+.home-question-orb {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  width: min(52rem, 92vw);
+  height: 22rem;
+  border-radius: 9999px;
+  background: rgb(74 151 235 / 20%);
+  filter: blur(90px);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.home-question-frame {
+  background: color-mix(in srgb, var(--app-surface) 78%, transparent);
+  box-shadow:
+    0 32px 100px var(--app-shadow),
+    inset 0 1px 0 rgb(255 255 255 / 38%);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.home-question-paper {
+  background: linear-gradient(145deg, var(--app-surface-strong), var(--app-surface));
+  box-shadow: 0 14px 55px rgb(38 91 148 / 12%);
+}
+
+.home-question-progress {
+  background: linear-gradient(90deg, #2f7ed0, #75baff);
+  box-shadow: 0 0 18px rgb(71 151 235 / 65%);
+}
+
+.home-scale-option {
+  border-color: color-mix(in srgb, var(--scale-color) 34%, var(--app-line));
+  background: color-mix(in srgb, var(--scale-color) 11%, var(--app-surface-strong));
+}
+
+.home-scale-number {
+  background: color-mix(in srgb, var(--scale-color) 23%, var(--app-surface-strong));
+  color: color-mix(in srgb, var(--scale-color) 72%, var(--app-ink));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--scale-color) 42%, transparent);
+}
+
+.home-scale-option-0 {
+  --scale-color: #ef7777;
+}
+
+.home-scale-option-1 {
+  --scale-color: #e7b63f;
+}
+
+.home-scale-option-2 {
+  --scale-color: #42b873;
+}
+
+.home-scale-option-3 {
+  --scale-color: #35b8d0;
+}
+
+.home-scroll-cue span {
+  animation: home-scroll 1.8s ease-in-out infinite;
+}
+
+@keyframes home-scroll {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(9px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-scroll-cue span {
+    animation: none;
+  }
+}

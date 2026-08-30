@@ -1,0 +1,45 @@
+@media (min-width: 1024px) {
+  html[data-centre-sidebar="collapsed"] .centre-sidebar {
+    width: 72px;
+  }
+
+  html[data-centre-sidebar="collapsed"] .centre-sidebar-expanded-content {
+    display: none;
+  }
+
+  html[data-centre-sidebar="collapsed"] .centre-sidebar-navigation-item {
+    justify-content: center;
+  }
+
+  html[data-centre-sidebar="expanded"] .centre-sidebar {
+    width: 15rem;
+  }
+
+  html[data-admin-sidebar="collapsed"] .admin-sidebar {
+    width: 72px;
+  }
+
+  html[data-admin-sidebar="collapsed"] .admin-sidebar-expanded-content {
+    display: none;
+  }
+
+  html[data-admin-sidebar="collapsed"] .admin-sidebar-navigation-item {
+    justify-content: center;
+  }
+
+  html[data-admin-sidebar="expanded"] .admin-sidebar {
+    width: 15rem;
+  }
+}
+
+.workspace-results .recharts-cartesian-grid line,
+.workspace-results .recharts-polar-grid-angle line,
+.workspace-results .recharts-polar-grid-concentric path {
+  stroke: var(--color-line);
+}
+
+.workspace-results .recharts-cartesian-axis-tick text,
+.workspace-results .recharts-polar-angle-axis-tick text,
+.workspace-results .recharts-polar-radius-axis-tick text {
+  fill: var(--color-muted);
+}
