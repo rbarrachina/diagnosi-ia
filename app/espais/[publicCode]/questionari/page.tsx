@@ -3,6 +3,9 @@ import {
   ResponsibleForbiddenNotice,
   XtecAccessNotice,
 } from "@/components/auth/auth-actions";
+import { CentreAppShell } from "@/components/create-space/centre-app-shell";
+import { CentreRouteFrame } from "@/components/create-space/centre-route-frame";
+import { SiteFooter } from "@/components/home/site-footer";
 import { QuestionnaireForm } from "@/components/questionnaire/questionnaire-form";
 import { getResponsibleSessionState } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
@@ -66,18 +69,27 @@ export default async function OwnerQuestionnairePreviewPage({
   }
 
   return (
-    <main className="min-h-screen bg-paper">
-      <section className="mx-auto w-full max-w-4xl px-6 py-10">
-        <div className="mb-4">
-          <a
-            className="inline-flex rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
-            href="/crear"
-          >
-            Torna a la gestió
-          </a>
-        </div>
-        <QuestionnaireForm mode="readOnly" questionnaire={questionnaire} />
-      </section>
-    </main>
+    <CentreAppShell
+      account={{
+        email: session.user.email,
+        name: session.user.displayName ?? session.user.email,
+      }}
+    >
+      <CentreRouteFrame
+        activeAccess="preview"
+        centreName={questionnaire.centreName}
+        footer={<SiteFooter />}
+        questionnairePreviewUrl={ownerSpace.questionnairePreviewUrl}
+        resultsUrl={ownerSpace.ownerResultsUrl}
+      >
+        <section className="mx-auto w-full max-w-4xl">
+          <QuestionnaireForm
+            appearance="workspace"
+            mode="readOnly"
+            questionnaire={questionnaire}
+          />
+        </section>
+      </CentreRouteFrame>
+    </CentreAppShell>
   );
 }

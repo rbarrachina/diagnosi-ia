@@ -1,0 +1,57 @@
+.questionnaire-panel {
+  border: 1px solid var(--color-line);
+  border-radius: 1.5rem;
+  background: var(--color-surface-soft);
+  box-shadow: 0 24px 72px var(--app-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.questionnaire-question {
+  border-bottom: 1px solid var(--color-line);
+  padding-bottom: 2rem;
+}
+
+.questionnaire-question:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.questionnaire-scale-option {
+  border-color: color-mix(in srgb, var(--questionnaire-scale-color) 34%, var(--color-line));
+  background: color-mix(in srgb, var(--questionnaire-scale-color) 11%, var(--color-surface));
+}
+
+.questionnaire-scale-option:hover {
+  border-color: color-mix(in srgb, var(--questionnaire-scale-color) 58%, var(--color-line));
+  transform: translateY(-1px);
+}
+
+.questionnaire-scale-option:has(input:checked) {
+  border-color: color-mix(in srgb, var(--questionnaire-scale-color) 76%, var(--color-line));
+  background: color-mix(in srgb, var(--questionnaire-scale-color) 19%, var(--color-surface));
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--questionnaire-scale-color) 16%, transparent);
+}
+
+.questionnaire-scale-text {
+  color: color-mix(in srgb, var(--questionnaire-scale-color) 72%, var(--color-ink));
+}
+
+.questionnaire-scale-option-0,
+.questionnaire-scale-text-0 {
+  --questionnaire-scale-color: #ef7777;
+}
+
+.questionnaire-scale-option-1,
+.questionnaire-scale-text-1 {
+  --questionnaire-scale-color: #dca72b;
+}
+
+.questionnaire-scale-option-2,
+.questionnaire-scale-text-2 {
+  --questionnaire-scale-color: #42b873;
+}
+
+.questionnaire-scale-option-3,
+.questionnaire-scale-text-3 {
+  --questionnaire-scale-color: #35b8d0;
+}

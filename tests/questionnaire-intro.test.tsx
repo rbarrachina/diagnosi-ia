@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { QuestionnaireForm } from "@/components/questionnaire/questionnaire-form";
 import type { PublicQuestionnaire } from "@/lib/questionnaire/types";
@@ -18,7 +18,7 @@ const questionnaire: PublicQuestionnaire = {
           id: "00000000-0000-4000-8000-000000000001",
           position: 1,
           blockPosition: 1,
-          text: "Pregunta de prova",
+          text: "Descripció breu: Pregunta de prova",
         },
       ],
     },
@@ -54,5 +54,37 @@ describe("questionnaire introduction", () => {
       screen.getByRole("button", { name: "Comença el qüestionari" }),
     ).toBeDisabled();
     expect(screen.getAllByRole("button")).toHaveLength(1);
+  });
+
+  it("uses the shared application surface and response option styles", () => {
+    window.scrollTo = vi.fn();
+
+    const { container } = render(
+      <QuestionnaireForm questionnaire={questionnaire} />,
+    );
+
+    expect(container.querySelector("section")).toHaveClass(
+      "questionnaire-panel",
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Comença el qüestionari" }),
+    );
+
+    expect(screen.getByRole("group", { name: /Pregunta de prova/ })).toHaveClass(
+      "questionnaire-question",
+    );
+    expect(screen.getByText("1.1. Descripció breu")).toHaveClass(
+      "text-xs",
+      "text-action",
+    );
+    expect(screen.getByText("Pregunta de prova")).toHaveClass(
+      "text-base",
+      "font-semibold",
+    );
+    expect(screen.getByLabelText("Gens / No ho faig").closest("label")).toHaveClass(
+      "questionnaire-scale-option",
+      "rounded-xl",
+    );
   });
 });

@@ -3,17 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { LogoutButton } from "@/components/auth/auth-actions";
 import { CentreCard } from "@/components/create-space/centre-card";
 import { CentreEmailPolicyForm } from "@/components/create-space/centre-email-policy-form";
 import type { CentreProfile } from "@/lib/centres/types";
 
 export function CentreOnboarding({
   centre,
-  email,
 }: {
   centre: CentreProfile;
-  email: string;
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -34,18 +31,17 @@ export function CentreOnboarding({
     }
 
     return (
-      <div className="w-full max-w-2xl">
-        <SessionBar email={email} />
-        <CentreCard initialCentre={centre} />
-        <div className="rounded-md border border-line bg-white p-5 text-left shadow-sm">
-          <h2 className="text-lg font-semibold text-ink">Confirma la fitxa</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-700">
+      <div className="w-full max-w-3xl text-ink">
+        <CentreCard embedded initialCentre={centre} />
+        <div className="mt-8 border-t border-line pt-7 text-left">
+          <h2 className="text-2xl font-semibold tracking-[-0.025em] text-ink">Confirma la fitxa</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
             Revisa les dades del centre. Si no s’han trobat, pots continuar i
             recarregar-les més endavant.
           </p>
           {error ? <p className="mt-3 text-sm text-red-800">{error}</p> : null}
           <button
-            className="mt-4 rounded-md bg-action px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"
+            className="mt-5 rounded-full bg-action px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_var(--app-action-shadow)] transition hover:bg-action-hover disabled:opacity-60"
             disabled={saving}
             onClick={confirm}
             type="button"
@@ -58,9 +54,9 @@ export function CentreOnboarding({
   }
 
   return (
-    <div className="w-full max-w-2xl">
-      <SessionBar email={email} />
+    <div className="w-full max-w-3xl">
       <CentreEmailPolicyForm
+        embedded
         initialPolicy={{
           allowXtec: centre.allowXtec,
           customDomain: centre.customDomain,
@@ -69,17 +65,6 @@ export function CentreOnboarding({
         onSaved={() => router.refresh()}
         title="Configura els correus del professorat"
       />
-    </div>
-  );
-}
-
-function SessionBar({ email }: { email: string }) {
-  return (
-    <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-line bg-white px-4 py-3 text-left text-sm text-slate-700 shadow-sm">
-      <span>
-        Sessió iniciada com <strong>{email}</strong>
-      </span>
-      <LogoutButton next="/" />
     </div>
   );
 }

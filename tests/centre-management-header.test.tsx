@@ -1,11 +1,13 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { CentreManagementHeader } from "@/components/create-space/centre-management-header";
 import type { CentreProfile } from "@/lib/centres/types";
 
 vi.mock("@/components/auth/auth-actions", () => ({
-  LogoutButton: () => <button type="button">Tanca sessió</button>,
+  LogoutButton: ({ label = "Tanca sessió" }: { label?: string }) => (
+    <button type="button">{label}</button>
+  ),
 }));
 
 const centre: CentreProfile = {
@@ -28,89 +30,22 @@ const centre: CentreProfile = {
 };
 
 describe("centre management header", () => {
-  it("keeps the centre profile collapsed after a questionnaire exists", () => {
+  it("shows the signed-in account where the access button was", () => {
     render(
-      <CentreManagementHeader
-        centre={centre}
-        collapseCentreProfile
-        email={centre.email}
-      />,
+      <CentreManagementHeader accountName="Centre de prova" email={centre.email} />,
     );
-
-    const toggle = screen.getByRole("button", { name: "Fitxa" });
-    expect(toggle).toHaveAttribute("aria-expanded", "false");
-    expect(
-      screen.queryByRole("heading", { name: centre.displayName }),
-    ).not.toBeInTheDocument();
-
-    fireEvent.click(toggle);
-    expect(toggle).toHaveAttribute("aria-expanded", "true");
-    expect(
-      screen.getByRole("heading", { name: centre.displayName }),
-    ).toBeInTheDocument();
-
-    fireEvent.click(toggle);
-    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("button", { name: "Menú del compte de Centre de prova" })).toBeInTheDocument();
+    expect(screen.queryByText("Accés XTEC")).not.toBeInTheDocument();
   });
 
-  it("can show the centre profile while onboarding is still in progress", () => {
+  it("opens the account menu and keeps the logout action", () => {
     render(
-      <CentreManagementHeader
-        centre={centre}
-        collapseCentreProfile={false}
-        email={centre.email}
-      />,
+      <CentreManagementHeader accountName="Centre de prova" email={centre.email} />,
     );
-
-    expect(
-      screen.getByRole("heading", { name: centre.displayName }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "Fitxa" }),
-    ).not.toBeInTheDocument();
-  });
-
-  it("keeps a disabled custom domain disabled after closing and reopening", async () => {
-    const centreWithCustomDomain: CentreProfile = {
-      ...centre,
-      customDomain: "domini.cat",
-    };
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
-        Response.json({
-          policy: {
-            allowXtec: true,
-            customDomain: null,
-            configured: true,
-          },
-        }),
-      ),
-    );
-
-    render(
-      <CentreManagementHeader
-        centre={centreWithCustomDomain}
-        collapseCentreProfile
-        email={centre.email}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "Correu" }));
-    const customDomain = screen.getByRole("checkbox", { name: /Domini propi/ });
-    expect(customDomain).toBeChecked();
-
-    fireEvent.click(customDomain);
-    fireEvent.click(screen.getByRole("button", { name: "Desa i continua" }));
-    await waitFor(() => {
-      expect(screen.getByText("Configuració desada.")).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: "Correu" }));
-    fireEvent.click(screen.getByRole("button", { name: "Correu" }));
-
-    expect(
-      screen.getByRole("checkbox", { name: /Domini propi/ }),
-    ).not.toBeChecked();
+    fireEvent.click(screen.getByRole("button", { name: "Menú del compte de Centre de prova" }));
+    expect(screen.getByRole("menu", { name: "Opcions del compte" })).toBeInTheDocument();
+    expect(screen.getByText(centre.email)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Surt" })).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Fitxa" })).not.toBeInTheDocument();
   });
 });

@@ -49,8 +49,8 @@ export function OwnerResultsClient({
 
   return (
     <ResultsDashboard
+      integrated
       isDownloading={isDownloading}
-      managementHref="/crear"
       onDownloadPdf={handleDownloadPdf}
       results={results}
     />

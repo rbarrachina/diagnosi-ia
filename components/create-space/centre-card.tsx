@@ -3,7 +3,15 @@
 import { useState } from "react";
 import type { CentreProfile } from "@/lib/centres/types";
 
-export function CentreCard({ initialCentre }: { initialCentre: CentreProfile }) {
+export function CentreCard({
+  initialCentre,
+  embedded = false,
+  hideHeading = false,
+}: {
+  initialCentre: CentreProfile;
+  embedded?: boolean;
+  hideHeading?: boolean;
+}) {
   const [centre, setCentre] = useState(initialCentre);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,16 +44,28 @@ export function CentreCard({ initialCentre }: { initialCentre: CentreProfile }) 
   }
 
   return (
-    <section className="mb-4 rounded-md border border-line bg-white p-5 text-left shadow-sm">
+    <section
+      className={
+        embedded
+          ? "mt-3 text-left text-ink"
+          : "mb-4 rounded-md border border-line bg-surface p-5 text-left shadow-sm"
+      }
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
-            Fitxa del centre
+        {hideHeading ? (
+          <p className="text-lg font-semibold text-ink">
+            {centre.displayName}
           </p>
-          <h2 className="mt-2 text-xl font-semibold text-ink">{centre.displayName}</h2>
-        </div>
+        ) : (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
+              Fitxa del centre
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-ink">{centre.displayName}</h2>
+          </div>
+        )}
         <button
-          className="rounded-md border border-line px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-action hover:text-action disabled:text-slate-400"
+          className={embedded ? "rounded-full border border-line px-3 py-2 text-xs font-semibold text-muted transition hover:border-action hover:text-action disabled:opacity-50" : "rounded-md border border-line px-3 py-2 text-xs font-semibold text-muted transition hover:border-action hover:text-action disabled:text-muted"}
           disabled={loading}
           onClick={refresh}
           type="button"
@@ -54,7 +74,7 @@ export function CentreCard({ initialCentre }: { initialCentre: CentreProfile }) 
         </button>
       </div>
 
-      <dl className="mt-4 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+      <dl className="mt-4 grid gap-x-6 gap-y-3 border-t border-line pt-4 text-sm sm:grid-cols-2">
         <CentreField label="Codi" value={centre.officialCode} />
         <CentreField label="Municipi" value={centre.municipality} />
         <CentreField label="Àrea territorial" value={centre.territorialArea} />
@@ -63,18 +83,18 @@ export function CentreCard({ initialCentre }: { initialCentre: CentreProfile }) 
         <CentreField label="Nom del compte Google" value={centre.accountDisplayName} />
       </dl>
 
-      <div className="mt-4 space-y-1 text-xs leading-5 text-slate-600">
+      <div className="mt-4 space-y-1 text-xs leading-5 text-muted">
         <p>
           Darrera actualització correcta: {formatDate(centre.lastSuccessAt)}
         </p>
         <p>Darrer intent de consulta: {formatDate(centre.lastAttemptAt)}</p>
         {centre.sourceStatus === "not_found" ? (
-          <p className="font-semibold text-amber-800">
+          <p className="font-semibold text-warning-text">
             Centre no trobat a Dades Obertes.
           </p>
         ) : null}
         {centre.sourceStatus === "unavailable" ? (
-          <p className="font-semibold text-amber-800">
+          <p className="font-semibold text-warning-text">
             No hi ha dades disponibles en aquest moment.
           </p>
         ) : null}
@@ -93,10 +113,16 @@ export function CentreCard({ initialCentre }: { initialCentre: CentreProfile }) 
   );
 }
 
-function CentreField({ label, value }: { label: string; value: string | null }) {
+function CentreField({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null;
+}) {
   return (
     <div>
-      <dt className="font-semibold text-slate-600">{label}</dt>
+      <dt className="font-semibold text-muted">{label}</dt>
       <dd className="mt-0.5 text-ink">{value ?? "No hi ha dades"}</dd>
     </div>
   );

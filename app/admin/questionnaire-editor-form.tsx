@@ -167,7 +167,7 @@ export function QuestionnaireEditorForm({
         value={isEditingLockedVersion ? "yes" : "no"}
       />
       {isLocked ? (
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+        <div className="rounded-md border border-warning-border bg-warning-bg p-4 text-sm text-warning-text">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p>
               Aquesta versió ja té {detail.diagnosticSpaceCount} espais i{" "}
@@ -178,24 +178,24 @@ export function QuestionnaireEditorForm({
             </p>
             {!hasAcceptedLockedEdit ? (
               <button
-                className="rounded-md border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-950 hover:bg-amber-100"
+                className="rounded-md border border-warning-border bg-surface px-4 py-2 text-sm font-semibold text-warning-text hover:bg-warning-bg"
                 onClick={confirmLockedEdit}
                 type="button"
               >
                 Editar
               </button>
             ) : (
-              <span className="rounded bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-950">
+              <span className="rounded bg-warning-bg px-2 py-1 text-xs font-semibold text-warning-text">
                 Edició confirmada
               </span>
             )}
           </div>
         </div>
       ) : null}
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-muted">
         Títol
         <input
-          className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-slate-100"
+          className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
           disabled={isFormDisabled}
           name="title"
           onChange={(event) => setTitle(event.target.value)}
@@ -203,10 +203,10 @@ export function QuestionnaireEditorForm({
           value={title}
         />
       </label>
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-muted">
         Minuts per respondre-la
         <input
-          className="mt-1 w-28 rounded-md border border-line px-3 py-2 text-sm disabled:bg-slate-100"
+          className="mt-1 w-28 rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
           disabled={isFormDisabled}
           max={120}
           min={1}
@@ -235,7 +235,7 @@ export function QuestionnaireEditorForm({
                 </legend>
                 {canChangeStructure ? (
                   <button
-                    className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
+                    className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg"
                     onClick={() => removeBlock(blockIndex)}
                     type="button"
                   >
@@ -243,10 +243,10 @@ export function QuestionnaireEditorForm({
                   </button>
                 ) : null}
               </div>
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-muted">
                 Títol del bloc
                 <input
-                  className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-slate-100"
+                  className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
                   name={`block-${blockPosition}-title`}
                   onChange={(event) => updateBlockTitle(blockIndex, event.target.value)}
                   required
@@ -264,10 +264,10 @@ export function QuestionnaireEditorForm({
                         type="hidden"
                         value={questionPosition}
                       />
-                      <label className="block text-sm font-medium text-slate-700">
+                      <label className="block text-sm font-medium text-muted">
                         Pregunta {blockPosition}.{questionPosition}
                         <textarea
-                          className="mt-1 min-h-20 w-full rounded-md border border-line px-3 py-2 text-sm leading-6 disabled:bg-slate-100"
+                          className="mt-1 min-h-20 w-full rounded-md border border-line px-3 py-2 text-sm leading-6 disabled:bg-accent-soft"
                           name={`block-${blockPosition}-question-${questionPosition}`}
                           onChange={(event) =>
                             updateQuestionText(
@@ -283,7 +283,7 @@ export function QuestionnaireEditorForm({
                       {canChangeStructure ? (
                         <div>
                           <button
-                            className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
+                            className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg"
                             onClick={() => removeQuestion(blockIndex, questionIndex)}
                             type="button"
                           >
@@ -297,7 +297,7 @@ export function QuestionnaireEditorForm({
               </div>
               {canChangeStructure && block.questions.length < MAX_QUESTIONS_PER_BLOCK ? (
                 <button
-                  className="mt-4 rounded-md border border-action px-3 py-1.5 text-xs font-semibold text-action hover:bg-[#eef7f8]"
+                  className="mt-4 rounded-md border border-action px-3 py-1.5 text-xs font-semibold text-action hover:bg-accent-soft"
                   onClick={() => addQuestion(blockIndex)}
                   type="button"
                 >
@@ -313,8 +313,8 @@ export function QuestionnaireEditorForm({
         <div
           className={`rounded-md border px-4 py-3 text-sm font-medium ${
             feedback.tone === "success"
-              ? "border-green-200 bg-green-50 text-green-900"
-              : "border-red-200 bg-red-50 text-red-900"
+              ? "border-success-border bg-success-bg text-success-text"
+              : "border-danger-border bg-danger-bg text-danger-text"
           }`}
           id="questionnaire-editor-feedback"
         >
@@ -327,7 +327,7 @@ export function QuestionnaireEditorForm({
       <div className="flex flex-wrap items-center gap-3">
         {canChangeStructure && blocks.length < MAX_QUESTION_BLOCKS ? (
           <button
-            className="rounded-md border border-action px-4 py-2 text-sm font-semibold text-action hover:bg-[#eef7f8]"
+            className="rounded-md border border-action px-4 py-2 text-sm font-semibold text-action hover:bg-accent-soft"
             onClick={addBlock}
             type="button"
           >
@@ -335,14 +335,14 @@ export function QuestionnaireEditorForm({
           </button>
         ) : null}
         <button
-          className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-[#1f5d68] disabled:bg-slate-300"
+          className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover disabled:bg-muted"
           disabled={isFormDisabled}
           type="submit"
         >
           Desa blocs i preguntes
         </button>
         {isFormDisabled ? (
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted">
             Prem Editar i accepta l&apos;avís per modificar aquesta versió.
           </p>
         ) : null}

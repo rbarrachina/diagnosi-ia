@@ -1,0 +1,110 @@
+.app-header {
+  --app-header-progress: 0;
+  isolation: isolate;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  animation: app-header-enter 550ms ease-out both;
+}
+
+.app-header::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: color-mix(in srgb, var(--app-bg) 98%, transparent);
+  content: "";
+  opacity: var(--app-header-progress);
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(36px) saturate(165%);
+  backdrop-filter: blur(36px) saturate(165%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    rgb(0 0 0 / 96%) 38%,
+    rgb(0 0 0 / 68%) 72%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    rgb(0 0 0 / 96%) 38%,
+    rgb(0 0 0 / 68%) 72%,
+    transparent 100%
+  );
+  transition: opacity 120ms linear;
+}
+
+.app-header::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--app-header-line) 55%, transparent),
+    transparent 18%,
+    transparent 100%
+  );
+  content: "";
+  opacity: var(--app-header-progress);
+  pointer-events: none;
+  transition: opacity 120ms linear;
+}
+
+.app-header > div {
+  position: relative;
+  z-index: 1;
+}
+
+.app-logo-mark {
+  background: linear-gradient(145deg, #75baff 0%, #2c78cd 100%);
+}
+
+.app-grid {
+  background-image:
+    linear-gradient(to right, var(--app-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--app-line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 55%), transparent 78%);
+  -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 55%), transparent 78%);
+}
+
+.app-orb {
+  position: absolute;
+  width: 30rem;
+  height: 30rem;
+  border-radius: 9999px;
+  background: rgb(83 158 237 / 14%);
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.app-orb-left {
+  top: 20%;
+  left: -20rem;
+}
+
+.app-orb-right {
+  right: -20rem;
+  bottom: 10%;
+}
+
+@keyframes app-header-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-header {
+    animation: none;
+    transition: none;
+  }
+}

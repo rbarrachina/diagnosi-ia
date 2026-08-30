@@ -7,7 +7,7 @@ import {
   type CommunicationTemplate,
 } from "@/lib/communication/email-template";
 
-type CreatedSpaceResponse = {
+export type CreatedSpaceResponse = {
   publicCode: string;
   questionnaireTitle: string;
   questionnaireVersion: string;
@@ -25,10 +25,11 @@ type FormState =
 
 type CopyState = "idle" | "public" | "shared";
 
-type CreateSpaceFormProps = {
+export type CreateSpaceFormProps = {
   centreName: string;
   communicationTemplate: CommunicationTemplate;
   existingSpace?: CreatedSpaceResponse | null;
+  onSpaceChange?: (space: CreatedSpaceResponse) => void;
   responsibleEmail: string;
 };
 
@@ -36,6 +37,7 @@ export function CreateSpaceForm({
   centreName,
   communicationTemplate,
   existingSpace = null,
+  onSpaceChange,
   responsibleEmail,
 }: CreateSpaceFormProps) {
   const router = useRouter();
@@ -89,6 +91,7 @@ export function CreateSpaceForm({
 
       const data = (await response.json()) as CreatedSpaceResponse;
       setSpace(data);
+      onSpaceChange?.(data);
       setState({ status: "idle" });
       router.refresh();
     } catch (error) {
@@ -162,6 +165,7 @@ export function CreateSpaceForm({
 
       const data = (await response.json()) as CreatedSpaceResponse;
       setSpace(data);
+      onSpaceChange?.(data);
       setCopyState("idle");
     } catch {
       setActionError("No s'ha pogut reiniciar el qüestionari.");
@@ -171,19 +175,26 @@ export function CreateSpaceForm({
   }
 
   return (
-    <div className="flex h-full flex-col rounded-md border border-line bg-white p-6 text-center shadow-sm">
+    <div className="flex h-full flex-col text-left text-ink">
       <div className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
-          CREAR QÜESTIONARI
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-action">
+          Espai de diagnosi
         </p>
-        <h2 className="text-xl font-semibold text-ink">
-          Soc responsable del centre educatiu
+        <h2
+          className="text-2xl font-semibold tracking-[-0.025em] text-ink sm:text-3xl"
+          id="workspace-questionnaire-heading"
+        >
+          Qüestionari del centre
         </h2>
+        <p className="max-w-2xl text-sm leading-6 text-muted sm:text-base">
+          Comparteix l’accés amb el claustre i consulta els resultats sempre de
+          manera conjunta.
+        </p>
       </div>
 
       {!displayedSpace ? (
         <button
-          className="mt-6 inline-flex self-center rounded-md bg-action px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68] disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="mt-7 inline-flex self-start rounded-full bg-action px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-60"
           disabled={state.status === "submitting"}
           onClick={handleCreateSpace}
           type="button"
@@ -205,24 +216,24 @@ export function CreateSpaceForm({
       ) : null}
 
       {displayedSpace ? (
-        <div className="mt-6 space-y-4 rounded-md border border-line bg-paper p-4 text-left">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mt-8 space-y-7 border-t border-line pt-7 text-left">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
                 Qüestionari
               </p>
-              <p className="mt-1 break-words text-lg font-semibold leading-snug text-ink">
+              <p className="mt-2 break-words text-xl font-semibold leading-snug text-ink sm:text-2xl">
                 {displayedSpace.questionnaireTitle}
               </p>
-              <p className="mt-1 text-sm font-semibold text-slate-600">
+              <p className="mt-1 text-sm font-medium text-muted">
                 Versió {displayedSpace.questionnaireVersion}
               </p>
             </div>
-            <div className="flex w-fit min-w-24 flex-col items-center rounded-md border border-line bg-white px-4 py-3 text-center">
-              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <div className="flex w-fit min-w-24 flex-col items-center border-l border-line px-5 text-center sm:min-w-32">
+              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted">
                 Respostes
               </span>
-              <span className="mt-1 text-3xl font-semibold leading-none text-ink">
+              <span className="mt-2 text-4xl font-semibold leading-none text-ink">
                 {displayedSpace.totalSubmissions}
               </span>
             </div>
@@ -234,19 +245,19 @@ export function CreateSpaceForm({
             </span>
             <div className="mt-2 flex flex-col gap-2 sm:flex-row">
               <input
-                className="min-w-0 flex-1 rounded-md border border-line bg-white px-3 py-2 text-sm text-ink"
+                className="min-w-0 flex-1 rounded-xl border border-line bg-surface-soft px-4 py-3 text-sm text-ink outline-none"
                 readOnly
                 value={displayedSpace.publicUrl}
               />
               <button
-                className="rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-action hover:text-action"
+                className="rounded-full border border-line bg-surface-soft px-4 py-2 text-xs font-semibold text-muted transition hover:border-action hover:text-action"
                 onClick={() => copyToClipboard(displayedSpace.publicUrl, "public")}
                 type="button"
               >
                 {copyState === "public" ? "Copiat" : "Copia"}
               </button>
               <button
-                className="rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-action hover:text-action"
+                className="rounded-full border border-line bg-surface-soft px-4 py-2 text-xs font-semibold text-muted transition hover:border-action hover:text-action"
                 onClick={() => setShowEmailConfirmation((current) => !current)}
                 type="button"
               >
@@ -254,7 +265,7 @@ export function CreateSpaceForm({
               </button>
             </div>
             {showEmailConfirmation && gmailComposeUrl ? (
-              <div className="mt-3 rounded-md border border-line bg-white p-3 text-xs leading-5 text-slate-700">
+              <div className="mt-3 rounded-xl border border-line bg-surface-soft p-4 text-xs leading-5 text-muted">
                 <p>
                   Gmail s&apos;obrirà amb el compte{" "}
                   <strong className="text-ink">{responsibleEmail}</strong>.
@@ -264,7 +275,7 @@ export function CreateSpaceForm({
                   abans d&apos;enviar el missatge.
                 </p>
                 <a
-                  className="mt-3 inline-flex rounded-md bg-action px-3 py-2 font-semibold text-white transition hover:bg-[#1f5d68]"
+                  className="mt-3 inline-flex rounded-full bg-action px-4 py-2 font-semibold text-white transition hover:bg-action-hover"
                   href={gmailComposeUrl}
                   rel="noreferrer"
                   target="_blank"
@@ -281,14 +292,14 @@ export function CreateSpaceForm({
             </span>
             <div className="mt-2 flex flex-col gap-2 sm:flex-row">
               <input
-                className="min-w-0 flex-1 rounded-md border border-line bg-white px-3 py-2 text-sm text-ink"
+                className="min-w-0 flex-1 rounded-xl border border-line bg-surface-soft px-4 py-3 text-sm text-ink outline-none"
                 readOnly
                 value={
                   displayedSpace.sharedResultsUrl ?? "Cal regenerar l’enllaç privat."
                 }
               />
               <button
-                className="rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-action hover:text-action"
+                className="rounded-full border border-line bg-surface-soft px-4 py-2 text-xs font-semibold text-muted transition hover:border-action hover:text-action disabled:opacity-50"
                 disabled={!displayedSpace.sharedResultsUrl}
                 onClick={() =>
                   displayedSpace.sharedResultsUrl
@@ -300,7 +311,7 @@ export function CreateSpaceForm({
                 {copyState === "shared" ? "Copiat" : "Copia"}
               </button>
               <button
-                className="rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-action hover:text-action disabled:cursor-not-allowed disabled:text-slate-400"
+                className="rounded-full border border-line bg-surface-soft px-4 py-2 text-xs font-semibold text-muted transition hover:border-action hover:text-action disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={regenerating || resetting}
                 onClick={() => regenerateSharedLink(displayedSpace.publicCode)}
                 type="button"
@@ -310,26 +321,14 @@ export function CreateSpaceForm({
             </div>
           </label>
 
-          <p className="text-sm leading-6 text-slate-700">
+          <p className="text-sm leading-6 text-muted">
             L&apos;enllaç privat es desa xifrat i es pot recuperar des del teu
             espai de gestió.
           </p>
 
-          <div className="flex flex-col gap-3 md:flex-row md:flex-nowrap">
-            <a
-              className="inline-flex shrink-0 justify-center rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action"
-              href={displayedSpace.questionnairePreviewUrl}
-            >
-              Veure qüestionari
-            </a>
-            <a
-              className="inline-flex shrink-0 justify-center rounded-md bg-action px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
-              href={displayedSpace.ownerResultsUrl}
-            >
-              Ves als resultats
-            </a>
+          <div>
             <button
-              className="inline-flex shrink-0 justify-center rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-800 transition hover:border-red-400 hover:bg-red-50 disabled:cursor-not-allowed disabled:text-slate-400"
+              className="inline-flex shrink-0 justify-center rounded-full border border-red-300 bg-transparent px-5 py-2.5 text-sm font-semibold text-red-700 transition hover:border-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-300 dark:hover:bg-red-950/30"
               disabled={resetting || regenerating}
               onClick={() => resetSpace(displayedSpace.publicCode)}
               type="button"

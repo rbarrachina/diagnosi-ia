@@ -1,6 +1,14 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LoginButton, LogoutButton } from "@/components/auth/auth-actions";
+import type { AdminSection } from "@/components/admin/admin-navigation";
+import { AdminRouteFrame } from "@/components/admin/admin-route-frame";
+import { CentreAppShell } from "@/components/create-space/centre-app-shell";
+import { HeaderInfoControls } from "@/components/home/header-info-controls";
+import { LanguageSelector } from "@/components/home/language-selector";
+import { SiteFooter } from "@/components/home/site-footer";
+import { ThemeToggle } from "@/components/home/theme-toggle";
+import { AppHeader } from "@/components/layout/app-header";
 import { AdminResultsClient } from "@/components/results/admin-results-client";
 import {
   addAdminUserAction,
@@ -85,8 +93,6 @@ const errorMessages: Record<string, string> = {
   settings: "No s'ha pogut desar la configuració.",
 };
 
-type AdminSection = "admins" | "questionnaires" | "results" | "settings";
-
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("ca-ES", {
     day: "2-digit",
@@ -159,6 +165,32 @@ function getRequestedQuestionnaireId(
   return null;
 }
 
+function AdminEntryShell({ children }: { children: ReactNode }) {
+  return (
+    <main className="app-shell min-h-screen text-ink">
+      <AppHeader brandHref="/">
+        <HeaderInfoControls />
+        <LanguageSelector />
+        <ThemeToggle />
+      </AppHeader>
+
+      <div
+        aria-hidden="true"
+        className="app-grid pointer-events-none fixed inset-0 opacity-50"
+      />
+      <div aria-hidden="true" className="app-orb app-orb-left fixed" />
+      <div aria-hidden="true" className="app-orb app-orb-right fixed" />
+
+      <div className="relative flex min-h-screen flex-col pt-20">
+        <section className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-6 py-12">
+          {children}
+        </section>
+        <SiteFooter />
+      </div>
+    </main>
+  );
+}
+
 function AdminAccessDenied({
   email,
   reason,
@@ -167,45 +199,43 @@ function AdminAccessDenied({
   reason: "not_admin" | "not_xtec";
 }) {
   return (
-    <main className="min-h-screen bg-paper">
-      <section className="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center px-6 py-12">
-        <div className="rounded-md border border-red-200 bg-red-50 p-6 text-center text-red-900 shadow-sm">
-          <h1 className="text-2xl font-semibold">Accés no autoritzat</h1>
-          <p className="mt-3 text-sm leading-6">
-            {reason === "not_xtec"
-              ? "Només es permet l'accés amb un compte XTEC."
-              : "Aquest compte no té permisos d'administració actius."}
-          </p>
-          {email ? <p className="mt-2 text-sm font-medium">{email}</p> : null}
-          <div className="mt-5 flex justify-center">
-            <LogoutButton next="/admin" />
-          </div>
+    <AdminEntryShell>
+      <div className="rounded-2xl border border-danger-border bg-danger-bg p-7 text-center text-danger-text shadow-[0_16px_48px_var(--app-shadow)] backdrop-blur-xl">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em]">Administració</p>
+        <h1 className="mt-3 text-2xl font-semibold">Accés no autoritzat</h1>
+        <p className="mt-3 text-sm leading-6">
+          {reason === "not_xtec"
+            ? "Només es permet l'accés amb un compte XTEC."
+            : "Aquest compte no té permisos d'administració actius."}
+        </p>
+        {email ? <p className="mt-2 text-sm font-medium">{email}</p> : null}
+        <div className="mt-5 flex justify-center">
+          <LogoutButton next="/admin" />
         </div>
-      </section>
-    </main>
+      </div>
+    </AdminEntryShell>
   );
 }
 
 function AdminSetupError() {
   return (
-    <main className="min-h-screen bg-paper">
-      <section className="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center px-6 py-12">
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-6 text-center text-amber-950 shadow-sm">
-          <h1 className="text-2xl font-semibold">Administració no configurada</h1>
-          <p className="mt-3 text-sm leading-6">
-            Cal aplicar les migracions d&apos;administració a la base de dades
-            configurada abans d&apos;entrar a aquesta pantalla.
-          </p>
-          <p className="mt-3 text-sm leading-6">
-            Revisa que existeixi `admin_users` a MySQL i que la configuració
-            local apunti a la base de dades correcta.
-          </p>
-          <div className="mt-5 flex justify-center">
-            <LogoutButton next="/admin" />
-          </div>
+    <AdminEntryShell>
+      <div className="rounded-2xl border border-warning-border bg-warning-bg p-7 text-center text-warning-text shadow-[0_16px_48px_var(--app-shadow)] backdrop-blur-xl">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em]">Administració</p>
+        <h1 className="mt-3 text-2xl font-semibold">Administració no configurada</h1>
+        <p className="mt-3 text-sm leading-6">
+          Cal aplicar les migracions d&apos;administració a la base de dades
+          configurada abans d&apos;entrar a aquesta pantalla.
+        </p>
+        <p className="mt-3 text-sm leading-6">
+          Revisa que existeixi `admin_users` a MySQL i que la configuració
+          local apunti a la base de dades correcta.
+        </p>
+        <div className="mt-5 flex justify-center">
+          <LogoutButton next="/admin" />
         </div>
-      </section>
-    </main>
+      </div>
+    </AdminEntryShell>
   );
 }
 
@@ -217,11 +247,11 @@ function VersionList({
   versions: AdminQuestionnaireSummary[];
 }) {
   return (
-    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+    <section className="admin-panel p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-ink">Versions</h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted">
             {versions.length} versions de qüestionari
           </p>
         </div>
@@ -235,8 +265,8 @@ function VersionList({
             <Link
               className={`block rounded-md border p-4 transition ${
                 isSelected
-                  ? "border-action bg-[#eef7f8]"
-                  : "border-line bg-white hover:border-action"
+                  ? "border-action bg-accent-soft"
+                  : "border-line bg-surface hover:border-action"
               }`}
               href={`/admin?section=questionnaires&questionnaireId=${version.id}`}
               key={version.id}
@@ -246,16 +276,16 @@ function VersionList({
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold text-ink">{version.version}</span>
                     {version.isActive ? (
-                      <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">
+                      <span className="rounded bg-success-bg px-2 py-0.5 text-xs font-semibold text-success-text">
                         Activa
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-sm text-slate-700">{version.title}</p>
+                  <p className="mt-1 text-sm text-muted">{version.title}</p>
                 </div>
-                <span className="text-xs text-slate-500">ID {version.id}</span>
+                <span className="text-xs text-muted">ID {version.id}</span>
               </div>
-              <div className="mt-3 grid grid-cols-4 gap-2 text-xs text-slate-600">
+              <div className="mt-3 grid grid-cols-4 gap-2 text-xs text-muted">
                 <span>{version.blockCount} blocs</span>
                 <span>{version.questionCount} preguntes</span>
                 <span>{version.diagnosticSpaceCount} espais</span>
@@ -266,49 +296,12 @@ function VersionList({
         })}
 
         {versions.length === 0 ? (
-          <p className="rounded-md border border-dashed border-line p-4 text-sm text-slate-600">
+          <p className="rounded-md border border-dashed border-line p-4 text-sm text-muted">
             Encara no hi ha cap versió.
           </p>
         ) : null}
       </div>
     </section>
-  );
-}
-
-function AdminMenu({
-  activeSection,
-  selectedQuestionnaireId,
-}: {
-  activeSection: AdminSection;
-  selectedQuestionnaireId: string | null;
-}) {
-  const questionnaireHref = selectedQuestionnaireId
-    ? `/admin?section=questionnaires&questionnaireId=${selectedQuestionnaireId}`
-    : "/admin?section=questionnaires";
-  const resultsHref = "/admin?section=results";
-
-  const linkClass = (section: AdminSection) =>
-    `inline-flex h-10 items-center rounded-md border px-4 text-sm font-semibold transition ${
-      activeSection === section
-        ? "border-action bg-action text-white"
-        : "border-line bg-white text-slate-700 hover:border-action hover:text-action"
-    }`;
-
-  return (
-    <nav aria-label="Gestió d'administració" className="flex flex-wrap gap-3">
-      <Link className={linkClass("questionnaires")} href={questionnaireHref}>
-        Gestió de qüestionaris
-      </Link>
-      <Link className={linkClass("results")} href={resultsHref}>
-        Resultats
-      </Link>
-      <Link className={linkClass("admins")} href="/admin?section=admins">
-        Gestió d&apos;usuaris
-      </Link>
-      <Link className={linkClass("settings")} href="/admin?section=settings">
-        Configuració
-      </Link>
-    </nav>
   );
 }
 
@@ -325,21 +318,21 @@ function AdminResultsPanel({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+      <section className="admin-panel p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-ink">Resultats</h2>
-            <p className="mt-1 text-sm leading-6 text-slate-600">
+            <p className="mt-1 text-sm leading-6 text-muted">
               Tria una versió del qüestionari per veure els resultats agregats
               de totes les enquestes fetes amb aquella versió.
             </p>
           </div>
           <form action="/admin" className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <input name="section" type="hidden" value="results" />
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-muted">
               Versió del qüestionari
               <select
-                className="mt-1 min-w-72 rounded-md border border-line bg-white px-3 py-2 text-sm"
+                className="mt-1 min-w-72 rounded-md border border-line bg-surface px-3 py-2 text-sm"
                 defaultValue={selectedQuestionnaireId ?? ""}
                 name="questionnaireId"
                 required
@@ -355,7 +348,7 @@ function AdminResultsPanel({
               </select>
             </label>
             <button
-              className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-[#1f5d68]"
+              className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover"
               disabled={versions.length === 0}
               type="submit"
             >
@@ -371,7 +364,7 @@ function AdminResultsPanel({
           questionnaireId={selectedQuestionnaireId}
         />
       ) : (
-        <section className="rounded-md border border-dashed border-line bg-white p-5 text-sm text-slate-600">
+        <section className="rounded-md border border-dashed border-line bg-surface p-5 text-sm text-muted">
           {versions.length === 0
             ? "Encara no hi ha cap versió de qüestionari per mostrar."
             : "Tria una versió del qüestionari per generar els resultats."}
@@ -401,10 +394,10 @@ async function AdminResultsContent({
 
 function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
   return (
-    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+    <section className="admin-panel p-5">
       <h2 className="text-lg font-semibold text-ink">Nova versió</h2>
       <form action={createQuestionnaireVersionAction} className="mt-5 max-w-xl space-y-4">
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-muted">
           Versió
           <input
             className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm"
@@ -413,7 +406,7 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
             required
           />
         </label>
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-muted">
           Títol
           <input
             className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm"
@@ -422,7 +415,7 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
             required
           />
         </label>
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-muted">
           Minuts per respondre-la
           <input
             className="mt-1 w-28 rounded-md border border-line px-3 py-2 text-sm"
@@ -434,10 +427,10 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
             type="number"
           />
         </label>
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-muted">
           Punt de partida
           <select
-            className="mt-1 w-full rounded-md border border-line bg-white px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm"
             name="sourceQuestionnaireId"
             required
           >
@@ -451,7 +444,7 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
         </label>
         <div>
           <button
-            className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-[#1f5d68]"
+            className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover"
             type="submit"
           >
             Crea versió
@@ -476,9 +469,9 @@ function QuestionnaireEditor({
 }) {
   if (!detail) {
     return (
-      <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+      <section className="admin-panel p-5">
         <h2 className="text-lg font-semibold text-ink">Editor</h2>
-        <p className="mt-3 text-sm text-slate-600">Selecciona o crea una versió.</p>
+        <p className="mt-3 text-sm text-muted">Selecciona o crea una versió.</p>
       </section>
     );
   }
@@ -494,7 +487,7 @@ function QuestionnaireEditor({
     );
 
   return (
-    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+    <section className="admin-panel p-5">
       <div className="flex flex-col gap-4 border-b border-line pb-5 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -502,21 +495,21 @@ function QuestionnaireEditor({
               {detail.version} · ID {detail.id}
             </h2>
             {detail.isActive ? (
-              <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">
+              <span className="rounded bg-success-bg px-2 py-0.5 text-xs font-semibold text-success-text">
                 Activa
               </span>
             ) : null}
             {isAssignedToSpace ? (
-              <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">
+              <span className="rounded bg-warning-bg px-2 py-0.5 text-xs font-semibold text-warning-text">
                 Assignada a espais
               </span>
             ) : (
-              <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
+              <span className="rounded bg-accent-soft px-2 py-0.5 text-xs font-semibold text-muted">
                 Sense espais
               </span>
             )}
           </div>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-muted">
             {detail.blockCount} blocs, {detail.questionCount} preguntes,{" "}
             {detail.diagnosticSpaceCount} espais, {detail.totalSubmissions} respostes,{" "}
             {detail.estimatedMinutes} minuts.
@@ -527,7 +520,7 @@ function QuestionnaireEditor({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
           <form action={activateQuestionnaireVersionAction} className="flex flex-col items-start gap-2">
             <input name="questionnaireId" type="hidden" value={detail.id} />
-            <label className="flex items-center gap-2 text-xs font-medium text-slate-700">
+            <label className="flex items-center gap-2 text-xs font-medium text-muted">
               <input
                 className="h-4 w-4"
                 disabled={detail.isActive || !isComplete}
@@ -538,14 +531,14 @@ function QuestionnaireEditor({
               Confirmo l&apos;activació
             </label>
             <ConfirmSubmitButton
-              className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-[#1f5d68] disabled:bg-slate-300"
+              className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover disabled:bg-muted"
               disabled={detail.isActive || !isComplete}
               message={`Vols activar la versió ${detail.version}? Els espais existents conservaran la seva versió.`}
             >
               Activa versió
             </ConfirmSubmitButton>
             {!isComplete ? (
-              <p className="max-w-xs text-xs text-amber-800">
+              <p className="max-w-xs text-xs text-warning-text">
                 Cal almenys 1 bloc i 1 pregunta per bloc. Màxim 10 blocs i 10
                 preguntes per bloc.
               </p>
@@ -554,7 +547,7 @@ function QuestionnaireEditor({
           {!detail.isActive ? (
             <form action={deleteQuestionnaireVersionAction} className="flex flex-col items-start gap-2">
               <input name="questionnaireId" type="hidden" value={detail.id} />
-              <label className="flex items-center gap-2 text-xs font-medium text-red-800">
+              <label className="flex items-center gap-2 text-xs font-medium text-danger-text">
                 <input
                   className="h-4 w-4"
                   name="confirmDeletion"
@@ -564,7 +557,7 @@ function QuestionnaireEditor({
                 Confirmo l&apos;eliminació total
               </label>
               <ConfirmSubmitButton
-                className="rounded-md border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
+                className="rounded-md border border-danger-border px-4 py-2 text-sm font-semibold text-danger-text hover:bg-danger-bg"
                 message={`Vols eliminar definitivament la versió ${detail.version}? S'eliminaran també tots els espais, respostes, blocs i preguntes d'aquest qüestionari. Aquesta acció no es pot desfer.`}
               >
                 Elimina qüestionari
@@ -594,10 +587,10 @@ function AdminUsersPanel({
   invitations: AdminEmailInvitationSummary[];
 }) {
   return (
-    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+    <section className="admin-panel p-5">
       <h2 className="text-lg font-semibold text-ink">Administradors</h2>
       <form action={addAdminUserAction} className="mt-4 flex flex-col gap-3 sm:flex-row">
-        <label className="flex-1 text-sm font-medium text-slate-700">
+        <label className="flex-1 text-sm font-medium text-muted">
           Correu XTEC de la persona administradora
           <input
             className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm"
@@ -608,24 +601,24 @@ function AdminUsersPanel({
           />
         </label>
         <button
-          className="self-end rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-[#1f5d68]"
+          className="self-end rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover"
           type="submit"
         >
           Convida
         </button>
       </form>
-      <p className="mt-3 text-sm text-slate-600">
+      <p className="mt-3 text-sm text-muted">
         La persona quedarà autoritzada quan accedeixi amb aquest compte Google
         XTEC. El correu només s&apos;usa per a aquesta invitació
         d&apos;administració.
       </p>
 
       {invitations.length > 0 ? (
-        <div className="mt-5 rounded-md border border-line bg-slate-50 p-4">
+        <div className="mt-5 rounded-md border border-line bg-accent-soft p-4">
           <h3 className="text-sm font-semibold text-ink">Invitacions pendents</h3>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[520px] text-left text-sm">
-              <thead className="border-b border-line text-xs uppercase text-slate-500">
+              <thead className="border-b border-line text-xs uppercase text-muted">
                 <tr>
                   <th className="py-2 pr-3 font-semibold">Correu</th>
                   <th className="py-2 pr-3 font-semibold">Creada</th>
@@ -635,12 +628,12 @@ function AdminUsersPanel({
               <tbody className="divide-y divide-line">
                 {invitations.map((invitation) => (
                   <tr key={invitation.email}>
-                    <td className="py-3 pr-3 text-slate-700">{invitation.email}</td>
-                    <td className="py-3 pr-3 text-slate-600">
+                    <td className="py-3 pr-3 text-muted">{invitation.email}</td>
+                    <td className="py-3 pr-3 text-muted">
                       {formatDate(invitation.createdAt)}
                     </td>
                     <td className="py-3 pr-3">
-                      <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                      <span className="rounded bg-warning-bg px-2 py-0.5 text-xs font-semibold text-warning-text">
                         Pendent
                       </span>
                     </td>
@@ -651,14 +644,14 @@ function AdminUsersPanel({
           </div>
         </div>
       ) : (
-        <p className="mt-3 text-sm text-slate-600">
+        <p className="mt-3 text-sm text-muted">
           Encara no hi ha invitacions d&apos;administració pendents.
         </p>
       )}
 
       <div className="mt-5 overflow-x-auto">
         <table className="w-full min-w-[880px] text-left text-sm">
-          <thead className="border-b border-line text-xs uppercase text-slate-500">
+          <thead className="border-b border-line text-xs uppercase text-muted">
             <tr>
               <th className="py-2 pr-3 font-semibold">Nom</th>
               <th className="py-2 pr-3 font-semibold">Correu</th>
@@ -674,14 +667,14 @@ function AdminUsersPanel({
 
               return (
                 <tr key={admin.userId}>
-                  <td className="py-3 pr-3 text-slate-700">
+                  <td className="py-3 pr-3 text-muted">
                     {admin.displayName ?? "Sense nom"}
                   </td>
-                  <td className="py-3 pr-3 text-slate-700">
+                  <td className="py-3 pr-3 text-muted">
                     {admin.email ?? "No disponible"}
                   </td>
-                  <td className="py-3 pr-3 text-slate-600">{formatDate(admin.createdAt)}</td>
-                  <td className="py-3 pr-3 text-slate-600">
+                  <td className="py-3 pr-3 text-muted">{formatDate(admin.createdAt)}</td>
+                  <td className="py-3 pr-3 text-muted">
                     {admin.lastLoginAt ? formatDate(admin.lastLoginAt) : "No disponible"}
                   </td>
                   <td className="py-3 pr-3">
@@ -689,14 +682,14 @@ function AdminUsersPanel({
                       <span
                         className={`rounded px-2 py-0.5 text-xs font-semibold ${
                           admin.isActive
-                            ? "bg-green-100 text-green-800"
-                            : "bg-slate-100 text-slate-700"
+                            ? "bg-success-bg text-success-text"
+                            : "bg-accent-soft text-muted"
                         }`}
                       >
                         {admin.isActive ? "Actiu" : "Inactiu"}
                       </span>
                       {isCurrentUser ? (
-                        <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                        <span className="rounded bg-accent-soft px-2 py-0.5 text-xs font-semibold text-muted">
                           Tu
                         </span>
                       ) : null}
@@ -712,7 +705,7 @@ function AdminUsersPanel({
                           value={admin.isActive ? "false" : "true"}
                         />
                         <button
-                          className="rounded-md border border-line px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-action hover:text-action disabled:text-slate-400"
+                          className="rounded-md border border-line px-3 py-1.5 text-xs font-semibold text-muted hover:border-action hover:text-action disabled:text-muted"
                           disabled={isCurrentUser && admin.isActive}
                           type="submit"
                         >
@@ -722,7 +715,7 @@ function AdminUsersPanel({
                       <form action={deleteAdminUserAction}>
                         <input name="userId" type="hidden" value={admin.userId} />
                         <button
-                          className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:text-slate-400"
+                          className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg disabled:text-muted"
                           disabled={isCurrentUser}
                           type="submit"
                         >
@@ -746,7 +739,7 @@ function InfoDisclosure({ children, label }: { children: ReactNode; label: strin
     <span className="group relative inline-flex">
       <button
         aria-label={label}
-        className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-blue-200 text-blue-600 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
+        className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-info-border text-action transition hover:border-action hover:bg-info-bg hover:text-action-hover focus:outline-none focus:ring-2 focus:ring-focus"
         type="button"
       >
         <svg
@@ -764,7 +757,7 @@ function InfoDisclosure({ children, label }: { children: ReactNode; label: strin
           <path d="M12 8h.01" />
         </svg>
       </button>
-      <span className="absolute left-0 top-full z-10 mt-2 hidden w-72 rounded-md border border-line bg-white p-3 text-sm font-normal leading-6 text-slate-700 shadow-lg group-hover:block group-focus-within:block sm:w-96">
+      <span className="absolute left-0 top-full z-10 mt-2 hidden w-72 rounded-md border border-line bg-surface p-3 text-sm font-normal leading-6 text-muted shadow-lg group-hover:block group-focus-within:block sm:w-96">
         {children}
       </span>
     </span>
@@ -787,7 +780,7 @@ function ResponsibleAccessOption({
   value: ResponsibleAccessMode;
 }) {
   return (
-    <div className="flex items-start gap-3 py-4 text-sm text-slate-700">
+    <div className="flex items-start gap-3 py-4 text-sm text-muted">
       <input
         className="mt-1 h-4 w-4"
         defaultChecked={checked}
@@ -820,14 +813,14 @@ function SettingsPanel({
   responsibleAccessMode: ResponsibleAccessMode;
 }) {
   return (
-    <section className="rounded-md border border-line bg-white p-5 shadow-sm">
+    <section className="admin-panel p-5">
       <h2 className="text-lg font-semibold text-ink">Configuració</h2>
       <form action={setResponsibleAccessModeAction} className="mt-5 space-y-5">
         <fieldset>
           <legend className="text-sm font-semibold text-ink">
             Accés per a responsables
           </legend>
-          <div className="mt-3 space-y-1 rounded-md border border-line bg-white px-4">
+          <div className="mt-3 space-y-1 rounded-md border border-line bg-surface px-4">
             <ResponsibleAccessOption
               checked={responsibleAccessMode === "all_xtec"}
               description={
@@ -864,7 +857,7 @@ function SettingsPanel({
           <legend className="text-sm font-semibold text-ink">
             Resultats globals
           </legend>
-          <div className="mt-3 rounded-md border border-line bg-white p-4 text-sm text-slate-700">
+          <div className="mt-3 rounded-md border border-line bg-surface p-4 text-sm text-muted">
             <div className="flex flex-wrap items-center gap-2">
               <label
                 className="font-semibold text-ink"
@@ -892,8 +885,8 @@ function SettingsPanel({
         </fieldset>
         <fieldset>
           <legend className="text-sm font-semibold text-ink">Comunicat</legend>
-          <div className="mt-3 space-y-4 rounded-md border border-line bg-white p-4 text-sm text-slate-700">
-            <p className="text-xs leading-5 text-slate-600">
+          <div className="mt-3 space-y-4 rounded-md border border-line bg-surface p-4 text-sm text-muted">
+            <p className="text-xs leading-5 text-muted">
               Pots usar <code>{"{NOM_CENTRE}"}</code> al títol o al cos i{" "}
               <code>{"{URL_QUESTIONARI}"}</code> al cos. Si no hi poses el nom
               del centre, s’afegeix automàticament.
@@ -919,7 +912,7 @@ function SettingsPanel({
                 required
               />
             </label>
-            <p className="text-xs leading-5 text-slate-600">
+            <p className="text-xs leading-5 text-muted">
               La marca <code>{QUESTIONNAIRE_URL_PLACEHOLDER}</code> se substituirà
               automàticament per l&apos;enllaç públic específic de cada espai. Si
               no hi és, l&apos;aplicació afegirà l&apos;enllaç al final del missatge.
@@ -927,7 +920,7 @@ function SettingsPanel({
           </div>
         </fieldset>
         <button
-          className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-[#1f5d68]"
+          className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover"
           type="submit"
         >
           Desa configuració
@@ -943,19 +936,22 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   if (session.status === "unauthenticated") {
     return (
-      <main className="min-h-screen bg-paper">
-        <section className="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center px-6 py-12">
-          <div className="rounded-md border border-line bg-white p-6 text-center shadow-sm">
-            <h1 className="text-2xl font-semibold text-ink">Administració</h1>
-            <p className="mt-3 text-sm leading-6 text-slate-700">
-              Accedeix amb un compte XTEC per gestionar el qüestionari.
-            </p>
-            <div className="mt-5">
-              <LoginButton next="/admin" />
-            </div>
+      <AdminEntryShell>
+        <div className="admin-panel p-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-action">
+            Accés restringit
+          </p>
+          <h1 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-ink">
+            Administració
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Accedeix amb un compte XTEC autoritzat per gestionar l’aplicació.
+          </p>
+          <div className="mt-6">
+            <LoginButton next="/admin" />
           </div>
-        </section>
-      </main>
+        </div>
+      </AdminEntryShell>
     );
   }
 
@@ -1017,39 +1013,69 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           }
         : null;
 
+  const sectionTitles: Record<AdminSection, { eyebrow: string; title: string; description: string }> = {
+    questionnaires: {
+      eyebrow: "Contingut",
+      title: "Gestió de qüestionaris",
+      description: "Crea, revisa i activa les versions del qüestionari de diagnosi.",
+    },
+    results: {
+      eyebrow: "Visió global",
+      title: "Resultats agregats",
+      description: "Consulta les dades de conjunt sense exposar respostes individuals.",
+    },
+    admins: {
+      eyebrow: "Accés",
+      title: "Gestió d’usuaris",
+      description: "Administra les persones autoritzades a accedir al tauler.",
+    },
+    settings: {
+      eyebrow: "Aplicació",
+      title: "Configuració",
+      description: "Defineix els criteris globals d’accés, resultats i comunicació.",
+    },
+  };
+  const sectionHeading = sectionTitles[activeSection];
+
   return (
-    <main className="min-h-screen scroll-mt-0 bg-paper" id="admin-top">
-      <section className="mx-auto w-full max-w-7xl px-6 py-8">
-        <header className="mb-6">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
-            Diagnosi IA
-          </p>
-          <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-3xl font-semibold tracking-normal text-ink">
-              Administració
+    <CentreAppShell
+      account={{
+        email: session.user.email,
+        name: session.user.displayName ?? session.user.email,
+      }}
+      logoutNext="/admin"
+    >
+      <AdminRouteFrame
+        activeSection={activeSection}
+        footer={<SiteFooter />}
+        selectedQuestionnaireId={selectedResultsQuestionnaireId}
+      >
+        <section className="admin-content mx-auto w-full max-w-7xl" id="admin-top">
+          <header className="mb-8 border-b border-line pb-7">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action">
+              {sectionHeading.eyebrow} · Administració
+            </p>
+            <h1 className="mt-3 text-3xl font-bold tracking-[-0.035em] text-ink sm:text-4xl">
+              {sectionHeading.title}
             </h1>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-              <AdminMenu
-                activeSection={activeSection}
-                selectedQuestionnaireId={selectedResultsQuestionnaireId}
-              />
-              <LogoutButton next="/admin" />
-            </div>
-          </div>
-          <p className="mt-2 text-sm text-slate-600">
-            Sessió iniciada com <strong>{session.user.email}</strong>
-            {session.bootstrapped ? " · primer administrador creat" : null}
-          </p>
-        </header>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted sm:text-base">
+              {sectionHeading.description}
+            </p>
+            {session.bootstrapped ? (
+              <p className="mt-3 text-xs font-medium text-action">
+                Primer administrador creat
+              </p>
+            ) : null}
+          </header>
 
         {params.status && statusMessages[params.status] ? (
-          <div className="mb-5 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-900">
+          <div className="mb-5 rounded-md border border-success-border bg-success-bg px-4 py-3 text-sm font-medium text-success-text">
             {statusMessages[params.status]}
           </div>
         ) : null}
 
         {params.error && errorMessages[params.error] ? (
-          <div className="mb-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-900">
+          <div className="mb-5 rounded-md border border-danger-border bg-danger-bg px-4 py-3 text-sm font-medium text-danger-text">
             {errorMessages[params.error]}
           </div>
         ) : null}
@@ -1089,7 +1115,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             responsibleAccessMode={responsibleAccessMode}
           />
         )}
-      </section>
-    </main>
+        </section>
+      </AdminRouteFrame>
+    </CentreAppShell>
   );
 }
