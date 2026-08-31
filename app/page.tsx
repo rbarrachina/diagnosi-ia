@@ -36,13 +36,14 @@ export default async function Home() {
         <div aria-hidden="true" className="app-orb app-orb-left" />
         <div aria-hidden="true" className="app-orb app-orb-right" />
 
-        <div className="relative mx-auto w-full max-w-6xl text-center">
+        <div className="relative mx-auto w-full max-w-6xl -translate-y-6 text-center sm:-translate-y-12">
           <p className="mx-auto inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-action sm:text-sm">
             <span className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_0_5px_var(--app-dot-ring)]" />
             Eina per a centres educatius
+            <span className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_0_5px_var(--app-dot-ring)]" />
           </p>
 
-          <h1 className="mx-auto mt-8 max-w-5xl text-balance text-[clamp(2.75rem,7vw,6.6rem)] font-semibold leading-[0.98] tracking-[-0.055em]">
+          <h1 className="mx-auto mt-5 max-w-5xl text-balance text-[clamp(2.75rem,7vw,6.6rem)] font-semibold leading-[0.98] tracking-[-0.055em]">
             Diagnosi de la{" "}
             <span className="home-title-gradient">
               competència digital docent en IA
@@ -54,7 +55,7 @@ export default async function Home() {
             conjunt per orientar l’ús educatiu de la intel·ligència artificial.
           </p>
 
-          <div className="mt-9 flex items-center justify-center">
+          <div className="mt-6 flex items-center justify-center">
             <CentreLoginDialog
               className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-white shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper sm:w-auto sm:min-w-72 sm:text-lg"
             >
@@ -63,10 +64,10 @@ export default async function Home() {
             </CentreLoginDialog>
           </div>
 
-          <div className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted">
-            <TrustItem label="Respostes anònimes" />
-            <TrustItem label="Resultats només de conjunt" />
-            <TrustItem label="Pensada per al claustre" />
+          <div className="mx-auto mt-6 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted">
+            <TrustItem label="Participació anònima" />
+            <TrustItem label="Resultats col·lectius" />
+            <TrustItem label="Creada per al claustre" />
           </div>
         </div>
 
@@ -112,15 +113,15 @@ export default async function Home() {
                 Diagnosi de centre
               </h3>
               <p className="mt-4 leading-7 text-muted">
-                Fer una diagnosi de quina és la competència digital docent en
-                IA del claustre.
+                Conèixer el punt de partida del claustre pel que fa a la
+                competència digital docent en IA.
               </p>
             </article>
 
             <article className="home-card flex flex-col rounded-3xl border border-line p-7 sm:p-8">
               <RoleIcon type="centre" />
               <p className="mt-7 text-xs font-semibold uppercase tracking-[0.14em] text-action">
-                Creació del qüestionari
+                Gestió de la diagnosi
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.025em]">
                 Soc responsable
@@ -132,7 +133,7 @@ export default async function Home() {
                     amb un compte d’administrador actiu.
                   </strong>
                 ) : (
-                  "La persona responsable crea el qüestionari per al claustre i consulta els resultats de conjunt."
+                  "La persona responsable crea l’espai de diagnosi, comparteix el qüestionari amb el claustre i consulta els resultats de conjunt."
                 )}
               </p>
               <CentreLoginDialog
@@ -156,7 +157,7 @@ export default async function Home() {
                 compte a l’aplicació.
               </p>
               <p className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-muted">
-                <CheckIcon /> El centre facilitarà l’enllaç
+                <CheckIcon /> Accés mitjançant l’enllaç del centre
               </p>
             </article>
           </div>

@@ -92,8 +92,8 @@ export function QuestionPreview() {
             <div className="mt-7 flex items-start gap-3 rounded-2xl bg-accent-soft px-4 py-3.5 text-sm leading-6 text-muted sm:items-center">
               <PreviewIcon />
               <p>
-                Aquesta mostra és només informativa: no es pot seleccionar cap
-                resposta ni s’envia cap dada.
+                Aquesta mostra és només informativa: no permet seleccionar cap
+                resposta ni envia cap dada.
               </p>
             </div>
           </div>

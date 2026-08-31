@@ -107,9 +107,8 @@ export function CentreLoginDialog({
               className="mx-auto mt-3 max-w-sm text-pretty text-sm leading-6 text-muted"
               id={descriptionId}
             >
-              Heu de fer servir el compte institucional{" "}
-              <strong className="font-semibold text-ink">@xtec.cat</strong>{" "}
-              del centre educatiu.
+              Heu d’accedir amb el compte institucional del centre, amb domini{" "}
+              <strong className="font-semibold text-ink">@xtec.cat</strong>.
             </p>
           </div>
 
