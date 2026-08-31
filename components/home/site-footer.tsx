@@ -9,14 +9,12 @@ export function SiteFooter() {
           <AppLogoMark />
           <p className="whitespace-nowrap font-semibold text-ink">
             Diagnosi IA <span className="px-1 text-muted">·</span>
-            <span className="text-action">Beta</span>
-            <span className="px-1 text-muted">·</span>
             <span>v{packageJson.version}</span>
           </p>
         </div>
 
         <p className="whitespace-nowrap">
-          Autoria:{" "}
+          Autor:{" "}
           <span className="font-medium text-ink">
             Rafa Barrachina
           </span>

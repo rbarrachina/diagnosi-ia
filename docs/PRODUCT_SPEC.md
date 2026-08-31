@@ -180,7 +180,7 @@ Ruta: `/`
 La portada és l'única pantalla inicial. Reuneix l'objectiu de l'eina,
 l'indicador OIA-12, un control accessible amb les garanties de privacitat,
 l'explicació dels rols i les targetes de responsable i docent. La informació
-de versió, estat beta, llicència i repositori es mostra al peu de pàgina. El
+de versió, autoria, llicència i repositori es mostra al peu de pàgina. El
 panell de privacitat es tanca en prémer el seu botó, la creu o qualsevol punt
 de la pàgina exterior al control i al mateix panell.
 

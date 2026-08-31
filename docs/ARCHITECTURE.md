@@ -164,8 +164,8 @@ respostes, correus de participants, IPs ni informació de dispositiu.
 
 - `/` és l'única portada informativa. Mostra objectiu, indicador, un control
   accessible de privacitat, rols i accés del responsable. La versió mostrada
-  prové de `package.json`; l'estat beta, la llicència i el repositori són al
-  peu de pàgina. Un listener de `pointerdown`, actiu només mentre el panell de
+  prové de `package.json`; l'autoria, la llicència i el repositori són al peu
+  de pàgina. Un listener de `pointerdown`, actiu només mentre el panell de
   privacitat és obert, el tanca quan la interacció es produeix fora del
   contenidor del control. La capçalera fixa activa progressivament
   una superfície translúcida i desenfocada després d'un marge inicial de

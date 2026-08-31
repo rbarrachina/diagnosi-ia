@@ -65,7 +65,7 @@ describe("initial page", () => {
 
     expect(within(dialog).getByText(/@xtec.cat/)).toBeInTheDocument();
     expect(
-      within(dialog).getByText(/Heu de fer servir el compte institucional/),
+      within(dialog).getByText(/Heu d’accedir amb el compte institucional/),
     ).toBeInTheDocument();
     expect(
       within(dialog).queryByText(
@@ -175,9 +175,10 @@ describe("initial page", () => {
     expect(screen.getByText(`v${packageJson.version}`)).toBeInTheDocument();
     expect(
       screen.getByText(
-        (_, element) => element?.textContent === "Autoria: Rafa Barrachina",
+        (_, element) => element?.textContent === "Autor: Rafa Barrachina",
       ),
     ).toBeInTheDocument();
+    expect(screen.queryByText("Beta")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Llicència Apache 2.0" })).toHaveAttribute(
       "href",
       "https://www.apache.org/licenses/LICENSE-2.0",

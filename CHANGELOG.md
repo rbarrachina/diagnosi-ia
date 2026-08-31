@@ -6,6 +6,14 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- Revisats lingüísticament els textos de la portada i els seus microtextos.
+- Reformulats els tres reclams principals per resumir la participació anònima,
+  els resultats col·lectius i l'orientació al claustre.
+- Eliminat l'estat `Beta` dels peus de pàgina i canviada l'etiqueta d'autoria
+  per `Autor`.
+
 ## [0.4.0] - 2026-08-30
 
 ### Changed
