@@ -90,8 +90,12 @@ type MysqlDuplicateError = {
 export async function createDiagnosticSpace(
   appUrl: string,
   ownerUserId: string,
-  centreId: string | null = null,
+  centreId: string,
 ): Promise<CreatedDiagnosticSpace> {
+  if (!centreId?.trim()) {
+    throw new Error("Centre profile is required");
+  }
+
   const existingSpace = await getExistingOwnerSpace(ownerUserId);
 
   if (existingSpace) {

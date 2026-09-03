@@ -106,7 +106,8 @@ L'administracio inclou una pantalla de configuracio global. Inclou l'opcio
 `responsible_access_mode`, amb dos valors possibles:
 
 - `all_xtec`: qualsevol compte acabat en `@xtec.cat` pot accedir com a
-  responsable.
+  responsable i disposa d'una fitxa institucional de prova completa si el
+  correu no correspon a un centre oficial.
 - `centre_xtec`: només els comptes de centre XTEC poden accedir com a
   responsables.
 
@@ -114,9 +115,9 @@ Els comptes de centre XTEC tenen el format: una lletra inicial `a`, `b`, `c`,
 `d` o `e`, seguida de 7 digits i el domini `@xtec.cat`, per exemple
 `a0000000@xtec.cat`.
 
-Els administradors actius de l'aplicacio poden accedir com a responsables en
-qualsevol dels dos modes. Aquesta excepcio no dona accés a respostes
-individuals ni canvia les garanties d'anonimat.
+Els administradors actius de l'aplicacio poden accedir com a responsables i
+crear el seu qüestionari de prova en qualsevol dels dos modes. Aquesta excepcio
+no dona accés a respostes individuals ni canvia les garanties d'anonimat.
 
 La configuracio també inclou `admin_results_minimum_submissions`, un enter entre
 0 i 10. En els resultats globals d'administracio, només es computen les
@@ -229,11 +230,13 @@ provisional de desenvolupament. Només s'accepten comptes amb correu acabat en
 segons la configuracio global, l'accés de responsables pot quedar limitat als
 comptes de centre XTEC. Els administradors actius poden crear i gestionar el
 seu espai en qualsevol dels dos modes.
-Cada centre autenticat pot tenir un únic espai. Els administradors actius amb
-correu no corresponent a un centre poden crear un espai de prova amb una fitxa
-institucional. També s'intenta consultar Dades Obertes amb el seu correu; si no
-hi ha coincidència, la fitxa mostra el nom i correu Google i l'estat de centre
-no trobat. El servidor genera:
+Cada centre autenticat pot tenir un únic espai. Quan el mode `all_xtec` està
+actiu, els responsables XTEC amb correu no corresponent a un centre també poden
+crear un únic espai de prova amb una fitxa institucional pròpia. Els
+administradors actius disposen d'aquest espai de prova en qualsevol dels dos
+modes. També s'intenta consultar Dades Obertes amb el correu; si no hi ha
+coincidència, la fitxa mostra el nom i correu Google i l'estat de centre no
+trobat. El servidor genera:
 
 - Codi públic llegible amb format `C-7KX9-M2Q8`.
 - Token privat llarg i criptograficament segur.
@@ -247,13 +250,15 @@ visible del compte, separats de les respostes. Per als participants només usa
 un identificador opac derivat amb HMAC. El mode
 `AUTH_MODE=local` queda com a ajuda de desenvolupament.
 
-Quan el correu té format de centre XTEC, o quan el compte és administrador i
-accedeix a crear un espai, el servidor consulta per correu el dataset
-`kvmv-ahh4` de Dades Obertes i desa codi, nom oficial, municipi i àrea
-territorial. El servei educatiu es resol amb la font pública versionada al
-repositori. Si la consulta falla o no troba el centre, es conserva l'accés,
-s'indica que no hi ha dades i s'ofereix un botó de recàrrega. La fitxa mostra
-la data del darrer intent i de la darrera actualització correcta.
+Per a qualsevol responsable autoritzat que accedeix a crear un espai, el
+servidor crea o recupera primer una fitxa institucional i consulta per correu
+el dataset `kvmv-ahh4` de Dades Obertes. Si el correu correspon a un centre,
+desa codi, nom oficial, municipi i àrea territorial. El servei educatiu es
+resol amb la font pública versionada al repositori. Si la consulta falla o no
+troba el centre, es conserva l'accés, s'indica que no hi ha dades i s'ofereix
+un botó de recàrrega. La fitxa mostra la data del darrer intent i de la darrera
+actualització correcta. Els espais previs del mateix responsable que encara no
+tinguin centre associat es vinculen automàticament a aquesta fitxa.
 
 El nom de capçalera és el nom oficial de Dades Obertes, el nom visible del
 compte Google o, com a últim recurs, el correu del centre. Apareix només a les

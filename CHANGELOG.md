@@ -8,6 +8,14 @@ Semantic Versioning.
 
 ### Changed
 
+- Completat el flux dels responsables XTEC no oficials en mode `all_xtec`: ara
+  reben una fitxa institucional de prova, poden configurar i publicar el
+  qüestionari i recuperen automàticament els espais previs sense `centre_id`.
+- Impedida des del codi la creació de nous espais de diagnosi sense una fitxa
+  institucional associada, sense modificar l'esquema de la base de dades.
+- Validada també al servidor la configuració inicial abans de crear l'espai;
+  la gestió ja no es mostra sense fitxa i l'OAuth de participants no registra
+  fitxes de responsables.
 - Revisats lingüísticament els textos de la portada i els seus microtextos.
 - Reformulats els tres reclams principals per resumir la participació anònima,
   els resultats col·lectius i l'orientació al claustre.

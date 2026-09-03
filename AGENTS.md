@@ -40,9 +40,12 @@ local controlat per variables d'entorn.
 - No afegir filtres que puguin facilitar la identificacio indirecta de persones.
 - Un centre només pot tenir un espai. Els administradors amb correu no
   corresponent a un centre poden mantenir un espai de prova amb una fitxa
-  institucional basada en el seu compte Google.
-- La consulta a Dades Obertes es fa per comptes de centre i també per
-  administradors que accedeixen a crear un espai. Sempre es fa des del servidor.
+  institucional basada en el seu compte Google. En mode `all_xtec`, qualsevol
+  compte XTEC autoritzat com a responsable pot tenir aquesta mateixa fitxa de
+  prova. En mode `centre_xtec`, l'excepció es limita als administradors actius.
+  Les dades d'aquests responsables no s'han de relacionar amb les respostes.
+- La consulta a Dades Obertes es fa per a tots els responsables autoritzats que
+  accedeixen a crear un espai. Sempre es fa des del servidor.
 
 ## Arquitectura
 

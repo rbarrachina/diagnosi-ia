@@ -9,12 +9,10 @@ import { CentreWorkspace } from "@/components/create-space/centre-workspace";
 import { SiteFooter } from "@/components/home/site-footer";
 import { getCommunicationTemplate } from "@/lib/admin/communication-settings";
 import { getResponsibleSessionState } from "@/lib/auth/session";
-import { isActiveAdminUser } from "@/lib/auth/responsible-access";
 import { getServerAppUrl } from "@/lib/http/server-app-url";
 import { listOwnerSpaces } from "@/lib/spaces/manage-spaces";
 import {
-  getCentreProfileForUser,
-  registerCentreAccount,
+  registerResponsibleCentreAccount,
 } from "@/lib/centres/centre-profiles";
 
 export const dynamic = "force-dynamic";
@@ -35,16 +33,13 @@ export default async function CreatePage({ searchParams }: CreatePageProps) {
     redirect("/");
   }
 
-  const isAdmin =
-    session.status === "authenticated"
-      ? await isActiveAdminUser(session.user.id)
-      : false;
   const centre =
     session.status === "authenticated"
-      ? (await registerCentreAccount(session.user, {
-          allowNonCentre: isAdmin,
-        })) ?? (await getCentreProfileForUser(session.user.id))
+      ? await registerResponsibleCentreAccount(session.user)
       : null;
+  if (session.status === "authenticated" && !centre) {
+    throw new Error("No s'ha pogut preparar la fitxa del responsable.");
+  }
   const ownerSpaces =
     session.status === "authenticated"
       ? await listOwnerSpaces(session.user.id, await getServerAppUrl())
@@ -92,14 +87,14 @@ export default async function CreatePage({ searchParams }: CreatePageProps) {
       ) : null}
 
       {session.status === "authenticated" &&
-      (!centre || (centre.profileConfirmedAt && centre.emailPolicyConfiguredAt)) ? (
+      centre && centre.profileConfirmedAt && centre.emailPolicyConfiguredAt ? (
         <CentreWorkspace
           centre={centre}
           communicationTemplate={communicationTemplate}
-          centreName={centre?.displayName ?? session.user.displayName ?? session.user.email}
+          centreName={centre.displayName}
           existingSpace={existingSpace}
           footer={<SiteFooter />}
-          initialView={centre ? initialView : "questionnaire"}
+          initialView={initialView}
           responsibleEmail={session.user.email}
         />
       ) : null}

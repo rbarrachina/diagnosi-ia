@@ -69,15 +69,21 @@ docent.
 ### `centre_accounts`
 
 Comptes responsables amb identificador Google opac, correu i nom visible. Un
-compte de centre s'associa al seu centre. Els administradors amb compte
-personal tenen també una fila de fitxa institucional per gestionar l'espai de
-prova; la consulta a Dades Obertes normalment queda amb estat `not_found`.
+compte de centre s'associa al seu centre. En mode `all_xtec`, els comptes XTEC
+no oficials tenen una fila de fitxa institucional per gestionar el seu espai
+de prova; els administradors la tenen en qualsevol mode. La consulta a Dades
+Obertes normalment queda amb estat `not_found` per a aquestes fitxes.
 
 ### `diagnostic_spaces`
 
 Espais amb UUID, codi públic, propietari opac, centre opcional, versió
 assignada, estat i metadades del token de resultats. El codi públic, el
 propietari i el centre són únics. No conté correu de participant.
+
+L'esquema manté `centre_id` nullable per compatibilitat, sense cap migració
+nova. El codi exigeix una fitxa configurada per crear espais nous. El registre
+del responsable vincula els seus espais antics sense centre a la seva fitxa,
+sense modificar els codis públics, els tokens ni les respostes existents.
 
 El token de resultats es conserva com HMAC i, quan s'ha de recuperar per al
 creador, també xifrat amb una clau server-side.

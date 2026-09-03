@@ -105,13 +105,18 @@ describe("MySQL diagnostic spaces repository", () => {
   it("creates a diagnostic space from the active questionnaire and retries public code collisions", async () => {
     state.insertPublicCodeCollisions = 1;
 
-    const result = await createDiagnosticSpace("http://localhost:3000", "owner-1");
+    const result = await createDiagnosticSpace(
+      "http://localhost:3000",
+      "owner-1",
+      "centre-1",
+    );
 
     expect(result.publicCode).toBe("C-BBBB-BBBB");
     expect(result.sharedResultsUrl).toContain("#token=clear-token-1");
     expect(state.insertedSpaces).toHaveLength(1);
     expect(state.insertedSpaces[0]).toContain("hash-token-1");
     expect(state.insertedSpaces[0]).toContain("encrypted-token-1");
+    expect(state.insertedSpaces[0]).toContain("centre-1");
     expect(state.insertedSpaces[0]).not.toContain("clear-token-1");
   });
 
@@ -119,9 +124,16 @@ describe("MySQL diagnostic spaces repository", () => {
     state.existingOwnerSpace = true;
 
     await expect(
-      createDiagnosticSpace("http://localhost:3000", "owner-1"),
+      createDiagnosticSpace("http://localhost:3000", "owner-1", "centre-1"),
     ).rejects.toBeInstanceOf(OwnerSpaceAlreadyExistsError);
     expect(state.insertedSpaces).toHaveLength(0);
+  });
+
+  it("rejects a missing centre before accessing the database", async () => {
+    await expect(
+      createDiagnosticSpace("http://localhost:3000", "owner-1", ""),
+    ).rejects.toThrow("Centre profile is required");
+    expect(state.calls).toHaveLength(0);
   });
 
   it("lists owner spaces without exposing stored token hashes", async () => {

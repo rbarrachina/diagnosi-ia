@@ -37,6 +37,12 @@ No es pot recollir ni desar del professorat participant:
 Els responsables s'autentiquen per gestionar l'espai del centre. La seva
 identitat institucional no s'uneix amb `submissions` o `answers`.
 
+Quan el mode de proves admet qualsevol compte XTEC, el compte docent que actua
+com a responsable es desa exclusivament a `centres` i `centre_accounts` per
+gestionar el seu espai de prova. Aquesta funció de responsable no identifica
+els docents que participen en el qüestionari ni es relaciona amb les seves
+respostes.
+
 El professorat inicia sessió amb un compte Google d'un domini admès pel centre
 només per validar l'accés i impedir una segona resposta del mateix compte al
 mateix espai. El servidor usa el correu transitòriament, deriva un HMAC i no
