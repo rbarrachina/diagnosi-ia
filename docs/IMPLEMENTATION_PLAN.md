@@ -64,7 +64,8 @@ Estat: completada.
 - Google OAuth amb comptes XTEC per a responsables.
 - Mode local només per desenvolupament.
 - Identificadors opacs derivats amb HMAC.
-- Un espai per centre o per compte de prova autoritzat.
+- Un espai per centre o per compte XTEC de prova autoritzat, amb fitxa
+  institucional i `centre_id` propis.
 - Regeneració de token i reinici transaccional.
 
 ## Fase 5 — Submissions
@@ -111,13 +112,14 @@ Estat: completada.
 
 - Crear `centres` i `centre_accounts`.
 - Associar un únic espai a cada centre.
-- Consultar Dades Obertes per a correus de centre i administradors que creen
-  espais.
+- Consultar Dades Obertes per a tots els responsables autoritzats que creen
+  espais, també els comptes XTEC de prova.
 - Incorporar i atribuir la font de serveis educatius.
 - Mostrar la fitxa i el nom del centre a totes les superfícies específiques del
   centre.
-- Conservar espais de prova per a administradors amb fitxa institucional i
-  estat de Dades Obertes.
+- Conservar espais de prova per a administradors en qualsevol mode i per a
+  responsables XTEC no oficials quan estigui actiu `all_xtec`, amb fitxa
+  institucional i estat de Dades Obertes.
 - Mantenir la identitat del professorat fora de la base de dades.
 - Afegir l'alta guiada de confirmació de fitxa i configuració dels dominis
   docents.

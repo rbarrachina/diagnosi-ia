@@ -23,8 +23,7 @@ import {
 import { resolveAppUrl } from "@/lib/http/app-url";
 import { safeRelativePath } from "@/lib/http/redirect";
 import { isXtecEmail } from "@/lib/auth/xtec";
-import { registerCentreAccount } from "@/lib/centres/centre-profiles";
-import { isActiveAdminUser } from "@/lib/auth/responsible-access";
+import { registerResponsibleCentreAccount } from "@/lib/centres/centre-profiles";
 import {
   getCentreEmailPolicyForPublicCode,
   isEmailAllowedByCentrePolicy,
@@ -105,9 +104,11 @@ export async function GET(request: NextRequest) {
       return response;
     }
 
-    if (statePayload.next === "/crear" || statePayload.next.startsWith("/espais/")) {
-      await registerCentreAccount(user, {
-        allowNonCentre: await isActiveAdminUser(user.id),
+    if (
+      statePayload.purpose !== "participant" &&
+      (statePayload.next === "/crear" || statePayload.next.startsWith("/espais/"))
+    ) {
+      await registerResponsibleCentreAccount(user, {
         refresh: true,
       });
     }

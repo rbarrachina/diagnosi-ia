@@ -3,7 +3,7 @@ import "server-only";
 import type { RowDataPacket } from "mysql2/promise";
 
 import { mysqlPool } from "@/lib/db/client";
-import { isXtecCentreEmail } from "@/lib/auth/xtec";
+import { isXtecCentreEmail, isXtecEmail } from "@/lib/auth/xtec";
 import type { AppAuthenticatedUser } from "@/lib/auth/local";
 
 export const RESPONSIBLE_ACCESS_MODES = ["all_xtec", "centre_xtec"] as const;
@@ -139,6 +139,10 @@ export async function setAdminResultsMinimumSubmissions(
 export async function canUseResponsibleAccess(
   user: AppAuthenticatedUser,
 ): Promise<boolean> {
+  if (!isXtecEmail(user.email)) {
+    return false;
+  }
+
   if (isXtecCentreEmail(user.email)) {
     return true;
   }

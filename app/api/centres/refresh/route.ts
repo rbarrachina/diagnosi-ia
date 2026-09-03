@@ -1,6 +1,5 @@
 import { getResponsibleSessionState } from "@/lib/auth/session";
 import { refreshCentreProfileForUser } from "@/lib/centres/centre-profiles";
-import { isActiveAdminUser } from "@/lib/auth/responsible-access";
 
 export const runtime = "nodejs";
 
@@ -11,9 +10,7 @@ export async function POST(): Promise<Response> {
     return Response.json({ error: "Accés no autoritzat." }, { status: 403 });
   }
 
-  const centre = await refreshCentreProfileForUser(session.user, {
-    allowNonCentre: await isActiveAdminUser(session.user.id),
-  });
+  const centre = await refreshCentreProfileForUser(session.user);
 
   if (!centre) {
     return Response.json(

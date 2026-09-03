@@ -40,6 +40,13 @@ describe("responsible access settings", () => {
         displayName: "Persona Prova",
       }),
     ).resolves.toBe(true);
+    await expect(
+      canUseResponsibleAccess({
+        id: "00000000-0000-4000-8000-000000000004",
+        email: "persona@example.org",
+        displayName: "Persona externa",
+      }),
+    ).resolves.toBe(false);
   });
 
   it("allows only centre accounts or active admins in centre mode", async () => {

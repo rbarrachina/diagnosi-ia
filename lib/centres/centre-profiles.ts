@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import type { RowDataPacket } from "mysql2/promise";
 
 import type { AppAuthenticatedUser } from "@/lib/auth/local";
+import { canUseResponsibleAccess } from "@/lib/auth/responsible-access";
 import { canHaveCentreProfile } from "@/lib/centres/access";
 import { mysqlPool } from "@/lib/db/client";
 import { lookupCentreOpenData } from "@/lib/centres/open-data";
@@ -45,6 +46,20 @@ export async function registerCentreAccount(
   return getCentreProfileById(centreId);
 }
 
+export async function registerResponsibleCentreAccount(
+  user: AppAuthenticatedUser,
+  options: { refresh?: boolean } = {},
+): Promise<CentreProfile | null> {
+  if (!(await canUseResponsibleAccess(user))) {
+    return null;
+  }
+
+  return registerCentreAccount(user, {
+    allowNonCentre: true,
+    refresh: options.refresh,
+  });
+}
+
 export async function getCentreProfileForUser(
   userId: string,
 ): Promise<CentreProfile | null> {
@@ -58,10 +73,8 @@ export async function getCentreProfileForUser(
 
 export async function refreshCentreProfileForUser(
   user: AppAuthenticatedUser,
-  options: { allowNonCentre?: boolean } = {},
 ): Promise<CentreProfile | null> {
-  return registerCentreAccount(user, {
-    allowNonCentre: options.allowNonCentre,
+  return registerResponsibleCentreAccount(user, {
     refresh: true,
   });
 }

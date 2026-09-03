@@ -103,12 +103,16 @@ respostes.
 ### Creació d'espai
 
 1. Validar la sessió XTEC i el mode d'accés configurat.
-2. Per a correus de centre i administradors, crear o actualitzar el compte i la
-   fitxa institucional amb consultes server-side a les fonts públiques.
-3. Verificar que el centre no tingui ja un espai.
+2. Crear o actualitzar el compte i la fitxa institucional de qualsevol
+   responsable autoritzat. En mode `all_xtec`, els correus XTEC no oficials
+   reben una fitxa de prova; els administradors la poden rebre en qualsevol
+   mode. Les fonts públiques es consulten sempre des del servidor.
+3. Exigir al servidor la confirmació de la fitxa i la configuració dels dominis
+   docents abans de crear l'espai. Verificar que el centre no tingui ja un espai.
 4. Generar codi públic i token privat.
 5. Calcular l'HMAC i xifrar el token.
-6. Crear l'espai amb la versió activa dins una operació server-side.
+6. Crear l'espai amb la versió activa i un `centre_id` obligatori dins una
+   operació server-side.
 7. Retornar només els enllaços necessaris.
 
 ### Fonts de centres
