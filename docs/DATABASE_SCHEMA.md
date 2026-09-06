@@ -126,7 +126,9 @@ centres. Desa un UUID, l'identificador i etiqueta institucional del centre, el
 tipus d'acció, l'administrador, el recompte agregat afectat i la data. No té
 clau forana cap a `centres` perquè el registre de governança es conserva després
 d'una eliminació. No conté `submission_id`, `answer_id`, correus docents ni
-contingut de respostes.
+contingut de respostes. `actor_user_id` utilitza `utf8mb4_unicode_ci`, la mateixa
+col·lació que `admin_users.user_id`, per garantir que el `JOIN` administratiu
+sigui compatible també en bases de dades amb `utf8mb4_0900_ai_ci` per defecte.
 
 ### `app_settings`
 
