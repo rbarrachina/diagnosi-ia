@@ -8,6 +8,47 @@ Semantic Versioning.
 
 ### Changed
 
+- Reestructurats els tres blocs informatius de la segona pantalla per explicar
+  el fonament pedagògic, la gestió del centre i la participació docent anònima.
+- Substituït l'accés redundant de la targeta del centre per l'aclariment que
+  cada centre disposa d'un únic espai de diagnosi.
+- Convertit l'accés XTEC de la capçalera de la portada en un botó circular blau
+  amb la mateixa icona d'accés; les pantalles internes no canvien.
+- Afegit el desplaçament vertical suau des de `Descobreix-ne més` fins a la
+  informació inferior de la portada, respectant la reducció de moviment.
+- Afegida una icona de desplaçament al final de la segona pantalla per accedir
+  suaument a la mostra del qüestionari, sense text visible.
+- Compactada la tercera pantalla en monitors perquè la introducció i la mostra
+  completa del qüestionari càpiguen dins del viewport.
+- Afegida la secció inicial `Resum` a l'administració, amb sis indicadors
+  agregats i la informació principal del qüestionari actiu; les respostes
+  computables respecten el llindar de privacitat configurat.
+- Convertits els indicadors del resum en accessos directes amb filtres i afegit
+  un apartat d'avisos accionables que només apareix quan cal atenció.
+- Compactada la graella d'indicadors del resum i integrada visualment amb el
+  fons de l'administració mitjançant separadors lleugers.
+- Afegida la secció administrativa `Centres`, amb cerca, fitxa institucional,
+  responsable, dominis, estat del qüestionari i recompte agregat subjecte al
+  llindar de privacitat.
+- Afegides la suspensió reversible, el reinici de respostes, el reinici complet
+  i l'eliminació confirmada de centres, amb transaccions i auditoria mínima.
+- Afegida una configuració global per mostrar o ocultar el selector d’idioma i
+  triar les llengües previstes visibles a totes les capçaleres; el català es
+  manté com a única llengua funcional.
+- Integrada la gestió d'usuaris dins la pàgina d'administració, amb un formulari
+  d'invitació més compacte i l'opció d'eliminar invitacions pendents.
+- Integrats el selector de versió i el tauler de resultats dins la pàgina
+  d'administració, sense modificar-ne els càlculs ni les accions.
+- Afegida la selecció de resultats administratius per a tots els centres o per
+  a un centre identificat concret, amb el mateix llindar, agregació i PDF.
+- Vinculats els selectors de centre i qüestionari perquè només mostrin
+  combinacions amb resultats elegibles, i eliminat el text introductori
+  redundant de la vista.
+- Integrades les opcions de configuració al fons de la pàgina, amb apartats
+  visualment diferenciats i opcions relacionades més compactes, sense panells
+  superposats ni canvis de comportament.
+- Eliminat de totes les capçaleres el control desplegable de privacitat i
+  anonimat, juntament amb el seu contingut.
 - Completat el flux dels responsables XTEC no oficials en mode `all_xtec`: ara
   reben una fitxa institucional de prova, poden configurar i publicar el
   qüestionari i recuperen automàticament els espais previs sense `centre_id`.

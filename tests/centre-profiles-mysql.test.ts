@@ -148,6 +148,7 @@ function emptyProfile(id: string, email: string) {
 // Only MySQL and the external directory are mocked; all services run real code.
 async function execute(query: string, values: unknown[]) {
   const sql = query.replace(/\s+/g, " ").trim().toLowerCase();
+  if (sql.includes("select centres.is_suspended") && sql.includes("from centre_accounts")) return [[]];
   if (sql.includes("from app_settings")) return [[{ setting_value: mode }]];
   if (sql.includes("from admin_users")) return [admin ? [{ user_id: user.id }] : []];
   if (sql.startsWith("select id from centres")) return [profile && profile.email === values[0] ? [{ id: profile.id }] : []];

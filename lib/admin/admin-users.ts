@@ -121,6 +121,25 @@ export async function inviteAdminByEmail(
   return invitation;
 }
 
+export async function deletePendingAdminEmailInvitation(
+  input: AdminEmailInvitationInput,
+): Promise<void> {
+  const payload = adminEmailInvitationInputSchema.parse(input);
+  const [result] = await mysqlPool.execute<ResultSetHeader>(
+    `
+      delete from admin_email_invitations
+      where email = ?
+        and is_active = true
+        and accepted_at is null
+    `,
+    [payload.email],
+  );
+
+  if (result.affectedRows !== 1) {
+    throw new AdminUserOperationError("Pending invitation could not be removed");
+  }
+}
+
 export async function acceptAdminEmailInvitationForUser(
   user: AppAuthenticatedUser,
 ): Promise<boolean> {

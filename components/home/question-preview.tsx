@@ -9,32 +9,32 @@ export function QuestionPreview() {
   return (
     <section
       aria-labelledby="question-preview-title"
-      className="home-question-showcase relative overflow-hidden border-t border-line px-5 py-24 sm:px-8 sm:py-32"
+      className="home-question-showcase relative overflow-hidden border-t border-line px-5 py-24 sm:px-8 sm:py-32 lg:flex lg:min-h-[calc(100svh-5rem)] lg:items-center lg:py-8"
     >
       <div aria-hidden="true" className="home-question-grid absolute inset-0" />
       <div aria-hidden="true" className="home-question-orb" />
 
-      <div className="relative mx-auto max-w-6xl">
+      <div className="relative mx-auto max-w-6xl" id="mostra-questionari">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
             Una mirada al qüestionari
           </p>
           <h2
-            className="mt-4 text-balance text-3xl font-semibold tracking-[-0.035em] sm:text-5xl"
+            className="mt-4 text-balance text-3xl font-semibold tracking-[-0.035em] sm:text-5xl lg:mt-2 lg:text-4xl"
             id="question-preview-title"
           >
             Preguntes clares per obtenir una visió compartida
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-muted">
+          <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-muted lg:mt-3 lg:text-base lg:leading-7">
             El professorat respon 20 afirmacions breus distribuïdes en cinc
             blocs. Cada pregunta ofereix quatre nivells de resposta.
           </p>
         </div>
 
-        <div className="home-question-frame relative mx-auto mt-14 max-w-5xl rounded-[2rem] border border-line p-2.5 sm:p-4">
+        <div className="home-question-frame relative mx-auto mt-14 max-w-5xl rounded-[2rem] border border-line p-2.5 sm:p-4 lg:mt-6 lg:p-3">
           <div
             aria-label="Exemple de la primera pregunta del qüestionari"
-            className="home-question-paper rounded-[1.45rem] border border-line p-6 sm:p-9 lg:p-11"
+            className="home-question-paper rounded-[1.45rem] border border-line p-6 sm:p-9 lg:p-6"
             role="group"
           >
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -50,17 +50,17 @@ export function QuestionPreview() {
 
             <div
               aria-label="Progrés de l’exemple: 5 %"
-              className="mt-5 h-2 overflow-hidden rounded-full bg-accent-soft"
+              className="mt-5 h-2 overflow-hidden rounded-full bg-accent-soft lg:mt-3 lg:h-1.5"
               role="img"
             >
               <div className="home-question-progress h-full w-[5%] rounded-full" />
             </div>
 
-            <div className="mt-9">
+            <div className="mt-9 lg:mt-5">
               <p className="text-xs font-semibold uppercase tracking-[0.15em] text-action">
                 Bloc 1 · Alfabetització i ús crític de la IA
               </p>
-              <h3 className="mt-4 max-w-4xl text-balance text-2xl font-semibold leading-tight tracking-[-0.025em] sm:text-3xl lg:text-4xl">
+              <h3 className="mt-4 max-w-4xl text-balance text-2xl font-semibold leading-tight tracking-[-0.025em] sm:text-3xl lg:mt-2 lg:text-2xl">
                 <span className="mr-2 text-action">1.1.</span>
                 Identifico oportunitats i limitacions de la IA en contextos
                 educatius.
@@ -69,16 +69,16 @@ export function QuestionPreview() {
 
             <ul
               aria-label="Opcions de resposta de l’exemple"
-              className="mt-8 grid gap-3 sm:grid-cols-2"
+              className="mt-8 grid gap-3 sm:grid-cols-2 lg:mt-5 lg:gap-2"
             >
               {QUESTION_OPTIONS.map((option) => (
                 <li
-                  className={`home-scale-option home-scale-option-${option.value} flex min-h-20 items-center gap-4 rounded-2xl border px-4 py-4 sm:px-5`}
+                  className={`home-scale-option home-scale-option-${option.value} flex min-h-20 items-center gap-4 rounded-2xl border px-4 py-4 sm:px-5 lg:min-h-14 lg:py-2.5`}
                   key={option.value}
                 >
                   <span
                     aria-hidden="true"
-                    className="home-scale-number inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold"
+                    className="home-scale-number inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold lg:h-8 lg:w-8"
                   >
                     {option.value}
                   </span>
@@ -89,7 +89,7 @@ export function QuestionPreview() {
               ))}
             </ul>
 
-            <div className="mt-7 flex items-start gap-3 rounded-2xl bg-accent-soft px-4 py-3.5 text-sm leading-6 text-muted sm:items-center">
+            <div className="mt-7 flex items-start gap-3 rounded-2xl bg-accent-soft px-4 py-3.5 text-sm leading-6 text-muted sm:items-center lg:mt-4 lg:py-2.5">
               <PreviewIcon />
               <p>
                 Aquesta mostra és només informativa: no permet seleccionar cap

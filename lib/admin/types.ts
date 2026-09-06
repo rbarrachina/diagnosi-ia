@@ -18,6 +18,14 @@ export type AdminEmailInvitationSummary = {
   acceptedBy: string | null;
 };
 
+export type AdminCentreOption = {
+  id: string;
+  name: string;
+  officialCode: string | null;
+  municipality: string | null;
+  questionnaireIds: string[];
+};
+
 export type AdminQuestionSummary = {
   id: string;
   position: number;

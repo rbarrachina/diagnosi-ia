@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { AppLogoLink } from "@/components/brand/app-logo";
+import { LanguageSelector } from "@/components/home/language-selector";
 import { AppHeaderEffects } from "@/components/layout/app-header-effects";
 
 type AppHeaderProps = {
@@ -32,6 +33,7 @@ export function AppHeader({
           showLabelOnMobile={showBrandLabelOnMobile}
         />
         <div className="flex items-center gap-2" ref={controlsRef}>
+          <LanguageSelector />
           {children}
         </div>
       </div>

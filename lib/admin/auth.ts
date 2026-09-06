@@ -163,9 +163,12 @@ export async function getAdminSessionState(options: {
 }
 
 export async function getRequiredAdminUser(): Promise<AppAuthenticatedUser> {
-  const session = await getAdminSessionState();
+  const session = await getXtecSessionState();
 
-  if (session.status !== "authenticated") {
+  if (
+    session.status !== "authenticated" ||
+    !(await isActiveAdminUser(session.user.id))
+  ) {
     throw new AdminAccessError();
   }
 

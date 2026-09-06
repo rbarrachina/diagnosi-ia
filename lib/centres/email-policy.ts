@@ -84,6 +84,7 @@ export async function getCentreEmailPolicyForPublicCode(
       inner join centres on centres.id = diagnostic_spaces.centre_id
       where diagnostic_spaces.public_code = ?
         and diagnostic_spaces.is_active = true
+        and centres.is_suspended = false
       limit 1
     `,
     [publicCode],

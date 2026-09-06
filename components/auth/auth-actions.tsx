@@ -93,7 +93,7 @@ export function XtecForbiddenNotice() {
 }
 
 type ResponsibleForbiddenNoticeProps = {
-  reason?: "not_xtec" | "not_centre_xtec";
+  reason?: "not_xtec" | "not_centre_xtec" | "suspended";
 };
 
 export function ResponsibleForbiddenNotice({
@@ -103,7 +103,9 @@ export function ResponsibleForbiddenNotice({
     <div className="rounded-md border border-red-200 bg-red-50 p-6 text-center text-red-900 shadow-sm">
       <h2 className="text-xl font-semibold">Accés no autoritzat</h2>
       <p className="mt-3 text-sm leading-6">
-        {reason === "not_centre_xtec"
+        {reason === "suspended"
+          ? "L’accés d’aquest centre està suspès. Contacta amb l’administració de l’aplicació."
+          : reason === "not_centre_xtec"
           ? "Cal accedir amb un correu electrònic de centre @xtec.cat amb codi de centre, o amb un compte administrador actiu."
           : "Només es permet l'accés amb un compte XTEC."}
       </p>

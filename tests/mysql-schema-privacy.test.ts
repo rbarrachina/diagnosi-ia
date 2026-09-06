@@ -38,6 +38,19 @@ describe("MySQL schema privacy constraints", () => {
     expect(schema).toContain("admin_email_invitations_email_format_check");
   });
 
+  it("keeps centre administration audit metadata free of participant fields", () => {
+    const auditDefinition = schema.slice(
+      schema.indexOf("export const adminCentreActions"),
+      schema.indexOf("export const appSettings"),
+    );
+
+    expect(auditDefinition).toContain('"admin_centre_actions"');
+    expect(auditDefinition).toContain("affectedSubmissions");
+    expect(auditDefinition).not.toMatch(
+      /submissionId|answerId|email|participant|ip_address|user_agent|device/i,
+    );
+  });
+
   it("stores global app settings without participant or centre identifiers", () => {
     const appSettingsDefinition = schema.slice(schema.indexOf("export const appSettings"));
 

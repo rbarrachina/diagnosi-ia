@@ -24,7 +24,7 @@ beforeEach(() => {
 });
 
 describe("initial page", () => {
-  it("combines the product, privacy and role information", async () => {
+  it("combines the product and role information", async () => {
     render(await Home());
 
     expect(
@@ -33,22 +33,47 @@ describe("initial page", () => {
         name: "Diagnosi de la competència digital docent en IA",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Indicador OIA-12")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Informació sobre privacitat" }),
-    ).toHaveAttribute("aria-expanded", "false");
+      screen.getByText(
+        "[OIA-12] Fer una diagnosi de quina és la competència digital docent en IA del claustre",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Informació sobre privacitat" }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Informació de versió i projecte" }),
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Activa el tema fosc" }),
     ).toBeInTheDocument();
+    const xtecHeaderButton = screen.getByRole("button", { name: "Accés XTEC" });
+    expect(xtecHeaderButton).toHaveClass("h-10", "w-10", "rounded-full", "bg-action");
+    expect(xtecHeaderButton).not.toHaveTextContent("Accés XTEC");
     expect(
-      screen.getByRole("heading", { level: 2, name: "Soc responsable" }),
+      screen.getByRole("heading", { level: 3, name: "Una diagnosi amb criteri" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { level: 2, name: "Soc docent" }),
+      screen.getByRole("heading", { level: 3, name: "El centre gestiona" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 3, name: "El docent respon" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/documentació de competència digital docent/)).toBeVisible();
+    expect(
+      screen.getByText("orientacions per a l’ús de la IA als centres educatius"),
+    ).toBeVisible();
+    expect(screen.getByText("Un únic espai de diagnosi per centre")).toBeVisible();
+    expect(
+      screen.getByText("Participació anònima i resultats de conjunt"),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Crea o gestiona l’espai de diagnosi" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(/No pot crear cap compte a l’aplicació/)).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "Ves a la mostra del qüestionari" }),
+    ).toHaveAttribute("href", "#mostra-questionari");
   });
 
   it("explains centre access before starting the existing Google login", async () => {
@@ -117,31 +142,6 @@ describe("initial page", () => {
     expect(screen.getByRole("menuitem", { name: /GL Galego/ })).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: /OC Aranés/ })).toBeInTheDocument();
     expect(languageButton).toHaveTextContent("CA");
-  });
-
-  it("explains the privacy guarantees from the privacy control", async () => {
-    render(await Home());
-
-    const privacyButton = screen.getByRole("button", {
-      name: "Informació sobre privacitat",
-    });
-    fireEvent.click(privacyButton);
-
-    expect(privacyButton).toHaveAttribute("aria-expanded", "true");
-    expect(
-      screen.getByRole("heading", { level: 2, name: "Privacitat i anonimat" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Les respostes són anònimes/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/El centre promotor està identificat/),
-    ).toBeInTheDocument();
-
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: "Tanca la informació sobre privacitat",
-      }),
-    );
-    expect(privacyButton).toHaveAttribute("aria-expanded", "false");
   });
 
   it("shows a static example of the first active questionnaire item", async () => {

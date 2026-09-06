@@ -31,6 +31,7 @@ erDiagram
   submissions ||--o{ answers : contains
   questions ||--o{ answers : answered_by
   admin_users ||--o{ admin_email_invitations : manages
+  admin_users ||--o{ admin_centre_actions : performs
 ```
 
 ## Taules
@@ -65,6 +66,9 @@ També conté l'estat de l'alta (`profile_confirmed_at` i
 `custom_domain` opcional. El domini es desa en minúscules i s'aplica per
 coincidència exacta. Aquestes dades descriuen el centre, no identifiquen cap
 docent.
+
+`is_suspended`, `suspended_at` i `suspended_by` permeten bloquejar de manera
+reversible el responsable i l'espai públic. No es relacionen amb cap resposta.
 
 ### `centre_accounts`
 
@@ -115,6 +119,15 @@ gestió administrativa i no pot relacionar-se amb respostes.
 Invitacions d'administració pendents o acceptades. Desa el correu XTEC, qui
 convida i la traça mínima d'acceptació. No pot contenir dades de participants.
 
+### `admin_centre_actions`
+
+Registre mínim de suspensions, reactivacions, reinicis i eliminacions de
+centres. Desa un UUID, l'identificador i etiqueta institucional del centre, el
+tipus d'acció, l'administrador, el recompte agregat afectat i la data. No té
+clau forana cap a `centres` perquè el registre de governança es conserva després
+d'una eliminació. No conté `submission_id`, `answer_id`, correus docents ni
+contingut de respostes.
+
 ### `app_settings`
 
 Configuració global no personal:
@@ -124,6 +137,10 @@ Configuració global no personal:
 - `communication_subject`: assumpte global del comunicat.
 - `communication_body`: text global amb la marca opcional
   `{URL_QUESTIONARI}`.
+- `language_selector_visible`: booleà textual que mostra o oculta el selector
+  d’idioma global.
+- `visible_languages`: codis de llengua visibles separats per comes; sempre ha
+  d’incloure `CA` mentre el contingut només estigui disponible en català.
 - El comunicat també admet `{NOM_CENTRE}`.
 
 No pot contenir dades de participants.
@@ -149,6 +166,12 @@ s'insereix en cap taula.
 El reinici d'un espai elimina bloquejos i respostes, assigna la versió activa i
 rota codi i token dins una transacció. No modifica el qüestionari versionat.
 
+Les accions administratives sobre un centre bloquegen primer la seva fila. La
+suspensió és reversible; els reinicis i l'eliminació esborren `answers`,
+`submissions` i `submission_locks` en aquest ordre abans d'actualitzar o
+eliminar l'espai. El registre administratiu s'insereix dins la mateixa
+transacció.
+
 La creació, còpia, activació i eliminació de versions també s'executa amb
 transaccions server-side.
 
@@ -158,6 +181,12 @@ Les consultes agrupen per `question_id` i `value` i retornen només el recompte.
 No seleccionen `submission_id`, timestamps individuals ni combinacions de
 respostes. El model final inclou totals, percentatges globals, per bloc i per
 pregunta, i distribucions agregades.
+
+Els resultats d'administracio poden limitar l'agregacio a un `centre_id`
+identificat. La subconsulta d'espais elegibles aplica abans el llindar mínim de
+respostes; un centre que no el supera no aporta recomptes al resultat. Aquesta
+seleccio no modifica l'esquema ni crea cap relacio nova entre `centres` i les
+respostes individuals.
 
 ## Migracions i seed
 

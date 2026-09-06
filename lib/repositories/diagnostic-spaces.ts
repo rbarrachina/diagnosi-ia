@@ -373,6 +373,45 @@ export async function resetOwnerDiagnosticSpace(params: {
   throw new Error("Could not generate a unique public code");
 }
 
+export async function rotateAdminCentreDiagnosticSpace(
+  connection: PoolConnection,
+  params: { centreId: string; keepSuspended: boolean },
+): Promise<void> {
+  const questionnaire = await getActiveQuestionnaire(connection);
+  const newPublicCode = generatePublicCode();
+  const resultsToken = generateResultsToken();
+
+  const [result] = await connection.execute<ResultSetHeader>(
+    `
+      update diagnostic_spaces
+      set public_code = ?,
+          private_token_hmac = ?,
+          results_token_hash = ?,
+          results_token_encrypted = ?,
+          results_token_enabled = true,
+          results_token_created_at = current_timestamp(3),
+          results_token_expires_at = null,
+          questionnaire_id = ?,
+          is_active = ?,
+          closed_at = null
+      where centre_id = ?
+    `,
+    [
+      newPublicCode,
+      resultsToken.hash,
+      resultsToken.hash,
+      resultsToken.encrypted,
+      questionnaire.id,
+      !params.keepSuspended,
+      params.centreId,
+    ],
+  );
+
+  if (result.affectedRows !== 1) {
+    throw new Error("Could not rotate admin centre diagnostic space");
+  }
+}
+
 async function getExistingOwnerSpace(ownerUserId: string): Promise<ExistingSpaceRow | null> {
   const [rows] = await mysqlPool.execute<ExistingSpaceRow[]>(
     `

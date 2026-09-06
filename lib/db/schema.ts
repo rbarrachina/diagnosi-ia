@@ -139,6 +139,9 @@ export const centres = mysqlTable(
       mode: "string",
       fsp: 3,
     }),
+    isSuspended: boolean("is_suspended").notNull().default(false),
+    suspendedAt: datetime("suspended_at", { mode: "string", fsp: 3 }),
+    suspendedBy: varchar("suspended_by", { length: 191 }),
     createdAt: createdAt(),
     updatedAt: createdAt("updated_at"),
   },
@@ -164,6 +167,10 @@ export const centres = mysqlTable(
     check(
       "centres_email_policy_check",
       sql`${table.emailPolicyConfiguredAt} is null or ${table.allowXtec} = true or ${table.customDomain} is not null`,
+    ),
+    check(
+      "centres_suspension_check",
+      sql`(${table.isSuspended} = false and ${table.suspendedAt} is null and ${table.suspendedBy} is null) or (${table.isSuspended} = true and ${table.suspendedAt} is not null and trim(${table.suspendedBy}) <> '')`,
     ),
   ],
 );
@@ -402,6 +409,39 @@ export const adminEmailInvitations = mysqlTable(
     check(
       "admin_email_invitations_acceptance_check",
       sql`(${table.acceptedAt} is null and ${table.acceptedBy} is null) or (${table.acceptedAt} is not null and ${table.acceptedBy} is not null)`,
+    ),
+  ],
+);
+
+export const adminCentreActions = mysqlTable(
+  "admin_centre_actions",
+  {
+    id: uuid("id").notNull().primaryKey(),
+    centreId: uuid("centre_id").notNull(),
+    centreLabel: varchar("centre_label", { length: 255 }).notNull(),
+    action: varchar("action", { length: 32 }).notNull(),
+    actorUserId: varchar("actor_user_id", { length: 191 }).notNull(),
+    affectedSubmissions: int("affected_submissions").notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (table) => [
+    index("admin_centre_actions_centre_id_idx").on(table.centreId),
+    index("admin_centre_actions_actor_user_id_idx").on(table.actorUserId),
+    check(
+      "admin_centre_actions_action_check",
+      sql`${table.action} in ('suspended', 'reactivated', 'responses_reset', 'space_reset', 'deleted')`,
+    ),
+    check(
+      "admin_centre_actions_centre_label_not_blank_check",
+      sql`trim(${table.centreLabel}) <> ''`,
+    ),
+    check(
+      "admin_centre_actions_actor_user_id_not_blank_check",
+      sql`trim(${table.actorUserId}) <> ''`,
+    ),
+    check(
+      "admin_centre_actions_affected_submissions_check",
+      sql`${table.affectedSubmissions} >= 0`,
     ),
   ],
 );

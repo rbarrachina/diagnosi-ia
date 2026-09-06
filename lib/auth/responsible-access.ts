@@ -25,6 +25,10 @@ type AdminUserRow = RowDataPacket & {
   user_id: string;
 };
 
+type SuspendedCentreRow = RowDataPacket & {
+  is_suspended: number | boolean;
+};
+
 export class ResponsibleAccessSettingsError extends Error {
   constructor(message = "Could not update responsible access settings") {
     super(message);
@@ -143,6 +147,10 @@ export async function canUseResponsibleAccess(
     return false;
   }
 
+  if (await isResponsibleCentreSuspended(user.id)) {
+    return false;
+  }
+
   if (isXtecCentreEmail(user.email)) {
     return true;
   }
@@ -154,6 +162,23 @@ export async function canUseResponsibleAccess(
   }
 
   return isActiveAdminUser(user.id);
+}
+
+export async function isResponsibleCentreSuspended(
+  userId: string,
+): Promise<boolean> {
+  const [rows] = await mysqlPool.execute<SuspendedCentreRow[]>(
+    `
+      select centres.is_suspended
+      from centre_accounts
+      inner join centres on centres.id = centre_accounts.centre_id
+      where centre_accounts.user_id = ?
+      limit 1
+    `,
+    [userId],
+  );
+
+  return Boolean(rows[0]?.is_suspended);
 }
 
 export async function isActiveAdminUser(userId: string): Promise<boolean> {

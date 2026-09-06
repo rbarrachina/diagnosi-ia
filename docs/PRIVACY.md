@@ -3,6 +3,7 @@
 ## Principi rector
 
 Diagnosi IA identifica el centre promotor i minimitza les dades del professorat.
+El centre no és anònim davant l'aplicacio ni davant l'administracio autoritzada.
 Les respostes no identifiquen docents i els resultats només existeixen en
 conjunt.
 
@@ -25,6 +26,8 @@ No es pot recollir ni desar del professorat participant:
 - Nom visible, correu XTEC i darrera entrada només dels administradors.
 - Correus XTEC d'invitacions d'administració, separats de les respostes.
 - Configuració global no personal.
+- Registre mínim d'actuacions administratives sobre centres, sense dades ni
+  identificadors de participants.
 - Codi públic de l'espai.
 - HMAC i valor xifrat del token privat.
 - Versió i estat del qüestionari.
@@ -101,6 +104,8 @@ El tauler i el PDF poden mostrar:
 - percentatges per bloc i pregunta;
 - distribucions agregades;
 - resultats globals agregats per versió;
+- resultats agregats d'un centre identificat concret quan supera el llindar
+  administratiu;
 - nombre agregat d'espais inclosos.
 
 No poden mostrar:
@@ -121,14 +126,36 @@ No hi ha un mínim fix per consultar els resultats d'un espai. Amb menys de cinc
 respostes es mostra un avís de prudència. No es poden afegir filtres que
 augmentin el risc de reidentificació.
 
-Els resultats globals d'administració poden excloure espais que no superin el
-llindar configurat, sense revelar quins espais han estat exclosos.
+Els resultats d'administració exclouen els centres que no superen el llindar
+configurat. Quan se selecciona un centre concret que no el supera, no se'n
+mostren el recompte exacte, els percentatges ni les distribucions.
+
+El resum inicial d'administració només mostra totals agregats. Les respostes
+computables totals i les del qüestionari actiu exclouen tots els centres que no
+superen el mateix llindar; no s'hi mostra cap desglossament de respostes per
+centre.
+Els indicadors i avisos poden obrir llistes institucionals filtrades, però no
+afegeixen cap dimensió als resultats ni revelen recomptes de respostes que no
+superin el llindar.
 
 ## Administració
 
-L'administració pot gestionar qüestionaris, configuració i administradors, però
-no pot veure o exportar respostes individuals ni filtrar resultats per centre,
-espai, responsable, docent, data o compte.
+L'administració pot gestionar qüestionaris, configuració i administradors. Pot
+consultar resultats agregats de tots els centres o d'un centre identificat
+concret, sempre amb el llindar administratiu aplicat. Pot mostrar el nom, el
+codi oficial i el municipi del centre seleccionat.
+
+La gestió de centres pot mostrar la fitxa institucional, el correu i darrer
+accés del responsable, els dominis autoritzats, l'estat del qüestionari i un
+recompte agregat subjecte al llindar. Pot suspendre l'accés o eliminar dades de
+manera transaccional. El registre d'aquestes actuacions només conté identitat
+administrativa, centre, tipus d'acció, data i recompte afectat; no conté
+respostes ni identitat docent.
+
+No pot veure o exportar respostes individuals ni filtrar resultats per espai,
+responsable, docent, data, compte o cap característica personal. No pot afegir
+altres dimensions al filtre de centre que facilitin la identificació indirecta
+del professorat.
 
 Una versió activa o amb respostes només permet correccions textuals que
 mantinguin identificadors i estructura. Els canvis estructurals exigeixen una
@@ -152,6 +179,6 @@ requereix una revisió explícita de privacitat.
 ## Riscos pendents
 
 - Rate limiting i protecció anti-bots.
-- Política de retenció i eliminació.
-- Caducitat o tancament d'espais.
+- Política de retenció i eliminació automàtica.
+- Caducitat automàtica d'espais.
 - Revisió legal o DPO per a ús institucional.

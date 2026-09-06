@@ -5,6 +5,7 @@ import type { ResponsibleAccessMode } from "@/lib/auth/responsible-access";
 let responsibleAccessMode: ResponsibleAccessMode | null;
 let adminMinimumSubmissions: number | null;
 let activeAdminUserIds: Set<string>;
+let suspendedCentreUserIds: Set<string>;
 
 vi.mock("server-only", () => ({}));
 
@@ -29,6 +30,7 @@ describe("responsible access settings", () => {
     responsibleAccessMode = "all_xtec";
     adminMinimumSubmissions = 0;
     activeAdminUserIds = new Set();
+    suspendedCentreUserIds = new Set();
   });
 
   it("defaults to any XTEC account for responsible access", async () => {
@@ -83,6 +85,18 @@ describe("responsible access settings", () => {
     await expect(getResponsibleAccessMode()).resolves.toBe("centre_xtec");
   });
 
+  it("denies a suspended centre account in every access mode", async () => {
+    suspendedCentreUserIds.add("00000000-0000-4000-8000-000000000002");
+
+    await expect(
+      canUseResponsibleAccess({
+        id: "00000000-0000-4000-8000-000000000002",
+        email: "a1234567@xtec.cat",
+        displayName: "Centre suspès",
+      }),
+    ).resolves.toBe(false);
+  });
+
   it("persists the minimum responses used for admin result aggregation", async () => {
     await expect(setAdminResultsMinimumSubmissions(7)).resolves.toBe(7);
     await expect(getAdminResultsMinimumSubmissions()).resolves.toBe(7);
@@ -131,6 +145,13 @@ async function executeQuery(query: string, values: unknown[] = []) {
   if (normalizedQuery.includes("from admin_users")) {
     const userId = String(values[0]);
     return [activeAdminUserIds.has(userId) ? [{ user_id: userId }] : []];
+  }
+
+  if (normalizedQuery.includes("from centre_accounts")) {
+    const userId = String(values[0]);
+    return [
+      suspendedCentreUserIds.has(userId) ? [{ is_suspended: true }] : [],
+    ];
   }
 
   throw new Error(`Unexpected query: ${query}`);

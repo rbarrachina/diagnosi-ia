@@ -85,11 +85,41 @@ export const questionnaireIdSchema = z
   .string()
   .regex(/^[0-9]{3}$/, "L'identificador de qüestionari no és vàlid");
 
-export const adminResultsRequestSchema = z
+export const centreIdSchema = z.string().uuid();
+export const adminCentreSuspensionInputSchema = z
   .object({
-    questionnaireId: questionnaireIdSchema,
+    centreId: centreIdSchema,
+    suspended: z.boolean(),
   })
   .strict();
+export const adminCentreDestructiveActionInputSchema = z
+  .object({
+    centreId: centreIdSchema,
+    confirmed: z.literal(true),
+  })
+  .strict();
+export const adminCentreDeletionInputSchema = z
+  .object({
+    centreId: centreIdSchema,
+    confirmation: z.string().trim().min(1).max(254),
+  })
+  .strict();
+export const adminResultsScopeSchema = z.enum(["all", "centre"]);
+export const adminResultsRequestSchema = z.discriminatedUnion("scope", [
+  z
+    .object({
+      scope: z.literal("all"),
+      questionnaireId: questionnaireIdSchema,
+    })
+    .strict(),
+  z
+    .object({
+      scope: z.literal("centre"),
+      centreId: centreIdSchema,
+      questionnaireId: questionnaireIdSchema,
+    })
+    .strict(),
+]);
 
 export const questionnaireTitleSchema = z.string().trim().min(1).max(200);
 export const questionnaireEstimatedMinutesSchema = z.coerce
@@ -225,6 +255,18 @@ export const setAdminUserActiveInputSchema = z
   .strict();
 
 export const responsibleAccessModeSchema = z.enum(["all_xtec", "centre_xtec"]);
+export const languageSettingsInputSchema = z
+  .object({
+    selectorVisible: z.boolean(),
+    visibleLanguageCodes: z
+      .array(z.enum(["CA", "ES", "EU", "GL", "OC"]))
+      .min(1),
+  })
+  .strict()
+  .refine(({ visibleLanguageCodes }) => visibleLanguageCodes.includes("CA"), {
+    message: "Catalan must remain available while it is the active language",
+    path: ["visibleLanguageCodes"],
+  });
 export const adminResultsMinimumSubmissionsSchema = z.coerce
   .number()
   .int()
@@ -241,6 +283,8 @@ export type SubmissionAnswerInput = z.infer<typeof submissionAnswerSchema>;
 export type SubmissionRequestInput = z.infer<typeof submissionRequestSchema>;
 export type PrivateResultsRequestInput = z.infer<typeof privateResultsRequestSchema>;
 export type OwnerResultsRequestInput = z.infer<typeof ownerResultsRequestSchema>;
+export type AdminResultsRequestInput = z.infer<typeof adminResultsRequestSchema>;
+export type AdminResultsScopeInput = z.infer<typeof adminResultsScopeSchema>;
 export type AdminQuestionInput = z.infer<typeof adminQuestionInputSchema>;
 export type AdminQuestionBlockInput = z.infer<typeof adminQuestionBlockInputSchema>;
 export type CreateQuestionnaireDraftInput = z.infer<
@@ -270,6 +314,7 @@ export type CommunicationTemplateInput = z.infer<
 >;
 export type SetAdminUserActiveInput = z.infer<typeof setAdminUserActiveInputSchema>;
 export type ResponsibleAccessModeInput = z.infer<typeof responsibleAccessModeSchema>;
+export type LanguageSettingsInput = z.infer<typeof languageSettingsInputSchema>;
 export type AdminResultsMinimumSubmissionsInput = z.infer<
   typeof adminResultsMinimumSubmissionsSchema
 >;

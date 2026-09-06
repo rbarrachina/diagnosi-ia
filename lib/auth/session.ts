@@ -14,7 +14,7 @@ export type ResponsibleSessionState =
   | {
       status: "forbidden";
       email: string | null;
-      reason: "not_xtec" | "not_centre_xtec";
+      reason: "not_xtec" | "not_centre_xtec" | "suspended";
     }
   | { status: "unauthenticated" };
 
@@ -41,10 +41,16 @@ export async function getResponsibleSessionState(): Promise<ResponsibleSessionSt
     return { status: "forbidden", email: user.email, reason: "not_xtec" };
   }
 
-  const { canUseResponsibleAccess } = await import("@/lib/auth/responsible-access");
+  const { canUseResponsibleAccess, isResponsibleCentreSuspended } = await import(
+    "@/lib/auth/responsible-access"
+  );
 
-  return (await canUseResponsibleAccess(user))
-    ? { status: "authenticated", user }
+  if (await canUseResponsibleAccess(user)) {
+    return { status: "authenticated", user };
+  }
+
+  return (await isResponsibleCentreSuspended(user.id))
+    ? { status: "forbidden", email: user.email, reason: "suspended" }
     : { status: "forbidden", email: user.email, reason: "not_centre_xtec" };
 }
 
