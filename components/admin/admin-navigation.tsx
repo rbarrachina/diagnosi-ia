@@ -2,11 +2,17 @@
 
 import Link from "next/link";
 
-export type AdminSection = "admins" | "questionnaires" | "results" | "settings";
+export type AdminSection =
+  | "admins"
+  | "centres"
+  | "questionnaires"
+  | "results"
+  | "summary"
+  | "settings";
 
 type AdminNavigationItem = {
   href: string;
-  icon: "questionnaires" | "results" | "admins" | "settings";
+  icon: "summary" | "questionnaires" | "centres" | "results" | "admins" | "settings";
   label: string;
   mobileLabel: string;
   section: AdminSection;
@@ -21,11 +27,25 @@ function getNavigationItems(
 
   return [
     {
+      href: "/admin?section=summary",
+      icon: "summary",
+      label: "Resum",
+      mobileLabel: "Resum",
+      section: "summary",
+    },
+    {
       href: questionnaireHref,
       icon: "questionnaires",
       label: "Qüestionaris",
       mobileLabel: "Qüestionaris",
       section: "questionnaires",
+    },
+    {
+      href: "/admin?section=centres",
+      icon: "centres",
+      label: "Centres",
+      mobileLabel: "Centres",
+      section: "centres",
     },
     {
       href: "/admin?section=results",
@@ -125,7 +145,7 @@ export function AdminMobileNavigation({
   return (
     <nav
       aria-label="Seccions d’administració"
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line bg-surface px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_36px_var(--app-shadow)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-line bg-surface px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_36px_var(--app-shadow)] md:hidden"
     >
       {getNavigationItems(selectedQuestionnaireId).map((item) => {
         const active = activeSection === item.section;
@@ -226,10 +246,29 @@ function AdminNavigationIcon({
     );
   }
 
+  if (name === "summary") {
+    return (
+      <svg aria-hidden="true" {...common}>
+        <rect height="7" rx="1.5" width="7" x="3" y="3" />
+        <rect height="7" rx="1.5" width="7" x="14" y="3" />
+        <rect height="7" rx="1.5" width="7" x="3" y="14" />
+        <rect height="7" rx="1.5" width="7" x="14" y="14" />
+      </svg>
+    );
+  }
+
   if (name === "results") {
     return (
       <svg aria-hidden="true" {...common}>
         <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+      </svg>
+    );
+  }
+
+  if (name === "centres") {
+    return (
+      <svg aria-hidden="true" {...common}>
+        <path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5M8 11h.01M12 11h.01M16 11h.01" />
       </svg>
     );
   }

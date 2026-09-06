@@ -50,8 +50,10 @@ export async function POST(
   }
 }
 
-function getResponsibleAccessErrorMessage(reason: "not_xtec" | "not_centre_xtec") {
-  return reason === "not_centre_xtec"
+function getResponsibleAccessErrorMessage(reason: "not_xtec" | "not_centre_xtec" | "suspended") {
+  return reason === "suspended"
+    ? "L’accés d’aquest centre està suspès."
+    : reason === "not_centre_xtec"
     ? "Cal accedir amb un correu electrònic de centre @xtec.cat amb codi de centre, o amb un compte administrador actiu."
     : "Només es permet l'accés amb un compte XTEC.";
 }

@@ -75,8 +75,9 @@ vi.mock("@/lib/db/client", () => ({
   },
 }));
 
-const { getAdminSessionState } = await import("@/lib/admin/auth");
+const { getAdminSessionState, getRequiredAdminUser } = await import("@/lib/admin/auth");
 const {
+  deletePendingAdminEmailInvitation,
   inviteAdminByEmail,
   listAdminEmailInvitations,
   listAdminUsers,
@@ -154,6 +155,33 @@ describe("local admin auth with MySQL admin_users", () => {
     ]);
   });
 
+  it("authorizes server actions using only the active admin role", async () => {
+    adminRows = [
+      {
+        user_id: "00000000-0000-4000-8000-000000000001",
+        email: "usuari.prova@xtec.cat",
+        display_name: "Usuari Prova",
+        role: "admin",
+        is_active: 1,
+        created_at: "2026-06-15 10:00:00.000",
+        created_by: null,
+        last_login_at: "2026-06-15 11:00:00.000",
+      },
+    ];
+
+    await expect(getRequiredAdminUser()).resolves.toEqual(
+      currentSession.status === "authenticated" ? currentSession.user : null,
+    );
+    expect(
+      poolCalls.some(({ query }) => query.includes("update admin_users")),
+    ).toBe(false);
+    expect(
+      poolCalls.some(({ query }) =>
+        query.includes("update admin_email_invitations"),
+      ),
+    ).toBe(false);
+  });
+
   it("creates pending admin invitations by XTEC email", async () => {
     await inviteAdminByEmail(
       { email: "NOVA.ADMIN@xtec.cat" },
@@ -174,6 +202,37 @@ describe("local admin auth with MySQL admin_users", () => {
         email: "nova.admin@xtec.cat",
       }),
     ]);
+  });
+
+  it("deletes only pending admin invitations", async () => {
+    invitationRows = [
+      {
+        email: "pendent@xtec.cat",
+        is_active: 1,
+        created_at: "2026-06-15 10:00:00.000",
+        invited_by: "00000000-0000-4000-8000-000000000001",
+        accepted_at: null,
+        accepted_by: null,
+      },
+      {
+        email: "acceptada@xtec.cat",
+        is_active: 0,
+        created_at: "2026-06-14 10:00:00.000",
+        invited_by: "00000000-0000-4000-8000-000000000001",
+        accepted_at: "2026-06-15 09:00:00.000",
+        accepted_by: "00000000-0000-4000-8000-000000000002",
+      },
+    ];
+
+    await deletePendingAdminEmailInvitation({ email: "PENDENT@xtec.cat" });
+
+    expect(invitationRows).toEqual([
+      expect.objectContaining({ email: "acceptada@xtec.cat" }),
+    ]);
+    await expect(listAdminEmailInvitations()).resolves.toEqual([]);
+    await expect(
+      deletePendingAdminEmailInvitation({ email: "acceptada@xtec.cat" }),
+    ).rejects.toThrow("Pending invitation could not be removed");
   });
 
   it("accepts a pending email invitation when the invited user signs in", async () => {
@@ -248,6 +307,19 @@ describe("local admin auth with MySQL admin_users", () => {
 async function executePoolQuery(query: string, values: unknown[] = []) {
   const normalizedQuery = query.toLowerCase();
   poolCalls.push({ query: normalizedQuery, values });
+
+  if (normalizedQuery.includes("delete from admin_email_invitations")) {
+    const email = String(values[0]);
+    const invitationIndex = invitationRows.findIndex(
+      (row) => row.email === email && row.is_active === 1 && row.accepted_at === null,
+    );
+
+    if (invitationIndex >= 0) {
+      invitationRows.splice(invitationIndex, 1);
+    }
+
+    return [{ affectedRows: invitationIndex >= 0 ? 1 : 0 }];
+  }
 
   if (normalizedQuery.includes("from admin_users") && normalizedQuery.includes("limit 1")) {
     return [

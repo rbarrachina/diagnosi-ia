@@ -43,6 +43,7 @@ filtres o exportacions que facilitin la reidentificacio de persones.
 
 Funcionalitats previstes:
 
+- consultar un resum inicial amb l'estat dels centres i del qüestionari actiu;
 - gestionar blocs de preguntes;
 - gestionar preguntes tancades;
 - crear noves versions del qüestionari;
@@ -53,15 +54,19 @@ Funcionalitats previstes:
 - aplicar correccions menors sobre una versio només quan encara no estigui
   assignada a cap espai de diagnosi;
 - gestionar administradors;
+- consultar i cercar els centres registrats, suspendre'n o reactivar-ne
+  l'accés i executar reinicis o eliminacions confirmades;
 - configurar si l'accés de responsables admet qualsevol compte `@xtec.cat` o
   només comptes de centre XTEC.
 - configurar el comunicat global que els responsables poden obrir al correu web
   per compartir l'enllaç públic amb el professorat, sense preomplir
   destinataris.
-- consultar resultats globals agregats per versio de qüestionari i descarregar
-  un PDF agregat d'administracio.
+- consultar resultats agregats per versio de qüestionari per a tots els centres
+  o per a un centre identificat concret i descarregar el PDF corresponent.
 
 La gestio d'administradors permet convidar un compte `@xtec.cat` per correu.
+Les invitacions pendents es poden eliminar abans que la persona convidada les
+accepti.
 La invitacio queda limitada a l'administracio global i no es pot barrejar amb
 respostes, espais ni professorat participant. Quan la persona convidada accedeix
 amb Google OAuth, el servidor crea o reactiva el seu registre a `admin_users`
@@ -100,6 +105,32 @@ Aquest bootstrap inicial no s'ha de barrejar amb la creació d'espais de
 diagnosi. Crear un qüestionari o un espai no concedeix permisos
 d'administracio.
 
+### Resum d'administració
+
+La ruta `/admin` obre per defecte la secció `Resum`. La part superior mostra
+sis indicadors agregats: centres actius, suspesos, pendents de configuració,
+centres sense qüestionari, centres sense respostes i respostes computables
+totals. Un centre actiu no està suspès i té confirmades la fitxa institucional
+i la política de correus; un centre pendent no està suspès i encara no ha
+completat algun d'aquests dos passos.
+
+Les respostes computables només sumen els espais que superen estrictament el
+llindar administratiu configurat. El resum no mostra recomptes per centre ni
+cap fila individual. També presenta el títol, versió, data de creació, nombre
+de centres associats i respostes computables del qüestionari actiu, amb accés
+directe a la gestió de qüestionaris i als resultats globals.
+
+Els sis indicadors són accionables. Els cinc indicadors de centres obren la
+secció `Centres` amb el filtre corresponent i el total de respostes computables
+obre els resultats globals del qüestionari actiu. La llista de centres conserva
+el filtre mentre es cerca o se selecciona una fitxa i permet retirar-lo.
+
+Sota els indicadors només apareix l'apartat `Requereixen atenció` quan hi ha
+alguna incidència operativa: centres pendents de configuració, centres actius
+sense qüestionari, centres amb qüestionari però sense respostes o absència de
+qüestionari actiu. Cada avís enllaça directament amb la vista filtrada o l'acció
+de gestió corresponent.
+
 ### Configuracio d'acces de responsables
 
 L'administracio inclou una pantalla de configuracio global. Inclou l'opcio
@@ -125,6 +156,12 @@ enquestes amb més respostes que aquest valor. Les enquestes amb un nombre de
 respostes igual o inferior al llindar no s'inclouen en els totals, percentatges
 ni PDF d'administracio. La pantalla de resultats mostra una frase inicial que
 explica el llindar aplicat.
+
+La configuracio global d’idiomes permet ocultar o mostrar el selector a les
+capçaleres de tota l’aplicacio i decidir quines llengües previstes hi apareixen.
+El català és obligatori mentre sigui l’única llengua funcional. Castellà,
+euskera, gallec i aranès es poden mostrar o ocultar, però encara no canvien la
+llengua del contingut.
 
 La configuracio també inclou el comunicat global per compartir el qüestionari:
 títol del correu i text del missatge. El text pot contenir la marca
@@ -159,18 +196,60 @@ de retornar ni exportar files individuals abans d'eliminar-les.
 
 L'administracio inclou una vista `Resultats`. Inicialment no hi ha cap versio
 seleccionada i no es calculen resultats fins que l'administrador tria una
-versio del qüestionari. Un cop seleccionada, consulta els resultats agregats de
-totes les enquestes respostes amb aquella versio. Aquesta vista només mostra
-dades de conjunt: nombre agregat de centres/espais, nombre total de respostes,
-percentatges globals, percentatges per bloc, percentatges per pregunta i
-distribucions agregades. Si hi ha definit un llindar de respostes mínimes per
-computar resultats globals, només s'hi inclouen les enquestes que superen
-aquest llindar.
+versio del qüestionari. L'àmbit inicial és `Tots els centres`; l'administrador
+també pot triar `Un centre concret` i seleccionar-lo pel nom institucional, el
+codi oficial o el municipi. Els selectors de centre i qüestionari estan
+vinculats: en triar un qüestionari només s'ofereixen els centres que tenen
+resultats elegibles d'aquella versio, i en triar un centre només s'ofereixen
+les versions que aquell centre ha respost. Els centres sense cap combinacio que
+superi el llindar administratiu no apareixen al selector. Els centres no són
+anònims davant l'administracio.
 
-La vista no mostra espais individuals, responsables, docents, timestamps
-individuals, `submission_id`, `answer_id` ni combinacions de respostes d'una
-mateixa persona. El PDF d'administracio repeteix la mateixa agregacio per
-versio i no inclou tokens ni codis publics d'espais.
+La vista només mostra dades de conjunt: nombre agregat de centres/espais quan
+l'àmbit és global, nombre total de respostes computades, percentatges globals,
+percentatges per bloc, percentatges per pregunta i distribucions agregades. El
+llindar administratiu s'aplica sempre. En l'àmbit global només s'inclouen els
+centres que el superen; en l'àmbit d'un centre concret no es mostra cap dada de
+resultats si aquell centre no el supera.
+
+La seleccio d'un centre no permet veure l'espai, el responsable, docents,
+timestamps individuals, `submission_id`, `answer_id` ni combinacions de
+respostes d'una mateixa persona. Tampoc es permet combinar el centre amb
+filtres de data, compte o característiques personals. El PDF d'administracio
+repeteix la mateixa agregacio i validacio de l'àmbit i no inclou tokens ni codis
+publics d'espais.
+
+### Gestió administrativa de centres
+
+La secció `Centres` mostra exclusivament identitat institucional, dades del
+compte responsable, política de dominis, estat de l'espai i recomptes
+agregats. Permet cercar per nom, codi oficial, municipi o correu del
+responsable. Mai no mostra correus, accessos ni respostes del professorat.
+
+El darrer accés correspon només al compte responsable. El recompte exacte de
+respostes només es mostra quan supera el llindar administratiu; en cas contrari
+la interfície indica únicament que és igual o inferior al llindar.
+
+Un administrador pot suspendre o reactivar un centre. La suspensió impedeix
+l'accés del responsable, desactiva el qüestionari públic i bloqueja nous
+enviaments, però conserva les dades per permetre una reactivació posterior.
+
+També pot executar tres accions destructives, sempre al servidor i dins una
+transacció:
+
+- reiniciar les respostes, eliminant `answers`, `submissions` i
+  `submission_locks`, però conservant l'espai i els enllaços;
+- reiniciar completament l'espai, eliminant les respostes, assignant la versió
+  activa i rotant el codi públic i els tokens;
+- eliminar definitivament el centre, el compte responsable, l'espai i les
+  dades anònimes associades, després d'escriure el codi oficial o el correu
+  institucional com a confirmació.
+
+Les actuacions deixen un registre administratiu mínim amb l'administrador,
+l'acció, el centre, la data i el nombre de respostes afectades. Aquest registre
+no conté identificadors ni contingut de respostes i es conserva quan s'elimina
+el centre. El mateix compte XTEC podria crear una fitxa nova després d'una
+eliminació; per impedir l'accés cal usar la suspensió en lloc de l'eliminació.
 
 ## Fluxos principals
 
@@ -179,20 +258,23 @@ versio i no inclou tokens ni codis publics d'espais.
 Ruta: `/`
 
 La portada és l'única pantalla inicial. Reuneix l'objectiu de l'eina,
-l'indicador OIA-12, un control accessible amb les garanties de privacitat,
-l'explicació dels rols i les targetes de responsable i docent. La informació
-de versió, autoria, llicència i repositori es mostra al peu de pàgina. El
-panell de privacitat es tanca en prémer el seu botó, la creu o qualsevol punt
-de la pàgina exterior al control i al mateix panell.
+l'indicador OIA-12 i tres targetes equilibrades: el fonament en la documentació
+de competència digital docent i les orientacions d'IA per als centres; la
+creació, compartició i consulta de resultats per part del centre; i la resposta
+anònima del docent mitjançant l'enllaç rebut, sense crear cap compte. La
+informació de versió, autoria, llicència i repositori es mostra al peu de
+pàgina.
 
 La portada presenta primer una capçalera fixa amb accés XTEC, selector de tema
-clar o fosc, selector d'idioma i control de privacitat, seguida d'un bloc
-principal a pantalla completa amb una única acció destacada per accedir amb el
-compte de centre. La capçalera és
+clar o fosc i selector d'idioma, seguida d'un bloc principal a pantalla
+completa amb una única acció destacada per accedir amb el compte de centre. La
+capçalera és
 transparent a l'inici i passa suaument a una superfície translúcida amb
 desenfocament després d'un marge inicial de desplaçament sense efecte. La
 intensitat augmenta progressivament i el límit inferior es dissol amb un
-degradat perquè el contingut no quedi tallat de manera sobtada. La capçalera
+degradat perquè el contingut no quedi tallat de manera sobtada. L'accés
+`Descobreix-ne més` desplaça suaument la finestra fins a la secció informativa
+inferior perquè se'n percebi la continuïtat vertical. La capçalera
 guanya opacitat i desenfocament de manera accelerada al tram central i arriba a
 un estat final amb el contingut de sota fortament difuminat. Una màscara
 vertical manté transparent la vora inferior, fa translúcid el centre i aplica
@@ -203,12 +285,18 @@ preferència visual local del navegador. El selector d'idioma és informatiu:
 mostra només `CA` en repòs i desplega el català i la resta de llengües
 previstes, però no modifica l'idioma de la pàgina.
 
+Al final de la segona pantalla, una icona de desplaçament sense text enllaça
+amb transició suau a la mostra del qüestionari. L'enllaç conserva una etiqueta
+accessible encara que visualment només mostri la icona.
+
 Després de l'explicació dels rols, la portada mostra una previsualització
 estàtica de la primera pregunta de la versió `2026.2` i de les seves quatre
 opcions de resposta. Aquesta mostra és una còpia editorial fixa, no consulta la
 base de dades, no conté controls de formulari i no pot enviar ni desar cap
-resposta. També resumeix que el qüestionari consta de 20 preguntes repartides
-en cinc blocs.
+resposta. En monitors, l'espaiat i la mida de la mostra s'adapten perquè tota
+la tercera pantalla quedi visible sota la capçalera; en dispositius estrets es
+manté el recorregut vertical llegible. També resumeix que el qüestionari consta
+de 20 preguntes repartides en cinc blocs.
 
 El responsable inicia l'accés XTEC des de la portada i, un cop autenticat,
 arriba a `/crear` per crear o gestionar el seu espai. El professorat accedeix

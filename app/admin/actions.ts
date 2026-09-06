@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
+  deletePendingAdminEmailInvitation,
   deleteAdminUser,
   inviteAdminByEmail,
   setAdminUserActive,
@@ -18,6 +19,9 @@ import {
 } from "@/lib/admin/questionnaires";
 import {
   activateQuestionnaireVersionInputSchema,
+  adminCentreDeletionInputSchema,
+  adminCentreDestructiveActionInputSchema,
+  adminCentreSuspensionInputSchema,
   adminEmailInvitationInputSchema,
   adminUserInputSchema,
   adminResultsMinimumSubmissionsSchema,
@@ -25,6 +29,7 @@ import {
   createQuestionnaireVersionInputSchema,
   deleteQuestionnaireVersionInputSchema,
   responsibleAccessModeSchema,
+  languageSettingsInputSchema,
   setAdminUserActiveInputSchema,
 } from "@/lib/validation/schemas";
 import {
@@ -32,12 +37,25 @@ import {
   setResponsibleAccessMode,
 } from "@/lib/auth/responsible-access";
 import { setCommunicationTemplate } from "@/lib/admin/communication-settings";
+import { setLanguageSettings } from "@/lib/admin/language-settings";
+import {
+  deleteAdminCentre,
+  resetAdminCentreResponses,
+  resetAdminCentreSpace,
+  setAdminCentreSuspended,
+} from "@/lib/admin/centre-management";
 
 type AdminActionStatus =
   | "activated"
   | "admin-added"
   | "admin-deleted"
+  | "admin-invitation-deleted"
   | "admin-updated"
+  | "centre-deleted"
+  | "centre-reactivated"
+  | "centre-responses-reset"
+  | "centre-space-reset"
+  | "centre-suspended"
   | "copied"
   | "created"
   | "deleted"
@@ -49,7 +67,10 @@ type AdminActionError =
   | "activate"
   | "admin-add"
   | "admin-delete"
+  | "admin-invitation-delete"
   | "admin-update"
+  | "centre-action"
+  | "centre-confirmation"
   | "copy"
   | "create"
   | "create-title-exists"
@@ -59,11 +80,12 @@ type AdminActionError =
   | "save"
   | "settings";
 
-type AdminSection = "admins" | "questionnaires" | "settings";
+type AdminSection = "admins" | "centres" | "questionnaires" | "settings";
 
 function adminPath(params: {
   error?: AdminActionError;
   hash?: string;
+  centreId?: string;
   questionnaireId?: string;
   section?: AdminSection;
   status?: AdminActionStatus;
@@ -76,6 +98,10 @@ function adminPath(params: {
 
   if (params.questionnaireId) {
     searchParams.set("questionnaireId", params.questionnaireId);
+  }
+
+  if (params.centreId) {
+    searchParams.set("centreId", params.centreId);
   }
 
   if (params.status) {
@@ -260,6 +286,22 @@ export async function deleteAdminUserAction(formData: FormData) {
   redirect(adminPath({ section: "admins", status: "admin-deleted" }));
 }
 
+export async function deletePendingAdminEmailInvitationAction(formData: FormData) {
+  await requireAdminActorId();
+
+  try {
+    const payload = adminEmailInvitationInputSchema.parse({
+      email: getRequiredFormString(formData, "email"),
+    });
+    await deletePendingAdminEmailInvitation(payload);
+  } catch {
+    redirect(adminPath({ error: "admin-invitation-delete", section: "admins" }));
+  }
+
+  revalidatePath("/admin");
+  redirect(adminPath({ section: "admins", status: "admin-invitation-deleted" }));
+}
+
 export async function setAdminUserActiveAction(formData: FormData) {
   const actorUserId = await requireAdminActorId();
 
@@ -297,13 +339,102 @@ export async function setResponsibleAccessModeAction(formData: FormData) {
       subject: getRequiredFormString(formData, "communicationSubject"),
       body: getRequiredFormString(formData, "communicationBody"),
     });
+    const languageSettings = languageSettingsInputSchema.parse({
+      selectorVisible: formData.get("languageSelectorVisible") === "on",
+      visibleLanguageCodes: formData
+        .getAll("visibleLanguageCodes")
+        .filter((value): value is string => typeof value === "string"),
+    });
     await setResponsibleAccessMode(mode);
     await setAdminResultsMinimumSubmissions(minimumSubmissions);
     await setCommunicationTemplate(communicationTemplate);
+    await setLanguageSettings(languageSettings);
   } catch {
     redirect(adminPath({ error: "settings", section: "settings" }));
   }
 
-  revalidatePath("/admin");
+  revalidatePath("/", "layout");
   redirect(adminPath({ section: "settings", status: "settings-saved" }));
+}
+
+export async function setAdminCentreSuspendedAction(formData: FormData) {
+  const actorUserId = await requireAdminActorId();
+  const rawCentreId = String(formData.get("centreId") ?? "");
+  let suspended = false;
+
+  try {
+    const rawSuspended = getRequiredFormString(formData, "suspended");
+    const payload = adminCentreSuspensionInputSchema.parse({
+      centreId: rawCentreId,
+      suspended: rawSuspended === "true",
+    });
+    if (rawSuspended !== "true" && rawSuspended !== "false") throw new Error();
+    await setAdminCentreSuspended({ ...payload, actorUserId });
+    suspended = payload.suspended;
+  } catch {
+    redirect(adminPath({ centreId: rawCentreId, error: "centre-action", section: "centres" }));
+  }
+
+  revalidatePath("/admin");
+  redirect(
+    adminPath({
+      centreId: rawCentreId,
+      section: "centres",
+      status: suspended ? "centre-suspended" : "centre-reactivated",
+    }),
+  );
+}
+
+export async function resetAdminCentreResponsesAction(formData: FormData) {
+  const actorUserId = await requireAdminActorId();
+  const rawCentreId = String(formData.get("centreId") ?? "");
+
+  try {
+    const payload = adminCentreDestructiveActionInputSchema.parse({
+      centreId: rawCentreId,
+      confirmed: formData.get("confirmation") === "confirmed",
+    });
+    await resetAdminCentreResponses({ actorUserId, centreId: payload.centreId });
+  } catch {
+    redirect(adminPath({ centreId: rawCentreId, error: "centre-confirmation", section: "centres" }));
+  }
+
+  revalidatePath("/admin");
+  redirect(adminPath({ centreId: rawCentreId, section: "centres", status: "centre-responses-reset" }));
+}
+
+export async function resetAdminCentreSpaceAction(formData: FormData) {
+  const actorUserId = await requireAdminActorId();
+  const rawCentreId = String(formData.get("centreId") ?? "");
+
+  try {
+    const payload = adminCentreDestructiveActionInputSchema.parse({
+      centreId: rawCentreId,
+      confirmed: formData.get("confirmation") === "confirmed",
+    });
+    await resetAdminCentreSpace({ actorUserId, centreId: payload.centreId });
+  } catch {
+    redirect(adminPath({ centreId: rawCentreId, error: "centre-confirmation", section: "centres" }));
+  }
+
+  revalidatePath("/admin");
+  redirect(adminPath({ centreId: rawCentreId, section: "centres", status: "centre-space-reset" }));
+}
+
+export async function deleteAdminCentreAction(formData: FormData) {
+  const actorUserId = await requireAdminActorId();
+  const rawCentreId = String(formData.get("centreId") ?? "");
+
+  try {
+    const payload = adminCentreDeletionInputSchema.parse({
+      centreId: rawCentreId,
+      confirmation: getRequiredFormString(formData, "confirmation"),
+    });
+    await deleteAdminCentre({ ...payload, actorUserId });
+  } catch {
+    redirect(adminPath({ centreId: rawCentreId, error: "centre-confirmation", section: "centres" }));
+  }
+
+  revalidatePath("/admin");
+  redirect(adminPath({ section: "centres", status: "centre-deleted" }));
 }

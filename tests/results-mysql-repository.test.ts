@@ -110,10 +110,13 @@ describe("MySQL aggregated results repository", () => {
   });
 
   it("returns global admin aggregates for a questionnaire version without space rows", async () => {
-    const results = await getAggregatedResultsForQuestionnaireVersion("002");
+    const results = await getAggregatedResultsForQuestionnaireVersion({
+      questionnaireId: "002",
+      scope: "all",
+    });
 
     expect(results.publicCode).toBe("GLOBAL");
-    expect(results.scopeLabel).toBe("Enquestes amb més de 3 respostes");
+    expect(results.scopeLabel).toBe("Tots els centres");
     expect(results.questionnaireVersion).toBe("2026.2");
     expect(results.diagnosticSpaceCount).toBe(4);
     expect(results.totalSubmissions).toBe(2);
@@ -133,7 +136,10 @@ describe("MySQL aggregated results repository", () => {
   it("counts only diagnostic spaces above the configured admin threshold", async () => {
     adminMinimumSubmissions = 5;
 
-    await getAggregatedResultsForQuestionnaireVersion("002");
+    await getAggregatedResultsForQuestionnaireVersion({
+      questionnaireId: "002",
+      scope: "all",
+    });
 
     const spaceCountCall = currentPool.calls.find((call) =>
       call.query.includes("count(*) as diagnostic_space_count"),
@@ -146,6 +152,27 @@ describe("MySQL aggregated results repository", () => {
     expect(spaceCountCall?.query).toContain("having count(submissions.id) > ?");
     expect(spaceCountCall?.values).toEqual(["002", 5]);
     expect(submissionCountCall?.values).toEqual(["002", 5, "002"]);
+  });
+
+  it("returns centre aggregates only when its space exceeds the threshold", async () => {
+    const centreId = "22222222-2222-4222-8222-222222222222";
+    const results = await getAggregatedResultsForQuestionnaireVersion({
+      centreId,
+      questionnaireId: "002",
+      scope: "centre",
+    });
+
+    expect(results.publicCode).toBe("CENTRE");
+    expect(results.scopeLabel).toBe("Institut de Prova");
+    expect(results.centreName).toBe("Institut de Prova");
+    expect(results.diagnosticSpaceCount).toBeUndefined();
+
+    const answerCountCall = currentPool.calls.find((call) =>
+      call.query.includes("from answers"),
+    );
+    expect(answerCountCall?.query).toContain("diagnostic_spaces.centre_id = ?");
+    expect(answerCountCall?.query).toContain("having count(space_submissions.id) > ?");
+    expect(answerCountCall?.values).toEqual(["002", centreId, 3, "002"]);
   });
 
   it("uses only aggregated answer counts from MySQL", () => {
@@ -173,6 +200,8 @@ describe("MySQL aggregated results repository", () => {
 
     expect(adminPdfRouteSource).toContain("adminResultsRequestSchema.parse");
     expect(adminPdfRouteSource).toContain("readJsonRequestBody");
+    expect(adminPdfRouteSource).toContain('payload.scope === "centre"');
+    expect(adminPdfRouteSource).toContain("results.totalSubmissions === 0");
     expect(adminPdfRouteSource).not.toMatch(/searchParams|nextUrl|request\.url/);
   });
 
@@ -193,6 +222,17 @@ function createPoolMock(): PoolMock {
 
       if (normalizedQuery.includes("from app_settings")) {
         return [[{ setting_value: String(adminMinimumSubmissions) }]];
+      }
+
+      if (normalizedQuery.includes("from centres")) {
+        return [
+          [
+            {
+              id: "22222222-2222-4222-8222-222222222222",
+              name: "Institut de Prova",
+            },
+          ],
+        ];
       }
 
       if (normalizedQuery.includes("count(*) as diagnostic_space_count")) {

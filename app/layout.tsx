@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import type { ReactNode } from "react";
+import { LanguageSettingsProvider } from "@/components/i18n/language-settings-provider";
+import { getLanguageSettings } from "@/lib/admin/language-settings";
 import "./globals.css";
 import "./styles/tokens.css";
 import "./styles/shell.css";
@@ -7,6 +10,8 @@ import "./styles/home.css";
 import "./styles/questionnaire.css";
 import "./styles/workspace.css";
 import "./styles/admin.css";
+
+export const dynamic = "force-dynamic";
 
 const themeInitializer = `
   (function () {
@@ -47,17 +52,25 @@ export const metadata: Metadata = {
   referrer: "no-referrer",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const languageSettings = await getLanguageSettings();
+
   return (
     <html lang="ca" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitializer }} />
+        <Script id="theme-initializer" strategy="beforeInteractive">
+          {themeInitializer}
+        </Script>
       </head>
-      <body>{children}</body>
+      <body>
+        <LanguageSettingsProvider settings={languageSettings}>
+          {children}
+        </LanguageSettingsProvider>
+      </body>
     </html>
   );
 }

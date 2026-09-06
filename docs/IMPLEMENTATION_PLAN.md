@@ -9,8 +9,13 @@ L'aplicació funciona amb Next.js i MySQL i disposa de:
 - creació, gestió i reinici d'un espai per creador;
 - enviaments atòmics amb bloqueig contra respostes repetides;
 - resultats agregats i PDF;
-- administració de versions, responsables, administradors i comunicat global;
+- administració de versions, responsables, administradors, idiomes visibles i
+  comunicat global;
+- gestió administrativa de centres amb suspensió reversible, reinicis,
+  eliminació confirmada i auditoria mínima;
 - resultats globals agregats per versió.
+- consulta administrativa agregada per a tots els centres o per a un centre
+  identificat concret, sempre subjecta al llindar mínim.
 
 La versió 0.3.0 incorpora centres identificats, comptes responsables registrats
 i una fitxa territorial sincronitzable, mantenint anònim el professorat.
@@ -98,13 +103,19 @@ Estat: completada.
 - Gestió de versions, blocs, preguntes i configuració.
 - Edició protegida de versions assignades.
 - Resultats globals i PDF agregats per versió.
+- Resum inicial agregat de centres i del qüestionari actiu, subjecte al llindar.
+- Indicadors accionables, filtres de centres i avisos operatius del resum.
+- Llista i fitxa administrativa de centres sense dades individuals.
+- Suspensió i reactivació de centres.
+- Reinici de respostes, reinici complet i eliminació transaccionals.
+- Registre mínim de les actuacions administratives.
 
 ## Fase 8 — Enduriment pendent
 
 - Afegir rate limiting sense desar IPs a la base de dades.
 - Definir protecció anti-bots compatible amb l'anonimat.
-- Aprovar política de retenció i eliminació.
-- Definir tancament o caducitat d'espais.
+- Aprovar política de retenció i eliminació automàtica.
+- Definir caducitat automàtica d'espais.
 - Fer revisió legal o DPO.
 - Definir infraestructura, còpies de seguretat i recuperació.
 

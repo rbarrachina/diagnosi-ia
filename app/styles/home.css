@@ -1,3 +1,12 @@
+#com-funciona,
+#mostra-questionari {
+  scroll-margin-top: 5rem;
+}
+
+html:has(.home-hero) {
+  scroll-behavior: smooth;
+}
+
 .home-title-gradient {
   background: linear-gradient(105deg, #246fc3 4%, #5fa9f4 58%, #317dce 96%);
   background-clip: text;
@@ -105,6 +114,10 @@ html[data-theme="dark"] .home-title-gradient {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html:has(.home-hero) {
+    scroll-behavior: auto;
+  }
+
   .home-scroll-cue span {
     animation: none;
   }

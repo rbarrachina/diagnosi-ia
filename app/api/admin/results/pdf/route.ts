@@ -27,9 +27,15 @@ export async function POST(request: Request): Promise<Response> {
         maxBytes: 1024,
       }),
     );
-    const results = await getAggregatedResultsForQuestionnaireVersion(
-      payload.questionnaireId,
-    );
+    const results = await getAggregatedResultsForQuestionnaireVersion(payload);
+
+    if (payload.scope === "centre" && results.totalSubmissions === 0) {
+      return Response.json(
+        { error: "Aquest centre no supera el llindar mínim de respostes." },
+        { status: 409 },
+      );
+    }
+
     const pdfBuffer = await renderDiagnosticReportPdf(results);
 
     return new Response(new Uint8Array(pdfBuffer), {
@@ -45,7 +51,7 @@ export async function POST(request: Request): Promise<Response> {
 
     if (error instanceof ResultsAccessError) {
       return Response.json(
-        { error: "No s'ha pogut trobar la versió del qüestionari." },
+        { error: "No s'ha pogut trobar l'àmbit de resultats sol·licitat." },
         { status: 404 },
       );
     }

@@ -12,7 +12,11 @@ import type {
   QuestionDefinition,
   ScaleValue,
 } from "@/lib/results/types";
-import type { PrivateResultsRequestInput } from "@/lib/validation/schemas";
+import {
+  adminResultsRequestSchema,
+  type AdminResultsRequestInput,
+  type PrivateResultsRequestInput,
+} from "@/lib/validation/schemas";
 
 export class ResultsAccessError extends Error {
   constructor() {
@@ -36,6 +40,11 @@ type SpaceRow = RowDataPacket & {
 type QuestionnaireRow = RowDataPacket & {
   id: string;
   version: string;
+};
+
+type AdminResultsCentreRow = RowDataPacket & {
+  id: string;
+  name: string;
 };
 
 type BlockRow = RowDataPacket & {
@@ -82,14 +91,22 @@ export async function getAggregatedResultsForOwner(params: {
 }
 
 export async function getAggregatedResultsForQuestionnaireVersion(
-  questionnaireId: string,
+  input: AdminResultsRequestInput,
 ) {
-  const [questionnaire, minimumSubmissions] = await Promise.all([
-    loadQuestionnaireById(questionnaireId),
+  const payload = adminResultsRequestSchema.parse(input);
+  const [questionnaire, minimumSubmissions, centre] = await Promise.all([
+    loadQuestionnaireById(payload.questionnaireId),
     getAdminResultsMinimumSubmissions(),
+    payload.scope === "centre"
+      ? loadAdminResultsCentreById(payload.centreId)
+      : Promise.resolve(null),
   ]);
 
-  return getAggregatedResultsForQuestionnaire(questionnaire, minimumSubmissions);
+  return getAggregatedResultsForQuestionnaire(
+    questionnaire,
+    minimumSubmissions,
+    centre,
+  );
 }
 
 async function loadSharedTokenSpace(
@@ -215,6 +232,35 @@ async function loadQuestionnaireById(questionnaireId: string): Promise<Questionn
   return questionnaire;
 }
 
+async function loadAdminResultsCentreById(
+  centreId: string,
+): Promise<AdminResultsCentreRow> {
+  const [rows] = await mysqlPool.execute<AdminResultsCentreRow[]>(
+    `
+      select
+        centres.id,
+        coalesce(centres.official_name, centres.email) as name
+      from centres
+      where centres.id = ?
+        and exists (
+          select 1
+          from diagnostic_spaces
+          where diagnostic_spaces.centre_id = centres.id
+        )
+      limit 1
+    `,
+    [centreId],
+  );
+
+  const [centre] = rows;
+
+  if (!centre) {
+    throw new ResultsAccessError();
+  }
+
+  return centre;
+}
+
 async function getAggregatedResultsForSpace(space: SpaceRow) {
   const [
     [blocks],
@@ -283,7 +329,12 @@ async function getAggregatedResultsForSpace(space: SpaceRow) {
 async function getAggregatedResultsForQuestionnaire(
   questionnaire: QuestionnaireRow,
   minimumSubmissions: number,
+  centre: AdminResultsCentreRow | null,
 ) {
+  const centreFilter = centre ? "and diagnostic_spaces.centre_id = ?" : "";
+  const eligibilityValues = centre
+    ? [questionnaire.id, centre.id, minimumSubmissions]
+    : [questionnaire.id, minimumSubmissions];
   const [
     [blocks],
     [questions],
@@ -319,11 +370,12 @@ async function getAggregatedResultsForQuestionnaire(
             on submissions.diagnostic_space_id = diagnostic_spaces.id
             and submissions.questionnaire_id = diagnostic_spaces.questionnaire_id
           where diagnostic_spaces.questionnaire_id = ?
+            ${centreFilter}
           group by diagnostic_spaces.id
           having count(submissions.id) > ?
         ) eligible_spaces
       `,
-      [questionnaire.id, minimumSubmissions],
+      eligibilityValues,
     ),
     mysqlPool.execute<SubmissionCountRow[]>(
       `
@@ -336,13 +388,14 @@ async function getAggregatedResultsForQuestionnaire(
             on space_submissions.diagnostic_space_id = diagnostic_spaces.id
             and space_submissions.questionnaire_id = diagnostic_spaces.questionnaire_id
           where diagnostic_spaces.questionnaire_id = ?
+            ${centreFilter}
           group by diagnostic_spaces.id
           having count(space_submissions.id) > ?
         ) eligible_spaces
           on eligible_spaces.id = submissions.diagnostic_space_id
         where submissions.questionnaire_id = ?
       `,
-      [questionnaire.id, minimumSubmissions, questionnaire.id],
+      [...eligibilityValues, questionnaire.id],
     ),
     mysqlPool.execute<AnswerCountRow[]>(
       `
@@ -361,6 +414,7 @@ async function getAggregatedResultsForQuestionnaire(
             on space_submissions.diagnostic_space_id = diagnostic_spaces.id
             and space_submissions.questionnaire_id = diagnostic_spaces.questionnaire_id
           where diagnostic_spaces.questionnaire_id = ?
+            ${centreFilter}
           group by diagnostic_spaces.id
           having count(space_submissions.id) > ?
         ) eligible_spaces
@@ -368,16 +422,19 @@ async function getAggregatedResultsForQuestionnaire(
         where answers.questionnaire_id = ?
         group by answers.question_id, answers.value
       `,
-      [questionnaire.id, minimumSubmissions, questionnaire.id],
+      [...eligibilityValues, questionnaire.id],
     ),
   ]);
 
   return calculateAggregatedResultsFromCounts({
-    publicCode: "GLOBAL",
-    scopeLabel: `Enquestes amb més de ${minimumSubmissions} respostes`,
+    centreName: centre?.name,
+    publicCode: centre ? "CENTRE" : "GLOBAL",
+    scopeLabel: centre?.name ?? "Tots els centres",
     questionnaireVersion: questionnaire.version,
     generatedAt: new Date().toISOString(),
-    diagnosticSpaceCount: Number(diagnosticSpaceCounts[0]?.diagnostic_space_count ?? 0),
+    diagnosticSpaceCount: centre
+      ? undefined
+      : Number(diagnosticSpaceCounts[0]?.diagnostic_space_count ?? 0),
     totalSubmissions: Number(submissionCounts[0]?.submission_count ?? 0),
     blocks: mapBlocks(blocks),
     questions: mapQuestions(questions),

@@ -152,12 +152,40 @@ Fonts i atribució:
 
 Les lectures i mutacions d'administració validen sessió i rol al servidor.
 L'edició de qüestionaris manté les regles de versionat. Els resultats globals
-s'agrupen per versió i no admeten filtres per espai, creador, persona o data.
-La ruta `/admin` conserva aquesta lògica al servidor i presenta les quatre
+s'agrupen per versió i poden limitar-se a un `centre_id` validat. Tant l'àmbit
+global com el d'un centre apliquen el llindar mínim abans de computar respostes.
+No admeten filtres per espai, creador, persona o data.
+La ruta `/admin` conserva aquesta lògica al servidor i presenta les sis
 seccions dins la carcassa visual compartida de l'aplicació. La navegació lateral
 només construeix enllaços amb `section` i `questionnaireId`; no replica ni mou
 cap lectura, formulari o mutació al client. L'estat plegat del menú és una
 preferència visual local independent de les dades administratives.
+
+La secció inicial `Resum` calcula els indicadors amb consultes SQL agregades.
+Els totals de respostes només sumen espais que superen el llindar global i no
+seleccionen respostes individuals ni camps d'`answers`. La fitxa del
+qüestionari actiu usa el mateix criteri de computabilitat.
+Els enllaços del resum transmeten únicament un filtre enumerat a la secció de
+centres. El servidor valida aquest valor contra una llista tancada i construeix
+la condició SQL corresponent; la cerca i la selecció de centre conserven el
+filtre sense exposar dades addicionals.
+
+La llista de seleccio de centres llegeix només identitat institucional de
+`centres` associats a un espai i la relacio `centre_id`–`questionnaire_id` per
+a combinacions que superen el llindar. Aquesta relacio alimenta al client dos
+selectors dependents, sense enviar recomptes ni respostes. La consulta de
+resultats filtra els espais elegibles per `questionnaire_id`, `centre_id`
+opcional i llindar, i retorna únicament recomptes agrupats per pregunta i valor.
+El PDF rep l'àmbit al cos POST i repeteix la mateixa validacio i agregacio.
+
+La gestió de centres llegeix `centres`, `centre_accounts`, l'espai i un
+recompte correlacionat de `submissions`; no selecciona files ni camps de
+`answers`. Les suspensions, reinicis i eliminacions bloquegen el centre i
+s'executen en una transacció. Suspendre marca el centre i desactiva el seu
+espai; les validacions de responsable, política pública i enviament rebutgen
+els centres suspesos. Les accions destructives eliminen les dependències en
+l'ordre requerit per les claus foranes i registren només metadades
+administratives a `admin_centre_actions`.
 
 ## Gestió d'errors i observabilitat
 
@@ -166,22 +194,22 @@ respostes, correus de participants, IPs ni informació de dispositiu.
 
 ## Pàgines d'entrada
 
-- `/` és l'única portada informativa. Mostra objectiu, indicador, un control
-  accessible de privacitat, rols i accés del responsable. La versió mostrada
-  prové de `package.json`; l'autoria, la llicència i el repositori són al peu
-  de pàgina. Un listener de `pointerdown`, actiu només mentre el panell de
-  privacitat és obert, el tanca quan la interacció es produeix fora del
-  contenidor del control. La capçalera fixa activa progressivament
-  una superfície translúcida i desenfocada després d'un marge inicial de
-  `scrollY`. La intensitat s'interpola durant el tram següent i una pseudo-capa
-  degradada suavitza el límit inferior. La corba smoothstep amplificada manté
-  l'inici subtil, accelera el tram central i arriba a un estat final més opac i
-  desenfocat. La capa de `backdrop-filter` usa una màscara vertical perquè el
-  contingut entri transparent per sota i es difumini progressivament cap a la
-  part superior. El selector clar/fosc desa la
+- `/` és l'única portada informativa. Mostra objectiu, indicador, rols i accés
+  del responsable. La versió mostrada prové de `package.json`; l'autoria, la
+  llicència i el repositori són al peu de pàgina. La capçalera fixa activa
+  progressivament una superfície translúcida i desenfocada després d'un marge
+  inicial de `scrollY`. La intensitat s'interpola durant el tram següent i una
+  pseudo-capa degradada suavitza el límit inferior. La corba smoothstep
+  amplificada manté l'inici subtil, accelera el tram central i arriba a un estat
+  final més opac i desenfocat. La capa de `backdrop-filter` usa una màscara
+  vertical perquè el contingut entri transparent per sota i es difumini
+  progressivament cap a la part superior. El selector clar/fosc desa la
   preferència a `localStorage`; no envia aquesta preferència al servidor. El
-  selector d'idioma és informatiu, es presenta només com a `CA` desplegable i
-  no modifica la llengua de la pàgina. La mostra de pregunta situada al final
+  selector d'idioma és informatiu, es presenta com a `CA` desplegable i no
+  modifica la llengua de la pàgina. El layout arrel carrega la configuració
+  global que en controla la visibilitat i les llengües previstes a totes les
+  capçaleres compartides, inclosa la del qüestionari públic. La mostra de
+  pregunta situada al final
   de la portada és JSX estàtic: copia la primera pregunta i les opcions de la
   versió `2026.2`, no carrega dades de MySQL i no renderitza cap control que
   pugui enviar una resposta. Els accessos de responsable obren un diàleg
@@ -229,6 +257,6 @@ respostes, correus de participants, IPs ni informació de dispositiu.
 ## Decisions pendents
 
 - Rate limiting i protecció anti-bots.
-- Política de retenció i tancament d'espais.
+- Política de retenció i caducitat automàtica d'espais.
 - Infraestructura definitiva de desplegament i còpies de seguretat.
 - Revisió legal o DPO abans d'un ús institucional ampli.

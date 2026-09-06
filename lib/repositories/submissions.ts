@@ -199,6 +199,7 @@ async function lockActiveDiagnosticSpace(
         on questionnaires.id = diagnostic_spaces.questionnaire_id
       where diagnostic_spaces.public_code = ?
         and diagnostic_spaces.is_active = true
+        and centres.is_suspended = false
         and questionnaires.version = ?
       limit 1
       for update

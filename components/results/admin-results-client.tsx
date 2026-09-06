@@ -3,24 +3,37 @@
 import { useState } from "react";
 import { ResultsDashboard } from "@/components/results/results-dashboard";
 import type { AggregatedResults } from "@/lib/results/types";
+import type { AdminResultsScopeInput } from "@/lib/validation/schemas";
 
 type AdminResultsClientProps = {
+  centreId: string | null;
   minimumResponseCount: number;
   questionnaireId: string;
   results: AggregatedResults;
+  scope: AdminResultsScopeInput;
 };
 
 function downloadFilename(results: AggregatedResults): string {
-  return `diagnosi-ia-resultats-${results.questionnaireVersion
+  const scope = (results.scopeLabel ?? "global")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  const version = results.questionnaireVersion
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")}.pdf`;
+    .replace(/^-|-$/g, "");
+
+  return `diagnosi-ia-resultats-${scope}-${version}.pdf`;
 }
 
 export function AdminResultsClient({
+  centreId,
   minimumResponseCount,
   questionnaireId,
   results,
+  scope,
 }: AdminResultsClientProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -33,9 +46,11 @@ export function AdminResultsClient({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          questionnaireId,
-        }),
+        body: JSON.stringify(
+          scope === "centre" && centreId
+            ? { centreId, questionnaireId, scope }
+            : { questionnaireId, scope: "all" },
+        ),
       });
 
       if (!response.ok) {
@@ -59,12 +74,13 @@ export function AdminResultsClient({
   return (
     <ResultsDashboard
       eyebrow="Resultats d'administració"
+      integrated
       isDownloading={isDownloading}
-      metadataText={`Enquestes amb més de ${minimumResponseCount} respostes · Qüestionari ${results.questionnaireVersion}`}
-      noticeText={`Només es computen les enquestes amb més de ${minimumResponseCount} respostes. Les enquestes amb ${minimumResponseCount} respostes o menys no s'inclouen en aquests resultats globals.`}
+      metadataText={`${results.scopeLabel} · Qüestionari ${results.questionnaireVersion}`}
+      noticeText={`Només es computen els centres amb més de ${minimumResponseCount} respostes. Els centres amb ${minimumResponseCount} respostes o menys no s'inclouen en aquests resultats.`}
       onDownloadPdf={handleDownloadPdf}
       results={results}
-      title="Resultats globals"
+      title={scope === "centre" ? "Resultats del centre" : "Resultats globals"}
     />
   );
 }

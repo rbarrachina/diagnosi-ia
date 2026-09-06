@@ -81,11 +81,8 @@ describe("admin privacy review", () => {
     expect(questionnaireService?.source).toContain("mysqlPool.execute");
   });
 
-  it("does not introduce centre, person or participant identifiers in admin forms", () => {
+  it("keeps participant and personal identifiers out of admin forms", () => {
     const forbiddenParticipantFields = [
-      "centre",
-      "center",
-      "school",
       "teacher",
       "participant",
       "persona",

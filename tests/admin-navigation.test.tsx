@@ -22,6 +22,10 @@ describe("admin navigation", () => {
     expect(screen.getByText("Administració")).toBeInTheDocument();
     expect(screen.getByText("Contingut administratiu")).toBeVisible();
     expect(screen.getByText("Peu de Diagnosi IA")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Resum" })[0]).toHaveAttribute(
+      "href",
+      "/admin?section=summary",
+    );
     expect(screen.getAllByRole("link", { name: "Qüestionaris" })[0]).toHaveAttribute(
       "href",
       "/admin?section=questionnaires&questionnaireId=questionnaire-2026-2",
@@ -29,6 +33,10 @@ describe("admin navigation", () => {
     expect(screen.getAllByRole("link", { name: "Resultats" })[0]).toHaveAttribute(
       "href",
       "/admin?section=results",
+    );
+    expect(screen.getAllByRole("link", { name: "Centres" })[0]).toHaveAttribute(
+      "href",
+      "/admin?section=centres",
     );
     expect(screen.getAllByRole("link", { name: "Usuaris" })[0]).toHaveAttribute(
       "href",

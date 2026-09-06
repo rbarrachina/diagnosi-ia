@@ -1,9 +1,11 @@
 import {
   adminEmailInvitationInputSchema,
+  adminResultsRequestSchema,
   adminUserInputSchema,
   copyQuestionnaireVersionInputSchema,
   createQuestionnaireDraftInputSchema,
   createQuestionnaireVersionInputSchema,
+  languageSettingsInputSchema,
   replaceQuestionnaireContentInputSchema,
 } from "@/lib/validation/schemas";
 
@@ -19,6 +21,60 @@ function validBlocks() {
 }
 
 describe("admin validation schemas", () => {
+  it("keeps Catalan in the configurable visible language list", () => {
+    expect(
+      languageSettingsInputSchema.parse({
+        selectorVisible: false,
+        visibleLanguageCodes: ["CA", "ES"],
+      }),
+    ).toEqual({
+      selectorVisible: false,
+      visibleLanguageCodes: ["CA", "ES"],
+    });
+
+    expect(() =>
+      languageSettingsInputSchema.parse({
+        selectorVisible: true,
+        visibleLanguageCodes: ["ES"],
+      }),
+    ).toThrow();
+  });
+
+  it("validates global and centre-specific result scopes", () => {
+    expect(
+      adminResultsRequestSchema.parse({
+        questionnaireId: "002",
+        scope: "all",
+      }),
+    ).toEqual({ questionnaireId: "002", scope: "all" });
+
+    expect(
+      adminResultsRequestSchema.parse({
+        centreId: "11111111-1111-4111-8111-111111111111",
+        questionnaireId: "002",
+        scope: "centre",
+      }),
+    ).toEqual({
+      centreId: "11111111-1111-4111-8111-111111111111",
+      questionnaireId: "002",
+      scope: "centre",
+    });
+
+    expect(() =>
+      adminResultsRequestSchema.parse({
+        questionnaireId: "002",
+        scope: "centre",
+      }),
+    ).toThrow();
+    expect(() =>
+      adminResultsRequestSchema.parse({
+        centreId: "11111111-1111-4111-8111-111111111111",
+        questionnaireId: "002",
+        scope: "all",
+      }),
+    ).toThrow();
+  });
+
   it("accepts strict questionnaire draft metadata", () => {
     expect(() =>
       createQuestionnaireDraftInputSchema.parse({

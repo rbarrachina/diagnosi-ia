@@ -3,9 +3,10 @@ import type { ReactNode } from "react";
 import { LoginButton, LogoutButton } from "@/components/auth/auth-actions";
 import type { AdminSection } from "@/components/admin/admin-navigation";
 import { AdminRouteFrame } from "@/components/admin/admin-route-frame";
+import { AdminResultsFilters } from "@/components/admin/admin-results-filters";
+import { AdminCentresPanel } from "@/components/admin/admin-centres-panel";
+import { AdminSummaryPanel } from "@/components/admin/admin-summary-panel";
 import { CentreAppShell } from "@/components/create-space/centre-app-shell";
-import { HeaderInfoControls } from "@/components/home/header-info-controls";
-import { LanguageSelector } from "@/components/home/language-selector";
 import { SiteFooter } from "@/components/home/site-footer";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { AppHeader } from "@/components/layout/app-header";
@@ -16,33 +17,47 @@ import {
   createQuestionnaireVersionAction,
   deleteQuestionnaireVersionAction,
   deleteAdminUserAction,
+  deletePendingAdminEmailInvitationAction,
   setResponsibleAccessModeAction,
   setAdminUserActiveAction,
 } from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/app/admin/activation-button";
 import { QuestionnaireEditorForm } from "@/app/admin/questionnaire-editor-form";
+import { listAdminCentresWithResults } from "@/lib/admin/centres";
 import {
   listAdminEmailInvitations,
   listAdminUsers,
 } from "@/lib/admin/admin-users";
 import { getAdminSessionState } from "@/lib/admin/auth";
-import { isLocalAuthEnabled } from "@/lib/auth/local";
 import {
   getAdminResultsMinimumSubmissions,
   getResponsibleAccessMode,
   type ResponsibleAccessMode,
 } from "@/lib/auth/responsible-access";
 import { getCommunicationTemplate } from "@/lib/admin/communication-settings";
+import { getLanguageSettings } from "@/lib/admin/language-settings";
+import {
+  getAdminManagedCentre,
+  listAdminManagedCentres,
+  type AdminCentreFilter,
+} from "@/lib/admin/centre-management";
+import { getAdminSummary } from "@/lib/admin/summary";
 import {
   QUESTIONNAIRE_URL_PLACEHOLDER,
   type CommunicationTemplate,
 } from "@/lib/communication/email-template";
 import type {
+  AdminCentreOption,
   AdminEmailInvitationSummary,
   AdminQuestionnaireDetail,
   AdminQuestionnaireSummary,
   AdminUserSummary,
 } from "@/lib/admin/types";
+import {
+  AVAILABLE_LANGUAGES,
+  DEFAULT_LANGUAGE_SETTINGS,
+  type LanguageSettings,
+} from "@/lib/i18n/languages";
 import {
   getQuestionnaireVersionDetail,
   listQuestionnaireVersions,
@@ -51,7 +66,9 @@ import { getAggregatedResultsForQuestionnaireVersion } from "@/lib/results/get-r
 import {
   MAX_QUESTION_BLOCKS,
   MAX_QUESTIONS_PER_BLOCK,
+  centreIdSchema,
   questionnaireIdSchema,
+  type AdminResultsScopeInput,
 } from "@/lib/validation/schemas";
 
 export const dynamic = "force-dynamic";
@@ -59,7 +76,11 @@ export const dynamic = "force-dynamic";
 type AdminPageProps = {
   searchParams: Promise<{
     error?: string;
+    centreId?: string;
+    filter?: string;
     questionnaireId?: string;
+    q?: string;
+    scope?: string;
     section?: string;
     status?: string;
   }>;
@@ -69,7 +90,13 @@ const statusMessages: Record<string, string> = {
   activated: "Versió activada.",
   "admin-added": "Invitació d'administrador creada.",
   "admin-deleted": "Rol d'administrador eliminat.",
+  "admin-invitation-deleted": "Invitació pendent eliminada.",
   "admin-updated": "Estat de l'administrador actualitzat.",
+  "centre-deleted": "Centre i dades associades eliminats.",
+  "centre-reactivated": "Centre reactivat.",
+  "centre-responses-reset": "Respostes del centre eliminades.",
+  "centre-space-reset": "Espai del centre reiniciat.",
+  "centre-suspended": "Centre suspès.",
   copied: "Versió copiada.",
   created: "Esborrany creat.",
   deleted: "Qüestionari eliminat.",
@@ -82,7 +109,10 @@ const errorMessages: Record<string, string> = {
   activate: "No s'ha pogut activar la versió. Revisa que sigui completa.",
   "admin-add": "No s'ha pogut crear la invitació. Revisa que sigui un correu @xtec.cat.",
   "admin-delete": "No s'ha pogut eliminar el rol d'administrador.",
+  "admin-invitation-delete": "No s'ha pogut eliminar la invitació pendent.",
   "admin-update": "No s'ha pogut actualitzar l'administrador.",
+  "centre-action": "No s’ha pogut completar l’acció sobre el centre.",
+  "centre-confirmation": "No s’ha pogut completar l’acció. Revisa la confirmació.",
   copy: "No s'ha pogut copiar la versió.",
   create: "No s'ha pogut crear la versió. Revisa que les dades siguin vàlides.",
   "create-title-exists": "No s'ha pogut crear la versió perquè el títol ja existeix.",
@@ -103,7 +133,9 @@ function formatDate(value: string) {
 
 function getAdminSection(params: { error?: string; section?: string; status?: string }) {
   if (
+    params.section === "summary" ||
     params.section === "admins" ||
+    params.section === "centres" ||
     params.section === "questionnaires" ||
     params.section === "results" ||
     params.section === "settings"
@@ -124,11 +156,7 @@ function getAdminSection(params: { error?: string; section?: string; status?: st
       : "admins";
   }
 
-  if (isLocalAuthEnabled()) {
-    return "admins";
-  }
-
-  return "questionnaires";
+  return "summary";
 }
 
 function getSelectedQuestionnaireId(
@@ -165,12 +193,22 @@ function getRequestedQuestionnaireId(
   return null;
 }
 
+function getAdminCentreFilter(value: string | undefined): AdminCentreFilter {
+  return value === "active" ||
+    value === "suspended" ||
+    value === "pending" ||
+    value === "active_without_questionnaire" ||
+    value === "without_questionnaire" ||
+    value === "with_questionnaire_without_responses" ||
+    value === "without_responses"
+    ? value
+    : "all";
+}
+
 function AdminEntryShell({ children }: { children: ReactNode }) {
   return (
     <main className="app-shell min-h-screen text-ink">
       <AppHeader brandHref="/">
-        <HeaderInfoControls />
-        <LanguageSelector />
         <ThemeToggle />
       </AppHeader>
 
@@ -306,88 +344,87 @@ function VersionList({
 }
 
 function AdminResultsPanel({
+  centres,
   minimumResponseCount,
+  selectedCentreId,
   selectedQuestionnaireId,
+  selectedScope,
   versions,
 }: {
+  centres: AdminCentreOption[];
   minimumResponseCount: number;
+  selectedCentreId: string | null;
   selectedQuestionnaireId: string | null;
+  selectedScope: AdminResultsScopeInput;
   versions: AdminQuestionnaireSummary[];
 }) {
   const selectedVersion = versions.find((version) => version.id === selectedQuestionnaireId);
 
   return (
-    <div className="space-y-6">
-      <section className="admin-panel p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-ink">Resultats</h2>
-            <p className="mt-1 text-sm leading-6 text-muted">
-              Tria una versió del qüestionari per veure els resultats agregats
-              de totes les enquestes fetes amb aquella versió.
-            </p>
-          </div>
-          <form action="/admin" className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <input name="section" type="hidden" value="results" />
-            <label className="text-sm font-medium text-muted">
-              Versió del qüestionari
-              <select
-                className="mt-1 min-w-72 rounded-md border border-line bg-surface px-3 py-2 text-sm"
-                defaultValue={selectedQuestionnaireId ?? ""}
-                name="questionnaireId"
-                required
-              >
-                <option disabled value="">
-                  Tria una versió
-                </option>
-                {versions.map((version) => (
-                  <option key={version.id} value={version.id}>
-                    {version.version} · {version.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover"
-              disabled={versions.length === 0}
-              type="submit"
-            >
-              Mostra resultats
-            </button>
-          </form>
-        </div>
+    <div className="space-y-8">
+      <section className="border-b border-line pb-8">
+        <AdminResultsFilters
+          centres={centres}
+          selectedCentreId={selectedCentreId}
+          selectedQuestionnaireId={selectedQuestionnaireId}
+          selectedScope={selectedScope}
+          versions={versions}
+        />
       </section>
 
-      {selectedQuestionnaireId && selectedVersion ? (
+      {selectedQuestionnaireId &&
+      selectedVersion &&
+      (selectedScope === "all" || selectedCentreId) ? (
         <AdminResultsContent
+          centreId={selectedCentreId}
           minimumResponseCount={minimumResponseCount}
           questionnaireId={selectedQuestionnaireId}
+          scope={selectedScope}
         />
       ) : (
-        <section className="rounded-md border border-dashed border-line bg-surface p-5 text-sm text-muted">
+        <p className="py-8 text-sm text-muted">
           {versions.length === 0
             ? "Encara no hi ha cap versió de qüestionari per mostrar."
             : "Tria una versió del qüestionari per generar els resultats."}
-        </section>
+        </p>
       )}
     </div>
   );
 }
 
 async function AdminResultsContent({
+  centreId,
   minimumResponseCount,
   questionnaireId,
+  scope,
 }: {
+  centreId: string | null;
   minimumResponseCount: number;
   questionnaireId: string;
+  scope: AdminResultsScopeInput;
 }) {
-  const results = await getAggregatedResultsForQuestionnaireVersion(questionnaireId);
+  const results = await getAggregatedResultsForQuestionnaireVersion(
+    scope === "centre" && centreId
+      ? { centreId, questionnaireId, scope }
+      : { questionnaireId, scope: "all" },
+  );
+
+  if (scope === "centre" && results.totalSubmissions === 0) {
+    return (
+      <p className="rounded-md border border-warning-border bg-warning-bg px-4 py-3 text-sm leading-6 text-warning-text">
+        Aquest centre no supera el llindar mínim de respostes i no se&apos;n
+        poden mostrar els resultats.
+      </p>
+    );
+  }
 
   return (
     <AdminResultsClient
+      centreId={scope === "centre" ? centreId : null}
       minimumResponseCount={minimumResponseCount}
       questionnaireId={questionnaireId}
       results={results}
+      scope={scope}
     />
   );
 }
@@ -587,11 +624,13 @@ function AdminUsersPanel({
   invitations: AdminEmailInvitationSummary[];
 }) {
   return (
-    <section className="admin-panel p-5">
-      <h2 className="text-lg font-semibold text-ink">Administradors</h2>
-      <form action={addAdminUserAction} className="mt-4 flex flex-col gap-3 sm:flex-row">
-        <label className="flex-1 text-sm font-medium text-muted">
-          Correu XTEC de la persona administradora
+    <section aria-label="Administradors">
+      <form
+        action={addAdminUserAction}
+        className="flex flex-col gap-3 border-b border-line pb-8 sm:flex-row sm:items-end"
+      >
+        <label className="w-full max-w-xs text-sm font-medium text-muted">
+          Afegeix una persona administradora
           <input
             className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm"
             name="email"
@@ -601,28 +640,24 @@ function AdminUsersPanel({
           />
         </label>
         <button
-          className="self-end rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover"
+          className="self-start rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover sm:self-auto"
           type="submit"
         >
           Convida
         </button>
       </form>
-      <p className="mt-3 text-sm text-muted">
-        La persona quedarà autoritzada quan accedeixi amb aquest compte Google
-        XTEC. El correu només s&apos;usa per a aquesta invitació
-        d&apos;administració.
-      </p>
 
       {invitations.length > 0 ? (
-        <div className="mt-5 rounded-md border border-line bg-accent-soft p-4">
+        <section className="border-b border-line py-8">
           <h3 className="text-sm font-semibold text-ink">Invitacions pendents</h3>
           <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[520px] text-left text-sm">
+            <table className="w-full min-w-[620px] text-left text-sm">
               <thead className="border-b border-line text-xs uppercase text-muted">
                 <tr>
                   <th className="py-2 pr-3 font-semibold">Correu</th>
                   <th className="py-2 pr-3 font-semibold">Creada</th>
                   <th className="py-2 pr-3 font-semibold">Estat</th>
+                  <th className="py-2 pr-3 font-semibold">Acció</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -637,98 +672,116 @@ function AdminUsersPanel({
                         Pendent
                       </span>
                     </td>
+                    <td className="py-3 pr-3">
+                      <form action={deletePendingAdminEmailInvitationAction}>
+                        <input name="email" type="hidden" value={invitation.email} />
+                        <button
+                          className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg"
+                          type="submit"
+                        >
+                          Elimina
+                        </button>
+                      </form>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
       ) : (
-        <p className="mt-3 text-sm text-muted">
+        <p className="border-b border-line py-8 text-sm text-muted">
           Encara no hi ha invitacions d&apos;administració pendents.
         </p>
       )}
 
-      <div className="mt-5 overflow-x-auto">
-        <table className="w-full min-w-[880px] text-left text-sm">
-          <thead className="border-b border-line text-xs uppercase text-muted">
-            <tr>
-              <th className="py-2 pr-3 font-semibold">Nom</th>
-              <th className="py-2 pr-3 font-semibold">Correu</th>
-              <th className="py-2 pr-3 font-semibold">Creat</th>
-              <th className="py-2 pr-3 font-semibold">Darrer accés</th>
-              <th className="py-2 pr-3 font-semibold">Estat</th>
-              <th className="py-2 pr-3 font-semibold">Acció</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {admins.map((admin) => {
-              const isCurrentUser = admin.userId === currentUserId;
+      <div className="pt-8">
+        <h2 className="text-lg font-semibold text-ink">Administradors</h2>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full min-w-[880px] text-left text-sm">
+            <thead className="border-b border-line text-xs uppercase text-muted">
+              <tr>
+                <th className="py-2 pr-3 font-semibold">Nom</th>
+                <th className="py-2 pr-3 font-semibold">Correu</th>
+                <th className="py-2 pr-3 font-semibold">Creat</th>
+                <th className="py-2 pr-3 font-semibold">Darrer accés</th>
+                <th className="py-2 pr-3 font-semibold">Estat</th>
+                <th className="py-2 pr-3 font-semibold">Acció</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {admins.map((admin) => {
+                const isCurrentUser = admin.userId === currentUserId;
 
-              return (
-                <tr key={admin.userId}>
-                  <td className="py-3 pr-3 text-muted">
-                    {admin.displayName ?? "Sense nom"}
-                  </td>
-                  <td className="py-3 pr-3 text-muted">
-                    {admin.email ?? "No disponible"}
-                  </td>
-                  <td className="py-3 pr-3 text-muted">{formatDate(admin.createdAt)}</td>
-                  <td className="py-3 pr-3 text-muted">
-                    {admin.lastLoginAt ? formatDate(admin.lastLoginAt) : "No disponible"}
-                  </td>
-                  <td className="py-3 pr-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={`rounded px-2 py-0.5 text-xs font-semibold ${
-                          admin.isActive
-                            ? "bg-success-bg text-success-text"
-                            : "bg-accent-soft text-muted"
-                        }`}
-                      >
-                        {admin.isActive ? "Actiu" : "Inactiu"}
-                      </span>
-                      {isCurrentUser ? (
-                        <span className="rounded bg-accent-soft px-2 py-0.5 text-xs font-semibold text-muted">
-                          Tu
+                return (
+                  <tr key={admin.userId}>
+                    <td className="py-3 pr-3 text-muted">
+                      {admin.displayName ?? "Sense nom"}
+                    </td>
+                    <td className="py-3 pr-3 text-muted">
+                      {admin.email ?? "No disponible"}
+                    </td>
+                    <td className="py-3 pr-3 text-muted">
+                      {formatDate(admin.createdAt)}
+                    </td>
+                    <td className="py-3 pr-3 text-muted">
+                      {admin.lastLoginAt
+                        ? formatDate(admin.lastLoginAt)
+                        : "No disponible"}
+                    </td>
+                    <td className="py-3 pr-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={`rounded px-2 py-0.5 text-xs font-semibold ${
+                            admin.isActive
+                              ? "bg-success-bg text-success-text"
+                              : "bg-accent-soft text-muted"
+                          }`}
+                        >
+                          {admin.isActive ? "Actiu" : "Inactiu"}
                         </span>
-                      ) : null}
-                    </div>
-                  </td>
-                  <td className="py-3 pr-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <form action={setAdminUserActiveAction}>
-                        <input name="userId" type="hidden" value={admin.userId} />
-                        <input
-                          name="isActive"
-                          type="hidden"
-                          value={admin.isActive ? "false" : "true"}
-                        />
-                        <button
-                          className="rounded-md border border-line px-3 py-1.5 text-xs font-semibold text-muted hover:border-action hover:text-action disabled:text-muted"
-                          disabled={isCurrentUser && admin.isActive}
-                          type="submit"
-                        >
-                          {admin.isActive ? "Desactiva" : "Reactiva"}
-                        </button>
-                      </form>
-                      <form action={deleteAdminUserAction}>
-                        <input name="userId" type="hidden" value={admin.userId} />
-                        <button
-                          className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg disabled:text-muted"
-                          disabled={isCurrentUser}
-                          type="submit"
-                        >
-                          Elimina rol
-                        </button>
-                      </form>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                        {isCurrentUser ? (
+                          <span className="rounded bg-accent-soft px-2 py-0.5 text-xs font-semibold text-muted">
+                            Tu
+                          </span>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td className="py-3 pr-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <form action={setAdminUserActiveAction}>
+                          <input name="userId" type="hidden" value={admin.userId} />
+                          <input
+                            name="isActive"
+                            type="hidden"
+                            value={admin.isActive ? "false" : "true"}
+                          />
+                          <button
+                            className="rounded-md border border-line px-3 py-1.5 text-xs font-semibold text-muted hover:border-action hover:text-action disabled:text-muted"
+                            disabled={isCurrentUser && admin.isActive}
+                            type="submit"
+                          >
+                            {admin.isActive ? "Desactiva" : "Reactiva"}
+                          </button>
+                        </form>
+                        <form action={deleteAdminUserAction}>
+                          <input name="userId" type="hidden" value={admin.userId} />
+                          <button
+                            className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg disabled:text-muted"
+                            disabled={isCurrentUser}
+                            type="submit"
+                          >
+                            Elimina rol
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   );
@@ -780,7 +833,7 @@ function ResponsibleAccessOption({
   value: ResponsibleAccessMode;
 }) {
   return (
-    <div className="flex items-start gap-3 py-4 text-sm text-muted">
+    <div className="flex items-start gap-3 py-2.5 text-sm text-muted">
       <input
         className="mt-1 h-4 w-4"
         defaultChecked={checked}
@@ -805,22 +858,23 @@ function ResponsibleAccessOption({
 
 function SettingsPanel({
   communicationTemplate,
+  languageSettings,
   minimumResponseCount,
   responsibleAccessMode,
 }: {
   communicationTemplate: CommunicationTemplate;
+  languageSettings: LanguageSettings;
   minimumResponseCount: number;
   responsibleAccessMode: ResponsibleAccessMode;
 }) {
   return (
-    <section className="admin-panel p-5">
-      <h2 className="text-lg font-semibold text-ink">Configuració</h2>
-      <form action={setResponsibleAccessModeAction} className="mt-5 space-y-5">
-        <fieldset>
-          <legend className="text-sm font-semibold text-ink">
+    <section aria-label="Configuració">
+      <form action={setResponsibleAccessModeAction}>
+        <fieldset className="border-b border-line pb-10">
+          <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
             Accés per a responsables
           </legend>
-          <div className="mt-3 space-y-1 rounded-md border border-line bg-surface px-4">
+          <div className="mt-4 max-w-3xl space-y-0.5 pl-4">
             <ResponsibleAccessOption
               checked={responsibleAccessMode === "all_xtec"}
               description={
@@ -853,11 +907,11 @@ function SettingsPanel({
             </ResponsibleAccessOption>
           </div>
         </fieldset>
-        <fieldset>
-          <legend className="text-sm font-semibold text-ink">
+        <fieldset className="border-b border-line py-10">
+          <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
             Resultats globals
           </legend>
-          <div className="mt-3 rounded-md border border-line bg-surface p-4 text-sm text-muted">
+          <div className="mt-2 pl-4 text-sm text-muted">
             <div className="flex flex-wrap items-center gap-2">
               <label
                 className="font-semibold text-ink"
@@ -883,9 +937,78 @@ function SettingsPanel({
             </div>
           </div>
         </fieldset>
-        <fieldset>
-          <legend className="text-sm font-semibold text-ink">Comunicat</legend>
-          <div className="mt-3 space-y-4 rounded-md border border-line bg-surface p-4 text-sm text-muted">
+        <fieldset className="border-b border-line py-10">
+          <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
+            Idiomes
+          </legend>
+          <div className="mt-4 max-w-3xl space-y-4 pl-4 text-sm text-muted">
+            <label className="flex items-center gap-3 font-semibold text-ink">
+              <input
+                className="h-4 w-4"
+                defaultChecked={languageSettings.selectorVisible}
+                name="languageSelectorVisible"
+                type="checkbox"
+              />
+              Mostra el selector d’idioma a les capçaleres
+            </label>
+            <div>
+              <p className="font-semibold text-ink">Idiomes visibles</p>
+              <div className="mt-2 flex flex-wrap gap-x-6 gap-y-3">
+                {AVAILABLE_LANGUAGES.map((language) => {
+                  const isCatalan = language.code === "CA";
+                  return (
+                    <label
+                      className="inline-flex items-center gap-2"
+                      key={language.code}
+                    >
+                      {isCatalan ? (
+                        <>
+                          <input
+                            checked
+                            className="h-4 w-4"
+                            disabled
+                            readOnly
+                            type="checkbox"
+                          />
+                          <input
+                            name="visibleLanguageCodes"
+                            type="hidden"
+                            value="CA"
+                          />
+                        </>
+                      ) : (
+                        <input
+                          className="h-4 w-4"
+                          defaultChecked={languageSettings.visibleLanguageCodes.includes(
+                            language.code,
+                          )}
+                          name="visibleLanguageCodes"
+                          type="checkbox"
+                          value={language.code}
+                        />
+                      )}
+                      <span>
+                        <span className="font-semibold text-ink">
+                          {language.code}
+                        </span>{" "}
+                        {language.label}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="mt-3 text-xs leading-5 text-muted">
+                El català és obligatori perquè ara és l’únic idioma funcional.
+                La resta d’opcions preparen el selector per a traduccions futures.
+              </p>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset className="py-10">
+          <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
+            Comunicat
+          </legend>
+          <div className="mt-4 max-w-4xl space-y-4 pl-4 text-sm text-muted">
             <p className="text-xs leading-5 text-muted">
               Pots usar <code>{"{NOM_CENTRE}"}</code> al títol o al cos i{" "}
               <code>{"{URL_QUESTIONARI}"}</code> al cos. Si no hi poses el nom
@@ -964,6 +1087,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   const activeSection = getAdminSection(params);
+  const centreFilter = getAdminCentreFilter(params.filter);
   const [
     versions,
     admins,
@@ -971,6 +1095,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     responsibleAccessMode,
     minimumResponseCount,
     communicationTemplate,
+    languageSettings,
+    managedCentres,
   ] = await Promise.all([
     activeSection === "questionnaires" || activeSection === "results"
       ? listQuestionnaireVersions()
@@ -980,13 +1106,39 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     activeSection === "settings"
       ? getResponsibleAccessMode()
       : Promise.resolve<ResponsibleAccessMode>("all_xtec"),
-    activeSection === "settings" || activeSection === "results"
+    activeSection === "settings" ||
+    activeSection === "results" ||
+    activeSection === "centres" ||
+    activeSection === "summary"
       ? getAdminResultsMinimumSubmissions()
       : Promise.resolve(0),
     activeSection === "settings"
       ? getCommunicationTemplate()
       : Promise.resolve({ subject: "", body: "" }),
+    activeSection === "settings"
+      ? getLanguageSettings()
+      : Promise.resolve(DEFAULT_LANGUAGE_SETTINGS),
+    activeSection === "centres"
+      ? listAdminManagedCentres(params.q ?? "", centreFilter)
+      : Promise.resolve([]),
   ]);
+  const adminSummary =
+    activeSection === "summary"
+      ? await getAdminSummary(minimumResponseCount)
+      : null;
+  const resultCentres =
+    activeSection === "results"
+      ? await listAdminCentresWithResults(minimumResponseCount)
+      : [];
+  const requestedManagedCentreId =
+    activeSection === "centres" &&
+    centreIdSchema.safeParse(params.centreId).success &&
+    managedCentres.some((centre) => centre.id === params.centreId)
+      ? params.centreId ?? null
+      : managedCentres[0]?.id ?? null;
+  const managedCentre = requestedManagedCentreId
+    ? await getAdminManagedCentre(requestedManagedCentreId)
+    : null;
   const selectedQuestionnaireId = getSelectedQuestionnaireId(
     params.questionnaireId,
     versions,
@@ -995,6 +1147,15 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     activeSection === "results"
       ? getRequestedQuestionnaireId(params.questionnaireId, versions)
       : selectedQuestionnaireId;
+  const selectedResultsScope: AdminResultsScopeInput =
+    params.scope === "centre" ? "centre" : "all";
+  const selectedResultsCentreId =
+    activeSection === "results" &&
+    selectedResultsScope === "centre" &&
+    centreIdSchema.safeParse(params.centreId).success &&
+    resultCentres.some((centre) => centre.id === params.centreId)
+      ? params.centreId ?? null
+      : null;
   const selectedDetail = selectedQuestionnaireId
     ? activeSection === "questionnaires"
       ? await getQuestionnaireVersionDetail(selectedQuestionnaireId)
@@ -1014,6 +1175,11 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         : null;
 
   const sectionTitles: Record<AdminSection, { eyebrow: string; title: string; description: string }> = {
+    summary: {
+      eyebrow: "Visió general",
+      title: "Resum",
+      description: "Consulta l’estat general de l’aplicació i del qüestionari actiu.",
+    },
     questionnaires: {
       eyebrow: "Contingut",
       title: "Gestió de qüestionaris",
@@ -1023,6 +1189,11 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       eyebrow: "Visió global",
       title: "Resultats agregats",
       description: "Consulta les dades de conjunt sense exposar respostes individuals.",
+    },
+    centres: {
+      eyebrow: "Gestió institucional",
+      title: "Centres",
+      description: "Consulta els registres dels centres i gestiona’n l’accés i les dades.",
     },
     admins: {
       eyebrow: "Accés",
@@ -1080,7 +1251,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </div>
         ) : null}
 
-        {activeSection === "questionnaires" ? (
+        {activeSection === "summary" && adminSummary ? (
+          <AdminSummaryPanel
+            minimumResponseCount={minimumResponseCount}
+            summary={adminSummary}
+          />
+        ) : activeSection === "questionnaires" ? (
           <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
             <div className="space-y-6">
               <VersionList
@@ -1102,15 +1278,27 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             currentUserId={session.user.id}
             invitations={adminInvitations}
           />
+        ) : activeSection === "centres" ? (
+          <AdminCentresPanel
+            centre={managedCentre}
+            centres={managedCentres}
+            filter={centreFilter}
+            minimumResponseCount={minimumResponseCount}
+            search={params.q?.trim().slice(0, 100) ?? ""}
+          />
         ) : activeSection === "results" ? (
           <AdminResultsPanel
+            centres={resultCentres}
             minimumResponseCount={minimumResponseCount}
+            selectedCentreId={selectedResultsCentreId}
             selectedQuestionnaireId={selectedResultsQuestionnaireId}
+            selectedScope={selectedResultsScope}
             versions={versions}
           />
         ) : (
           <SettingsPanel
             communicationTemplate={communicationTemplate}
+            languageSettings={languageSettings}
             minimumResponseCount={minimumResponseCount}
             responsibleAccessMode={responsibleAccessMode}
           />

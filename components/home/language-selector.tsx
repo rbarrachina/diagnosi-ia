@@ -1,16 +1,11 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-
-const languages = [
-  { code: "CA", label: "Català" },
-  { code: "ES", label: "Castellano" },
-  { code: "EU", label: "Euskara" },
-  { code: "GL", label: "Galego" },
-  { code: "OC", label: "Aranés" },
-] as const;
+import { useLanguageSettings } from "@/components/i18n/language-settings-provider";
+import { AVAILABLE_LANGUAGES } from "@/lib/i18n/languages";
 
 export function LanguageSelector() {
+  const { selectorVisible, visibleLanguageCodes } = useLanguageSettings();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -43,6 +38,14 @@ export function LanguageSelector() {
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [isOpen]);
+
+  if (!selectorVisible) {
+    return null;
+  }
+
+  const languages = AVAILABLE_LANGUAGES.filter(({ code }) =>
+    visibleLanguageCodes.includes(code),
+  );
 
   return (
     <div className="relative" ref={containerRef}>
