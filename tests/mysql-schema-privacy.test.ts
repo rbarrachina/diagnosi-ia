@@ -8,6 +8,10 @@ const mysqlScaleMigration = readFileSync(
   join(process.cwd(), "drizzle/0001_short_onslaught.sql"),
   "utf8",
 );
+const adminActionCollationMigration = readFileSync(
+  join(process.cwd(), "drizzle/0012_fix_admin_action_collation.sql"),
+  "utf8",
+);
 
 describe("MySQL schema privacy constraints", () => {
   it("keeps centre identity separate from participant identity fields", () => {
@@ -48,6 +52,15 @@ describe("MySQL schema privacy constraints", () => {
     expect(auditDefinition).toContain("affectedSubmissions");
     expect(auditDefinition).not.toMatch(
       /submissionId|answerId|email|participant|ip_address|user_agent|device/i,
+    );
+  });
+
+  it("uses the same collation for linked administrator identifiers", () => {
+    expect(adminActionCollationMigration).toContain(
+      "MODIFY COLUMN `actor_user_id` varchar(191)",
+    );
+    expect(adminActionCollationMigration).toContain(
+      "COLLATE utf8mb4_unicode_ci",
     );
   });
 

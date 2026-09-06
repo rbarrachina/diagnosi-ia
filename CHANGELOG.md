@@ -6,6 +6,11 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- Corregida la col·lació de `admin_centre_actions.actor_user_id` perquè sigui
+  compatible amb `admin_users.user_id` en consultar l'activitat dels centres.
+
 ### Changed
 
 - Reestructurats els tres blocs informatius de la segona pantalla per explicar
