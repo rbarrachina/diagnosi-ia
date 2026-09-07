@@ -11,8 +11,8 @@ respostes.
 
 Els creadors d'espais s'autentiquen amb Google OAuth, limitat a comptes
 `@xtec.cat`, només per crear i gestionar els espais propis. El professorat
-s'autentica amb Google i el centre pot admetre `@xtec.cat`, un domini propi
-exacte de Google Workspace o tots dos. En desenvolupament es pot usar el mode
+s'autentica amb Google i el centre ha de triar entre `@xtec.cat` o un domini
+propi exacte de Google Workspace. En desenvolupament es pot usar el mode
 local controlat per variables d'entorn.
 
 ## Regles de privacitat

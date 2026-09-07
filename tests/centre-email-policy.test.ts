@@ -34,21 +34,19 @@ describe("centre email policy", () => {
     ).toBe(false);
   });
 
-  it("supports XTEC and a custom domain together", () => {
-    const policy = {
-      allowXtec: true,
-      customDomain: "escola.cat",
-      configured: true,
-    };
-
-    expect(isEmailAllowedByCentrePolicy("docent@xtec.cat", policy)).toBe(true);
-    expect(isEmailAllowedByCentrePolicy("docent@escola.cat", policy)).toBe(true);
+  it("rejects XTEC and a custom domain together", () => {
+    expect(() =>
+      centreEmailPolicySchema.parse({
+        allowXtec: true,
+        customDomain: "escola.cat",
+      }),
+    ).toThrow("Selecciona un únic domini admès.");
   });
 
   it("requires at least one option and a valid custom domain", () => {
     expect(() =>
       centreEmailPolicySchema.parse({ allowXtec: false, customDomain: null }),
-    ).toThrow();
+    ).toThrow("Selecciona un únic domini admès.");
     expect(() =>
       centreEmailPolicySchema.parse({ allowXtec: false, customDomain: "@escola.cat" }),
     ).toThrow();

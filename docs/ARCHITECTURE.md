@@ -81,8 +81,8 @@ comparteixen amb el client.
 
 `AUTH_MODE=google` inicia el flux OAuth, valida el token de Google al servidor i
 crea una cookie `httpOnly` signada. Els responsables han de tenir correu
-`@xtec.cat`. El professorat ha de coincidir exactament amb `@xtec.cat` o amb el
-domini de Google Workspace configurat pel centre.
+`@xtec.cat`. El professorat ha de coincidir exactament amb l'única opció triada
+pel centre: `@xtec.cat` o el domini propi de Google Workspace configurat.
 
 L'identificador desat per a responsables i bloquejos de resposta és un UUID
 opac derivat amb HMAC. El correu i nom del responsable es desen a

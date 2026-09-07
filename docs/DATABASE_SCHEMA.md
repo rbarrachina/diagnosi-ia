@@ -63,7 +63,8 @@ quan Dades Obertes encara no ha retornat cap fitxa.
 
 També conté l'estat de l'alta (`profile_confirmed_at` i
 `email_policy_configured_at`) i la política docent: `allow_xtec` i un únic
-`custom_domain` opcional. El domini es desa en minúscules i s'aplica per
+`custom_domain` opcional, que són excloents quan la política està configurada.
+El domini es desa en minúscules i s'aplica per
 coincidència exacta. Aquestes dades descriuen el centre, no identifiquen cap
 docent.
 

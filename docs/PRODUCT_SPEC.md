@@ -353,17 +353,14 @@ compte Google o, com a últim recurs, el correu del centre. Apareix només a les
 pàgines, correus i informes vinculats al centre.
 
 Abans de crear o gestionar el qüestionari, el responsable confirma la fitxa i
-configura els dominis docents. Pot admetre `@xtec.cat`, un únic domini propi de
-Google Workspace o tots dos. `@xtec.cat` és l'opció inicial, recomanada i
+configura el domini docent. Ha de triar entre `@xtec.cat` o un únic domini propi
+de Google Workspace. `@xtec.cat` és l'opció inicial, recomanada i
 activada per defecte. El domini propi es normalitza a minúscules i només
 coincideix exactament: autoritzar `escola.cat` no autoritza
 `subdomini.escola.cat`.
 
-Si s'activen les dues opcions, la pantalla avisa que una mateixa persona podria
-respondre amb dos comptes Google diferents. Aquesta limitació és conseqüència
-de l'anonimat: l'aplicació no desa correus docents ni pot relacionar les dues
-identitats. La configuració es pot modificar després des de la vista central
-`Configuració`.
+Les dues opcions són excloents i no es poden activar alhora. La configuració es
+pot modificar després des de la vista central `Configuració`.
 
 Resultat mostrat després de crear l'espai i recuperable des de la gestio del creador:
 
