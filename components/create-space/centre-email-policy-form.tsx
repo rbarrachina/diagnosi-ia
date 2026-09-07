@@ -16,8 +16,9 @@ export function CentreEmailPolicyForm({
   embedded?: boolean;
   headingId?: string;
 }) {
-  const [allowXtec, setAllowXtec] = useState(initialPolicy.allowXtec);
-  const [useCustom, setUseCustom] = useState(Boolean(initialPolicy.customDomain));
+  const [domainType, setDomainType] = useState<"xtec" | "custom">(
+    initialPolicy.customDomain ? "custom" : "xtec",
+  );
   const [customDomain, setCustomDomain] = useState(initialPolicy.customDomain ?? "");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -29,8 +30,9 @@ export function CentreEmailPolicyForm({
       method: "PUT",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        allowXtec,
-        customDomain: useCustom ? customDomain.toLowerCase().trim() : null,
+        allowXtec: domainType === "xtec",
+        customDomain:
+          domainType === "custom" ? customDomain.toLowerCase().trim() : null,
       }),
     });
     const payload = (await response.json()) as {
@@ -61,10 +63,12 @@ export function CentreEmailPolicyForm({
       <label className={`mt-7 block border-t p-4 ${embedded ? "border-line" : "rounded-md border border-line"}`}>
         <span className="flex items-center gap-3">
           <input
-            checked={allowXtec}
+            aria-label="@xtec.cat"
+            checked={domainType === "xtec"}
             className="h-4 w-4 shrink-0"
-            onChange={(event) => setAllowXtec(event.target.checked)}
-            type="checkbox"
+            name="email-domain"
+            onChange={() => setDomainType("xtec")}
+            type="radio"
           />
           <strong className="text-sm leading-5 text-ink">@xtec.cat</strong>
         </span>
@@ -76,10 +80,12 @@ export function CentreEmailPolicyForm({
       <label className={`block border-t p-4 ${embedded ? "border-line" : "mt-3 rounded-md border border-line"}`}>
         <span className="flex items-center gap-3">
           <input
-            checked={useCustom}
+            aria-label="Domini propi"
+            checked={domainType === "custom"}
             className="h-4 w-4 shrink-0"
-            onChange={(event) => setUseCustom(event.target.checked)}
-            type="checkbox"
+            name="email-domain"
+            onChange={() => setDomainType("custom")}
+            type="radio"
           />
           <strong className="text-sm leading-5 text-ink">Domini propi</strong>
         </span>
@@ -88,7 +94,7 @@ export function CentreEmailPolicyForm({
           automàticament els subdominis.
         </span>
         <span className="block pl-7">
-          {useCustom ? (
+          {domainType === "custom" ? (
             <span className={`mt-3 flex max-w-sm items-center rounded-xl border ${embedded ? "border-line bg-surface-soft" : "border-line bg-surface"}`}>
               <span className="border-r border-line bg-accent-soft px-3 py-2 text-muted">@</span>
               <input
@@ -104,14 +110,6 @@ export function CentreEmailPolicyForm({
           ) : null}
         </span>
       </label>
-
-      {allowXtec && useCustom ? (
-        <p className="mt-4 rounded-md border border-warning-border bg-warning-bg p-3 text-sm leading-6 text-warning-text">
-          Si una persona disposa d’un compte XTEC i d’un compte del domini
-          propi, podria respondre dues vegades. Les respostes són anònimes i
-          l’aplicació no relaciona els dos comptes.
-        </p>
-      ) : null}
 
       {message ? <p className="mt-3 text-sm text-muted">{message}</p> : null}
       <button

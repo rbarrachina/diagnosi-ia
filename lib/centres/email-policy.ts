@@ -29,8 +29,8 @@ export const centreEmailPolicySchema = z
     allowXtec: value.allowXtec,
     customDomain: value.customDomain || null,
   }))
-  .refine((value) => value.allowXtec || value.customDomain !== null, {
-    message: "Selecciona almenys un domini admès.",
+  .refine((value) => value.allowXtec !== (value.customDomain !== null), {
+    message: "Selecciona un únic domini admès.",
   });
 
 type PolicyRow = RowDataPacket & {

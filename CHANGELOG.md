@@ -13,6 +13,8 @@ Semantic Versioning.
 
 ### Changed
 
+- La configuració d'accés del professorat obliga a triar exclusivament entre
+  `@xtec.cat` i un domini propi, sense permetre activar les dues opcions alhora.
 - Reestructurats els tres blocs informatius de la segona pantalla per explicar
   el fonament pedagògic, la gestió del centre i la participació docent anònima.
 - Substituït l'accés redundant de la targeta del centre per l'aclariment que

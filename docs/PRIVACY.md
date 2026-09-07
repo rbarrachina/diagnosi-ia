@@ -52,10 +52,10 @@ mateix espai. El servidor usa el correu transitòriament, deriva un HMAC i no
 desa el correu, nom o perfil a MySQL. `submission_locks` no conté
 `submission_id` ni respostes.
 
-Quan un centre admet alhora `@xtec.cat` i un domini propi, una mateixa persona
-podria respondre amb dos comptes Google diferents. La interfície ho adverteix;
-evitar-ho exigiria relacionar identitats docents, cosa incompatible amb el
-principi d'anonimat.
+Cada centre ha de triar entre `@xtec.cat` o un domini propi exacte. Les dues
+opcions no es poden activar alhora, fet que evita que una mateixa persona pugui
+respondre amb dos comptes de dominis admesos diferents sense haver de relacionar
+identitats docents.
 
 Els administradors no són anònims. Les seves dades identificatives queden
 limitades a `admin_users` i `admin_email_invitations` i no poden servir per

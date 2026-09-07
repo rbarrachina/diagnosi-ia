@@ -166,7 +166,7 @@ export const centres = mysqlTable(
     ),
     check(
       "centres_email_policy_check",
-      sql`${table.emailPolicyConfiguredAt} is null or ${table.allowXtec} = true or ${table.customDomain} is not null`,
+      sql`${table.emailPolicyConfiguredAt} is null or (${table.allowXtec} = true and ${table.customDomain} is null) or (${table.allowXtec} = false and ${table.customDomain} is not null)`,
     ),
     check(
       "centres_suspension_check",

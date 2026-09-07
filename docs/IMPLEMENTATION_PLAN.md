@@ -134,7 +134,8 @@ Estat: completada.
 - Mantenir la identitat del professorat fora de la base de dades.
 - Afegir l'alta guiada de confirmació de fitxa i configuració dels dominis
   docents.
-- Permetre `@xtec.cat`, un domini propi exacte de Google Workspace o tots dos.
+- Permetre triar exclusivament entre `@xtec.cat` o un domini propi exacte de
+  Google Workspace.
 - Validar el domini després de l'OAuth i novament dins la transacció de
   resposta, sense persistir el correu docent.
 
