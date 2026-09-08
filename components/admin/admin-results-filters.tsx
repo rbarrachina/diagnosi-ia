@@ -104,7 +104,7 @@ export function AdminResultsFilters({
         </label>
 
         <button
-          className="self-start rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover disabled:bg-muted md:col-span-2"
+          className="self-start rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover disabled:bg-muted md:col-span-2"
           disabled={!questionnaireId}
           type="submit"
         >

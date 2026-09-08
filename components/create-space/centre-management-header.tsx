@@ -62,9 +62,8 @@ export function CentreManagementHeader({
         <button
           aria-controls={accountMenuId}
           aria-expanded={isAccountMenuOpen}
-          aria-haspopup="menu"
           aria-label={`Menú del compte de ${accountName}`}
-          className="inline-flex h-10 max-w-56 items-center gap-2 rounded-full bg-action py-1 pl-1 pr-2 text-sm font-semibold text-white shadow-[0_8px_24px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper sm:pr-4"
+          className="inline-flex h-10 max-w-56 items-center gap-2 rounded-full bg-action py-1 pl-1 pr-2 text-sm font-semibold text-action-contrast shadow-[0_8px_24px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper sm:pr-4"
           onClick={toggleAccountMenu}
           type="button"
         >
@@ -82,7 +81,7 @@ export function CentreManagementHeader({
             aria-label="Opcions del compte"
             className="fixed right-4 top-20 mt-3 w-[min(19rem,calc(100vw-2rem))] rounded-2xl border border-line bg-surface p-2 text-left shadow-[0_18px_60px_var(--app-shadow)] backdrop-blur-xl sm:absolute sm:right-0 sm:top-auto"
             id={accountMenuId}
-            role="menu"
+            role="region"
           >
             <div className="border-b border-line px-3 pb-3 pt-2">
               <p className="truncate font-semibold text-ink">

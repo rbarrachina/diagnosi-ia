@@ -192,6 +192,16 @@ administratives a `admin_centre_actions`.
 Els errors visibles són genèrics. No es registren tokens, payloads complets de
 respostes, correus de participants, IPs ni informació de dispositiu.
 
+## Accessibilitat
+
+La interfície té com a objectiu WCAG 2.2 AA. La capçalera compartida incorpora
+el salt al contingut; els tokens defineixen focus i contrast per als temes clar
+i fosc; i els estats dinàmics del qüestionari gestionen focus i anuncis per a
+tecnologies d’assistència. Les gràfiques mantenen una alternativa tabular i no
+formen part de l’arbre d’accessibilitat quan dupliquen aquestes dades. La matriu
+de verificació manual i els límits de l’auditoria es documenten a
+`docs/ACCESSIBILITY.md`.
+
 ## Pàgines d'entrada
 
 - `/` és l'única portada informativa. Mostra objectiu, indicador, rols i accés

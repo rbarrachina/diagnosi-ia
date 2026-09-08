@@ -14,6 +14,7 @@ const config: Config = {
         section: "var(--color-section)",
         line: "var(--color-line)",
         action: "var(--color-action)",
+        "action-contrast": "var(--color-action-contrast)",
         "action-hover": "var(--color-action-hover)",
         focus: "var(--color-focus)",
         surface: "var(--color-surface)",

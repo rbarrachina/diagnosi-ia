@@ -41,7 +41,11 @@ export function CentreRouteFrame({
         resultsUrl={resultsUrl}
       />
 
-      <div className="flex h-full min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain">
+      <div
+        className="flex h-full min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain"
+        id="inici"
+        tabIndex={-1}
+      >
         <div className="flex min-h-full flex-col">
           <div className="flex-1 px-5 pb-28 pt-8 sm:px-8 md:pb-16 md:pt-10 lg:px-12 xl:px-16">
             {children}

@@ -570,5 +570,7 @@ d'estructura crea una nova versió.
 - Validacio estricta al servidor.
 - Cap secret al client.
 - Cap dada individual al tauler o PDF.
-- Accessibilitat bàsica: formularis etiquetats, contrast suficient i navegació amb teclat.
+- Objectiu d’accessibilitat WCAG 2.2 AA: semàntica compatible amb lectors de
+  pantalla, formularis etiquetats, contrast suficient, focus visible, navegació
+  completa amb teclat i reducció del moviment segons la preferència del sistema.
 - UI clara i institucional, sense aparenca de ranquing ni avaluació personal.

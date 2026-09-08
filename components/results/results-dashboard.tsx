@@ -178,7 +178,7 @@ export function ResultsDashboard({
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <button
-            className="rounded-md bg-action px-4 py-3 text-sm font-semibold text-white transition hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-muted"
+            className="rounded-md bg-action px-4 py-3 text-sm font-semibold text-action-contrast transition hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-muted"
             disabled={isDownloading}
             onClick={onDownloadPdf}
             type="button"
@@ -187,7 +187,7 @@ export function ResultsDashboard({
           </button>
           {managementHref ? (
             <a
-              className="rounded-md bg-action px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-action-hover"
+              className="rounded-md bg-action px-4 py-3 text-center text-sm font-semibold text-action-contrast transition hover:bg-action-hover"
               href={managementHref}
             >
               Torna a la gestió
@@ -265,7 +265,7 @@ export function ResultsDashboard({
           Percentatge per blocs
         </h2>
         <div className="mt-4 grid gap-6 lg:grid-cols-2">
-          <div className="h-72 min-w-0">
+          <div aria-hidden="true" className="h-72 min-w-0">
             <ResponsiveContainer
               height="100%"
               initialDimension={CHART_INITIAL_DIMENSION}
@@ -281,7 +281,7 @@ export function ResultsDashboard({
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="h-72 min-w-0">
+          <div aria-hidden="true" className="h-72 min-w-0">
             <ResponsiveContainer
               height="100%"
               initialDimension={CHART_INITIAL_DIMENSION}
@@ -354,7 +354,7 @@ export function ResultsDashboard({
               </p>
             </div>
 
-            <div className="mt-4 h-56 min-w-0">
+            <div aria-hidden="true" className="mt-4 h-56 min-w-0">
               <ResponsiveContainer
                 height="100%"
                 initialDimension={CHART_INITIAL_DIMENSION}
@@ -381,6 +381,9 @@ export function ResultsDashboard({
 
             <div className="mt-5 overflow-x-auto">
               <table className="w-full min-w-[900px] table-fixed border-collapse text-left text-sm">
+                <caption className="sr-only">
+                  Resultats agregats del bloc {block.position}: {block.title}
+                </caption>
                 <colgroup>
                   <col />
                   <col className="w-[110px]" />
@@ -390,12 +393,13 @@ export function ResultsDashboard({
                 </colgroup>
                 <thead>
                   <tr className="border-b border-line text-xs uppercase tracking-[0.08em] text-muted">
-                    <th className="py-2 pr-4">Pregunta</th>
-                    <th className="whitespace-nowrap py-2 pr-4">Percentatge</th>
+                    <th className="py-2 pr-4" scope="col">Pregunta</th>
+                    <th className="whitespace-nowrap py-2 pr-4" scope="col">Percentatge</th>
                     {ORDERED_SCALE_OPTIONS.map((option) => (
                       <th
                         className={`whitespace-nowrap py-2 pr-4 ${option.headerClass}`}
                         key={option.value}
+                        scope="col"
                       >
                         {option.shortLabel}
                       </th>

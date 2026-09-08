@@ -113,7 +113,7 @@ export function CentreLoginDialog({
           </div>
 
           <a
-            className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-xl bg-action px-6 font-semibold text-white shadow-[0_14px_34px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-surface"
+            className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-xl bg-action px-6 font-semibold text-action-contrast shadow-[0_14px_34px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-surface"
             href={LOGIN_URL}
           >
             <GoogleIcon />

@@ -48,7 +48,7 @@ export function AdminCentresPanel({
             />
           </label>
           <button
-            className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover"
+            className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover"
             type="submit"
           >
             Cerca

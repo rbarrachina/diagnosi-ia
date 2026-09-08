@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import {
@@ -16,6 +17,10 @@ import {
 } from "@/lib/centres/centre-profiles";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Espai del centre",
+};
 
 type CreatePageProps = {
   searchParams: Promise<{ view?: string }>;
@@ -63,7 +68,11 @@ export default async function CreatePage({ searchParams }: CreatePageProps) {
     >
 
       {session.status === "forbidden" ? (
-        <section className="relative mx-auto flex min-h-screen w-full max-w-3xl flex-col px-5 pb-24 pt-32 sm:px-8 lg:px-10">
+        <section
+          className="relative mx-auto flex min-h-screen w-full max-w-3xl flex-col px-5 pb-24 pt-32 sm:px-8 lg:px-10"
+          id="inici"
+          tabIndex={-1}
+        >
           <div className="w-full max-w-xl">
             <ResponsibleForbiddenNotice reason={session.reason} />
           </div>
@@ -73,7 +82,11 @@ export default async function CreatePage({ searchParams }: CreatePageProps) {
       {session.status === "authenticated" && centre && (
         !centre.profileConfirmedAt || !centre.emailPolicyConfiguredAt
       ) ? (
-        <section className="relative mx-auto flex min-h-screen w-full max-w-4xl flex-col px-5 pb-24 pt-28 sm:px-8 lg:px-10">
+        <section
+          className="relative mx-auto flex min-h-screen w-full max-w-4xl flex-col px-5 pb-24 pt-28 sm:px-8 lg:px-10"
+          id="inici"
+          tabIndex={-1}
+        >
           <div className="mb-8">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-action">
               Espai del centre

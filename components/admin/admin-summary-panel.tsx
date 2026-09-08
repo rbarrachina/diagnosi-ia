@@ -145,7 +145,7 @@ export function AdminSummaryPanel({
                   Gestiona qüestionaris
                 </Link>
                 <Link
-                  className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover"
+                  className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover"
                   href={`/admin?section=results&scope=all&questionnaireId=${summary.activeQuestionnaire.id}`}
                 >
                   Consulta els resultats

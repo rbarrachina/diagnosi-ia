@@ -47,7 +47,10 @@ const themeInitializer = `
 `;
 
 export const metadata: Metadata = {
-  title: "Diagnosi IA",
+  title: {
+    default: "Diagnosi IA",
+    template: "%s | Diagnosi IA",
+  },
   description: "Diagnosi anònima de conjunt sobre l'ús educatiu de la IA.",
   referrer: "no-referrer",
 };

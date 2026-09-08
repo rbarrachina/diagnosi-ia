@@ -8,11 +8,19 @@ Semantic Versioning.
 
 ### Fixed
 
+- Reforçada l’accessibilitat amb salt al contingut, focus visible, contrast de
+  les accions, progrés programàtic i anuncis per als lectors de pantalla.
+- Corregits els rols dels desplegables informatius i afegida semàntica tabular
+  com a alternativa als gràfics de resultats.
+- Afegit al peu de pàgina un accés compacte amb icona a la referència oficial
+  WCAG 2.2.
 - Corregida la col·lació de `admin_centre_actions.actor_user_id` perquè sigui
   compatible amb `admin_users.user_id` en consultar l'activitat dels centres.
 
 ### Changed
 
+- Adoptat WCAG 2.2 AA com a objectiu d’accessibilitat i documentada la matriu
+  de verificació manual necessària abans d’una declaració formal.
 - La configuració d'accés del professorat obliga a triar exclusivament entre
   `@xtec.cat` i un domini propi, sense permetre activar les dues opcions alhora.
 - Reestructurats els tres blocs informatius de la segona pantalla per explicar

@@ -74,6 +74,11 @@ describe("initial page", () => {
     expect(
       screen.getByRole("link", { name: "Ves a la mostra del qüestionari" }),
     ).toHaveAttribute("href", "#mostra-questionari");
+    expect(
+      screen.getByRole("link", {
+        name: "Accessibilitat: WCAG 2.2, s’obre en una pestanya nova",
+      }),
+    ).toHaveAttribute("href", "https://www.w3.org/TR/WCAG22/");
   });
 
   it("explains centre access before starting the existing Google login", async () => {
@@ -133,14 +138,14 @@ describe("initial page", () => {
     fireEvent.click(languageButton);
 
     expect(languageButton).toHaveAttribute("aria-expanded", "true");
-    expect(
-      screen.getByRole("menu", { name: "Idiomes previstos" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: /CA Català/ })).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: /ES Castellano/ })).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: /EU Euskara/ })).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: /GL Galego/ })).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: /OC Aranés/ })).toBeInTheDocument();
+    const languageRegion = screen.getByRole("region", {
+      name: "Idiomes previstos",
+    });
+    expect(within(languageRegion).getByText("Català")).toBeInTheDocument();
+    expect(within(languageRegion).getByText("Castellano")).toBeInTheDocument();
+    expect(within(languageRegion).getByText("Euskara")).toBeInTheDocument();
+    expect(within(languageRegion).getByText("Galego")).toBeInTheDocument();
+    expect(within(languageRegion).getByText("Aranés")).toBeInTheDocument();
     expect(languageButton).toHaveTextContent("CA");
   });
 

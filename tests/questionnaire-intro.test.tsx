@@ -86,5 +86,7 @@ describe("questionnaire introduction", () => {
       "questionnaire-scale-option",
       "rounded-xl",
     );
+    expect(screen.getByRole("progressbar", { name: "Progrés del qüestionari" }))
+      .toHaveAttribute("aria-valuenow", "50");
   });
 });
