@@ -194,7 +194,7 @@ export function CreateSpaceForm({
 
       {!displayedSpace ? (
         <button
-          className="mt-7 inline-flex self-start rounded-full bg-action px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-7 inline-flex self-start rounded-full bg-action px-6 py-3 text-sm font-semibold text-action-contrast shadow-[0_10px_28px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-60"
           disabled={state.status === "submitting"}
           onClick={handleCreateSpace}
           type="button"
@@ -275,7 +275,7 @@ export function CreateSpaceForm({
                   abans d&apos;enviar el missatge.
                 </p>
                 <a
-                  className="mt-3 inline-flex rounded-full bg-action px-4 py-2 font-semibold text-white transition hover:bg-action-hover"
+                  className="mt-3 inline-flex rounded-full bg-action px-4 py-2 font-semibold text-action-contrast transition hover:bg-action-hover"
                   href={gmailComposeUrl}
                   rel="noreferrer"
                   target="_blank"

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { LanguageSelector } from "@/components/home/language-selector";
 import { LanguageSettingsProvider } from "@/components/i18n/language-settings-provider";
@@ -34,8 +34,9 @@ describe("language selector", () => {
       screen.getByRole("button", { name: "Idioma actual: català" }),
     );
 
-    expect(screen.getByRole("menuitem", { name: /CA Català/ })).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: /ES Castellano/ })).toBeInTheDocument();
-    expect(screen.queryByRole("menuitem", { name: /EU Euskara/ })).not.toBeInTheDocument();
+    const languageRegion = screen.getByRole("region", { name: "Idiomes previstos" });
+    expect(within(languageRegion).getByText("Català")).toBeInTheDocument();
+    expect(within(languageRegion).getByText("Castellano")).toBeInTheDocument();
+    expect(within(languageRegion).queryByText("Euskara")).not.toBeInTheDocument();
   });
 });

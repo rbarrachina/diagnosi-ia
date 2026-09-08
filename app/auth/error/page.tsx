@@ -22,7 +22,7 @@ export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps
           <h1 className="text-2xl font-semibold">Accés no autoritzat</h1>
           <p className="mt-3 text-sm leading-6">{message}</p>
           <Link
-            className="mt-6 inline-flex rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
+            className="mt-6 inline-flex rounded-md bg-action px-5 py-3 text-sm font-semibold text-action-contrast transition hover:bg-action-hover"
             href="/"
           >
             Torna a l’inici

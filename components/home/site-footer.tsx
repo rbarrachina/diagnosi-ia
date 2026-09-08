@@ -25,6 +25,15 @@ export function SiteFooter() {
           className="flex flex-wrap gap-x-5 gap-y-2 font-medium"
         >
           <a
+            aria-label="Accessibilitat: WCAG 2.2, s’obre en una pestanya nova"
+            className="inline-flex items-center gap-2 text-action transition hover:text-action-hover"
+            href="https://www.w3.org/TR/WCAG22/"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <AccessibilityIcon />
+          </a>
+          <a
             className="text-action transition hover:text-action-hover"
             href="https://www.apache.org/licenses/LICENSE-2.0"
             rel="noreferrer"
@@ -45,6 +54,27 @@ export function SiteFooter() {
         </nav>
       </div>
     </footer>
+  );
+}
+
+function AccessibilityIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="12" cy="7.5" fill="currentColor" r="1.5" />
+      <path
+        d="M7.5 10.5h9M12 10.5v7M9.5 18l2.5-4 2.5 4"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
   );
 }
 

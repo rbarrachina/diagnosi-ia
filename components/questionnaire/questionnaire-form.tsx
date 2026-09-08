@@ -66,7 +66,11 @@ export function QuestionnaireForm({
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  }, [currentStep]);
+
+    if (currentStep > 0 || submitState.status === "submitted") {
+      document.getElementById("questionnaire-step-heading")?.focus();
+    }
+  }, [currentStep, submitState.status]);
 
   function blockIsComplete(block: QuestionBlock): boolean {
     return block.questions.every((question) => answers[question.id] !== undefined);
@@ -162,7 +166,13 @@ export function QuestionnaireForm({
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action">
           Qüestionari completat
         </p>
-        <h1 className="mt-4 text-3xl font-bold tracking-[-0.035em] text-ink">Gràcies</h1>
+        <h1
+          className="mt-4 text-3xl font-bold tracking-[-0.035em] text-ink"
+          id="questionnaire-step-heading"
+          tabIndex={-1}
+        >
+          Gràcies
+        </h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted sm:text-base">
           Les respostes s&apos;han enregistrat correctament.
         </p>
@@ -202,7 +212,10 @@ export function QuestionnaireForm({
       ) : null}
 
       {submitState.status === "error" ? (
-        <p className="mt-6 rounded-xl border border-danger-border bg-danger-bg px-4 py-3 text-sm text-danger-text">
+        <p
+          className="mt-6 rounded-xl border border-danger-border bg-danger-bg px-4 py-3 text-sm text-danger-text"
+          role="alert"
+        >
           {submitState.message}
         </p>
       ) : null}
@@ -234,7 +247,7 @@ export function QuestionnaireForm({
             </button>
           ) : isLastBlock ? (
             <button
-              className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-muted"
+              className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-action-contrast shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-muted"
               disabled={submitState.status === "submitting"}
               onClick={submitAnswers}
               type="button"
@@ -243,7 +256,7 @@ export function QuestionnaireForm({
             </button>
           ) : (
             <button
-              className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover"
+              className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-action-contrast shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover"
               onClick={goToNextStep}
               type="button"
             >
@@ -276,7 +289,11 @@ function IntroPage({
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action sm:text-sm">
         {questionnaire.centreName}
       </p>
-      <h1 className="mt-4 text-3xl font-bold tracking-[-0.04em] text-ink sm:text-4xl">
+      <h1
+        className="mt-4 text-3xl font-bold tracking-[-0.04em] text-ink sm:text-4xl"
+        id="questionnaire-step-heading"
+        tabIndex={-1}
+      >
         {isReadOnly ? "Previsualització del qüestionari" : "Qüestionari"}
       </h1>
       {isReadOnly ? (
@@ -331,7 +348,7 @@ function IntroPage({
             </p>
           ) : null}
           <button
-            className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-muted"
+            className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-action-contrast shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-muted"
             disabled={alreadySubmitted}
             onClick={onStart}
             type="button"
@@ -360,7 +377,11 @@ function BlockPage({
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action sm:text-sm">
         Bloc {block.position}
       </p>
-      <h2 className="mt-4 text-2xl font-bold tracking-[-0.03em] text-ink sm:text-3xl">
+      <h2
+        className="mt-4 text-2xl font-bold tracking-[-0.03em] text-ink sm:text-3xl"
+        id="questionnaire-step-heading"
+        tabIndex={-1}
+      >
         {block.title}
       </h2>
 
@@ -446,7 +467,12 @@ function ProgressBar({ percentage }: { percentage: number }) {
       </div>
       <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-accent-soft shadow-inner">
         <div
+          aria-label="Progrés del qüestionari"
+          aria-valuemax={100}
+          aria-valuemin={0}
+          aria-valuenow={percentage}
           className="h-full rounded-full bg-action transition-all"
+          role="progressbar"
           style={{ width: `${percentage}%` }}
         />
       </div>

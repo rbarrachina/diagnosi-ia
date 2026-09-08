@@ -43,7 +43,7 @@ describe("centre management header", () => {
       <CentreManagementHeader accountName="Centre de prova" email={centre.email} />,
     );
     fireEvent.click(screen.getByRole("button", { name: "Menú del compte de Centre de prova" }));
-    expect(screen.getByRole("menu", { name: "Opcions del compte" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Opcions del compte" })).toBeInTheDocument();
     expect(screen.getByText(centre.email)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Surt" })).toBeInTheDocument();
     expect(screen.queryByRole("menuitem", { name: "Fitxa" })).not.toBeInTheDocument();

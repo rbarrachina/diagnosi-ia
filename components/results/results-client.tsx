@@ -130,7 +130,11 @@ export function ResultsClient({ publicCode }: ResultsClientProps) {
   if (state.status === "loading") {
     return (
       <section className="mx-auto w-full max-w-5xl px-6 py-12">
-        <p className="rounded-md border border-line bg-surface px-4 py-3 text-sm text-muted shadow-sm">
+        <p
+          aria-live="polite"
+          className="rounded-md border border-line bg-surface px-4 py-3 text-sm text-muted shadow-sm"
+          role="status"
+        >
           Carregant resultats de conjunt...
         </p>
       </section>
@@ -140,7 +144,10 @@ export function ResultsClient({ publicCode }: ResultsClientProps) {
   if (state.status === "error") {
     return (
       <section className="mx-auto w-full max-w-3xl px-6 py-12">
-        <div className="rounded-md border border-red-200 bg-red-50 p-5 text-red-900">
+        <div
+          className="rounded-md border border-red-200 bg-red-50 p-5 text-red-900"
+          role="alert"
+        >
           <h1 className="text-xl font-semibold">No es poden mostrar els resultats</h1>
           <p className="mt-2 text-sm leading-6">{state.message}</p>
         </div>

@@ -29,5 +29,8 @@ describe("app header brand link", () => {
     expect(
       screen.getByRole("link", { name: "Torna a l’inici de Diagnosi IA" }),
     ).not.toHaveAttribute("target");
+    expect(
+      screen.getByRole("link", { name: "Salta al contingut principal" }),
+    ).toHaveAttribute("href", "#inici");
   });
 });

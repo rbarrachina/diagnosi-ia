@@ -335,7 +335,7 @@ export function QuestionnaireEditorForm({
           </button>
         ) : null}
         <button
-          className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover disabled:bg-muted"
+          className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover disabled:bg-muted"
           disabled={isFormDisabled}
           type="submit"
         >

@@ -11,7 +11,7 @@ export function LoginButton({
 }: LoginButtonProps) {
   return (
     <a
-      className="inline-flex rounded-md bg-action px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f5d68]"
+      className="inline-flex rounded-md bg-action px-5 py-3 text-sm font-semibold text-action-contrast transition hover:bg-action-hover"
       href={`/auth/login?next=${encodeURIComponent(next)}`}
     >
       {label}

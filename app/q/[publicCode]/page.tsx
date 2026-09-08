@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LoginButton, LogoutButton } from "@/components/auth/auth-actions";
 import { ThemeToggle } from "@/components/home/theme-toggle";
@@ -14,6 +15,10 @@ import {
 } from "@/lib/centres/email-policy";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Qüestionari",
+};
 
 type QuestionnairePageProps = {
   params: Promise<{
@@ -65,7 +70,11 @@ export default async function QuestionnairePage({ params }: QuestionnairePagePro
       <div aria-hidden="true" className="app-orb app-orb-left fixed" />
       <div aria-hidden="true" className="app-orb app-orb-right fixed" />
 
-      <section className="relative mx-auto w-full max-w-5xl px-5 pb-16 pt-28 sm:px-8 sm:pb-24 sm:pt-32">
+      <section
+        className="relative mx-auto w-full max-w-5xl px-5 pb-16 pt-28 sm:px-8 sm:pb-24 sm:pt-32"
+        id="inici"
+        tabIndex={-1}
+      >
         {!user ? (
           <QuestionnaireLoginNotice
             acceptedDomains={acceptedDomainLabels(policy)}

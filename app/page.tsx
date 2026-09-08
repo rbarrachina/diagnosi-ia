@@ -13,7 +13,7 @@ export default function Home() {
         <ThemeToggle />
         <CentreLoginDialog
           ariaLabel="Accés XTEC"
-          className="ml-1 inline-flex h-10 w-10 items-center justify-center rounded-full bg-action text-white shadow-[0_8px_24px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper"
+          className="ml-1 inline-flex h-10 w-10 items-center justify-center rounded-full bg-action text-action-contrast shadow-[0_8px_24px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper"
         >
           <AccessIcon />
         </CentreLoginDialog>
@@ -22,6 +22,7 @@ export default function Home() {
       <section
         className="home-hero relative flex min-h-[100svh] items-center px-5 pb-16 pt-28 sm:px-8 sm:pb-20 sm:pt-32"
         id="inici"
+        tabIndex={-1}
       >
         <div aria-hidden="true" className="app-grid absolute inset-0 opacity-50" />
         <div aria-hidden="true" className="app-orb app-orb-left" />
@@ -48,7 +49,7 @@ export default function Home() {
 
           <div className="mt-6 flex items-center justify-center">
             <CentreLoginDialog
-              className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-white shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper sm:w-auto sm:min-w-72 sm:text-lg"
+              className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper sm:w-auto sm:min-w-72 sm:text-lg"
             >
               Accedeix amb el compte de centre
               <ArrowIcon />

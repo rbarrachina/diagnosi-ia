@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LoginButton, LogoutButton } from "@/components/auth/auth-actions";
@@ -72,6 +73,10 @@ import {
 } from "@/lib/validation/schemas";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Administració",
+};
 
 type AdminPageProps = {
   searchParams: Promise<{
@@ -220,7 +225,11 @@ function AdminEntryShell({ children }: { children: ReactNode }) {
       <div aria-hidden="true" className="app-orb app-orb-right fixed" />
 
       <div className="relative flex min-h-screen flex-col pt-20">
-        <section className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-6 py-12">
+        <section
+          className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-6 py-12"
+          id="inici"
+          tabIndex={-1}
+        >
           {children}
         </section>
         <SiteFooter />
@@ -481,7 +490,7 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
         </label>
         <div>
           <button
-            className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover"
+            className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover"
             type="submit"
           >
             Crea versió
@@ -568,7 +577,7 @@ function QuestionnaireEditor({
               Confirmo l&apos;activació
             </label>
             <ConfirmSubmitButton
-              className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover disabled:bg-muted"
+              className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover disabled:bg-muted"
               disabled={detail.isActive || !isComplete}
               message={`Vols activar la versió ${detail.version}? Els espais existents conservaran la seva versió.`}
             >
@@ -640,7 +649,7 @@ function AdminUsersPanel({
           />
         </label>
         <button
-          className="self-start rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover sm:self-auto"
+          className="self-start rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover sm:self-auto"
           type="submit"
         >
           Convida
@@ -1043,7 +1052,7 @@ function SettingsPanel({
           </div>
         </fieldset>
         <button
-          className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-white hover:bg-action-hover"
+          className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover"
           type="submit"
         >
           Desa configuració
@@ -1240,13 +1249,19 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </header>
 
         {params.status && statusMessages[params.status] ? (
-          <div className="mb-5 rounded-md border border-success-border bg-success-bg px-4 py-3 text-sm font-medium text-success-text">
+          <div
+            className="mb-5 rounded-md border border-success-border bg-success-bg px-4 py-3 text-sm font-medium text-success-text"
+            role="status"
+          >
             {statusMessages[params.status]}
           </div>
         ) : null}
 
         {params.error && errorMessages[params.error] ? (
-          <div className="mb-5 rounded-md border border-danger-border bg-danger-bg px-4 py-3 text-sm font-medium text-danger-text">
+          <div
+            className="mb-5 rounded-md border border-danger-border bg-danger-bg px-4 py-3 text-sm font-medium text-danger-text"
+            role="alert"
+          >
             {errorMessages[params.error]}
           </div>
         ) : null}

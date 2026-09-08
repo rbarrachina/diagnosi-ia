@@ -5,6 +5,7 @@
   --color-section: #f7f9fb;
   --color-line: #d8dee6;
   --color-action: #256f7c;
+  --color-action-contrast: #ffffff;
   --color-action-hover: #1f5d68;
   --color-focus: #9b5de5;
   --color-surface: #ffffff;
@@ -53,6 +54,28 @@ a {
   text-decoration: none;
 }
 
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-weight: 700;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 .app-shell {
   --app-bg: #f6faff;
   --app-section: #edf5ff;
@@ -62,11 +85,12 @@ a {
   --app-muted: #52657d;
   --app-line: rgb(69 120 176 / 20%);
   --app-header-line: rgb(76 119 169 / 12%);
-  --app-action: #347fd1;
-  --app-action-hover: #216bbd;
+  --app-action: #2467aa;
+  --app-action-contrast: #ffffff;
+  --app-action-hover: #1e568e;
   --app-action-shadow: rgb(52 127 209 / 28%);
   --app-accent-soft: #e3f0ff;
-  --app-focus: #75b6ff;
+  --app-focus: #7c3aed;
   --app-dot-ring: rgb(59 130 246 / 14%);
   --app-shadow: rgb(34 73 118 / 18%);
   --color-ink: var(--app-ink);
@@ -74,6 +98,7 @@ a {
   --color-section: var(--app-section);
   --color-line: var(--app-line);
   --color-action: var(--app-action);
+  --color-action-contrast: var(--app-action-contrast);
   --color-action-hover: var(--app-action-hover);
   --color-focus: var(--app-focus);
   --color-surface: var(--app-surface-strong);
@@ -107,6 +132,7 @@ html[data-theme="dark"] .app-shell {
   --app-line: rgb(140 193 255 / 18%);
   --app-header-line: rgb(140 193 255 / 10%);
   --app-action: #64aefc;
+  --app-action-contrast: #07111f;
   --app-action-hover: #4899ed;
   --app-action-shadow: rgb(54 142 236 / 30%);
   --app-accent-soft: rgb(61 139 222 / 16%);
@@ -116,4 +142,15 @@ html[data-theme="dark"] .app-shell {
   background:
     radial-gradient(circle at 50% -12%, rgb(47 120 202 / 26%), transparent 34rem),
     linear-gradient(180deg, #081321 0%, var(--app-bg) 72%, var(--app-section) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -113,7 +113,7 @@ export function CentreEmailPolicyForm({
 
       {message ? <p className="mt-3 text-sm text-muted">{message}</p> : null}
       <button
-        className={embedded ? "mt-5 rounded-full bg-action px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_var(--app-action-shadow)] transition hover:bg-action-hover disabled:opacity-60" : "mt-4 rounded-md bg-action px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"}
+        className={embedded ? "mt-5 rounded-full bg-action px-6 py-3 text-sm font-semibold text-action-contrast shadow-[0_10px_28px_var(--app-action-shadow)] transition hover:bg-action-hover disabled:opacity-60" : "mt-4 rounded-md bg-action px-5 py-3 text-sm font-semibold text-action-contrast disabled:opacity-60"}
         disabled={saving}
         onClick={save}
         type="button"

@@ -52,7 +52,6 @@ export function LanguageSelector() {
       <button
         aria-controls={menuId}
         aria-expanded={isOpen}
-        aria-haspopup="menu"
         aria-label="Idioma actual: català"
         className="inline-flex h-10 items-center justify-center rounded-full border border-line bg-surface-soft px-3 text-xs font-bold tracking-[0.08em] text-action shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-action hover:bg-surface focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper"
         onClick={() => setIsOpen((current) => !current)}
@@ -66,13 +65,13 @@ export function LanguageSelector() {
           aria-label="Idiomes previstos"
           className="fixed right-4 top-20 mt-3 w-52 rounded-2xl border border-line bg-surface p-2 shadow-[0_18px_60px_var(--app-shadow)] backdrop-blur-xl sm:absolute sm:right-0 sm:top-auto"
           id={menuId}
-          role="menu"
+          role="region"
         >
+          <ul>
           {languages.map((language) => (
-            <div
+            <li
               className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm"
               key={language.code}
-              role="menuitem"
             >
               <span className="flex items-center gap-3">
                 <span className="w-7 text-xs font-bold tracking-wide text-action">
@@ -83,8 +82,9 @@ export function LanguageSelector() {
                 </span>
               </span>
               {language.code === "CA" ? <CheckIcon /> : null}
-            </div>
+            </li>
           ))}
+          </ul>
         </div>
       ) : null}
     </div>

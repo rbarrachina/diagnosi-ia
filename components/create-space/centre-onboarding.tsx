@@ -41,7 +41,7 @@ export function CentreOnboarding({
           </p>
           {error ? <p className="mt-3 text-sm text-red-800">{error}</p> : null}
           <button
-            className="mt-5 rounded-full bg-action px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_var(--app-action-shadow)] transition hover:bg-action-hover disabled:opacity-60"
+            className="mt-5 rounded-full bg-action px-6 py-3 text-sm font-semibold text-action-contrast shadow-[0_10px_28px_var(--app-action-shadow)] transition hover:bg-action-hover disabled:opacity-60"
             disabled={saving}
             onClick={confirm}
             type="button"
