@@ -19,6 +19,11 @@ Semantic Versioning.
 
 ### Changed
 
+- El comunicat només incorpora el nom del centre quan l’administració escriu
+  explícitament la marca `{NOM_CENTRE}` al títol o al cos.
+- Reorganitzada la gestió del qüestionari del centre en passos diferenciats per
+  compartir el formulari i els resultats, amb una jerarquia d’accions més clara
+  i el reinici separat en una zona de perill.
 - Adoptat WCAG 2.2 AA com a objectiu d’accessibilitat i documentada la matriu
   de verificació manual necessària abans d’una declaració formal.
 - La configuració d'accés del professorat obliga a triar exclusivament entre

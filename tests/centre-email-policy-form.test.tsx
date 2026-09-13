@@ -4,6 +4,24 @@ import { describe, expect, it } from "vitest";
 import { CentreEmailPolicyForm } from "@/components/create-space/centre-email-policy-form";
 
 describe("centre email policy form", () => {
+  it("explains that the initial domain configuration can be changed later", () => {
+    render(
+      <CentreEmailPolicyForm
+        initialPolicy={{
+          allowXtec: true,
+          customDomain: null,
+          configured: false,
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        "Podràs modificar aquesta configuració més endavant des de l’espai de gestió del centre.",
+      ),
+    ).toBeVisible();
+  });
+
   it("offers one mutually exclusive domain choice", () => {
     render(
       <CentreEmailPolicyForm
@@ -27,6 +45,9 @@ describe("centre email policy form", () => {
     expect(xtec).not.toBeChecked();
     expect(screen.getByRole("textbox", { name: "Domini propi" })).toBeVisible();
     expect(screen.queryByText(/podria respondre dues vegades/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/podràs modificar aquesta configuració/i),
+    ).not.toBeInTheDocument();
   });
 
   it("normalizes a legacy policy with both domains to the custom domain", () => {

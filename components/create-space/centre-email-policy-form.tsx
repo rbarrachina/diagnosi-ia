@@ -59,6 +59,12 @@ export function CentreEmailPolicyForm({
         El professorat haurà d’iniciar sessió amb Google. No es desa el seu
         correu ni es vincula a les respostes.
       </p>
+      {!initialPolicy.configured ? (
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+          Podràs modificar aquesta configuració més endavant des de l’espai de
+          gestió del centre.
+        </p>
+      ) : null}
 
       <label className={`mt-7 block border-t p-4 ${embedded ? "border-line" : "rounded-md border border-line"}`}>
         <span className="flex items-center gap-3">

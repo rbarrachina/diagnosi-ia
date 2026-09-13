@@ -25,11 +25,10 @@ export function renderCommunicationBody(
   publicUrl: string,
   centreName = "",
 ): string {
-  const withCentreName = bodyTemplate.includes(CENTRE_NAME_PLACEHOLDER)
-    ? bodyTemplate.replaceAll(CENTRE_NAME_PLACEHOLDER, centreName)
-    : centreName
-      ? `${centreName}\n\n${bodyTemplate}`
-      : bodyTemplate;
+  const withCentreName = bodyTemplate.replaceAll(
+    CENTRE_NAME_PLACEHOLDER,
+    centreName,
+  );
 
   if (withCentreName.includes(QUESTIONNAIRE_URL_PLACEHOLDER)) {
     return withCentreName.replaceAll(QUESTIONNAIRE_URL_PLACEHOLDER, publicUrl);
@@ -52,11 +51,10 @@ export function buildGmailComposeUrl({
   const url = new URL("https://mail.google.com/mail/");
   url.searchParams.set("view", "cm");
   url.searchParams.set("fs", "1");
-  const renderedSubject = subject.includes(CENTRE_NAME_PLACEHOLDER)
-    ? subject.replaceAll(CENTRE_NAME_PLACEHOLDER, centreName ?? "")
-    : centreName
-      ? `${centreName} · ${subject}`
-      : subject;
+  const renderedSubject = subject.replaceAll(
+    CENTRE_NAME_PLACEHOLDER,
+    centreName ?? "",
+  );
   url.searchParams.set("su", renderedSubject);
   url.searchParams.set(
     "body",
