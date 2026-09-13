@@ -57,4 +57,21 @@ describe("communication email template", () => {
     expect(url.searchParams.get("su")).toBe("Diagnosi · Institut de Prova");
     expect(url.searchParams.get("body")).toContain("Benvolgut Institut de Prova");
   });
+
+  it("does not add the centre name when the admin template omits it", () => {
+    const url = new URL(
+      buildGmailComposeUrl({
+        subject: "Diagnosi IA",
+        body: `Benvolgudes i benvolguts\n${QUESTIONNAIRE_URL_PLACEHOLDER}`,
+        publicUrl: "https://example.test/q/C-AAAA-BBBB",
+        centreName: "Institut de Prova",
+      }),
+    );
+
+    expect(url.searchParams.get("su")).toBe("Diagnosi IA");
+    expect(url.searchParams.get("body")).toBe(
+      "Benvolgudes i benvolguts\nhttps://example.test/q/C-AAAA-BBBB",
+    );
+    expect(url.toString()).not.toContain("Institut+de+Prova");
+  });
 });

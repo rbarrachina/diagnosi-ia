@@ -1020,8 +1020,8 @@ function SettingsPanel({
           <div className="mt-4 max-w-4xl space-y-4 pl-4 text-sm text-muted">
             <p className="text-xs leading-5 text-muted">
               Pots usar <code>{"{NOM_CENTRE}"}</code> al títol o al cos i{" "}
-              <code>{"{URL_QUESTIONARI}"}</code> al cos. Si no hi poses el nom
-              del centre, s’afegeix automàticament.
+              <code>{"{URL_QUESTIONARI}"}</code> al cos. El nom del centre només
+              apareixerà on hagis escrit la marca corresponent.
             </p>
             <label className="block">
               <span className="font-semibold text-ink">Títol del correu</span>

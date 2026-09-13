@@ -164,14 +164,16 @@ euskera, gallec i aranès es poden mostrar o ocultar, però encara no canvien la
 llengua del contingut.
 
 La configuracio també inclou el comunicat global per compartir el qüestionari:
-títol del correu i text del missatge. El text pot contenir la marca
-`{URL_QUESTIONARI}`, que se substitueix a la pantalla del responsable per
-l'enllaç públic específic del seu espai. Si la marca no hi és, l'aplicacio
-afegeix l'enllaç al final del missatge. El botó de la gestio del creador mostra
-primer el compte emissor previst i després permet obrir Gmail/Google Workspace
-en una pestanya nova amb assumpte i cos preomplerts, però sense destinataris.
-La confirmacio recorda al responsable que ha d'afegir manualment al camp `Per a`
-els correus dels docents del centre abans d'enviar el missatge.
+títol del correu i text del missatge. El títol i el text poden contenir la marca
+`{NOM_CENTRE}`, que se substitueix pel nom institucional; si la marca no hi és,
+el nom no s'afegeix. El text també pot contenir `{URL_QUESTIONARI}`, que se
+substitueix a la pantalla del responsable per l'enllaç públic específic del seu
+espai. Si aquesta marca no hi és, l'aplicacio afegeix l'enllaç al final del
+missatge. El botó de la gestio del creador mostra primer el compte emissor
+previst i després permet obrir Gmail/Google Workspace en una pestanya nova amb
+assumpte i cos preomplerts, però sense destinataris. La confirmacio recorda al
+responsable que ha d'afegir manualment al camp `Per a` els correus dels docents
+del centre abans d'enviar el missatge.
 
 ### Regla de correccions menors
 
