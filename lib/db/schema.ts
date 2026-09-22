@@ -28,6 +28,7 @@ export const questionnaires = mysqlTable(
     version: varchar("version", { length: 20 }).notNull(),
     title: varchar("title", { length: 255 }).notNull(),
     estimatedMinutes: int("estimated_minutes").notNull().default(10),
+    languageCode: varchar("language_code", { length: 2 }).notNull().default("ca"),
     isActive: boolean("is_active").notNull().default(false),
     createdAt: createdAt(),
   },
@@ -43,6 +44,10 @@ export const questionnaires = mysqlTable(
     check(
       "questionnaires_estimated_minutes_check",
       sql`${table.estimatedMinutes} between 1 and 120`,
+    ),
+    check(
+      "questionnaires_language_code_check",
+      sql`${table.languageCode} in ('ca', 'es', 'eu', 'gl', 'oc')`,
     ),
   ],
 );
@@ -87,6 +92,7 @@ export const questions = mysqlTable(
     text: text("text").notNull(),
     scaleMin: tinyint("scale_min").notNull().default(0),
     scaleMax: tinyint("scale_max").notNull().default(3),
+    randomizeOptions: boolean("randomize_options").notNull().default(false),
   },
   (table) => [
     uniqueIndex("questions_id_questionnaire_unique").on(table.id, table.questionnaireId),
@@ -116,6 +122,37 @@ export const questions = mysqlTable(
     check("questions_text_not_blank_check", sql`trim(${table.text}) <> ''`),
     check("questions_scale_min_check", sql`${table.scaleMin} = 0`),
     check("questions_scale_max_check", sql`${table.scaleMax} = 3`),
+  ],
+);
+
+export const questionOptions = mysqlTable(
+  "question_options",
+  {
+    id: uuid("id").notNull().primaryKey(),
+    questionnaireId: questionnaireId("questionnaire_id").notNull(),
+    questionId: uuid("question_id").notNull(),
+    score: tinyint("score").notNull(),
+    text: varchar("text", { length: 300 }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("question_options_id_question_unique").on(
+      table.id,
+      table.questionId,
+      table.questionnaireId,
+    ),
+    uniqueIndex("question_options_question_score_key").on(
+      table.questionId,
+      table.score,
+    ),
+    index("question_options_questionnaire_id_idx").on(table.questionnaireId),
+    index("question_options_question_id_idx").on(table.questionId),
+    foreignKey({
+      name: "question_options_question_questionnaire_fk",
+      columns: [table.questionId, table.questionnaireId],
+      foreignColumns: [questions.id, questions.questionnaireId],
+    }).onDelete("cascade"),
+    check("question_options_score_check", sql`${table.score} in (0, 1, 2, 3)`),
+    check("question_options_text_not_blank_check", sql`trim(${table.text}) <> ''`),
   ],
 );
 
@@ -279,6 +316,7 @@ export const submissions = mysqlTable(
   },
   (table) => [
     uniqueIndex("submissions_id_questionnaire_unique").on(table.id, table.questionnaireId),
+    uniqueIndex("submissions_id_space_unique").on(table.id, table.diagnosticSpaceId),
     index("submissions_diagnostic_space_id_idx").on(table.diagnosticSpaceId),
     index("submissions_questionnaire_id_idx").on(table.questionnaireId),
     foreignKey({
@@ -289,32 +327,33 @@ export const submissions = mysqlTable(
   ],
 );
 
-export const submissionLocks = mysqlTable(
-  "submission_locks",
+export const participantSubmissions = mysqlTable(
+  "participant_submissions",
   {
+    submissionId: uuid("submission_id").notNull(),
     diagnosticSpaceId: uuid("diagnostic_space_id").notNull(),
-    publicCode: varchar("public_code", { length: 20 }).notNull(),
-    lockHmac: varchar("lock_hmac", { length: 128 }).notNull(),
+    participantUserId: varchar("participant_user_id", { length: 191 }).notNull(),
     createdAt: createdAt(),
   },
   (table) => [
     primaryKey({
-      name: "submission_locks_pkey",
-      columns: [table.diagnosticSpaceId, table.lockHmac],
+      name: "participant_submissions_pkey",
+      columns: [table.submissionId],
     }),
-    index("submission_locks_diagnostic_space_id_idx").on(table.diagnosticSpaceId),
+    uniqueIndex("participant_submissions_space_user_unique").on(
+      table.diagnosticSpaceId,
+      table.participantUserId,
+    ),
+    index("participant_submissions_user_idx").on(table.participantUserId),
+    index("participant_submissions_space_idx").on(table.diagnosticSpaceId),
     foreignKey({
-      name: "submission_locks_diagnostic_space_id_fkey",
-      columns: [table.diagnosticSpaceId],
-      foreignColumns: [diagnosticSpaces.id],
+      name: "participant_submissions_submission_space_fk",
+      columns: [table.submissionId, table.diagnosticSpaceId],
+      foreignColumns: [submissions.id, submissions.diagnosticSpaceId],
     }).onDelete("cascade"),
     check(
-      "submission_locks_public_code_format_check",
-      sql`${table.publicCode} regexp '^C-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}$'`,
-    ),
-    check(
-      "submission_locks_lock_hmac_length_check",
-      sql`char_length(${table.lockHmac}) >= 43`,
+      "participant_submissions_user_id_not_blank_check",
+      sql`trim(${table.participantUserId}) <> ''`,
     ),
   ],
 );
@@ -325,6 +364,7 @@ export const answers = mysqlTable(
     submissionId: uuid("submission_id").notNull(),
     questionnaireId: questionnaireId("questionnaire_id").notNull(),
     questionId: uuid("question_id").notNull(),
+    optionId: uuid("option_id").notNull(),
     value: tinyint("value").notNull(),
   },
   (table) => [
@@ -334,6 +374,7 @@ export const answers = mysqlTable(
     }),
     index("answers_submission_id_idx").on(table.submissionId),
     index("answers_question_id_idx").on(table.questionId),
+    index("answers_option_id_idx").on(table.optionId),
     index("answers_questionnaire_id_idx").on(table.questionnaireId),
     foreignKey({
       name: "answers_submission_questionnaire_fk",
@@ -344,6 +385,15 @@ export const answers = mysqlTable(
       name: "answers_question_questionnaire_fk",
       columns: [table.questionId, table.questionnaireId],
       foreignColumns: [questions.id, questions.questionnaireId],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "answers_option_question_questionnaire_fk",
+      columns: [table.optionId, table.questionId, table.questionnaireId],
+      foreignColumns: [
+        questionOptions.id,
+        questionOptions.questionId,
+        questionOptions.questionnaireId,
+      ],
     }).onDelete("restrict"),
     check("answers_value_check", sql`${table.value} in (0, 1, 2, 3)`),
   ],
@@ -459,6 +509,10 @@ export const appSettings = mysqlTable(
     check(
       "app_settings_responsible_access_mode_check",
       sql`${table.settingKey} <> 'responsible_access_mode' or ${table.settingValue} in ('all_xtec', 'centre_xtec')`,
+    ),
+    check(
+      "app_settings_responsible_portal_status_check",
+      sql`${table.settingKey} <> 'responsible_portal_status' or ${table.settingValue} in ('closed', 'open')`,
     ),
     check(
       "app_settings_admin_results_minimum_submissions_check",

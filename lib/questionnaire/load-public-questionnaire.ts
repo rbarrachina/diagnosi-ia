@@ -25,6 +25,7 @@ export async function loadPublicQuestionnaire(
     centreName: space.centreName,
     publicCode: space.publicCode,
     questionnaireVersion: space.questionnaireVersion,
+    languageCode: questionnaire.languageCode,
     estimatedMinutes: questionnaire.estimatedMinutes,
     blocks: questionnaire.blocks,
   };

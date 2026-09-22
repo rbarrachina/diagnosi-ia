@@ -1,4 +1,7 @@
+"use client";
+
 import type { ResponsibleAccessMode } from "@/lib/auth/responsible-access";
+import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 type LoginButtonProps = {
   label?: string;
@@ -27,16 +30,17 @@ type LogoutButtonProps = {
 
 export function LogoutButton({
   className = "inline-flex h-10 items-center rounded-md border border-line bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-action hover:text-action",
-  label = "Tanca sessió",
+  label,
   next = "/",
 }: LogoutButtonProps) {
+  const messages = useTranslations();
   return (
     <form action={`/auth/logout?next=${encodeURIComponent(next)}`} method="post">
       <button
         className={className}
         type="submit"
       >
-        {label}
+        {label ?? messages.common.logout}
       </button>
     </form>
   );
@@ -93,21 +97,25 @@ export function XtecForbiddenNotice() {
 }
 
 type ResponsibleForbiddenNoticeProps = {
-  reason?: "not_xtec" | "not_centre_xtec" | "suspended";
+  reason?: "not_xtec" | "not_centre_xtec" | "prelaunch" | "suspended";
 };
 
 export function ResponsibleForbiddenNotice({
   reason = "not_xtec",
 }: ResponsibleForbiddenNoticeProps) {
+  const messages = useTranslations();
+  const copy = messages.centre;
   return (
     <div className="rounded-md border border-red-200 bg-red-50 p-6 text-center text-red-900 shadow-sm">
-      <h2 className="text-xl font-semibold">Accés no autoritzat</h2>
+      <h2 className="text-xl font-semibold">{messages.common.unauthorized}</h2>
       <p className="mt-3 text-sm leading-6">
-        {reason === "suspended"
-          ? "L’accés d’aquest centre està suspès. Contacta amb l’administració de l’aplicació."
+        {reason === "prelaunch"
+          ? copy.prelaunchForbidden
+          : reason === "suspended"
+          ? copy.suspendedForbidden
           : reason === "not_centre_xtec"
-          ? "Cal accedir amb un correu electrònic de centre @xtec.cat amb codi de centre, o amb un compte administrador actiu."
-          : "Només es permet l'accés amb un compte XTEC."}
+          ? copy.centreAccountForbidden
+          : copy.xtecForbidden}
       </p>
       <div className="mt-5 flex justify-center">
         <LogoutButton next="/" />

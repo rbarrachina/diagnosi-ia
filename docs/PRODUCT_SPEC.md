@@ -9,29 +9,30 @@ públic amb el professorat i consulta resultats de conjunt amb OAuth o amb un
 enllaç privat.
 
 L'aplicació desa i mostra la identitat institucional del centre i del compte
-responsable, però no avalua ni identifica docents individualment.
+responsable. Del docent no desa nom ni correu, però vincula la participació a
+un identificador pseudònim perquè només ell en pugui recuperar els resultats.
 
-`main` conté l'aplicació activa amb MySQL. Aquesta arquitectura no modifica
-l'abast funcional ni les regles d'anonimat del producte.
+`main` conté l'aplicació activa amb MySQL i aplica aquest model de
+pseudonimització com a dada personal protegida.
 
 ## Objectius
 
 - Crear un únic espai per centre amb autenticació OAuth del compte XTEC del
   centre.
-- Recollir respostes anònimes d'un qüestionari fix i versionat, amb accés
-  autenticat amb Google del professorat només per validar el domini admès i
-  evitar respostes repetides.
+- Recollir respostes pseudonimitzades d'un qüestionari fix i versionat, amb
+  accés autenticat amb Google per validar el domini, evitar duplicats i
+  recuperar exclusivament els resultats propis.
 - Mostrar resultats de conjunt des de la primera resposta.
-- Generar un informe PDF de conjunt.
+- Generar informes PDF de conjunt i un PDF individual només per al propietari.
 - Separar estrictament la identitat del centre i del responsable de les
-  respostes anònimes.
+  respostes, i impedir l'accés institucional a participacions individuals.
 
 ## Fora d'abast
 
 - Perfils, gestio o emmagatzematge de correus del professorat participant.
-- Seguiment individual del professorat.
+- Perfils docents, cerca o seguiment individual per part del centre o administració.
 - Respostes obertes.
-- Exportacio de dades individuals.
+- Exportacio de dades individuals per part del centre o administració.
 - Comparatives públiques entre centres.
 
 ## Administracio del qüestionari
@@ -133,7 +134,21 @@ de gestió corresponent.
 
 ### Configuracio d'acces de responsables
 
-L'administracio inclou una pantalla de configuracio global. Inclou l'opcio
+L'administracio inclou una pantalla de configuracio global. L'accés dels
+centres té dos estats operatius:
+
+- `closed`: mode de prellançament, actiu per defecte; els centres i el
+  professorat no poden iniciar sessió ni usar el servei, però l'administració
+  continua disponible i els administradors actius poden provar l'espai de centre;
+- `open`: els responsables poden accedir segons la política XTEC configurada i
+  el professorat pot accedir als qüestionaris i als resultats propis.
+
+El canvi exigeix confirmació explícita i és efectiu immediatament, també per a
+sessions de centre o docents existents en la petició següent. La portada no
+inicia OAuth mentre el servei és tancat, però el bloqueig autoritatiu es
+repeteix al callback, les pàgines i les operacions server-side.
+
+La mateixa pantalla inclou l'opcio
 `responsible_access_mode`, amb dos valors possibles:
 
 - `all_xtec`: qualsevol compte acabat en `@xtec.cat` pot accedir com a
@@ -148,7 +163,7 @@ Els comptes de centre XTEC tenen el format: una lletra inicial `a`, `b`, `c`,
 
 Els administradors actius de l'aplicacio poden accedir com a responsables i
 crear el seu qüestionari de prova en qualsevol dels dos modes. Aquesta excepcio
-no dona accés a respostes individuals ni canvia les garanties d'anonimat.
+no dona accés a respostes individuals ni canvia les garanties de separació.
 
 La configuracio també inclou `admin_results_minimum_submissions`, un enter entre
 0 i 10. En els resultats globals d'administracio, només es computen les
@@ -158,18 +173,32 @@ ni PDF d'administracio. La pantalla de resultats mostra una frase inicial que
 explica el llindar aplicat.
 
 La configuracio global d’idiomes permet ocultar o mostrar el selector a les
-capçaleres de tota l’aplicacio i decidir quines llengües previstes hi apareixen.
-El català és obligatori mentre sigui l’única llengua funcional. Castellà,
-euskera, gallec i aranès es poden mostrar o ocultar, però encara no canvien la
-llengua del contingut.
+capçaleres de tota l’aplicacio i decidir quines llengües hi apareixen. El canvi
+de llengua és sempre explícit: no es consulta l’idioma del navegador. La
+preferència es conserva en una cookie funcional, les URL no incorporen cap
+prefix de llengua i una preferència absent o no vàlida torna al català. El
+català és l’idioma base i de reserva.
+
+Les traduccions de la interfície es mantenen en fitxers tipats separats per
+llengua i àmbit funcional. Els textos versionats del qüestionari no es poden
+substituir des d’aquesta capa: cada traducció s’ha d’associar explícitament a
+la versió corresponent per no alterar qüestionaris històrics.
+
+La portada i l'espai de creació i gestió dels centres consumeixen aquests
+catàlegs. Les cadenes compartides, com les accions de copiar, desar, versions i
+recomptes de respostes, es defineixen una sola vegada a l'àmbit comú.
+Els catàlegs d'euskera, gallec i aranès són complets funcionalment però resten
+marcats com a esborranys fins que una revisió lingüística professional en
+validi la redacció definitiva.
 
 La configuracio també inclou el comunicat global per compartir el qüestionari:
 títol del correu i text del missatge. El títol i el text poden contenir la marca
 `{NOM_CENTRE}`, que se substitueix pel nom institucional; si la marca no hi és,
-el nom no s'afegeix. El text també pot contenir `{URL_QUESTIONARI}`, que se
-substitueix a la pantalla del responsable per l'enllaç públic específic del seu
-espai. Si aquesta marca no hi és, l'aplicacio afegeix l'enllaç al final del
-missatge. El botó de la gestio del creador mostra primer el compte emissor
+el nom no s'afegeix. El text també pot contenir `{URL_QUESTIONARI}` i
+`{CODI_QUESTIONARI}`, que se substitueixen per l'enllaç públic i el codi de
+l'espai. Si falta alguna marca, l'aplicacio afegeix igualment la dada al final:
+el comunicat sempre inclou tant l'enllaç com el codi per permetre accessos
+posteriors. El botó de la gestio del creador mostra primer el compte emissor
 previst i després permet obrir Gmail/Google Workspace en una pestanya nova amb
 assumpte i cos preomplerts, però sense destinataris. La confirmacio recorda al
 responsable que ha d'afegir manualment al camp `Per a` els correus dels docents
@@ -182,8 +211,10 @@ Una versio del qüestionari sense espais assignats es pot corregir directament.
 Quan una versio ja està assignada a un espai, l'editor la mostra bloquejada per
 defecte. Un administrador pot prémer `Editar` i acceptar un avís explícit abans
 de modificar-la. Si la versio està activa o ja té respostes, només es poden
-corregir títols i textos existents; no es poden eliminar ni afegir blocs o
-preguntes. Les versions inactives sense respostes poden modificar estructura.
+corregir títols, preguntes i textos de resposta existents; no es poden eliminar
+ni afegir blocs, preguntes o opcions, canviar l'idioma ni activar o desactivar
+l'ordre aleatori. Les versions inactives sense respostes poden modificar
+estructura.
 
 L'activacio d'una nova versio no modifica respostes existents, no reassigna
 respostes a preguntes noves i no altera els resultats dels espais anteriors.
@@ -239,12 +270,12 @@ enviaments, però conserva les dades per permetre una reactivació posterior.
 També pot executar tres accions destructives, sempre al servidor i dins una
 transacció:
 
-- reiniciar les respostes, eliminant `answers`, `submissions` i
-  `submission_locks`, però conservant l'espai i els enllaços;
+- reiniciar les respostes, eliminant `answers`, `submissions` i les vinculacions
+  `participant_submissions`, però conservant l'espai i els enllaços;
 - reiniciar completament l'espai, eliminant les respostes, assignant la versió
   activa i rotant el codi públic i els tokens;
 - eliminar definitivament el centre, el compte responsable, l'espai i les
-  dades anònimes associades, després d'escriure el codi oficial o el correu
+  dades pseudonimitzades associades, després d'escriure el codi oficial o el correu
   institucional com a confirmació.
 
 Les actuacions deixen un registre administratiu mínim amb l'administrador,
@@ -263,7 +294,7 @@ La portada és l'única pantalla inicial. Reuneix l'objectiu de l'eina,
 l'indicador OIA-12 i tres targetes equilibrades: el fonament en la documentació
 de competència digital docent i les orientacions d'IA per als centres; la
 creació, compartició i consulta de resultats per part del centre; i la resposta
-anònima del docent mitjançant l'enllaç rebut, sense crear cap compte. La
+pseudonimitzada del docent mitjançant un codi o l'enllaç rebut. La
 informació de versió, autoria, llicència i repositori es mostra al peu de
 pàgina.
 
@@ -367,8 +398,8 @@ pot modificar després des de la vista central `Configuració`.
 Resultat mostrat després de crear l'espai i recuperable des de la gestio del creador:
 
 - Enllaç públic: `/q/[publicCode]`
-- Botó per obrir el correu web amb el comunicat global i l'enllaç públic
-  específic de l'espai.
+- Botó per obrir el correu web amb el comunicat global, l'enllaç públic i el
+  codi específic de l'espai.
 - Enllaç privat compartit: `/resultats/compartit/[publicCode]#token=[privateToken]`
 - Enllaç de resultats del creador: `/espais/[publicCode]/resultats`
 - Previsualització del qüestionari en mode lectura:
@@ -395,8 +426,8 @@ la part superior de la barra, abans del nom del centre. La capçalera i la barra
 lateral es mantenen fixes a la pantalla; el desplaçament vertical queda limitat
 al contingut principal. El peu de pàgina no és flotant ni fix: queda al final
 del contingut i només apareix d'entrada quan la vista és prou curta. El tema
-desat s'aplica abans del primer pintat per evitar un flaix clar quan es navega
-entre rutes en mode fosc.
+desat s'aplica des de la instrumentació client abans de la hidratació, fora de
+l'arbre React, per evitar errors en recàrregues i navegacions en mode fosc.
 
 La gestió del creador també ofereix al menú un accés per veure el qüestionari
 assignat a l'espai en mode lectura. Aquesta previsualització exigeix sessió XTEC i
@@ -418,7 +449,7 @@ Ruta de gestio: `/crear`
 
 El creador autenticat pot reiniciar el seu qüestionari. Aquesta accio:
 
-- elimina totes les `submissions` i `answers` anònimes de l'espai;
+- elimina totes les `submissions`, `answers` i vinculacions pseudònimes de l'espai;
 - conserva el mateix `diagnostic_spaces.id` i el mateix `owner_user_id`;
 - assigna l'espai a la versio de qüestionari que estigui activa en aquell
   moment;
@@ -441,10 +472,10 @@ de l'aplicació.
 El formulari ha de mostrar:
 
 - Objectiu de la diagnosi.
-- Respostes anònimes.
+- Informació clara sobre la vinculació pseudònima i la recuperació de resultats.
 - Identificació del centre promotor, però no recollida de noms, correus, IP,
   dispositiu ni respostes obertes del professorat.
-- Resultats només de conjunt.
+- Resultats propis per al docent i només de conjunt per al centre i l'administració.
 - Indicacio que cal respondre una sola vegada.
 - Emoji de rellotge amb els minuts estimats necessaris per respondre el
   qüestionari.
@@ -452,15 +483,15 @@ El formulari ha de mostrar:
 - Avís amb emoji quan l'usuari ja ha respost, diferenciat visualment de les
   accions.
 
-Per obrir el formulari, el docent ha d'iniciar sessio amb un compte
-`@xtec.cat`. Aquesta sessio no crea un compte de professorat a la base de dades
-de l'aplicacio i no es copia el correu a les taules de diagnosi. El servidor
-calcula un HMAC server-side per al codi public de l'enquesta i l'usuari
-autenticat, i el desa a `submission_locks` per impedir una segona resposta al
-mateix enllaç. Aquest HMAC no es desa a `submissions` ni a `answers`.
+Per obrir el formulari, el docent ha d'iniciar sessio amb un compte Google del
+domini admès. Aquesta sessio no crea un perfil docent ni desa el correu. El
+servidor deriva del `sub` un identificador opac amb HMAC i el vincula a la
+submission a `participant_submissions`. La restricció única per espai i
+participant impedeix una segona resposta.
 
 El docent respon totes les preguntes obligatories de la versio assignada a
-l'espai, amb escala:
+l'espai. Cada pregunta té exactament quatre respostes, redactades per
+l'administrador en l'idioma propi del qüestionari. Les puntuacions són fixes:
 
 - `0`: Gens / No ho faig
 - `1`: Una mica / Ocasionalment
@@ -469,12 +500,29 @@ l'espai, amb escala:
 
 No hi ha camps oberts.
 
+Cada pregunta pot activar un ordre aleatori independent. En aquest cas les
+quatre opcions es barregen en obrir el qüestionari i mantenen aquell ordre
+durant la sessió; es mostren amb colors neutres per no revelar la puntuació.
+Quan l'ordre és fix es poden conservar els colors graduats. El navegador envia
+només l'identificador de l'opció i el servidor n'obté la puntuació. Els
+resultats i informes ordenen sempre les opcions de `0` a `3`.
+
 Cada espai de diagnosi admet un màxim de 300 respostes completes. Quan s'arriba
 a aquest límit, el formulari ja no accepta nous enviaments i informa que el
 qüestionari ha arribat al màxim de respostes.
 
-Quan el servidor accepta l'enviament, també es desa una marca local al navegador
-per millorar l'experiencia si la persona torna a obrir el mateix enllaç.
+Quan el servidor accepta l'enviament, redirigeix al resultat propi. La base de
+dades és l'única font de veritat; no es manté cap bloqueig paral·lel al navegador.
+
+### Àrea i resultats docents
+
+Rutes: `/docent` i `/docent/resultats/[publicCode]`
+
+L'àrea docent exigeix sessió Google i mostra només centre, qüestionari, data i
+puntuació de les participacions vinculades a l'identificador opac de la sessió.
+Permet veure respostes i puntuacions pròpies o generar el PDF individual, també
+quan l'espai està tancat. No mostra la identitat docent, identificadors interns,
+resultats del centre, comparacions o dades d'altres participants.
 
 ### Consulta de resultats
 
@@ -525,6 +573,9 @@ El servidor valida novament el token i genera un PDF de conjunt amb:
 - Avis que no és una avaluació individual del professorat.
 
 El PDF no inclou dades personals, token privat ni respostes individuals.
+La llengua del PDF és la llengua obligatòria de la versió del qüestionari
+(`ca`, `es`, `eu`, `gl` o `oc`), independentment de la llengua d'interfície
+triada per l'usuari. Les preguntes i respostes no es tradueixen automàticament.
 
 ## Qüestionari v1
 
@@ -538,7 +589,8 @@ Estructura inicial:
 - 4 preguntes per bloc.
 - 20 preguntes totals.
 - Totes obligatories.
-- Totes amb escala `0`, `1`, `2`, `3`.
+- Totes amb quatre respostes pròpies i puntuacions fixes `0`, `1`, `2`, `3`.
+- Idioma `ca` i ordre aleatori desactivat en les versions migrades.
 
 Blocs:
 
@@ -557,7 +609,7 @@ d'estructura crea una nova versió.
 
 ### Text introductori del formulari
 
-"Aquesta diagnosi anònima ajuda a conèixer amb una visió de conjunt com s'està utilitzant la intel·ligència artificial en el context educatiu. No es recullen dades personals, no s'identifica cap docent i els resultats només es mostraran en conjunt. Respon una sola vegada."
+"No es desa el teu nom ni correu. La participació queda vinculada a un identificador pseudònim perquè puguis recuperar les respostes i resultats amb el mateix compte. El centre i l'administració només veuen dades agregades. Respon una sola vegada."
 
 ### Avis amb poques respostes
 
@@ -565,13 +617,14 @@ d'estructura crea una nova versió.
 
 ### Avis metodologic del PDF
 
-"Aquest informe presenta resultats de conjunt d'una diagnosi anònima. No permet avaluar individualment cap docent ni reconstruir respostes personals."
+"Aquest informe de centre presenta resultats de conjunt i no permet consultar ni reconstruir participacions individuals."
 
 ## Requisits no funcionals
 
 - Validacio estricta al servidor.
 - Cap secret al client.
-- Cap dada individual al tauler o PDF.
+- Cap dada individual als taulers o PDF institucionals; el resultat i PDF
+  docents només contenen la participació pròpia validada amb sessió.
 - Objectiu d’accessibilitat WCAG 2.2 AA: semàntica compatible amb lectors de
   pantalla, formularis etiquetats, contrast suficient, focus visible, navegació
   completa amb teclat i reducció del moviment segons la preferència del sistema.

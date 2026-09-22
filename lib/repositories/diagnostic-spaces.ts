@@ -308,13 +308,6 @@ export async function resetOwnerDiagnosticSpace(params: {
       );
       await connection.execute(
         `
-          delete from submission_locks
-          where diagnostic_space_id = ?
-        `,
-        [space.id],
-      );
-      await connection.execute(
-        `
           update diagnostic_spaces
           set
             public_code = ?,

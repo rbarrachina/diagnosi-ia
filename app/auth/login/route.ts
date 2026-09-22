@@ -20,6 +20,7 @@ import {
 import { resolveAppUrl } from "@/lib/http/app-url";
 import { safeRelativePath } from "@/lib/http/redirect";
 import { isPublicCode } from "@/lib/crypto/public-code";
+import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
 
 export const runtime = "nodejs";
 
@@ -28,15 +29,12 @@ export async function GET(request: NextRequest) {
   const next = safeRelativePath(requestUrl.searchParams.get("next"), "/crear");
   const appUrl = resolveAppUrl(request.url, process.env.NEXT_PUBLIC_APP_URL);
   const publicCode = getQuestionnairePublicCode(next);
-  const policy = publicCode
-    ? await (
-        await import("@/lib/centres/email-policy")
-      ).getCentreEmailPolicyForPublicCode(publicCode)
-    : null;
+  const isParticipant =
+    Boolean(publicCode) || next === "/docent" || next.startsWith("/docent/");
 
-  if (publicCode && !policy?.configured) {
+  if (isParticipant && (await getResponsiblePortalStatus()) === "closed") {
     return NextResponse.redirect(
-      new URL("/auth/error?reason=participant-domain", appUrl),
+      new URL("/auth/error?reason=service-closed", appUrl),
     );
   }
 
@@ -54,13 +52,7 @@ export async function GET(request: NextRequest) {
   const nonce = createOAuthRandomValue();
   const redirectUri = getGoogleRedirectUri(request.url);
   const authorizationUrl = buildGoogleAuthorizationUrl({
-    hostedDomain: publicCode
-      ? policy?.allowXtec && !policy.customDomain
-        ? "xtec.cat"
-        : !policy?.allowXtec && policy?.customDomain
-          ? policy.customDomain
-          : null
-      : "xtec.cat",
+    hostedDomain: isParticipant ? null : "xtec.cat",
     nonce,
     redirectUri,
     state,
@@ -74,7 +66,7 @@ export async function GET(request: NextRequest) {
       next,
       nonce,
       state,
-      purpose: publicCode ? "participant" : "responsible",
+      purpose: isParticipant ? "participant" : "responsible",
       publicCode,
     } satisfies OAuthStateCookiePayload),
     {

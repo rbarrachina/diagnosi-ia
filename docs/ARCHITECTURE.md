@@ -37,8 +37,10 @@
 - El servidor valida les entrades amb esquemes estrictes i rebutja camps
   addicionals.
 - Les operacions que afecten diverses taules s'executen dins una transacció.
-- Els resultats web i PDF es construeixen exclusivament amb dades agregades.
-- Cap endpoint retorna files individuals de `submissions` o `answers`.
+- Els resultats de centre, administració i enllaç privat es construeixen exclusivament amb dades agregades.
+- Les dades individuals només es carreguen per a l'àrea docent després de validar
+  al servidor que `participant_user_id` coincideix amb l'identificador de sessió.
+- Cap endpoint de centre o administració retorna files individuals.
 - Els tokens privats es desen com HMAC per validar-los i xifrats per
   recuperar-los; mai en text pla.
 - Els tokens no apareixen en query strings, logs, errors o PDFs.
@@ -47,9 +49,10 @@
 
 ### Navegador
 
-El navegador pot rebre el qüestionari públic, metadades mínimes de l'espai i
-resultats agregats. No pot importar el client de base de dades ni rebre
-identificadors de submissions, respostes individuals o secrets.
+El navegador pot rebre el qüestionari després de l'autorització, resultats
+agregats per als rols institucionals i les respostes pròpies per al docent
+autenticat. No pot importar el client de base de dades ni rebre identificadors
+interns, l'identificador pseudònim o secrets.
 
 ### Servidor Next.js
 
@@ -72,6 +75,10 @@ comparteixen amb el client.
 - `lib/repositories/`: consultes i transaccions MySQL.
 - `lib/submissions/`: validació i creació atòmica de respostes.
 - `lib/results/`: obtenció i càlcul de resultats agregats.
+- `lib/participants/`: autorització, limitació d'intents i models de resultats propis.
+- `lib/i18n/`: llengües disponibles, lectura de la cookie funcional i catàlegs
+  tipats per llengua. No es detecta l'idioma del navegador; el català és el
+  valor per defecte i de reserva.
 - `lib/admin/`: administració autoritzada.
 - `lib/crypto/`: codis, HMAC i xifrat.
 - `lib/pdf/`: renderització server-side de l'informe.
@@ -84,14 +91,20 @@ crea una cookie `httpOnly` signada. Els responsables han de tenir correu
 `@xtec.cat`. El professorat ha de coincidir exactament amb l'única opció triada
 pel centre: `@xtec.cat` o el domini propi de Google Workspace configurat.
 
-L'identificador desat per a responsables i bloquejos de resposta és un UUID
-opac derivat amb HMAC. El correu i nom del responsable es desen a
-`centre_accounts`, però no es copien a `submission_locks`, `submissions` ni
-`answers`.
+L'identificador desat per a responsables i participants és un UUID opac derivat
+del `sub` de Google amb HMAC. El correu i nom del responsable es desen a
+`centre_accounts`; del participant només es desa l'identificador opac a
+`participant_submissions`, mai el correu, el nom o el perfil.
 
 `AUTH_MODE=local` és exclusiu de desenvolupament. En producció queda
 desactivat, tret d'una habilitació explícita destinada només a verificacions
 locals.
+
+`responsible_portal_status` controla el prellançament global des de
+`app_settings` i és `closed` per defecte. El bloqueig no depèn de la visibilitat
+dels botons: es valida a les sessions, als callbacks OAuth i a totes les pàgines
+i API de centre o docents. `/admin` queda fora del bloqueig i els administradors
+actius poden provar `/crear` abans de l'obertura.
 
 L'administració exigeix una fila activa a `admin_users`. Els administradors no
 són anònims: aquesta taula pot contenir el correu, nom visible i darrera entrada
@@ -136,17 +149,40 @@ Fonts i atribució:
 2. Iniciar una transacció MySQL.
 3. Bloquejar la fila de l'espai.
 4. Tornar a validar dins la transacció el domini exacte vigent, l'estat, la
-   versió, les preguntes, els duplicats i el límit de 300 respostes.
-5. Crear el bloqueig HMAC contra repeticions.
-6. Inserir `submission` i `answers`.
+   versió, les preguntes, la pertinença de cada `optionId`, els duplicats i el
+   límit de 300 respostes. La puntuació `0–3` es deriva exclusivament de
+   `question_options`; no s'accepta cap puntuació aportada pel navegador.
+5. Inserir `submission`, la vinculació única `participant_submissions` i
+   `answers` dins la mateixa transacció.
+6. Usar la restricció única `(diagnostic_space_id, participant_user_id)` com a
+   única font de veritat contra repeticions.
 7. Confirmar o revertir la transacció.
 
 ### Resultats i PDF
 
 1. Validar de nou la propietat o el token privat.
-2. Consultar únicament recomptes agrupats per pregunta i valor.
+2. Consultar únicament recomptes agrupats per pregunta i valor, i carregar els
+   textos de `question_options` ordenats per puntuació.
 3. Construir el model agregat.
-4. Retornar el tauler o generar el PDF sense dades individuals.
+4. Retornar el tauler o generar el PDF sense dades individuals. El PDF usa
+   `questionnaires.language_code`, no la preferència d'interfície de l'usuari.
+
+### Accés i resultats docents
+
+El comunicat generat per al claustre rep explícitament `publicUrl` i
+`publicCode`. El renderitzador substitueix `{URL_QUESTIONARI}` i
+`{CODI_QUESTIONARI}` i afegeix qualsevol de les dues dades que falti a la
+plantilla, de manera que el correu sempre permet l'accés inicial i posterior.
+
+1. La portada només valida al navegador el format del codi i inicia OAuth amb
+   el codi dins l'estat signat; no comprova públicament si existeix.
+2. Després del callback, el servidor aplica el límit d'intents i comprova de
+   manera conjunta codi, estat, domini o participació prèvia. Qualsevol error és genèric.
+3. Una participació existent es pot consultar encara que l'espai estigui tancat.
+4. Les consultes i el PDF reben el codi públic, però deriven sempre el propietari
+   de la sessió. No accepten `participant_user_id` ni `submission_id` del navegador.
+5. El PDF individual es genera sota demanda, amb `Cache-Control: private, no-store`,
+   i no es desa permanentment.
 
 ### Administració
 
@@ -226,10 +262,10 @@ de verificació manual i els límits de l’auditoria es documenten a
   client nadiu que explica el requisit de compte institucional de centre abans
   de continuar cap a la mateixa ruta de Google OAuth. El diàleg no valida ni
   desa dades: la validació efectiva es manté exclusivament al servidor.
-- El layout arrel executa un inicialitzador mínim de tema abans de pintar el
-  cos del document. Llegeix la mateixa preferència local del selector i aplica
-  `data-theme` i `color-scheme` abans de la hidratació per evitar superfícies
-  clares transitòries durant la navegació completa.
+- `VisualPreferencesInitializer` executa un inicialitzador client mínim de tema després de
+  la hidratació i fora de l'arbre React. Llegeix la mateixa preferència local
+  del selector i aplica `data-theme` i `color-scheme` sense renderitzar scripts
+  des del layout.
 - `/crear` és la pantalla autenticada de creació i gestió de l'espai. Reutilitza
   la capçalera fixa de la portada i substitueix l'accés pel menú del compte,
   amb el tancament de sessió. Un contenidor client manté muntades les vistes
@@ -244,7 +280,7 @@ de verificació manual i els límits de l’auditoria es documenten a
   capçalera i la navegació lateral no formen part del contenidor desplaçable i
   només el contingut principal té desplaçament vertical. Si no hi ha sessió,
   redirigeix a `/`.
-  L'inicialitzador del layout arrel aplica també la preferència local de la
+  L'inicialitzador client aplica també la preferència local de la
   sidebar al document abans del primer pintat, de manera que l'amplada es
   conserva sense salts visuals en navegar entre rutes.
   El peu forma part del flux del contenidor desplaçable: un layout flex
@@ -263,10 +299,14 @@ de verificació manual i els límits de l’auditoria es documenten a
   de l'aplicació i el selector de tema. No incorpora sidebar ni peu de pàgina.
   El formulari reutilitza els tokens, superfícies i estils de resposta de la
   resta de l'aplicació sense traslladar cap validació o enviament al layout.
+- `/docent` mostra només les participacions del compte actual i permet iniciar
+  un altre accés per codi. `/docent/resultats/[publicCode]` mostra les respostes
+  pròpies sense exposar identificadors interns.
 
 ## Decisions pendents
 
-- Rate limiting i protecció anti-bots.
+- Substituir el rate limiting local en memòria per un magatzem compartit abans
+  d'un desplegament amb múltiples instàncies.
 - Política de retenció i caducitat automàtica d'espais.
 - Infraestructura definitiva de desplegament i còpies de seguretat.
 - Revisió legal o DPO abans d'un ús institucional ampli.

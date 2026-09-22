@@ -1,3 +1,12 @@
+import type { QuestionnaireLanguageCode } from "@/lib/questionnaire/languages";
+import type { ScaleValue } from "@/lib/questionnaire/scale";
+
+export type AdminQuestionOptionSummary = {
+  id: string;
+  score: ScaleValue;
+  text: string;
+};
+
 export type AdminUserSummary = {
   userId: string;
   role: "admin";
@@ -31,6 +40,8 @@ export type AdminQuestionSummary = {
   position: number;
   blockPosition: number;
   text: string;
+  randomizeOptions: boolean;
+  options: AdminQuestionOptionSummary[];
 };
 
 export type AdminQuestionBlockSummary = {
@@ -45,6 +56,7 @@ export type AdminQuestionnaireSummary = {
   version: string;
   title: string;
   estimatedMinutes: number;
+  languageCode: QuestionnaireLanguageCode;
   isActive: boolean;
   createdAt: string;
   diagnosticSpaceCount: number;
@@ -62,5 +74,6 @@ export type AdminQuestionnaireMutationResult = {
   version: string;
   title: string;
   estimatedMinutes: number;
+  languageCode: QuestionnaireLanguageCode;
   isActive: boolean;
 };

@@ -4,6 +4,7 @@ import type { MouseEvent, ReactNode } from "react";
 import { useId, useRef } from "react";
 
 import { AppLogoMark } from "@/components/brand/app-logo";
+import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 const LOGIN_URL = "/auth/login?next=%2Fcrear";
 
@@ -11,13 +12,16 @@ type CentreLoginDialogProps = {
   ariaLabel?: string;
   children: ReactNode;
   className: string;
+  disabled?: boolean;
 };
 
 export function CentreLoginDialog({
   ariaLabel,
   children,
   className,
+  disabled = false,
 }: CentreLoginDialogProps) {
+  const messages = useTranslations();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -53,9 +57,10 @@ export function CentreLoginDialog({
   return (
     <>
       <button
-        aria-haspopup="dialog"
+        aria-haspopup={disabled ? undefined : "dialog"}
         aria-label={ariaLabel}
         className={className}
+        disabled={disabled}
         onClick={openDialog}
         type="button"
       >
@@ -81,7 +86,7 @@ export function CentreLoginDialog({
       >
         <div className="relative px-6 pb-7 pt-14 sm:px-8 sm:pb-8">
           <button
-            aria-label="Tanca l’accés del centre"
+            aria-label={messages.common.centreDialogClose}
             className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted transition hover:bg-accent-soft hover:text-ink focus:outline-none focus:ring-2 focus:ring-focus"
             onClick={closeDialog}
             type="button"
@@ -101,14 +106,13 @@ export function CentreLoginDialog({
               className="mt-5 text-balance text-3xl font-semibold tracking-[-0.035em]"
               id={titleId}
             >
-              Espai del centre
+              {messages.common.centreArea}
             </h2>
             <p
               className="mx-auto mt-3 max-w-sm text-pretty text-sm leading-6 text-muted"
               id={descriptionId}
             >
-              Heu d’accedir amb el compte institucional del centre, amb domini{" "}
-              <strong className="font-semibold text-ink">@xtec.cat</strong>.
+              {messages.common.centreLoginHelp}
             </p>
           </div>
 
@@ -117,7 +121,7 @@ export function CentreLoginDialog({
             href={LOGIN_URL}
           >
             <GoogleIcon />
-            Accedeix amb XTEC
+            {messages.common.centreLogin}
           </a>
         </div>
       </dialog>

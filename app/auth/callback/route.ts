@@ -28,6 +28,16 @@ import {
   getCentreEmailPolicyForPublicCode,
   isEmailAllowedByCentrePolicy,
 } from "@/lib/centres/email-policy";
+import { hasAccountSubmittedToPublicQuestionnaire } from "@/lib/repositories/submissions";
+import {
+  canAttemptParticipantCode,
+  clearParticipantCodeFailures,
+  recordParticipantCodeFailure,
+} from "@/lib/participants/access-rate-limit";
+import {
+  getResponsibleAccessDecision,
+  getResponsiblePortalStatus,
+} from "@/lib/auth/responsible-access";
 
 export const runtime = "nodejs";
 
@@ -67,6 +77,18 @@ export async function GET(request: NextRequest) {
     return response;
   }
 
+  if (
+    statePayload.purpose === "participant" &&
+    (await getResponsiblePortalStatus()) === "closed"
+  ) {
+    const response = NextResponse.redirect(
+      new URL("/auth/error?reason=service-closed", appUrl),
+    );
+    response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
+    response.cookies.delete(SESSION_COOKIE_NAME);
+    return response;
+  }
+
   try {
     const idToken = await exchangeGoogleAuthorizationCode({
       code,
@@ -78,14 +100,28 @@ export async function GET(request: NextRequest) {
     });
     const user = googleTokenInfoToAppUser(tokenInfo);
 
-    const participantPolicy =
-      statePayload.purpose === "participant" && statePayload.publicCode
-        ? await getCentreEmailPolicyForPublicCode(statePayload.publicCode)
-        : null;
-    const isParticipantAllowed =
-      statePayload.purpose === "participant" &&
-      participantPolicy &&
-      isEmailAllowedByCentrePolicy(user.email, participantPolicy);
+    let isParticipantAllowed = statePayload.purpose !== "participant";
+    if (statePayload.purpose === "participant" && !statePayload.publicCode) {
+      isParticipantAllowed = true;
+    } else if (statePayload.purpose === "participant" && statePayload.publicCode) {
+      if (canAttemptParticipantCode(user.id)) {
+        const alreadyParticipated = await hasAccountSubmittedToPublicQuestionnaire({
+          accountId: user.id,
+          publicCode: statePayload.publicCode,
+        });
+        const participantPolicy = alreadyParticipated
+          ? null
+          : await getCentreEmailPolicyForPublicCode(statePayload.publicCode);
+        isParticipantAllowed =
+          alreadyParticipated ||
+          Boolean(
+            participantPolicy &&
+              isEmailAllowedByCentrePolicy(user.email, participantPolicy),
+          );
+      }
+      if (isParticipantAllowed) clearParticipantCodeFailures(user.id);
+      else recordParticipantCodeFailure(user.id);
+    }
 
     if (
       (statePayload.purpose === "participant" && !isParticipantAllowed) ||
@@ -94,7 +130,7 @@ export async function GET(request: NextRequest) {
       const response = NextResponse.redirect(
         new URL(
           statePayload.purpose === "participant"
-            ? "/auth/error?reason=participant-domain"
+            ? "/auth/error?reason=participant-access"
             : "/auth/error?reason=xtec",
           appUrl,
         ),
@@ -102,6 +138,31 @@ export async function GET(request: NextRequest) {
       response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
       response.cookies.delete(SESSION_COOKIE_NAME);
       return response;
+    }
+
+    if (
+      statePayload.purpose !== "participant" &&
+      isResponsiblePortalDestination(statePayload.next)
+    ) {
+      const decision = await getResponsibleAccessDecision(user);
+
+      if (!decision.allowed) {
+        const response = NextResponse.redirect(
+          new URL(
+            decision.reason === "prelaunch"
+              ? "/auth/error?reason=centre-access-closed"
+              : decision.reason === "suspended"
+                ? "/auth/error?reason=centre-suspended"
+                : decision.reason === "not_centre_xtec"
+                  ? "/auth/error?reason=centre-account-required"
+                  : "/auth/error?reason=xtec",
+            appUrl,
+          ),
+        );
+        response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
+        response.cookies.delete(SESSION_COOKIE_NAME);
+        return response;
+      }
     }
 
     if (
@@ -129,4 +190,8 @@ export async function GET(request: NextRequest) {
     response.cookies.delete(SESSION_COOKIE_NAME);
     return response;
   }
+}
+
+function isResponsiblePortalDestination(next: string): boolean {
+  return next === "/crear" || next.startsWith("/espais/");
 }

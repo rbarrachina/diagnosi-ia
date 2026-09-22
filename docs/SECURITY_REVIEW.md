@@ -1,6 +1,6 @@
 # Revisió de seguretat i privacitat
 
-Data de revisió: 2026-07-17.
+Data de revisió: 2026-09-16.
 
 ## Abast
 
@@ -10,14 +10,14 @@ Data de revisió: 2026-07-17.
 - Client i repositoris MySQL server-only.
 - Tokens privats.
 - Submissions transaccionals.
-- Resultats agregats i PDF.
+- Resultats agregats i resultats docents propis amb PDF.
 - Administració.
 - Secrets i logs.
 
 ## Resultat
 
-- No hi ha endpoints que retornin files individuals de `submissions` o
-  `answers`.
+- No hi ha endpoints de centre o administració que retornin files individuals.
+- Les rutes docents només retornen la participació pròpia després de validar la sessió.
 - El navegador no importa el client MySQL.
 - Les submissions i answers s'insereixen dins una transacció.
 - Els resultats consulten recomptes agrupats i no combinacions individuals.
@@ -25,7 +25,7 @@ Data de revisió: 2026-07-17.
 - Els tokens es validen amb HMAC i no s'inclouen en query strings o logs.
 - Les dades dels administradors estan separades de les respostes.
 - Les dades identificatives dels centres i responsables estan separades de
-  `submissions`, `answers` i `submission_locks`.
+  `submissions`, `answers` i `participant_submissions`.
 - No s'han afegit noms, correus, IPs o informació de dispositiu del professorat
   participant.
 - El domini docent es valida després de Google OAuth i es torna a validar dins
@@ -38,7 +38,8 @@ Data de revisió: 2026-07-17.
 - Executar lint, type check, proves i build.
 - Revisar el diff complet.
 - Cercar secrets i variables públiques indegudes.
-- Confirmar que cap endpoint retorna dades individuals.
+- Confirmar que cap endpoint institucional retorna dades individuals i que les
+  rutes docents deriven el propietari exclusivament de la sessió.
 - Confirmar que cap canvi permet reconstruir respostes personals.
 - Confirmar que les dades de centre o responsable no s'uneixen amb respostes
   individuals.
@@ -46,6 +47,6 @@ Data de revisió: 2026-07-17.
 
 ## Pendents
 
-- Rate limiting sense persistir identificadors prohibits.
+- Magatzem compartit de rate limiting per a desplegaments amb múltiples instàncies.
 - Política de retenció i còpies de seguretat.
 - Revisió legal o DPO.

@@ -1,7 +1,11 @@
+"use client";
+
 import packageJson from "@/package.json";
 import { AppLogoMark } from "@/components/brand/app-logo";
+import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 export function SiteFooter() {
+  const messages = useTranslations();
   return (
     <footer className="border-t border-line bg-surface-soft px-5 py-6 sm:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 text-sm text-muted sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6">
@@ -14,18 +18,18 @@ export function SiteFooter() {
         </div>
 
         <p className="whitespace-nowrap">
-          Autor:{" "}
+          {messages.common.author}:{" "}
           <span className="font-medium text-ink">
             Rafa Barrachina
           </span>
         </p>
 
         <nav
-          aria-label="Informació del projecte"
+          aria-label={messages.common.projectInformation}
           className="flex flex-wrap gap-x-5 gap-y-2 font-medium"
         >
           <a
-            aria-label="Accessibilitat: WCAG 2.2, s’obre en una pestanya nova"
+            aria-label={messages.common.accessibility}
             className="inline-flex items-center gap-2 text-action transition hover:text-action-hover"
             href="https://www.w3.org/TR/WCAG22/"
             rel="noreferrer"
@@ -39,17 +43,17 @@ export function SiteFooter() {
             rel="noreferrer"
             target="_blank"
           >
-            Llicència Apache 2.0
+            {messages.common.license}
           </a>
           <a
-            aria-label="Codi font a GitHub"
+            aria-label={messages.common.sourceCodeGithub}
             className="inline-flex items-center gap-2 text-action transition hover:text-action-hover"
             href="https://github.com/rbarrachina/diagnosi-ia"
             rel="noreferrer"
             target="_blank"
           >
             <GitHubIcon />
-            Codi font
+            {messages.common.sourceCode}
           </a>
         </nav>
       </div>

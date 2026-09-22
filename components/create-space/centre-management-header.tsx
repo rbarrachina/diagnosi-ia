@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { LogoutButton } from "@/components/auth/auth-actions";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { AppHeader } from "@/components/layout/app-header";
+import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 type CentreManagementHeaderProps = {
   accountName: string;
@@ -16,6 +17,8 @@ export function CentreManagementHeader({
   email,
   logoutNext = "/",
 }: CentreManagementHeaderProps) {
+  const messages = useTranslations();
+  const copy = messages.centre;
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const accountMenuId = useId();
   const controlsRef = useRef<HTMLDivElement>(null);
@@ -62,7 +65,7 @@ export function CentreManagementHeader({
         <button
           aria-controls={accountMenuId}
           aria-expanded={isAccountMenuOpen}
-          aria-label={`Menú del compte de ${accountName}`}
+          aria-label={copy.accountMenu.replace("{name}", accountName)}
           className="inline-flex h-10 max-w-56 items-center gap-2 rounded-full bg-action py-1 pl-1 pr-2 text-sm font-semibold text-action-contrast shadow-[0_8px_24px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper sm:pr-4"
           onClick={toggleAccountMenu}
           type="button"
@@ -78,7 +81,7 @@ export function CentreManagementHeader({
 
         {isAccountMenuOpen ? (
           <div
-            aria-label="Opcions del compte"
+            aria-label={copy.accountOptions}
             className="fixed right-4 top-20 mt-3 w-[min(19rem,calc(100vw-2rem))] rounded-2xl border border-line bg-surface p-2 text-left shadow-[0_18px_60px_var(--app-shadow)] backdrop-blur-xl sm:absolute sm:right-0 sm:top-auto"
             id={accountMenuId}
             role="region"
@@ -92,7 +95,7 @@ export function CentreManagementHeader({
 
             <LogoutButton
               className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-accent-soft hover:text-action"
-              label="Surt"
+              label={copy.logout}
               next={logoutNext}
             />
           </div>

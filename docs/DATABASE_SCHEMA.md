@@ -15,7 +15,8 @@ respostes.
 - Les relacions compostes garanteixen que espais, submissions, preguntes i
   respostes pertanyin a la mateixa versió.
 - Les operacions multi-taula són transaccionals.
-- Les consultes de resultats retornen només recomptes agregats.
+- Les consultes institucionals retornen només recomptes agregats; les consultes
+  docents filtren per l'identificador pseudònim de la sessió.
 
 ## Relacions
 
@@ -23,13 +24,15 @@ respostes.
 erDiagram
   questionnaires ||--o{ question_blocks : contains
   question_blocks ||--o{ questions : contains
+  questions ||--|{ question_options : offers
   questionnaires ||--o{ diagnostic_spaces : assigned_to
   centres ||--o{ centre_accounts : authorizes
   centres ||--o| diagnostic_spaces : owns
-  diagnostic_spaces ||--o{ submission_locks : limits
   diagnostic_spaces ||--o{ submissions : receives
+  submissions ||--|| participant_submissions : owned_by
   submissions ||--o{ answers : contains
   questions ||--o{ answers : answered_by
+  question_options ||--o{ answers : selected_by
   admin_users ||--o{ admin_email_invitations : manages
   admin_users ||--o{ admin_centre_actions : performs
 ```
@@ -40,7 +43,8 @@ erDiagram
 
 Versions del qüestionari. L'identificador té tres dígits, la versió i el títol
 són únics, els minuts estimats van d'1 a 120 i només una versió pot estar activa
-des de la lògica transaccional d'administració.
+des de la lògica transaccional d'administració. `language_code` és obligatori i
+només admet `ca`, `es`, `eu`, `gl` o `oc`; fixa també la llengua dels informes.
 
 ### `question_blocks`
 
@@ -51,8 +55,16 @@ Blocs ordenats d'una versió. La clau primària és
 ### `questions`
 
 Preguntes tancades amb UUID, versió, bloc, posició global, posició dins del bloc
-i text. L'escala vàlida és fixa de 0 a 3. Cada bloc admet entre 1 i 10 preguntes
-i cada versió fins a 100.
+i text. `randomize_options` decideix si el formulari barreja les opcions i usa
+colors neutres. L'escala vàlida és fixa de 0 a 3. Cada bloc admet entre 1 i 10
+preguntes i cada versió fins a 100.
+
+### `question_options`
+
+Quatre opcions tancades per pregunta, amb UUID, versió, pregunta, text de fins
+a 300 caràcters i puntuació fixa única `0`, `1`, `2` o `3`. Les opcions no es
+tradueixen ni tenen fallback. La clau composta impedeix associar una resposta a
+una opció d'una altra pregunta o versió.
 
 ### `centres`
 
@@ -93,21 +105,26 @@ sense modificar els codis públics, els tokens ni les respostes existents.
 El token de resultats es conserva com HMAC i, quan s'ha de recuperar per al
 creador, també xifrat amb una clau server-side.
 
-### `submission_locks`
-
-Bloquejos pseudònims contra respostes repetides. La clau és
-`(diagnostic_space_id, lock_hmac)`. No conté `submission_id`, correu, IP,
-user agent, dispositiu ni respostes, i no es consulta per calcular resultats.
-
 ### `submissions`
 
-Enviaments anònims amb UUID tècnic, espai, versió i data tècnica. No contenen
-usuari, correu, IP o informació de dispositiu i no es retornen al navegador.
+Enviaments pseudonimitzats amb UUID tècnic, espai, versió i data tècnica. No
+contenen usuari, correu, IP o informació de dispositiu.
+
+### `participant_submissions`
+
+Vinculació separada entre una submission i l'identificador opac derivat del
+`sub` de Google. `submission_id` és únic i la parella
+`(diagnostic_space_id, participant_user_id)` també ho és. La clau forana
+composta garanteix que la vinculació i la submission pertanyen al mateix espai.
+No conté correu, nom, domini, IP ni informació del dispositiu i no participa en
+cap consulta agregada de centre o administració.
 
 ### `answers`
 
 Respostes tancades amb clau `(submission_id, question_id)`, versió i valor
-entre 0 i 3. Les claus foranes compostes impedeixen barrejar versions.
+entre 0 i 3. `option_id` identifica l'opció seleccionada i `value` conserva la
+puntuació derivada al servidor. Les claus foranes compostes impedeixen barrejar
+versions, preguntes i opcions.
 
 ### `admin_users`
 
@@ -136,10 +153,14 @@ sigui compatible també en bases de dades amb `utf8mb4_0900_ai_ci` per defecte.
 Configuració global no personal:
 
 - `responsible_access_mode`: `all_xtec` o `centre_xtec`.
+- `responsible_portal_status`: `closed` o `open`; controla globalment l'accés
+  de centres i docents. Si no existeix, l'aplicació assumeix `closed` per
+  fallar de manera segura.
 - `admin_results_minimum_submissions`: enter de 0 a 10.
 - `communication_subject`: assumpte global del comunicat.
-- `communication_body`: text global amb la marca opcional
-  `{URL_QUESTIONARI}`.
+- `communication_body`: text global amb les marques opcionals
+  `{URL_QUESTIONARI}` i `{CODI_QUESTIONARI}`; el renderitzador garanteix que
+  l'enllaç i el codi apareguin encara que la plantilla ometi les marques.
 - `language_selector_visible`: booleà textual que mostra o oculta el selector
   d’idioma global.
 - `visible_languages`: codis de llengua visibles separats per comes; sempre ha
@@ -152,26 +173,28 @@ No pot contenir dades de participants.
 
 - La versió inicial és `2026.1` i la versió activa corregida és `2026.2`.
 - El seed actiu inicial conté 5 blocs i 20 preguntes amb escala 0-3.
+- La migració crea per a cada pregunta existent les quatre opcions històriques,
+  assigna `language_code = 'ca'` i deixa `randomize_options = false`.
 - Una versió sense espais assignats pot editar estructura.
 - Una versió assignada exigeix confirmació explícita abans d'editar-se.
 - Una versió activa o amb respostes només permet corregir títols i textos
-  mantenint identificadors i estructura.
+  mantenint identificadors, idioma, puntuacions, ordre aleatori i estructura.
 - Els canvis estructurals creen una versió nova.
 - Activar una versió no reassigna espais existents.
 
 ## Transaccions
 
 La creació de submissions bloqueja la fila de l'espai, torna a consultar la
-política de domini del centre i després comprova el límit i insereix bloqueig,
-submission i respostes dins la mateixa transacció. El correu docent no
-s'insereix en cap taula.
+política de domini del centre i després comprova el límit i insereix submission,
+vinculació de participant i respostes dins la mateixa transacció. La restricció
+única de la vinculació impedeix duplicats. El correu docent no s'insereix en cap taula.
 
-El reinici d'un espai elimina bloquejos i respostes, assigna la versió activa i
+El reinici d'un espai elimina submissions, respostes i vinculacions, assigna la versió activa i
 rota codi i token dins una transacció. No modifica el qüestionari versionat.
 
 Les accions administratives sobre un centre bloquegen primer la seva fila. La
 suspensió és reversible; els reinicis i l'eliminació esborren `answers`,
-`submissions` i `submission_locks` en aquest ordre abans d'actualitzar o
+`submissions` (que elimina les vinculacions en cascada) en aquest ordre abans d'actualitzar o
 eliminar l'espai. El registre administratiu s'insereix dins la mateixa
 transacció.
 
@@ -191,6 +214,10 @@ respostes; un centre que no el supera no aporta recomptes al resultat. Aquesta
 seleccio no modifica l'esquema ni crea cap relacio nova entre `centres` i les
 respostes individuals.
 
+Les consultes docents són repositoris separats: comencen a
+`participant_submissions`, exigeixen `participant_user_id` de la sessió i no
+retornen mai aquest valor ni els identificadors interns al navegador.
+
 ## Migracions i seed
 
 ```bash
@@ -201,3 +228,10 @@ npm run db:seed
 
 `db:push` es reserva per a desenvolupament local. Els entorns compartits han
 d'aplicar migracions versionades de `drizzle/`.
+
+La migració `0014_participant_results.sql` exigeix una còpia de seguretat prèvia
+i buida transaccionalment `answers`, `submissions` i `submission_locks`, que
+contenien només dades de prova. Després elimina `submission_locks` i crea la
+vinculació nova. No modifica centres, responsables, espais, qüestionaris,
+versions, administradors ni configuració. Després del desplegament cal verificar
+que les dades de prova s'han eliminat i que la taula antiga ja no existeix.

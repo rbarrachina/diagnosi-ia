@@ -1,4 +1,5 @@
 import { getResponsibleSessionState } from "@/lib/auth/session";
+import type { ResponsibleAccessReason } from "@/lib/auth/responsible-access";
 import { readJsonRequestBody } from "@/lib/http/request";
 import { renderDiagnosticReportPdf } from "@/lib/pdf/render-report";
 import { getAggregatedResultsForOwner, ResultsAccessError } from "@/lib/results/get-results";
@@ -57,8 +58,10 @@ export async function POST(request: Request): Promise<Response> {
   }
 }
 
-function getResponsibleAccessErrorMessage(reason: "not_xtec" | "not_centre_xtec" | "suspended") {
-  return reason === "suspended"
+function getResponsibleAccessErrorMessage(reason: ResponsibleAccessReason) {
+  return reason === "prelaunch"
+    ? "L’accés dels centres encara no està disponible."
+    : reason === "suspended"
     ? "L’accés d’aquest centre està suspès."
     : reason === "not_centre_xtec"
     ? "Cal accedir amb un correu electrònic de centre @xtec.cat amb codi de centre, o amb un compte administrador actiu."

@@ -4,7 +4,6 @@ import { randomUUID } from "node:crypto";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
 
 import { mysqlPool } from "@/lib/db/client";
-import { createSubmissionLockHmac } from "@/lib/submissions/submission-lock";
 import {
   MAX_SUBMISSIONS_PER_SPACE,
   type SubmissionRequestInput,
@@ -45,18 +44,19 @@ type SubmissionCountRow = RowDataPacket & {
   submission_count: number | string;
 };
 
-type SubmissionLockCountRow = RowDataPacket & {
-  lock_count: number | string;
+type ParticipantSubmissionCountRow = RowDataPacket & {
+  participation_count: number | string;
 };
 
 type QuestionRow = RowDataPacket & {
   id: string;
-  scale_min: number;
-  scale_max: number;
+  option_id: string;
+  score: 0 | 1 | 2 | 3;
 };
 
 type SubmissionAnswerPayload = {
   questionId: string;
+  optionId: string;
   value: 0 | 1 | 2 | 3;
 };
 
@@ -67,30 +67,26 @@ type MysqlDuplicateError = {
   message?: string;
 };
 
-const answerKeys = new Set(["questionId", "value"]);
+const answerKeys = new Set(["questionId", "optionId"]);
 
 export async function hasAccountSubmittedToPublicQuestionnaire(params: {
   publicCode: string;
   accountId: string;
 }): Promise<boolean> {
-  const lockHmac = createSubmissionLockHmac({
-    accountId: params.accountId,
-    publicCode: params.publicCode,
-  });
-  const [rows] = await mysqlPool.execute<SubmissionLockCountRow[]>(
+  const [rows] = await mysqlPool.execute<ParticipantSubmissionCountRow[]>(
     `
-      select count(*) as lock_count
-      from submission_locks
+      select count(*) as participation_count
+      from participant_submissions
       inner join diagnostic_spaces
-        on diagnostic_spaces.id = submission_locks.diagnostic_space_id
+        on diagnostic_spaces.id = participant_submissions.diagnostic_space_id
       where diagnostic_spaces.public_code = ?
-        and submission_locks.lock_hmac = ?
+        and participant_submissions.participant_user_id = ?
       limit 1
     `,
-    [params.publicCode, lockHmac],
+    [params.publicCode, params.accountId],
   );
 
-  return Number(rows[0]?.lock_count ?? 0) > 0;
+  return Number(rows[0]?.participation_count ?? 0) > 0;
 }
 
 export async function createSubmissionWithAnswers(
@@ -112,11 +108,6 @@ export async function createSubmissionWithAnswers(
     ) {
       throw new InvalidSubmissionRepositoryError();
     }
-    await insertSubmissionLock(connection, {
-      accountId: user.id,
-      diagnosticSpaceId: space.diagnostic_space_id,
-      publicCode: payload.publicCode,
-    });
     const currentSubmissionCount = await countSubmissionsForSpace(
       connection,
       space.diagnostic_space_id,
@@ -141,6 +132,11 @@ export async function createSubmissionWithAnswers(
       [submissionId, space.diagnostic_space_id, space.questionnaire_id],
     );
 
+    await insertParticipantSubmission(connection, {
+      participantUserId: user.id,
+      diagnosticSpaceId: space.diagnostic_space_id,
+      submissionId,
+    });
     await insertAnswers(connection, submissionId, space.questionnaire_id, answers);
     await connection.commit();
   } catch (error) {
@@ -151,26 +147,22 @@ export async function createSubmissionWithAnswers(
   }
 }
 
-async function insertSubmissionLock(
+async function insertParticipantSubmission(
   connection: PoolConnection,
   params: {
-    accountId: string;
+    participantUserId: string;
     diagnosticSpaceId: string;
-    publicCode: string;
+    submissionId: string;
   },
 ): Promise<void> {
-  const lockHmac = createSubmissionLockHmac({
-    accountId: params.accountId,
-    publicCode: params.publicCode,
-  });
-
   try {
     await connection.execute(
       `
-        insert into submission_locks (diagnostic_space_id, public_code, lock_hmac)
+        insert into participant_submissions
+          (submission_id, diagnostic_space_id, participant_user_id)
         values (?, ?, ?)
       `,
-      [params.diagnosticSpaceId, params.publicCode, lockHmac],
+      [params.submissionId, params.diagnosticSpaceId, params.participantUserId],
     );
   } catch (error) {
     if (isDuplicateError(error)) {
@@ -238,14 +230,31 @@ async function getQuestionsForQuestionnaire(
 ): Promise<QuestionRow[]> {
   const [rows] = await connection.execute<QuestionRow[]>(
     `
-      select id, scale_min, scale_max
+      select
+        questions.id,
+        question_options.id as option_id,
+        question_options.score
       from questions
-      where questionnaire_id = ?
+      inner join question_options
+        on question_options.question_id = questions.id
+       and question_options.questionnaire_id = questions.questionnaire_id
+      where questions.questionnaire_id = ?
     `,
     [questionnaireId],
   );
 
-  if (rows.length === 0) {
+  if (rows.length === 0 || rows.length % 4 !== 0) {
+    throw new InvalidSubmissionRepositoryError();
+  }
+
+  const scoresByQuestion = new Map<string, Set<number>>();
+  for (const row of rows) {
+    const scores = scoresByQuestion.get(row.id) ?? new Set<number>();
+    scores.add(row.score);
+    scoresByQuestion.set(row.id, scores);
+  }
+
+  if ([...scoresByQuestion.values()].some((scores) => scores.size !== 4)) {
     throw new InvalidSubmissionRepositoryError();
   }
 
@@ -256,12 +265,14 @@ function validateSubmissionAnswers(
   answers: SubmissionRequestInput["answers"],
   expectedQuestions: QuestionRow[],
 ): SubmissionAnswerPayload[] {
-  if (!Array.isArray(answers) || answers.length !== expectedQuestions.length) {
+  const expectedQuestionIds = new Set(expectedQuestions.map((question) => question.id));
+
+  if (!Array.isArray(answers) || answers.length !== expectedQuestionIds.size) {
     throw new InvalidSubmissionRepositoryError();
   }
 
-  const expectedQuestionsById = new Map(
-    expectedQuestions.map((question) => [question.id, question]),
+  const expectedOptionsById = new Map(
+    expectedQuestions.map((question) => [question.option_id, question]),
   );
   const seenQuestionIds = new Set<string>();
   const sanitizedAnswers: SubmissionAnswerPayload[] = [];
@@ -275,24 +286,21 @@ function validateSubmissionAnswers(
       throw new InvalidSubmissionRepositoryError();
     }
 
-    const expectedQuestion = expectedQuestionsById.get(answer.questionId);
+    const expectedOption = expectedOptionsById.get(answer.optionId);
 
-    if (!expectedQuestion) {
-      throw new InvalidSubmissionRepositoryError();
-    }
-
-    if (answer.value < expectedQuestion.scale_min || answer.value > expectedQuestion.scale_max) {
+    if (!expectedOption || expectedOption.id !== answer.questionId) {
       throw new InvalidSubmissionRepositoryError();
     }
 
     seenQuestionIds.add(answer.questionId);
     sanitizedAnswers.push({
       questionId: answer.questionId,
-      value: answer.value,
+      optionId: answer.optionId,
+      value: expectedOption.score,
     });
   }
 
-  if (seenQuestionIds.size !== expectedQuestions.length) {
+  if (seenQuestionIds.size !== expectedQuestionIds.size) {
     throw new InvalidSubmissionRepositoryError();
   }
 
@@ -313,13 +321,7 @@ function isStrictAnswerPayload(value: unknown): value is SubmissionAnswerPayload
 
   return (
     typeof answer.questionId === "string" &&
-    Number.isInteger(answer.value) &&
-    (
-      answer.value === 0 ||
-      answer.value === 1 ||
-      answer.value === 2 ||
-      answer.value === 3
-    )
+    typeof answer.optionId === "string"
   );
 }
 
@@ -329,17 +331,18 @@ async function insertAnswers(
   questionnaireId: string,
   answers: SubmissionAnswerPayload[],
 ): Promise<void> {
-  const placeholders = answers.map(() => "(?, ?, ?, ?)").join(", ");
+  const placeholders = answers.map(() => "(?, ?, ?, ?, ?)").join(", ");
   const values = answers.flatMap((answer) => [
     submissionId,
     questionnaireId,
     answer.questionId,
+    answer.optionId,
     answer.value,
   ]);
 
   await connection.execute(
     `
-      insert into answers (submission_id, questionnaire_id, question_id, value)
+      insert into answers (submission_id, questionnaire_id, question_id, option_id, value)
       values ${placeholders}
     `,
     values,

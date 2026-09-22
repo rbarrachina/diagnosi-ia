@@ -29,9 +29,13 @@ describe("communication settings", () => {
 
     expect(template.subject).toContain("Qüestionari de diagnosi");
     expect(template.body).toContain("{URL_QUESTIONARI}");
+    expect(template.body).toContain("{CODI_QUESTIONARI}");
   });
 
   it("persists configured communication text", async () => {
+    const normalizedBody =
+      "Nou cos {URL_QUESTIONARI}\n\nPer tornar-hi a accedir més endavant, conserveu aquest codi:\n{CODI_QUESTIONARI}";
+
     await expect(
       setCommunicationTemplate({
         subject: "Nou títol",
@@ -39,13 +43,26 @@ describe("communication settings", () => {
       }),
     ).resolves.toEqual({
       subject: "Nou títol",
-      body: "Nou cos {URL_QUESTIONARI}",
+      body: normalizedBody,
     });
 
     await expect(getCommunicationTemplate()).resolves.toEqual({
       subject: "Nou títol",
-      body: "Nou cos {URL_QUESTIONARI}",
+      body: normalizedBody,
     });
+  });
+
+  it("upgrades a legacy saved template when it is loaded", async () => {
+    communicationSettings.set(COMMUNICATION_SUBJECT_SETTING_KEY, "Títol antic");
+    communicationSettings.set(
+      COMMUNICATION_BODY_SETTING_KEY,
+      "Cos antic\n{URL_QUESTIONARI}",
+    );
+
+    const template = await getCommunicationTemplate();
+
+    expect(template.body).toContain("{URL_QUESTIONARI}");
+    expect(template.body).toContain("{CODI_QUESTIONARI}");
   });
 });
 

@@ -9,7 +9,7 @@ import {
 function validAnswers() {
   return Array.from({ length: EXPECTED_ANSWER_COUNT }, () => ({
     questionId: randomUUID(),
-    value: 1,
+    optionId: randomUUID(),
   }));
 }
 
@@ -35,16 +35,8 @@ describe("submission payload validation", () => {
         ...validPayload(),
         answers: Array.from({ length: MAX_QUESTIONNAIRE_QUESTIONS }, () => ({
           questionId: randomUUID(),
-          value: 1,
+          optionId: randomUUID(),
         })),
-      }),
-    ).not.toThrow();
-    expect(() =>
-      submissionRequestSchema.parse({
-        ...validPayload(),
-        answers: validAnswers().map((answer, index) =>
-          index === 0 ? { ...answer, value: 3 } : answer,
-        ),
       }),
     ).not.toThrow();
   });
@@ -66,7 +58,7 @@ describe("submission payload validation", () => {
     ).toThrow();
   });
 
-  it("rejects empty answers, too many answers, duplicated questions, invalid values, and invalid versions", () => {
+  it("rejects empty answers, too many answers, duplicated questions, invalid options, and invalid versions", () => {
     expect(() =>
       submissionRequestSchema.parse({
         ...validPayload(),
@@ -79,7 +71,7 @@ describe("submission payload validation", () => {
         ...validPayload(),
         answers: Array.from({ length: MAX_QUESTIONNAIRE_QUESTIONS + 1 }, () => ({
           questionId: randomUUID(),
-          value: 1,
+          optionId: randomUUID(),
         })),
       }),
     ).toThrow();
@@ -93,12 +85,23 @@ describe("submission payload validation", () => {
       }),
     ).toThrow();
 
-    const invalidValue = validAnswers();
-    invalidValue[0] = { ...invalidValue[0], value: 4 };
+    const invalidOption = validAnswers().map((answer, index) =>
+      index === 0 ? { ...answer, optionId: "not-a-uuid" } : answer,
+    );
     expect(() =>
       submissionRequestSchema.parse({
         ...validPayload(),
-        answers: invalidValue,
+        answers: invalidOption,
+      }),
+    ).toThrow();
+
+    const browserSuppliedScore = validAnswers();
+    expect(() =>
+      submissionRequestSchema.parse({
+        ...validPayload(),
+        answers: browserSuppliedScore.map((answer, index) =>
+          index === 0 ? { ...answer, value: 3 } : answer,
+        ),
       }),
     ).toThrow();
 

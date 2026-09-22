@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { SCALE_OPTIONS, type ScaleValue } from "@/lib/questionnaire/scale";
-import type { PublicQuestionnaire, QuestionBlock } from "@/lib/questionnaire/types";
-import {
-  hasLocalSubmission,
-  markLocalSubmission,
-} from "@/lib/submissions/local-submission-lock";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { SCALE_OPTIONS } from "@/lib/questionnaire/scale";
+import type {
+  PublicQuestionnaire,
+  QuestionBlock,
+  QuestionOption,
+} from "@/lib/questionnaire/types";
 
-type AnswerValue = ScaleValue;
+type AnswerValue = string;
 
 type SubmitState =
   | { status: "idle" }
@@ -31,7 +31,6 @@ export function QuestionnaireForm({
 }: QuestionnaireFormProps) {
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [currentStep, setCurrentStep] = useState(0);
-  const [submittedInCurrentSession, setSubmittedInCurrentSession] = useState(false);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
   const isReadOnly = mode === "readOnly";
   const isWorkspaceAppearance = appearance === "workspace";
@@ -40,6 +39,10 @@ export function QuestionnaireForm({
     () => questionnaire.blocks.flatMap((block) => block.questions),
     [questionnaire.blocks],
   );
+  const [optionOrder, setOptionOrder] = useState<Record<string, QuestionOption[]>>(
+    () => orderedOptionsFor(questions),
+  );
+  const hasPreparedOptionOrder = useRef(false);
 
   const totalPages = questionnaire.blocks.length + 1;
   const progressPercentage =
@@ -48,21 +51,7 @@ export function QuestionnaireForm({
       : Math.round((currentStep / totalPages) * 100);
   const currentBlock = currentStep > 0 ? questionnaire.blocks[currentStep - 1] : null;
   const isLastBlock = currentStep === questionnaire.blocks.length;
-  const submittedBeforeThisSession = useSyncExternalStore(
-    () => () => undefined,
-    () => {
-      try {
-        return hasLocalSubmission(questionnaire.publicCode, window.localStorage);
-      } catch {
-        return false;
-      }
-    },
-    () => false,
-  );
-  const alreadySubmittedLocally =
-    !isReadOnly && (submittedBeforeThisSession || submittedInCurrentSession);
-  const alreadySubmitted =
-    !isReadOnly && (alreadySubmittedByAccount || alreadySubmittedLocally);
+  const alreadySubmitted = !isReadOnly && alreadySubmittedByAccount;
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -85,6 +74,11 @@ export function QuestionnaireForm({
         message: "Aquest usuari ja ha respost l'enquesta.",
       });
       return;
+    }
+
+    if (!isReadOnly && currentStep === 0 && !hasPreparedOptionOrder.current) {
+      setOptionOrder(randomizedOptionsFor(questions));
+      hasPreparedOptionOrder.current = true;
     }
 
     if (!isReadOnly && currentBlock && !blockIsComplete(currentBlock)) {
@@ -128,7 +122,7 @@ export function QuestionnaireForm({
           questionnaireVersion: questionnaire.questionnaireVersion,
           answers: questions.map((question) => ({
             questionId: question.id,
-            value: answers[question.id],
+            optionId: answers[question.id],
           })),
         }),
       });
@@ -142,14 +136,7 @@ export function QuestionnaireForm({
         );
       }
 
-      try {
-        markLocalSubmission(questionnaire.publicCode, window.localStorage);
-        setSubmittedInCurrentSession(true);
-      } catch {
-        // If browser storage is unavailable, the anonymous submission still counts.
-      }
-
-      setSubmitState({ status: "submitted" });
+      window.location.assign(`/docent/resultats/${questionnaire.publicCode}`);
     } catch (error) {
       setSubmitState({
         status: "error",
@@ -201,6 +188,7 @@ export function QuestionnaireForm({
         <BlockPage
           answers={answers}
           block={currentBlock}
+          optionOrder={optionOrder}
           isReadOnly={isReadOnly}
           onAnswer={(questionId, value) =>
             setAnswers((currentAnswers) => ({
@@ -308,12 +296,13 @@ function IntroPage({
           centre a partir de dades de conjunt.
         </p>
         <p>
-          Les respostes són anònimes, no es recullen dades personals i no es
-          mostraran respostes individuals.
+          No es desa el nom ni el correu. La participació queda vinculada a un
+          identificador pseudònim per poder recuperar-ne els resultats amb el
+          mateix compte.
         </p>
         <p>
-          El formulari no demana noms, correus, comptes d&apos;usuari,
-          identificadors personals ni respostes obertes.
+          El centre i l’administració només poden consultar resultats agregats;
+          no poden veure, cercar ni exportar participacions individuals.
         </p>
         <p>
           La diagnosi consta de {questionCount} preguntes obligatòries. Cada
@@ -365,11 +354,13 @@ function BlockPage({
   answers,
   block,
   isReadOnly,
+  optionOrder,
   onAnswer,
 }: {
   answers: Record<string, AnswerValue>;
   block: QuestionBlock;
   isReadOnly: boolean;
+  optionOrder: Record<string, QuestionOption[]>;
   onAnswer: (questionId: string, value: AnswerValue) => void;
 }) {
   return (
@@ -404,37 +395,81 @@ function BlockPage({
               </span>
             </legend>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {SCALE_OPTIONS.map((option) => (
+              {(optionOrder[question.id] ?? question.options).map((option) => {
+                const scaleOption = SCALE_OPTIONS.find(
+                  (candidate) => candidate.value === option.score,
+                );
+                const visualClasses = question.randomizeOptions
+                  ? "questionnaire-random-option"
+                  : scaleOption?.formClasses ?? "border-line bg-surface";
+                const accentClass = question.randomizeOptions
+                  ? "accent-[var(--app-action)]"
+                  : scaleOption?.accentClass ?? "accent-[var(--app-action)]";
+
+                return (
                 isReadOnly ? (
                   <div
-                    className={`flex min-h-14 items-center rounded-xl border px-4 py-3 text-sm text-ink ${option.formClasses}`}
-                    key={option.value}
+                    className={`flex min-h-14 items-center rounded-xl border px-4 py-3 text-sm text-ink ${visualClasses}`}
+                    key={option.id}
                   >
-                    {option.label}
+                    {option.text}
                   </div>
                 ) : (
                   <label
-                    className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm text-ink transition ${option.formClasses}`}
-                    key={option.value}
+                    className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm text-ink transition ${visualClasses}`}
+                    key={option.id}
                   >
                     <input
-                      checked={answers[question.id] === option.value}
-                      className={`h-4 w-4 ${option.accentClass}`}
+                      checked={answers[question.id] === option.id}
+                      className={`h-4 w-4 ${accentClass}`}
                       name={question.id}
-                      onChange={() => onAnswer(question.id, option.value)}
+                      onChange={() => onAnswer(question.id, option.id)}
                       type="radio"
-                      value={option.value}
+                      value={option.id}
                     />
-                    <span>{option.label}</span>
+                    <span>{option.text}</span>
                   </label>
                 )
-              ))}
+                );
+              })}
             </div>
           </fieldset>
           );
         })}
       </div>
     </div>
+  );
+}
+
+function orderedOptionsFor(
+  questions: PublicQuestionnaire["blocks"][number]["questions"],
+): Record<string, QuestionOption[]> {
+  return Object.fromEntries(
+    questions.map((question) => [
+      question.id,
+      question.options.slice().sort((a, b) => a.score - b.score),
+    ]),
+  );
+}
+
+function randomizedOptionsFor(
+  questions: PublicQuestionnaire["blocks"][number]["questions"],
+): Record<string, QuestionOption[]> {
+  return Object.fromEntries(
+    questions.map((question) => {
+      const options = question.options.slice().sort((a, b) => a.score - b.score);
+
+      if (question.randomizeOptions) {
+        for (let index = options.length - 1; index > 0; index -= 1) {
+          const randomValue = new Uint32Array(1);
+          window.crypto.getRandomValues(randomValue);
+          const targetIndex = randomValue[0] % (index + 1);
+          [options[index], options[targetIndex]] = [options[targetIndex], options[index]];
+        }
+      }
+
+      return [question.id, options];
+    }),
   );
 }
 

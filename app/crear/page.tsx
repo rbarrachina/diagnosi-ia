@@ -15,18 +15,22 @@ import { listOwnerSpaces } from "@/lib/spaces/manage-spaces";
 import {
   registerResponsibleCentreAccount,
 } from "@/lib/centres/centre-profiles";
+import { getCurrentLanguage } from "@/lib/i18n/locale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Espai del centre",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const messages = getMessages(await getCurrentLanguage());
+  return { title: messages.centre.area };
+}
 
 type CreatePageProps = {
   searchParams: Promise<{ view?: string }>;
 };
 
 export default async function CreatePage({ searchParams }: CreatePageProps) {
+  const messages = getMessages(await getCurrentLanguage());
   const requestedView = (await searchParams).view;
   const initialView =
     requestedView === "profile" || requestedView === "settings"
@@ -89,10 +93,10 @@ export default async function CreatePage({ searchParams }: CreatePageProps) {
         >
           <div className="mb-8">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-action">
-              Espai del centre
+              {messages.centre.area}
             </p>
             <h1 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-ink">
-              Configuració inicial
+              {messages.centre.initialSetup}
             </h1>
           </div>
           <CentreOnboarding centre={centre} />

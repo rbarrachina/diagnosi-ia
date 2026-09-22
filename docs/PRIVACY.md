@@ -1,11 +1,13 @@
-# Privacitat i anonimat
+# Privacitat i pseudonimització
 
 ## Principi rector
 
 Diagnosi IA identifica el centre promotor i minimitza les dades del professorat.
 El centre no és anònim davant l'aplicacio ni davant l'administracio autoritzada.
-Les respostes no identifiquen docents i els resultats només existeixen en
-conjunt.
+No es desen el nom ni el correu del professorat, però cada participació queda
+vinculada a un identificador opac derivat del compte Google. Aquesta dada és
+personal i pseudonimitzada: permet recuperar els resultats propis, però no es
+mostra al centre ni a l'administració.
 
 ## Dades prohibides
 
@@ -13,8 +15,8 @@ No es pot recollir ni desar del professorat participant:
 
 - nom o cognoms;
 - correu electrònic;
-- comptes o perfils a la base de dades de diagnosi;
-- identificadors personals;
+- comptes o perfils docents amb nom o correu a la base de dades de diagnosi;
+- identificadors proporcionats pel navegador o hashes simples del correu;
 - IP, user agent o informació del dispositiu;
 - respostes obertes.
 
@@ -26,14 +28,17 @@ No es pot recollir ni desar del professorat participant:
 - Nom visible, correu XTEC i darrera entrada només dels administradors.
 - Correus XTEC d'invitacions d'administració, separats de les respostes.
 - Configuració global no personal.
+- Estat global de prellançament o obertura de l'accés dels centres.
 - Registre mínim d'actuacions administratives sobre centres, sense dades ni
   identificadors de participants.
 - Codi públic de l'espai.
 - HMAC i valor xifrat del token privat.
 - Versió i estat del qüestionari.
 - Submissions i respostes tancades amb identificadors tècnics.
-- Bloquejos HMAC separats contra respostes repetides.
-- Timestamps tècnics que no es mostren ni s'exporten.
+- Identificador opac derivat del `sub` de Google amb HMAC, exclusivament a la
+  vinculació `participant_submissions`.
+- Timestamps tècnics que només es mostren al participant propietari quan formen
+  part de la data de realització.
 
 ## Separació d'identitats
 
@@ -46,11 +51,11 @@ gestionar el seu espai de prova. Aquesta funció de responsable no identifica
 els docents que participen en el qüestionari ni es relaciona amb les seves
 respostes.
 
-El professorat inicia sessió amb un compte Google d'un domini admès pel centre
-només per validar l'accés i impedir una segona resposta del mateix compte al
-mateix espai. El servidor usa el correu transitòriament, deriva un HMAC i no
-desa el correu, nom o perfil a MySQL. `submission_locks` no conté
-`submission_id` ni respostes.
+El professorat inicia sessió amb Google. El servidor usa el correu
+transitòriament per validar el domini durant el primer accés i deriva del `sub`
+un identificador opac amb HMAC. `participant_submissions` vincula aquest
+identificador amb una única submission per espai; no conté correu, nom, domini,
+IP ni metadades de dispositiu.
 
 Cada centre ha de triar entre `@xtec.cat` o un domini propi exacte. Les dues
 opcions no es poden activar alhora, fet que evita que una mateixa persona pugui
@@ -66,8 +71,9 @@ filtrar o relacionar resultats.
 El navegador no té accés directe a MySQL. Tota lectura o escriptura passa per
 codi server-side amb validació de sessió, rol, propietat, token i payload.
 
-Els repositoris sensibles no s'importen des de components client. Cap endpoint
-pot retornar files individuals de `submissions` o `answers`.
+Els repositoris sensibles no s'importen des de components client. Els endpoints
+de centre i administració no poden retornar files individuals. Les rutes docents
+només poden retornar la participació pròpia, determinada per la sessió al servidor.
 
 ## Token privat
 
@@ -89,11 +95,27 @@ La pàgina llegeix el fragment, l'elimina visualment i envia el token per POST.
 ## Submissions
 
 La creació és transaccional. El servidor torna a validar el domini docent vigent
-del centre, l'espai, la versió, totes les preguntes, els valors 0-3, els
-duplicats, el bloqueig HMAC i el límit de 300 respostes.
+del centre, l'espai, la versió, totes les preguntes, els valors 0-3, la
+vinculació única i el límit de 300 respostes.
 
 `submissions` no conté usuari, correu, IP o dispositiu. `answers` només conté
-les claus tècniques i el valor tancat.
+les claus tècniques i el valor tancat. La vinculació separada és l'única font
+de veritat per impedir duplicats i recuperar la participació.
+
+## Resultats individuals del docent
+
+El docent autenticat pot veure les seves respostes, puntuació global i per
+blocs, data, centre i versió, i generar un PDF propi. La consulta sempre filtra
+per l'identificador de la sessió; el navegador no decideix el propietari ni rep
+`participant_user_id` o `submission_id`. No hi ha comparacions, interpretacions
+noves ni dades alienes. El centre, el responsable, l'administració i l'enllaç
+privat continuen rebent només agregats.
+
+En aquesta fase no hi ha eliminació directa pel docent. Les sol·licituds de
+supressió requereixen un procediment administratiu. La participació es conserva
+mentre existeix l'espai i s'elimina en reiniciar-lo o eliminar-lo. La durada de
+les còpies de seguretat és una decisió d'infraestructura pendent i no es pot
+afirmar que la supressió de la base activa les purgui immediatament.
 
 ## Resultats agregats
 
@@ -161,7 +183,7 @@ Una versió activa o amb respostes només permet correccions textuals que
 mantinguin identificadors i estructura. Els canvis estructurals exigeixen una
 versió nova.
 
-Eliminar una versió no activa pot eliminar dades anònimes dependents després
+Eliminar una versió no activa pot eliminar dades pseudonimitzades dependents després
 d'una confirmació explícita, però no pot mostrar-les, exportar-les o
 retornar-les abans d'esborrar.
 
@@ -173,12 +195,15 @@ codi, token o compte concret.
 
 ## Exportacions
 
-L'única exportació de resultats és el PDF agregat. Qualsevol nova exportació
-requereix una revisió explícita de privacitat.
+Les exportacions permeses són el PDF agregat per als rols institucionals i el
+PDF individual exclusivament per al docent propietari autenticat. Aquest últim
+es genera sota demanda, no es desa i no conté identitat ni identificadors.
 
 ## Riscos pendents
 
-- Rate limiting i protecció anti-bots.
+- El límit d'intents local en memòria només és adequat per a desenvolupament;
+  cal un magatzem compartit per a producció distribuïda.
 - Política de retenció i eliminació automàtica.
+- Durada i purga de les còpies de seguretat.
 - Caducitat automàtica d'espais.
 - Revisió legal o DPO per a ús institucional.

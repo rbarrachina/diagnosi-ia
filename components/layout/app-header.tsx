@@ -1,8 +1,11 @@
+"use client";
+
 import type { ReactNode } from "react";
 
 import { AppLogoLink } from "@/components/brand/app-logo";
 import { LanguageSelector } from "@/components/home/language-selector";
 import { AppHeaderEffects } from "@/components/layout/app-header-effects";
+import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 type AppHeaderProps = {
   brandOpensInNewTab?: boolean;
@@ -19,10 +22,11 @@ export function AppHeader({
   controlsRef,
   showBrandLabelOnMobile = false,
 }: AppHeaderProps) {
+  const messages = useTranslations();
   return (
     <>
       <a className="skip-link" href="#inici">
-        Salta al contingut principal
+        {messages.common.skipToContent}
       </a>
       <header
         className="app-header fixed inset-x-0 top-0 z-50 border-b"

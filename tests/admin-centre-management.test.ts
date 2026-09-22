@@ -86,14 +86,14 @@ describe("admin centre management", () => {
     expect(calls.some(({ query }) => query.includes("insert into admin_centre_actions"))).toBe(true);
   });
 
-  it("resets anonymous responses without loading individual rows", async () => {
+  it("resets pseudonymous responses without loading individual rows", async () => {
     await expect(
       resetAdminCentreResponses({ actorUserId: "admin-1", centreId }),
     ).resolves.toBe(3);
 
     expect(calls.some(({ query }) => query.includes("delete answers"))).toBe(true);
     expect(calls.some(({ query }) => query.includes("delete submissions"))).toBe(true);
-    expect(calls.some(({ query }) => query.includes("delete submission_locks"))).toBe(true);
+    expect(calls.some(({ query }) => query.includes("participant_user_id"))).toBe(false);
     expect(transaction.commit).toHaveBeenCalledOnce();
   });
 

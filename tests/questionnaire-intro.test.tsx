@@ -7,6 +7,7 @@ const questionnaire: PublicQuestionnaire = {
   centreName: "Institut de Prova",
   publicCode: "C-TEST-1234",
   questionnaireVersion: "2026.2",
+  languageCode: "ca",
   estimatedMinutes: 10,
   blocks: [
     {
@@ -19,6 +20,13 @@ const questionnaire: PublicQuestionnaire = {
           position: 1,
           blockPosition: 1,
           text: "Descripció breu: Pregunta de prova",
+          randomizeOptions: false,
+          options: [
+            { id: "10000000-0000-4000-8000-000000000001", score: 0, text: "Gens / No ho faig" },
+            { id: "10000000-0000-4000-8100-000000000001", score: 1, text: "Una mica / Ocasionalment" },
+            { id: "10000000-0000-4000-8200-000000000001", score: 2, text: "Bastant / Habitualment" },
+            { id: "10000000-0000-4000-8300-000000000001", score: 3, text: "Molt / Soc un referent al centre" },
+          ],
         },
       ],
     },

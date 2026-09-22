@@ -1,16 +1,16 @@
 # Diagnosi IA
 
-Aplicació web per conèixer el grau d'ús educatiu de la intel·ligència artificial en centres educatius a partir de respostes anònimes i resultats de conjunt.
+Aplicació web per conèixer el grau d'ús educatiu de la intel·ligència artificial en centres educatius a partir de participacions pseudonimitzades.
 
-Diagnosi IA identifica el centre promotor, però no identifica docents. No és
-una eina d'avaluació individual del professorat, sinó una eina de diagnosi
-global per orientar decisions de centre.
+Diagnosi IA identifica el centre promotor i vincula cada participació a un
+identificador opac perquè el docent recuperi els resultats propis. El centre i
+l'administració només poden consultar dades agregades.
 
 ## Estat del projecte
 
 `main` conté l'aplicació amb Next.js i MySQL.
 
-La versió preparada actual és la `0.4.0`. El projecte es troba en fase beta i
+La versió preparada actual és la `0.5.0`. El projecte es troba en fase beta i
 pot contenir errors.
 
 El flux principal local funciona amb Next.js i MySQL local:
@@ -19,7 +19,8 @@ El flux principal local funciona amb Next.js i MySQL local:
 - creacio i gestio d'espais amb auth local provisional;
 - enviament de respostes;
 - resultats agregats;
-- generacio de PDF;
+- àrea docent, resultats propis i PDF individual;
+- generacio de PDF agregat;
 - bootstrap i gestio bàsica de `admin_users` a MySQL;
 - invitacions d'administradors per correu `@xtec.cat`, separades de
   `admin_users`;
@@ -28,6 +29,11 @@ El flux principal local funciona amb Next.js i MySQL local:
 L'autenticació usa una capa server-side pròpia. Es pot usar
 `AUTH_MODE=local` per desenvolupament ràpid o `AUTH_MODE=google` per fer login
 real amb Google OAuth i comptes `@xtec.cat`.
+
+En desplegar un entorn nou, l'accés dels centres queda en mode de
+prellançament. Un administrador actiu l'ha d'obrir explícitament des de
+`/admin?section=settings`; mentre és tancat, ni els centres ni el professorat
+poden iniciar sessió o utilitzar el servei.
 
 Abans d'implementar funcionalitat, cal mantenir com a referència:
 
@@ -61,6 +67,8 @@ Abans d'implementar funcionalitat, cal mantenir com a referència:
 - `/espais`
 - `/espais/[publicCode]/resultats`
 - `/q/[publicCode]`
+- `/docent`
+- `/docent/resultats/[publicCode]`
 - `/resultats/[publicCode]`
 - `/resultats/compartit/[publicCode]`
 - `/auth/login`
@@ -72,6 +80,7 @@ Abans d'implementar funcionalitat, cal mantenir com a referència:
 - `POST /api/results`
 - `POST /api/reports/pdf`
 - `POST /api/reports/pdf/owner`
+- `POST /api/docent/results/pdf`
 
 ## Executar localment amb MySQL
 
@@ -179,11 +188,11 @@ Flux principal:
 2. Confirma la fitxa i configura els dominis docents.
 3. Crea un espai de diagnosi.
 4. Copia l'enllaç públic `/q/[publicCode]`.
-5. Respon el qüestionari.
-6. Consulta els resultats des de l'enllaç privat compartit o des de
+5. Respon el qüestionari i consulta el resultat propi des de `/docent`.
+6. Consulta els resultats agregats des de l'enllaç privat compartit o des de
    `/espais/[publicCode]/resultats`.
-6. Genera el PDF des de la pantalla de resultats.
-7. Prova la regeneracio de l'enllaç privat i el reset de l'espai des de
+7. Genera els PDF individual i agregat des de les pantalles corresponents.
+8. Prova la regeneracio de l'enllaç privat i el reset de l'espai des de
    `/crear`.
 
 També es pot accedir a `/admin?section=admins` per fer el bootstrap local del
@@ -229,21 +238,21 @@ participant:
 
 - nom o cognoms dels docents
 - correus electrònics
-- comptes d'usuari
-- identificadors personals
+- perfils d'usuari amb nom o correu
+- identificadors proporcionats pel navegador
 - informació del dispositiu
 - adreces IP a la base de dades de l'aplicació
 - respostes obertes
 
 `centres` i `centre_accounts` estan separades de `submissions`, `answers` i
-`submission_locks`. La identitat institucional només serveix per crear i
+`participant_submissions`. La identitat institucional només serveix per crear i
 gestionar l'espai del centre. El professorat participant continua sense compte
 intern ni perfil.
 
-El correu docent només s'usa transitòriament per validar el domini exacte i
-derivar el bloqueig HMAC contra repeticions; no s'insereix a MySQL. Si el centre
-admet dos dominis, s'adverteix que una persona amb dos comptes Google podria
-respondre dues vegades perquè les identitats no es relacionen.
+El correu docent només s'usa transitòriament per validar el domini exacte; no
+s'insereix a MySQL. L'identificador opac derivat del `sub` de Google amb HMAC és
+una dada personal pseudonimitzada i només s'utilitza per impedir duplicats i
+autoritzar la recuperació de la participació pròpia.
 
 ## Llicència
 

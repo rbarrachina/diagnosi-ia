@@ -3,17 +3,29 @@ import { QuestionPreview } from "@/components/home/question-preview";
 import { SiteFooter } from "@/components/home/site-footer";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { AppHeader } from "@/components/layout/app-header";
+import { ParticipantCodeAccessForm } from "@/components/participants/code-access-form";
+import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
+import { getCurrentLanguage } from "@/lib/i18n/locale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
+export default async function Home() {
+  const [portalStatus, language] = await Promise.all([
+    getResponsiblePortalStatus(),
+    getCurrentLanguage(),
+  ]);
+  const responsiblePortalOpen = portalStatus === "open";
+  const copy = getMessages(language).home;
+
   return (
     <main className="app-shell min-h-screen overflow-hidden bg-paper text-ink">
       <AppHeader brandHref="#inici">
         <ThemeToggle />
         <CentreLoginDialog
-          ariaLabel="Accés XTEC"
-          className="ml-1 inline-flex h-10 w-10 items-center justify-center rounded-full bg-action text-action-contrast shadow-[0_8px_24px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper"
+          ariaLabel={responsiblePortalOpen ? copy.centreAccess : copy.centreAccessSoon}
+          className="ml-1 inline-flex h-10 w-10 items-center justify-center rounded-full bg-action text-action-contrast shadow-[0_8px_24px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+          disabled={!responsiblePortalOpen}
         >
           <AccessIcon />
         </CentreLoginDialog>
@@ -31,44 +43,50 @@ export default function Home() {
         <div className="relative mx-auto w-full max-w-6xl -translate-y-6 text-center sm:-translate-y-12">
           <p className="mx-auto inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-action sm:text-sm">
             <span className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_0_5px_var(--app-dot-ring)]" />
-            Eina per a centres educatius
+            {copy.eyebrow}
             <span className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_0_5px_var(--app-dot-ring)]" />
           </p>
 
           <h1 className="mx-auto mt-5 max-w-5xl text-balance text-[clamp(2.75rem,7vw,6.6rem)] font-semibold leading-[0.98] tracking-[-0.055em]">
-            Diagnosi de la{" "}
+            {copy.titlePrefix}{" "}
             <span className="home-title-gradient">
-              competència digital docent en IA
+              {copy.titleHighlight}
             </span>
           </h1>
 
           <p className="mx-auto mt-7 max-w-2xl text-pretty text-base leading-7 text-muted sm:text-xl sm:leading-8">
-            Coneix el punt de partida del claustre i obtén-ne una visió de
-            conjunt per orientar l’ús educatiu de la intel·ligència artificial.
+            {copy.introduction}
           </p>
 
-          <div className="mt-6 flex items-center justify-center">
+          <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <CentreLoginDialog
-              className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper sm:w-auto sm:min-w-72 sm:text-lg"
+              ariaLabel={responsiblePortalOpen ? undefined : copy.centreAccessSoon}
+              className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:w-auto sm:min-w-72 sm:text-lg"
+              disabled={!responsiblePortalOpen}
             >
-              Accedeix amb el compte de centre
-              <ArrowIcon />
+              {responsiblePortalOpen
+                ? copy.centreButton
+                : copy.centreAccessSoon}
+              {responsiblePortalOpen ? <ArrowIcon /> : null}
             </CentreLoginDialog>
+            <a className="inline-flex min-h-14 w-full items-center justify-center rounded-2xl border border-line bg-surface px-7 text-base font-semibold text-ink sm:w-auto" href="#acces-docent">
+              {copy.teacherButton}
+            </a>
           </div>
 
           <div className="mx-auto mt-6 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted">
-            <TrustItem label="Participació anònima" />
-            <TrustItem label="Resultats col·lectius" />
-            <TrustItem label="Creada per al claustre" />
+            <TrustItem label={copy.trustPseudonym} />
+            <TrustItem label={copy.trustAggregate} />
+            <TrustItem label={copy.trustStaff} />
           </div>
         </div>
 
         <a
-          aria-label="Ves a la informació sobre la diagnosi"
+          aria-label={copy.diagnosisInfo}
           className="absolute bottom-5 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-xs font-medium text-muted transition hover:text-action sm:flex"
           href="#com-funciona"
         >
-          Descobreix-ne més
+          {copy.discover}
           <span className="home-scroll-cue flex h-9 w-6 justify-center rounded-full border border-line pt-2">
             <span className="h-1.5 w-1.5 rounded-full bg-action" />
           </span>
@@ -81,14 +99,13 @@ export default function Home() {
         <div className="mx-auto max-w-6xl" id="com-funciona">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
-              Un objectiu, dos rols
+              {copy.rolesEyebrow}
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-5xl">
-              Una diagnosi compartida per avançar amb criteri
+              {copy.rolesTitle}
             </h2>
             <p className="mt-5 text-lg leading-8 text-muted">
-              Una base pedagògica comuna, un espai gestionat pel centre i una
-              participació docent anònima.
+              {copy.rolesIntro}
             </p>
           </div>
 
@@ -96,24 +113,18 @@ export default function Home() {
             <article className="home-card flex flex-col rounded-3xl border border-line p-7 sm:p-8">
               <RoleIcon type="foundation" />
               <p className="mt-7 text-xs font-semibold uppercase tracking-[0.14em] text-action">
-                Fonament pedagògic
+                {copy.foundationEyebrow}
               </p>
               <h3 className="mt-2 text-2xl font-semibold tracking-[-0.025em]">
-                Una diagnosi amb criteri
+                {copy.foundationTitle}
               </h3>
               <p className="mt-4 flex-1 leading-7 text-muted">
-                L’eina ajuda a conèixer el punt de partida del claustre i pren
-                com a base la documentació de competència digital docent i les
-                <cite className="not-italic">
-                  {" "}orientacions per a l’ús de la IA als centres educatius
-                </cite>
-                .
+                {copy.foundationText}
               </p>
               <p className="mt-7 inline-flex items-center gap-2 text-sm font-medium leading-6 text-muted">
                 <CheckIcon />
                 <span>
-                  [OIA-12] Fer una diagnosi de quina és la competència digital
-                  docent en IA del claustre
+                  {copy.foundationCheck}
                 </span>
               </p>
             </article>
@@ -121,49 +132,65 @@ export default function Home() {
             <article className="home-card flex flex-col rounded-3xl border border-line p-7 sm:p-8">
               <RoleIcon type="centre" />
               <p className="mt-7 text-xs font-semibold uppercase tracking-[0.14em] text-action">
-                Responsable del centre
+                {copy.centreEyebrow}
               </p>
               <h3 className="mt-2 text-2xl font-semibold tracking-[-0.025em]">
-                El centre gestiona
+                {copy.centreTitle}
               </h3>
               <p className="mt-4 flex-1 leading-7 text-muted">
-                La persona responsable crea i configura l’espai de diagnosi,
-                comparteix el qüestionari amb el claustre i consulta els
-                resultats de conjunt del centre.
+                {copy.centreText}
               </p>
               <p className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-muted">
-                <CheckIcon /> Un únic espai de diagnosi per centre
+                <CheckIcon /> {copy.centreCheck}
               </p>
             </article>
 
             <article className="home-card flex flex-col rounded-3xl border border-line p-7 sm:p-8">
               <RoleIcon type="teacher" />
               <p className="mt-7 text-xs font-semibold uppercase tracking-[0.14em] text-action">
-                Participació anònima
+                {copy.privacyEyebrow}
               </p>
               <h3 className="mt-2 text-2xl font-semibold tracking-[-0.025em]">
-                El docent respon
+                {copy.privacyTitle}
               </h3>
               <p className="mt-4 flex-1 leading-7 text-muted">
-                Cada docent respon anònimament des de l’enllaç que rep per
-                correu del seu centre. No pot crear cap compte a l’aplicació i
-                les respostes només es presenten de manera agregada.
+                {copy.privacyText}
               </p>
               <p className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-muted">
-                <CheckIcon /> Participació anònima i resultats de conjunt
+                <CheckIcon /> {copy.privacyCheck}
               </p>
             </article>
           </div>
 
           <div className="mt-14 flex justify-center">
             <a
-              aria-label="Ves a la mostra del qüestionari"
+              aria-label={copy.questionnaireSampleLink}
               className="home-scroll-cue flex h-9 w-6 justify-center rounded-full border border-line pt-2 transition hover:border-action focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper"
               href="#mostra-questionari"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-action" />
             </a>
           </div>
+        </div>
+      </section>
+
+      <section className="border-t border-line bg-paper px-5 py-20 sm:px-8" id="acces-docent">
+        <div className="mx-auto max-w-2xl rounded-3xl border border-line bg-surface p-7 sm:p-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">{copy.teacherEyebrow}</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight">{copy.teacherTitle}</h2>
+          <p className="mt-4 leading-7 text-muted">{copy.teacherHelp}</p>
+          <div className="mt-6">
+            <ParticipantCodeAccessForm disabled={!responsiblePortalOpen} />
+          </div>
+          {responsiblePortalOpen ? (
+            <a className="mt-5 inline-flex text-sm font-semibold text-action" href="/docent">
+              {copy.teacherHistory}
+            </a>
+          ) : (
+            <span className="mt-5 inline-flex cursor-not-allowed text-sm font-semibold text-muted opacity-60">
+              {copy.teacherAccessSoon}
+            </span>
+          )}
         </div>
       </section>
 

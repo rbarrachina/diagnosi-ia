@@ -4,6 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 import { CentreManagementHeader } from "@/components/create-space/centre-management-header";
 import type { CentreProfile } from "@/lib/centres/types";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
 vi.mock("@/components/auth/auth-actions", () => ({
   LogoutButton: ({ label = "Tanca sessió" }: { label?: string }) => (
     <button type="button">{label}</button>

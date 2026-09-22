@@ -32,6 +32,7 @@ export type AggregatedResults = {
   publicCode: string;
   scopeLabel?: string;
   questionnaireVersion: string;
+  languageCode?: import("@/lib/questionnaire/languages").QuestionnaireLanguageCode;
   generatedAt: string;
   diagnosticSpaceCount?: number;
   totalSubmissions: number;
@@ -50,6 +51,7 @@ export type QuestionDefinition = {
   position: number;
   blockPosition: number;
   text: string;
+  options?: ScaleOption[];
 };
 
 export type BlockDefinition = {

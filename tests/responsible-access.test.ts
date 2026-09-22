@@ -1,8 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ResponsibleAccessMode } from "@/lib/auth/responsible-access";
+import type {
+  ResponsibleAccessMode,
+  ResponsiblePortalStatus,
+} from "@/lib/auth/responsible-access";
 
 let responsibleAccessMode: ResponsibleAccessMode | null;
+let responsiblePortalStatus: ResponsiblePortalStatus | null;
 let adminMinimumSubmissions: number | null;
 let activeAdminUserIds: Set<string>;
 let suspendedCentreUserIds: Set<string>;
@@ -19,18 +23,60 @@ vi.mock("@/lib/db/client", () => ({
 
 const {
   canUseResponsibleAccess,
+  getResponsibleAccessDecision,
   getAdminResultsMinimumSubmissions,
   getResponsibleAccessMode,
+  getResponsiblePortalStatus,
   setAdminResultsMinimumSubmissions,
   setResponsibleAccessMode,
+  setResponsiblePortalStatus,
 } = await import("@/lib/auth/responsible-access");
 
 describe("responsible access settings", () => {
   beforeEach(() => {
     responsibleAccessMode = "all_xtec";
+    responsiblePortalStatus = "open";
     adminMinimumSubmissions = 0;
     activeAdminUserIds = new Set();
     suspendedCentreUserIds = new Set();
+  });
+
+  it("keeps the centre portal closed by default", async () => {
+    responsiblePortalStatus = null;
+
+    await expect(getResponsiblePortalStatus()).resolves.toBe("closed");
+    await expect(
+      canUseResponsibleAccess({
+        id: "00000000-0000-4000-8000-000000000002",
+        email: "a1234567@xtec.cat",
+        displayName: "Centre XTEC",
+      }),
+    ).resolves.toBe(false);
+    await expect(
+      getResponsibleAccessDecision({
+        id: "00000000-0000-4000-8000-000000000002",
+        email: "a1234567@xtec.cat",
+        displayName: "Centre XTEC",
+      }),
+    ).resolves.toEqual({ allowed: false, reason: "prelaunch" });
+  });
+
+  it("allows active administrators to preview while the portal is closed", async () => {
+    responsiblePortalStatus = "closed";
+    activeAdminUserIds.add("00000000-0000-4000-8000-000000000003");
+
+    await expect(
+      canUseResponsibleAccess({
+        id: "00000000-0000-4000-8000-000000000003",
+        email: "admin.prova@xtec.cat",
+        displayName: "Admin Prova",
+      }),
+    ).resolves.toBe(true);
+  });
+
+  it("persists the centre portal status", async () => {
+    await expect(setResponsiblePortalStatus("closed")).resolves.toBe("closed");
+    await expect(getResponsiblePortalStatus()).resolves.toBe("closed");
   });
 
   it("defaults to any XTEC account for responsible access", async () => {
@@ -123,6 +169,14 @@ async function executeQuery(query: string, values: unknown[] = []) {
       ];
     }
 
+    if (settingKey === "responsible_portal_status") {
+      return [
+        responsiblePortalStatus
+          ? [{ setting_value: responsiblePortalStatus }]
+          : [],
+      ];
+    }
+
     return [
       responsibleAccessMode
         ? [{ setting_value: responsibleAccessMode }]
@@ -135,6 +189,8 @@ async function executeQuery(query: string, values: unknown[] = []) {
 
     if (settingKey === "admin_results_minimum_submissions") {
       adminMinimumSubmissions = Number(values[1]);
+    } else if (settingKey === "responsible_portal_status") {
+      responsiblePortalStatus = String(values[1]) as ResponsiblePortalStatus;
     } else {
       responsibleAccessMode = String(values[1]) as ResponsibleAccessMode;
     }

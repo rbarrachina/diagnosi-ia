@@ -1,14 +1,18 @@
+"use client";
+
+import { useTranslations } from "@/components/i18n/language-settings-provider";
+
 export function ParticipantInfoCard() {
+  const copy = useTranslations().centre;
   return (
     <div className="flex h-full flex-col justify-start rounded-md border border-line bg-surface p-6 text-center shadow-sm">
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
-          Respondre qüestionari
+          {copy.answerQuestionnaire}
         </p>
-        <h2 className="text-xl font-semibold text-ink">Soc docent</h2>
+        <h2 className="text-xl font-semibold text-ink">{copy.iAmTeacher}</h2>
         <p className="text-sm leading-6 text-muted">
-          El responsable del centre t&apos;enviarà l&apos;enllaç o URL per accedir a
-          l&apos;enquesta.
+          {copy.teacherLinkHelp}
         </p>
       </div>
     </div>

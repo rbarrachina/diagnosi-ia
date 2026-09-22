@@ -48,7 +48,15 @@ const questionnaire = {
   id: "002",
   version: "2026.2",
   title: "Diagnosi IA - Qüestionari 2026.2",
+  languageCode: "ca",
 };
+
+const optionSeed = [
+  [0, "Gens / No ho faig"],
+  [1, "Una mica / Ocasionalment"],
+  [2, "Bastant / Habitualment"],
+  [3, "Molt / Soc un referent al centre"],
+];
 
 const blockSeed = [
   { id: "01", position: 1, title: "Alfabetització i ús crític de la IA" },
@@ -104,13 +112,19 @@ try {
 
   await connection.execute(
     `
-      insert into questionnaires (id, version, title, is_active)
-      values (?, ?, ?, true)
+      insert into questionnaires (id, version, title, language_code, is_active)
+      values (?, ?, ?, ?, true)
       on duplicate key update
         title = values(title),
+        language_code = values(language_code),
         is_active = values(is_active)
     `,
-    [questionnaire.id, questionnaire.version, questionnaire.title],
+    [
+      questionnaire.id,
+      questionnaire.version,
+      questionnaire.title,
+      questionnaire.languageCode,
+    ],
   );
 
   for (const block of blockSeed) {
@@ -161,6 +175,33 @@ try {
         question.text,
       ],
     );
+
+    const [questionRows] = await connection.execute(
+      `
+        select id
+        from questions
+        where questionnaire_id = ? and position = ?
+        limit 1
+      `,
+      [questionnaire.id, question.position],
+    );
+    const questionId = questionRows[0]?.id;
+
+    if (!questionId) {
+      throw new Error(`Missing persisted question ${question.position}`);
+    }
+
+    for (const [score, text] of optionSeed) {
+      await connection.execute(
+        `
+          insert into question_options
+            (id, questionnaire_id, question_id, score, text)
+          values (?, ?, ?, ?, ?)
+          on duplicate key update text = values(text)
+        `,
+        [randomUUID(), questionnaire.id, questionId, score, text],
+      );
+    }
   }
 
   const [shapeRows] = await connection.execute(
@@ -168,6 +209,7 @@ try {
       select
         (select count(*) from question_blocks where questionnaire_id = ?) as block_count,
         (select count(*) from questions where questionnaire_id = ?) as question_count,
+        (select count(*) from question_options where questionnaire_id = ?) as option_count,
         (
           select count(*)
           from (
@@ -179,7 +221,7 @@ try {
           ) invalid_blocks
         ) as invalid_block_count
     `,
-    [questionnaire.id, questionnaire.id, questionnaire.id],
+    [questionnaire.id, questionnaire.id, questionnaire.id, questionnaire.id],
   );
 
   const shape = shapeRows[0];
@@ -187,10 +229,11 @@ try {
   if (
     Number(shape.block_count) !== 5 ||
     Number(shape.question_count) !== 20 ||
+    Number(shape.option_count) !== 80 ||
     Number(shape.invalid_block_count) !== 0
   ) {
     throw new Error(
-      `Invalid questionnaire seed shape: blocks ${shape.block_count}, questions ${shape.question_count}, invalid blocks ${shape.invalid_block_count}`,
+      `Invalid questionnaire seed shape: blocks ${shape.block_count}, questions ${shape.question_count}, options ${shape.option_count}, invalid blocks ${shape.invalid_block_count}`,
     );
   }
 

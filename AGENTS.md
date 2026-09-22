@@ -2,12 +2,12 @@
 
 ## Objectiu del projecte
 
-Aquest repositori conté una aplicació de diagnosi anònima sobre l'ús educatiu de la intel·ligència artificial.
+Aquest repositori conté una aplicació de diagnosi pseudonimitzada sobre l'ús educatiu de la intel·ligència artificial.
 
 L'aplicació treballa amb centres identificats i espais de diagnosi associats. La
-prioritat tècnica principal és preservar l'anonimat del professorat participant
-i evitar que la identificació del centre o del responsable es barregi amb les
-respostes.
+prioritat tècnica principal és minimitzar les dades del professorat participant,
+protegir la vinculació pseudònima que permet recuperar els resultats propis i
+evitar que el centre o l'administració accedeixin a respostes individuals.
 
 Els creadors d'espais s'autentiquen amb Google OAuth, limitat a comptes
 `@xtec.cat`, només per crear i gestionar els espais propis. El professorat
@@ -23,20 +23,26 @@ local controlat per variables d'entorn.
   separats de les respostes.
 - El nom oficial del centre es pot mostrar a les pàgines, correus i informes
   vinculats exclusivament al seu espai.
-- No recollir noms, cognoms, correus electrònics, identificadors personals, IPs ni informació del dispositiu del professorat participant.
+- No recollir noms, cognoms, correus electrònics, IPs ni informació del dispositiu del professorat participant.
+- Es pot desar exclusivament l'identificador opac derivat del `sub` de Google
+  mitjançant HMAC, separat a `participant_submissions`; és una dada personal
+  pseudonimitzada i només serveix perquè el docent recuperi la seva participació.
 - No crear comptes d'usuari per al professorat participant.
 - No desar el correu del professorat: només es pot usar transitòriament per
-  validar el domini i derivar el bloqueig HMAC contra repeticions.
+  validar el domini durant el primer accés.
 - Els comptes OAuth de responsables només poden servir per propietat i gestio
   del centre i dels seus espais; no s'han de barrejar amb respostes individuals.
 - No afegir respostes obertes.
-- No mostrar ni exportar respostes individuals.
-- No crear endpoints que retornin files individuals de `submissions` o `answers`.
-- No permetre reconstruir el conjunt complet de respostes d'una mateixa persona des del tauler o el PDF.
+- Només el docent autenticat pot consultar i exportar la seva pròpia participació.
+- No crear endpoints administratius o de centre que retornin files individuals
+  de `submissions`, `answers` o `participant_submissions`.
+- No permetre que el centre o l'administració reconstrueixin el conjunt complet
+  de respostes d'una mateixa persona des del tauler o el PDF.
 - No donar accés directe del navegador a `diagnostic_spaces`, `submissions` ni `answers`.
 - No incloure tokens privats en logs, URLs amb query string, PDFs o respostes d'error.
 - Si cal recuperar un token compartit per al creador, s'ha de guardar xifrat amb una clau server-side i també com HMAC per validacio; mai en text pla.
-- Tots els resultats s'han de presentar sempre en conjunt.
+- Els resultats de centre, administració i enllaç privat es presenten sempre en
+  conjunt; l'àrea docent presenta exclusivament la participació pròpia.
 - No afegir filtres que puguin facilitar la identificacio indirecta de persones.
 - Un centre només pot tenir un espai. Els administradors amb correu no
   corresponent a un centre poden mantenir un espai de prova amb una fitxa
@@ -90,9 +96,9 @@ Abans de considerar una tasca finalitzada:
 - Executar el build.
 - Revisar el diff.
 - Comprovar que no s'han exposat secrets.
-- Comprovar que no s'han introduit dades identificatives.
-- Comprovar que les dades identificatives noves pertanyen exclusivament al
-  centre o al responsable i no es poden relacionar amb una resposta individual.
+- Comprovar que no s'han introduit noms, correus o metadades de dispositiu de participants.
+- Comprovar que l'identificador pseudònim només es relaciona amb la participació
+  pròpia i no és accessible al centre, l'administració o el navegador.
 
 Quan el projecte estigui implementat, les comandes previstes són:
 
@@ -112,8 +118,9 @@ En cada canvi comprova:
 - Poden identificar directament o indirectament un docent participant?
 - El navegador pot accedir a dades que haurien de quedar només en format de conjunt?
 - Hi ha validació equivalent al servidor?
-- Els resultats retornen només dades de conjunt?
-- Algun endpoint retorna files individuals de `submissions` o `answers`?
+- Els resultats de centre i administració retornen només dades de conjunt?
+- Algun endpoint de centre o administració retorna files individuals?
+- Les lectures individuals deriven la propietat exclusivament de la sessió?
 - Els informes PDF repeteixen la validació del token?
 - Els tests cobreixen codis, tokens, validació de respostes i càlculs de conjunt?
 

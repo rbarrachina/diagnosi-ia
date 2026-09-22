@@ -7,6 +7,8 @@ import {
 } from "@react-pdf/renderer";
 import { scaleColor } from "@/lib/questionnaire/scale";
 import type { AggregatedResults, DistributionBucket } from "@/lib/results/types";
+import { getReportCopy } from "@/lib/pdf/report-copy";
+import type { ReportCopy } from "@/lib/pdf/report-copy";
 
 const styles = StyleSheet.create({
   page: {
@@ -121,12 +123,12 @@ const styles = StyleSheet.create({
   },
 });
 
-function formatPercentage(value: number | null): string {
-  return value === null ? "Sense dades" : `${value.toFixed(1)}%`;
+function formatPercentage(value: number | null, copy: ReportCopy): string {
+  return value === null ? copy.noData : `${value.toFixed(1)}%`;
 }
 
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("ca-ES", {
+function formatDate(value: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
@@ -161,45 +163,48 @@ function DistributionBar({ distribution }: { distribution: DistributionBucket[] 
 }
 
 export function DiagnosticReportDocument({ results }: { results: AggregatedResults }) {
-  const scopeLabel = results.scopeLabel ?? results.publicCode;
+  const copy = getReportCopy(results.languageCode);
+  const scopeLabel = results.publicCode === "GLOBAL"
+    ? copy.allCentres
+    : results.scopeLabel ?? results.publicCode;
 
   return (
     <Document
       author="Diagnosi IA"
-      language="ca"
-      subject="Informe de conjunt de diagnosi anònima"
+      language={results.languageCode ?? "ca"}
+      subject={copy.aggregateSubject}
       title={`Diagnosi IA ${scopeLabel}`}
     >
       <Page size="A4" style={styles.page}>
         <Text style={styles.title}>Diagnosi IA</Text>
         <Text style={styles.subtitle}>
-          Informe de conjunt de diagnosi anònima generat el {formatDate(results.generatedAt)}
+          {copy.aggregateSubtitle} {formatDate(results.generatedAt, copy.locale)}
         </Text>
 
         <View style={styles.row}>
           <View style={styles.metric}>
             <Text style={styles.metricLabel}>
-              {results.scopeLabel ? "Àmbit" : "Codi anònim"}
+              {results.scopeLabel ? copy.scope : copy.spaceCode}
             </Text>
             <Text style={styles.metricValue}>{scopeLabel}</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricLabel}>Versió</Text>
+            <Text style={styles.metricLabel}>{copy.version}</Text>
             <Text style={styles.metricValue}>{results.questionnaireVersion}</Text>
           </View>
           {results.diagnosticSpaceCount !== undefined ? (
             <View style={styles.metric}>
-              <Text style={styles.metricLabel}>Centres</Text>
+              <Text style={styles.metricLabel}>{copy.centres}</Text>
               <Text style={styles.metricValue}>{results.diagnosticSpaceCount}</Text>
             </View>
           ) : null}
           <View style={styles.metric}>
-            <Text style={styles.metricLabel}>Respostes</Text>
+            <Text style={styles.metricLabel}>{copy.responses}</Text>
             <Text style={styles.metricValue}>{results.totalSubmissions}</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricLabel}>Percentatge global</Text>
-            <Text style={styles.metricValue}>{formatPercentage(results.globalAverage)}</Text>
+            <Text style={styles.metricLabel}>{copy.globalPercentage}</Text>
+            <Text style={styles.metricValue}>{formatPercentage(results.globalAverage, copy)}</Text>
           </View>
         </View>
 
@@ -207,27 +212,23 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
           <View style={styles.note}>
             <Text>
               {
-                "Poques respostes: interpreta els resultats amb prudència."
+                copy.lowResponses
               }
             </Text>
           </View>
         ) : null}
 
         <View style={styles.section}>
-          <Text style={styles.heading}>Escala</Text>
-          <Text style={styles.paragraph}>
-            {results.scale
-              .map((option) => `${option.value}: ${option.label}`)
-              .join(" · ")}
-          </Text>
+          <Text style={styles.heading}>{copy.scale}</Text>
+          <Text style={styles.paragraph}>{copy.scoreScale}</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.heading}>Resultat general per blocs</Text>
+          <Text style={styles.heading}>{copy.blockOverview}</Text>
           {results.blocks.map((block) => (
             <View key={block.position}>
               <Text style={styles.blockTitle}>
-                {block.position}. {block.title} · {formatPercentage(block.average)}
+                {block.position}. {block.title} · {formatPercentage(block.average, copy)}
               </Text>
               <View style={styles.barTrack}>
                 <View style={[styles.barFill, { width: barWidth(block.average) }]} />
@@ -237,12 +238,12 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.heading}>Interpretació</Text>
+          <Text style={styles.heading}>{copy.interpretation}</Text>
           <Text style={styles.paragraph}>{results.interpretation}</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.heading}>Fortaleses</Text>
+          <Text style={styles.heading}>{copy.strengths}</Text>
           {results.strengths.map((strength) => (
             <Text key={strength} style={styles.listItem}>
               - {strength}
@@ -251,7 +252,7 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.heading}>Àmbits amb marge de millora</Text>
+          <Text style={styles.heading}>{copy.improvements}</Text>
           {results.improvementAreas.map((area) => (
             <Text key={area} style={styles.listItem}>
               - {area}
@@ -262,7 +263,7 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
         <View style={styles.footer}>
           <Text>
             {
-              "Nota metodològica: aquest informe presenta resultats de conjunt d'un qüestionari anònim i tancat. No és una avaluació individual del professorat, no inclou dades personals, no mostra respostes individuals i no permet reconstruir el conjunt complet de respostes d'una mateixa persona."
+              copy.aggregatePrivacy
             }
           </Text>
         </View>
@@ -270,15 +271,15 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
 
         {results.blocks.map((block) => (
           <Page key={block.position} size="A4" style={styles.page}>
-            <Text style={styles.title}>Resultats del bloc</Text>
+            <Text style={styles.title}>{copy.blockResults}</Text>
             <Text style={styles.subtitle}>
               {block.position}. {block.title}
             </Text>
 
             <View style={styles.section}>
-              <Text style={styles.heading}>Percentatge del bloc</Text>
+              <Text style={styles.heading}>{copy.blockPercentage}</Text>
               <Text style={styles.blockTitle}>
-                {block.position}. {block.title} · {formatPercentage(block.average)}
+                {block.position}. {block.title} · {formatPercentage(block.average, copy)}
               </Text>
               <View style={styles.barTrack}>
                 <View style={[styles.barFill, { width: barWidth(block.average) }]} />
@@ -286,13 +287,13 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
             </View>
 
             <View style={styles.section}>
-              <Text style={styles.heading}>Resultats per pregunta</Text>
+              <Text style={styles.heading}>{copy.questionResults}</Text>
               {block.questions.map((question) => (
                 <View key={question.position} style={styles.question}>
                   <Text style={styles.questionText}>
                     {block.position}.{question.blockPosition}. {question.text}
                   </Text>
-                  <Text>Percentatge: {formatPercentage(question.average)}</Text>
+                  <Text>{copy.percentage}: {formatPercentage(question.average, copy)}</Text>
                   <DistributionBar distribution={question.distribution} />
                   <Text style={styles.legend}>
                     {question.distribution
@@ -309,7 +310,7 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
             <View style={styles.footer}>
               <Text>
                 {
-                  "Les dades d'aquest bloc es presenten en conjunt. L'informe no inclou respostes individuals ni permet avaluar cap docent."
+                  copy.blockPrivacy
                 }
               </Text>
             </View>

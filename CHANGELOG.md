@@ -6,8 +6,46 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Cada pregunta disposa ara de quatre textos de resposta administrables amb
+  puntuacions fixes `0–3`, opció d'ordre aleatori i colors neutres quan es
+  barregen.
+- El navegador envia l'identificador de l'opció seleccionada i el servidor en
+  deriva la puntuació; la migració conserva les opcions i respostes existents.
+- Cada versió fixa un idioma entre català, castellà, euskera, gallec i aranès;
+  els PDF usen aquest idioma i els resultats ordenen sempre les opcions de 0 a 3.
+
+- Converteix el selector d'idioma en una selecció funcional, persistent i
+  explícita, sense detecció de l'idioma del navegador, amb català de reserva i
+  catàlegs tipats separats per llengua.
+- Tradueix l'espai de creació i gestió dels centres reutilitzant les cadenes
+  comunes dels catàlegs d'idioma.
+- Completa els catàlegs d'euskera, gallec i aranès, elimina els blocs heretats
+  d'altres llengües i valida automàticament claus i placeholders; aquests tres
+  catàlegs resten pendents de revisió lingüística professional.
+
+### Added
+
+- Afegit el mode de prellançament administrable, tancat per defecte, que
+  bloqueja al servidor l'accés dels centres i del professorat i permet als
+  administradors actius provar l'espai de centre abans de l'obertura pública.
+- Afegida la vinculació pseudònima `participant_submissions`, l'àrea docent,
+  la recuperació de respostes i puntuacions pròpies i el PDF individual sota demanda.
+- Afegit l'accés docent per codi amb comprovació posterior a OAuth, errors
+  genèrics i limitació progressiva d'intents en memòria per a desenvolupament.
+
+### Security
+
+- El centre i l'administració continuen rebent exclusivament resultats agregats;
+  les consultes individuals deriven el propietari de la sessió i no accepten
+  identificadors de participant o submission del navegador.
+- La migració de canvi de model elimina les respostes i bloquejos de prova abans
+  de crear la vinculació pseudònima. Cal fer una còpia de seguretat abans d'aplicar-la.
+
 ### Fixed
 
+- Eliminat el `<script>` inline del layout que React 19 advertia que no
+  executaria durant la navegació client; les preferències visuals s'inicialitzen
+  ara des d'un component client compartit, fora de qualsevol etiqueta `script`.
 - Reforçada l’accessibilitat amb salt al contingut, focus visible, contrast de
   les accions, progrés programàtic i anuncis per als lectors de pantalla.
 - Corregits els rols dels desplegables informatius i afegida semàntica tabular
@@ -18,6 +56,12 @@ Semantic Versioning.
   compatible amb `admin_users.user_id` en consultar l'activitat dels centres.
 
 ### Changed
+
+- El comunicat al professorat inclou sempre l'enllaç directe i el codi del
+  qüestionari, també quan la plantilla administrativa omet alguna de les dues
+  marques.
+- El model deixa de presentar-se com a completament anònim: no desa el nom ni
+  el correu docent, però tracta l'identificador opac com a dada personal pseudonimitzada.
 
 - El comunicat només incorpora el nom del centre quan l’administració escriu
   explícitament la marca `{NOM_CENTRE}` al títol o al cos.

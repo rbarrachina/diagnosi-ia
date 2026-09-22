@@ -3,6 +3,7 @@ import "server-only";
 import { getLocalAuthUser, type AppAuthenticatedUser } from "@/lib/auth/local";
 import { getSessionCookieUser } from "@/lib/auth/session-cookie";
 import { isXtecEmail } from "@/lib/auth/xtec";
+import type { ResponsibleAccessReason } from "@/lib/auth/responsible-access";
 
 export type XtecSessionState =
   | { status: "authenticated"; user: AppAuthenticatedUser }
@@ -14,7 +15,7 @@ export type ResponsibleSessionState =
   | {
       status: "forbidden";
       email: string | null;
-      reason: "not_xtec" | "not_centre_xtec" | "suspended";
+      reason: ResponsibleAccessReason;
     }
   | { status: "unauthenticated" };
 
@@ -41,17 +42,16 @@ export async function getResponsibleSessionState(): Promise<ResponsibleSessionSt
     return { status: "forbidden", email: user.email, reason: "not_xtec" };
   }
 
-  const { canUseResponsibleAccess, isResponsibleCentreSuspended } = await import(
+  const { getResponsibleAccessDecision } = await import(
     "@/lib/auth/responsible-access"
   );
+  const decision = await getResponsibleAccessDecision(user);
 
-  if (await canUseResponsibleAccess(user)) {
+  if (decision.allowed) {
     return { status: "authenticated", user };
   }
 
-  return (await isResponsibleCentreSuspended(user.id))
-    ? { status: "forbidden", email: user.email, reason: "suspended" }
-    : { status: "forbidden", email: user.email, reason: "not_centre_xtec" };
+  return { status: "forbidden", email: user.email, reason: decision.reason };
 }
 
 export async function getRequiredXtecUser(): Promise<AppAuthenticatedUser> {
