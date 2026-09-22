@@ -4,6 +4,11 @@ import { useState } from "react";
 import { saveQuestionnaireContentAction } from "@/app/admin/actions";
 import type { AdminQuestionnaireDetail } from "@/lib/admin/types";
 import {
+  QUESTIONNAIRE_LANGUAGE_CODES,
+  QUESTIONNAIRE_LANGUAGE_LABELS,
+} from "@/lib/questionnaire/languages";
+import type { ScaleValue } from "@/lib/questionnaire/scale";
+import {
   MAX_QUESTION_BLOCKS,
   MAX_QUESTIONS_PER_BLOCK,
 } from "@/lib/validation/schemas";
@@ -11,6 +16,8 @@ import {
 type EditableQuestion = {
   id: string;
   text: string;
+  randomizeOptions: boolean;
+  options: { score: ScaleValue; text: string }[];
 };
 
 type EditableBlock = {
@@ -32,6 +39,8 @@ function defaultQuestion(): EditableQuestion {
   return {
     id: newId("question"),
     text: "",
+    randomizeOptions: false,
+    options: ([0, 1, 2, 3] as const).map((score) => ({ score, text: "" })),
   };
 }
 
@@ -48,6 +57,11 @@ function initialBlocks(detail: AdminQuestionnaireDetail): EditableBlock[] {
         .map((question) => ({
           id: question.id,
           text: question.text,
+          randomizeOptions: question.randomizeOptions,
+          options: question.options.map((option) => ({
+            score: option.score,
+            text: option.text,
+          })),
         })),
     }));
 }
@@ -63,6 +77,7 @@ export function QuestionnaireEditorForm({
 }) {
   const [title, setTitle] = useState(detail.title);
   const [estimatedMinutes, setEstimatedMinutes] = useState(detail.estimatedMinutes);
+  const [languageCode, setLanguageCode] = useState(detail.languageCode);
   const [blocks, setBlocks] = useState(() => initialBlocks(detail));
   const [hasAcceptedLockedEdit, setHasAcceptedLockedEdit] = useState(false);
   const isEditingLockedVersion = isLocked && hasAcceptedLockedEdit;
@@ -158,6 +173,54 @@ export function QuestionnaireEditorForm({
     );
   }
 
+  function updateQuestionRandomization(
+    blockIndex: number,
+    questionIndex: number,
+    randomizeOptions: boolean,
+  ) {
+    setBlocks((current) =>
+      current.map((block, index) =>
+        index === blockIndex
+          ? {
+              ...block,
+              questions: block.questions.map((question, currentQuestionIndex) =>
+                currentQuestionIndex === questionIndex
+                  ? { ...question, randomizeOptions }
+                  : question,
+              ),
+            }
+          : block,
+      ),
+    );
+  }
+
+  function updateOptionText(
+    blockIndex: number,
+    questionIndex: number,
+    score: ScaleValue,
+    text: string,
+  ) {
+    setBlocks((current) =>
+      current.map((block, index) =>
+        index === blockIndex
+          ? {
+              ...block,
+              questions: block.questions.map((question, currentQuestionIndex) =>
+                currentQuestionIndex === questionIndex
+                  ? {
+                      ...question,
+                      options: question.options.map((option) =>
+                        option.score === score ? { ...option, text } : option,
+                      ),
+                    }
+                  : question,
+              ),
+            }
+          : block,
+      ),
+    );
+  }
+
   return (
     <form action={saveQuestionnaireContentAction} className="mt-5 space-y-6">
       <input name="questionnaireId" type="hidden" value={detail.id} />
@@ -202,6 +265,27 @@ export function QuestionnaireEditorForm({
           required
           value={title}
         />
+      </label>
+      <label className="block text-sm font-medium text-muted">
+        Idioma del qüestionari i dels informes
+        <select
+          className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm disabled:bg-accent-soft sm:w-64"
+          disabled={isFormDisabled || hasResponses || detail.isActive}
+          name="languageCode"
+          onChange={(event) =>
+            setLanguageCode(event.target.value as typeof languageCode)
+          }
+          value={languageCode}
+        >
+          {QUESTIONNAIRE_LANGUAGE_CODES.map((code) => (
+            <option key={code} value={code}>
+              {QUESTIONNAIRE_LANGUAGE_LABELS[code]}
+            </option>
+          ))}
+        </select>
+        {(hasResponses || detail.isActive) && !isFormDisabled ? (
+          <input name="languageCode" type="hidden" value={languageCode} />
+        ) : null}
       </label>
       <label className="block text-sm font-medium text-muted">
         Minuts per respondre-la
@@ -280,6 +364,60 @@ export function QuestionnaireEditorForm({
                           value={question.text}
                         />
                       </label>
+                      <div className="grid gap-2 rounded-md border border-line bg-canvas/40 p-3 sm:grid-cols-2">
+                        {question.options
+                          .slice()
+                          .sort((a, b) => a.score - b.score)
+                          .map((option) => (
+                            <label
+                              className="block text-xs font-medium text-muted"
+                              key={option.score}
+                            >
+                              Resposta {option.score + 1} · {option.score} punts
+                              <input
+                                className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
+                                maxLength={300}
+                                name={`block-${blockPosition}-question-${questionPosition}-option-${option.score}`}
+                                onChange={(event) =>
+                                  updateOptionText(
+                                    blockIndex,
+                                    questionIndex,
+                                    option.score,
+                                    event.target.value,
+                                  )
+                                }
+                                required
+                                value={option.text}
+                              />
+                            </label>
+                          ))}
+                      </div>
+                      <label className="flex items-start gap-2 text-sm text-muted">
+                        <input
+                          checked={question.randomizeOptions}
+                          className="mt-0.5 h-4 w-4"
+                          disabled={!canChangeStructure}
+                          name={`block-${blockPosition}-question-${questionPosition}-randomize`}
+                          onChange={(event) =>
+                            updateQuestionRandomization(
+                              blockIndex,
+                              questionIndex,
+                              event.target.checked,
+                            )
+                          }
+                          type="checkbox"
+                          value="yes"
+                        />
+                        Mostra les respostes en un ordre aleatori i amb colors neutres
+                        per no revelar-ne la puntuació.
+                      </label>
+                      {question.randomizeOptions && !canChangeStructure ? (
+                        <input
+                          name={`block-${blockPosition}-question-${questionPosition}-randomize`}
+                          type="hidden"
+                          value="yes"
+                        />
+                      ) : null}
                       {canChangeStructure ? (
                         <div>
                           <button

@@ -232,7 +232,7 @@ function CentreDetail({
             action={resetAdminCentreResponsesAction}
             buttonLabel="Elimina les respostes"
             centreId={centre.id}
-            description="Elimina respostes i bloquejos anònims, però conserva l’espai, l’enllaç i la configuració."
+            description="Elimina respostes i vinculacions pseudònimes, però conserva l’espai, l’enllaç i la configuració."
             disabled={!centre.space || centre.totalSubmissions === 0}
             title="Reinicia les respostes"
           />

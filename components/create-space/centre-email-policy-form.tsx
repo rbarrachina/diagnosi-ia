@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import type { CentreEmailPolicy } from "@/lib/centres/types";
+import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 export function CentreEmailPolicyForm({
   initialPolicy,
   onSaved,
-  title = "Correus admesos",
+  title,
   embedded = false,
   headingId,
 }: {
@@ -16,6 +17,8 @@ export function CentreEmailPolicyForm({
   embedded?: boolean;
   headingId?: string;
 }) {
+  const messages = useTranslations();
+  const copy = messages.centre;
   const [domainType, setDomainType] = useState<"xtec" | "custom">(
     initialPolicy.customDomain ? "custom" : "xtec",
   );
@@ -40,11 +43,11 @@ export function CentreEmailPolicyForm({
       error?: string;
     };
     if (!response.ok || !payload.policy) {
-      setMessage(payload.error ?? "No s'ha pogut desar la configuració.");
+      setMessage(payload.error ?? copy.settingsSaveError);
       setSaving(false);
       return;
     }
-    setMessage("Configuració desada.");
+    setMessage(copy.settingsSaved);
     setSaving(false);
     onSaved?.(payload.policy);
   }
@@ -52,17 +55,15 @@ export function CentreEmailPolicyForm({
   return (
     <section className={embedded ? "text-left text-ink" : "mb-4 rounded-md border border-line bg-surface p-5 text-left shadow-sm"}>
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
-        Configuració d’accés
+        {copy.accessSettings}
       </p>
-      <h2 className={`mt-2 font-semibold tracking-[-0.025em] ${embedded ? "text-2xl text-ink sm:text-3xl" : "text-xl text-ink"}`} id={headingId}>{title}</h2>
+      <h2 className={`mt-2 font-semibold tracking-[-0.025em] ${embedded ? "text-2xl text-ink sm:text-3xl" : "text-xl text-ink"}`} id={headingId}>{title ?? copy.admittedEmails}</h2>
       <p className={`mt-3 max-w-2xl text-sm leading-6 ${embedded ? "text-muted sm:text-base" : "text-muted"}`}>
-        El professorat haurà d’iniciar sessió amb Google. No es desa el seu
-        correu ni es vincula a les respostes.
+        {copy.emailPrivacy}
       </p>
       {!initialPolicy.configured ? (
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-          Podràs modificar aquesta configuració més endavant des de l’espai de
-          gestió del centre.
+          {copy.emailLater}
         </p>
       ) : null}
 
@@ -79,32 +80,31 @@ export function CentreEmailPolicyForm({
           <strong className="text-sm leading-5 text-ink">@xtec.cat</strong>
         </span>
         <span className="mt-1 block pl-7 text-xs text-muted">
-          Opció recomanada i predeterminada.
+          {copy.recommended}
         </span>
       </label>
 
       <label className={`block border-t p-4 ${embedded ? "border-line" : "mt-3 rounded-md border border-line"}`}>
         <span className="flex items-center gap-3">
           <input
-            aria-label="Domini propi"
+            aria-label={copy.ownDomain}
             checked={domainType === "custom"}
             className="h-4 w-4 shrink-0"
             name="email-domain"
             onChange={() => setDomainType("custom")}
             type="radio"
           />
-          <strong className="text-sm leading-5 text-ink">Domini propi</strong>
+          <strong className="text-sm leading-5 text-ink">{copy.ownDomain}</strong>
         </span>
         <span className="mt-1 block pl-7 text-xs text-muted">
-          Ha de ser un domini gestionat amb Google Workspace. No s’admeten
-          automàticament els subdominis.
+          {copy.ownDomainHelp}
         </span>
         <span className="block pl-7">
           {domainType === "custom" ? (
             <span className={`mt-3 flex max-w-sm items-center rounded-xl border ${embedded ? "border-line bg-surface-soft" : "border-line bg-surface"}`}>
               <span className="border-r border-line bg-accent-soft px-3 py-2 text-muted">@</span>
               <input
-                aria-label="Domini propi"
+                aria-label={copy.ownDomain}
                 className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-ink outline-none"
                 onChange={(event) => setCustomDomain(event.target.value.toLowerCase())}
                 placeholder="escola.cat"
@@ -124,7 +124,7 @@ export function CentreEmailPolicyForm({
         onClick={save}
         type="button"
       >
-        {saving ? "Desant..." : "Desa i continua"}
+        {saving ? messages.common.saving : messages.common.saveAndContinue}
       </button>
     </section>
   );

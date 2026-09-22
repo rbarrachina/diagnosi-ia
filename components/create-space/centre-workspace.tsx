@@ -16,6 +16,7 @@ import {
 } from "@/components/create-space/create-space-form";
 import type { CentreProfile } from "@/lib/centres/types";
 import { useCentreSidebarState } from "@/components/create-space/use-centre-sidebar-state";
+import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 type CentreWorkspaceProps = CreateSpaceFormProps & {
   centre: CentreProfile | null;
@@ -30,6 +31,8 @@ export function CentreWorkspace({
   initialView = "questionnaire",
   ...createSpaceProps
 }: CentreWorkspaceProps) {
+  const messages = useTranslations();
+  const copy = messages.centre;
   const [view, setView] = useState<WorkspaceView>(initialView);
   const [navigationSpace, setNavigationSpace] = useState(
     createSpaceProps.existingSpace ?? null,
@@ -92,17 +95,16 @@ export function CentreWorkspace({
                 >
                   <div className="mb-7">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-action">
-                      Espai del centre
+                      {copy.area}
                     </p>
                     <h2
                       className="mt-3 text-2xl font-semibold tracking-[-0.025em] text-ink sm:text-3xl"
                       id="workspace-profile-heading"
                     >
-                      Fitxa del centre
+                      {copy.profile}
                     </h2>
                     <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
-                      Consulta les dades institucionals vinculades a aquest espai i
-                      actualitza-les des de les fonts oficials.
+                      {copy.profileIntro}
                     </p>
                   </div>
                   <CentreCard embedded hideHeading initialCentre={centre} />
@@ -119,7 +121,7 @@ export function CentreWorkspace({
                     headingId="workspace-settings-heading"
                     initialPolicy={emailPolicy}
                     onSaved={setEmailPolicy}
-                    title="Accés del professorat"
+                    title={copy.teacherAccess}
                   />
                 </section>
               ) : null}

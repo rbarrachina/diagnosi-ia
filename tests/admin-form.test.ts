@@ -5,6 +5,7 @@ function buildFormData() {
   formData.set("questionnaireId", "003");
   formData.set("title", "Diagnosi IA - Qüestionari 2026.3");
   formData.set("estimatedMinutes", "10");
+  formData.set("languageCode", "ca");
 
   for (let blockPosition = 1; blockPosition <= 5; blockPosition += 1) {
     formData.append("blockPosition", String(blockPosition));
@@ -19,6 +20,12 @@ function buildFormData() {
         `block-${blockPosition}-question-${questionPosition}`,
         `Pregunta ${blockPosition}.${questionPosition}`,
       );
+      for (let score = 0; score <= 3; score += 1) {
+        formData.set(
+          `block-${blockPosition}-question-${questionPosition}-option-${score}`,
+          `Opció ${score} de la pregunta ${blockPosition}.${questionPosition}`,
+        );
+      }
     }
   }
 
@@ -33,21 +40,22 @@ describe("admin questionnaire form parsing", () => {
       questionnaireId: "003",
       title: "Diagnosi IA - Qüestionari 2026.3",
       estimatedMinutes: 10,
+      languageCode: "ca",
       confirmAssignedEdit: false,
       blocks: expect.arrayContaining([
         expect.objectContaining({
           position: 1,
           title: "Bloc 1",
           questions: expect.arrayContaining([
-            { blockPosition: 1, text: "Pregunta 1.1" },
-            { blockPosition: 4, text: "Pregunta 1.4" },
+            expect.objectContaining({ blockPosition: 1, text: "Pregunta 1.1" }),
+            expect.objectContaining({ blockPosition: 4, text: "Pregunta 1.4" }),
           ]),
         }),
         expect.objectContaining({
           position: 5,
           title: "Bloc 5",
           questions: expect.arrayContaining([
-            { blockPosition: 4, text: "Pregunta 5.4" },
+            expect.objectContaining({ blockPosition: 4, text: "Pregunta 5.4" }),
           ]),
         }),
       ]),

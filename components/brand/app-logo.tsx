@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 type AppLogoLinkProps = {
   href: string;
@@ -11,9 +14,10 @@ export function AppLogoLink({
   openInNewTab = false,
   showLabelOnMobile = false,
 }: AppLogoLinkProps) {
+  const messages = useTranslations();
   return (
     <Link
-      aria-label="Torna a l’inici de Diagnosi IA"
+      aria-label={messages.common.backHome}
       className="group inline-flex items-center gap-3 font-semibold tracking-[-0.02em]"
       href={href}
       rel={openInNewTab ? "noreferrer" : undefined}

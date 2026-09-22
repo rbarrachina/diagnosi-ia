@@ -10,6 +10,8 @@ import type {
   AdminQuestionnaireSummary,
   AdminQuestionSummary,
 } from "@/lib/admin/types";
+import type { QuestionnaireLanguageCode } from "@/lib/questionnaire/languages";
+import type { ScaleValue } from "@/lib/questionnaire/scale";
 import { mysqlPool } from "@/lib/db/client";
 import {
   activateQuestionnaireVersionInputSchema,
@@ -26,6 +28,7 @@ import {
   type CreateQuestionnaireVersionInput,
   type DeleteQuestionnaireVersionInput,
   type ReplaceQuestionnaireContentInput,
+  type ReplaceQuestionnaireContentPayload,
 } from "@/lib/validation/schemas";
 
 type QuestionnaireRow = RowDataPacket & {
@@ -33,6 +36,7 @@ type QuestionnaireRow = RowDataPacket & {
   version: string;
   title: string;
   estimated_minutes: number;
+  language_code: QuestionnaireLanguageCode;
   is_active: number | boolean;
   created_at: string | Date;
 };
@@ -48,6 +52,14 @@ type QuestionRow = RowDataPacket & {
   block_id: string;
   position: number;
   block_position: number;
+  text: string;
+  randomize_options: number | boolean;
+};
+
+type OptionRow = RowDataPacket & {
+  id: string;
+  question_id: string;
+  score: number;
   text: string;
 };
 
@@ -118,6 +130,7 @@ async function buildSummary(row: QuestionnaireRow): Promise<AdminQuestionnaireSu
     version: row.version,
     title: row.title,
     estimatedMinutes: Number(row.estimated_minutes),
+    languageCode: row.language_code,
     isActive: toBoolean(row.is_active),
     createdAt: formatDateTime(row.created_at),
     diagnosticSpaceCount,
@@ -127,8 +140,23 @@ async function buildSummary(row: QuestionnaireRow): Promise<AdminQuestionnaireSu
   };
 }
 
-function mapBlocks(blocks: BlockRow[], questions: QuestionRow[]): AdminQuestionBlockSummary[] {
+function mapBlocks(
+  blocks: BlockRow[],
+  questions: QuestionRow[],
+  options: OptionRow[],
+): AdminQuestionBlockSummary[] {
   const questionsByBlock = new Map<string, AdminQuestionSummary[]>();
+  const optionsByQuestion = new Map<string, AdminQuestionSummary["options"]>();
+
+  for (const option of options) {
+    const questionOptions = optionsByQuestion.get(option.question_id) ?? [];
+    questionOptions.push({
+      id: option.id,
+      score: option.score as ScaleValue,
+      text: option.text,
+    });
+    optionsByQuestion.set(option.question_id, questionOptions);
+  }
 
   for (const question of questions) {
     const blockQuestions = questionsByBlock.get(question.block_id) ?? [];
@@ -137,6 +165,10 @@ function mapBlocks(blocks: BlockRow[], questions: QuestionRow[]): AdminQuestionB
       position: question.position,
       blockPosition: question.block_position,
       text: question.text,
+      randomizeOptions: toBoolean(question.randomize_options),
+      options: (optionsByQuestion.get(question.id) ?? []).sort(
+        (a, b) => a.score - b.score,
+      ),
     });
     questionsByBlock.set(question.block_id, blockQuestions);
   }
@@ -154,7 +186,7 @@ function mapBlocks(blocks: BlockRow[], questions: QuestionRow[]): AdminQuestionB
 export async function listQuestionnaireVersions(): Promise<AdminQuestionnaireSummary[]> {
   const [rows] = await mysqlPool.execute<QuestionnaireRow[]>(
     `
-      select id, version, title, estimated_minutes, is_active, created_at
+      select id, version, title, estimated_minutes, language_code, is_active, created_at
       from questionnaires
       order by created_at desc
     `,
@@ -169,7 +201,7 @@ export async function getQuestionnaireVersionDetail(
   const parsedQuestionnaireId = questionnaireIdSchema.parse(questionnaireId);
   const [questionnaireRows] = await mysqlPool.execute<QuestionnaireRow[]>(
     `
-      select id, version, title, estimated_minutes, is_active, created_at
+      select id, version, title, estimated_minutes, language_code, is_active, created_at
       from questionnaires
       where id = ?
       limit 1
@@ -186,6 +218,7 @@ export async function getQuestionnaireVersionDetail(
     summary,
     [blocks],
     [questions],
+    [options],
   ] = await Promise.all([
     buildSummary(questionnaire),
     mysqlPool.execute<BlockRow[]>(
@@ -199,10 +232,19 @@ export async function getQuestionnaireVersionDetail(
     ),
     mysqlPool.execute<QuestionRow[]>(
       `
-        select id, block_id, position, block_position, text
+        select id, block_id, position, block_position, text, randomize_options
         from questions
         where questionnaire_id = ?
         order by position asc
+      `,
+      [parsedQuestionnaireId],
+    ),
+    mysqlPool.execute<OptionRow[]>(
+      `
+        select id, question_id, score, text
+        from question_options
+        where questionnaire_id = ?
+        order by question_id asc, score asc
       `,
       [parsedQuestionnaireId],
     ),
@@ -210,7 +252,7 @@ export async function getQuestionnaireVersionDetail(
 
   return {
     ...summary,
-    blocks: mapBlocks(blocks, questions),
+    blocks: mapBlocks(blocks, questions, options),
   };
 }
 
@@ -233,14 +275,15 @@ export async function createQuestionnaireDraft(
 
     await connection.execute<ResultSetHeader>(
       `
-        insert into questionnaires (id, version, title, estimated_minutes, is_active)
-        values (?, ?, ?, ?, false)
+        insert into questionnaires (id, version, title, estimated_minutes, language_code, is_active)
+        values (?, ?, ?, ?, ?, false)
       `,
       [
         questionnaireId,
         payload.version,
         payload.title.trim(),
         payload.estimatedMinutes,
+        payload.languageCode,
       ],
     );
 
@@ -267,6 +310,7 @@ export async function copyQuestionnaireVersion(
     version: payload.newVersion,
     title: payload.newTitle,
     estimatedMinutes: payload.estimatedMinutes,
+    languageCode: payload.languageCode,
   });
 }
 
@@ -280,6 +324,7 @@ export async function createQuestionnaireVersion(
       version: payload.version,
       title: payload.title,
       estimatedMinutes: payload.estimatedMinutes,
+      languageCode: payload.languageCode,
     });
   }
 
@@ -288,6 +333,7 @@ export async function createQuestionnaireVersion(
     version: payload.version,
     title: payload.title,
     estimatedMinutes: payload.estimatedMinutes,
+    languageCode: payload.languageCode,
   });
 }
 
@@ -442,6 +488,7 @@ async function copyQuestionnaireVersionInternal(input: {
   version: string;
   title: string;
   estimatedMinutes: number;
+  languageCode: QuestionnaireLanguageCode;
 }): Promise<AdminQuestionnaireMutationResult> {
   const connection = await mysqlPool.getConnection();
   let hasLock = false;
@@ -459,10 +506,16 @@ async function copyQuestionnaireVersionInternal(input: {
 
     await connection.execute<ResultSetHeader>(
       `
-        insert into questionnaires (id, version, title, estimated_minutes, is_active)
-        values (?, ?, ?, ?, false)
+        insert into questionnaires (id, version, title, estimated_minutes, language_code, is_active)
+        values (?, ?, ?, ?, ?, false)
       `,
-      [questionnaireId, input.version, input.title.trim(), input.estimatedMinutes],
+      [
+        questionnaireId,
+        input.version,
+        input.title.trim(),
+        input.estimatedMinutes,
+        input.languageCode,
+      ],
     );
 
     const [blocks] = await connection.execute<BlockRow[]>(
@@ -476,10 +529,19 @@ async function copyQuestionnaireVersionInternal(input: {
     );
     const [questions] = await connection.execute<QuestionRow[]>(
       `
-        select id, block_id, position, block_position, text
+        select id, block_id, position, block_position, text, randomize_options
         from questions
         where questionnaire_id = ?
         order by position asc
+      `,
+      [input.sourceQuestionnaireId],
+    );
+    const [options] = await connection.execute<OptionRow[]>(
+      `
+        select id, question_id, score, text
+        from question_options
+        where questionnaire_id = ?
+        order by question_id asc, score asc
       `,
       [input.sourceQuestionnaireId],
     );
@@ -495,6 +557,7 @@ async function copyQuestionnaireVersionInternal(input: {
     }
 
     for (const question of questions) {
+      const newQuestionId = randomUUID();
       await connection.execute<ResultSetHeader>(
         `
           insert into questions (
@@ -505,19 +568,32 @@ async function copyQuestionnaireVersionInternal(input: {
             block_position,
             text,
             scale_min,
-            scale_max
+            scale_max,
+            randomize_options
           )
-          values (?, ?, ?, ?, ?, ?, 0, 3)
+          values (?, ?, ?, ?, ?, ?, 0, 3, ?)
         `,
         [
-          randomUUID(),
+          newQuestionId,
           questionnaireId,
           question.block_id,
           question.position,
           question.block_position,
           question.text,
+          toBoolean(question.randomize_options),
         ],
       );
+
+      for (const option of options.filter((item) => item.question_id === question.id)) {
+        await connection.execute<ResultSetHeader>(
+          `
+            insert into question_options
+              (id, questionnaire_id, question_id, score, text)
+            values (?, ?, ?, ?, ?)
+          `,
+          [randomUUID(), questionnaireId, newQuestionId, option.score, option.text],
+        );
+      }
     }
 
     const result = await getQuestionnaireMutationResult(connection, questionnaireId);
@@ -616,7 +692,7 @@ async function getQuestionnaireRowForUpdate(
 ): Promise<QuestionnaireRow> {
   const [rows] = await connection.execute<QuestionnaireRow[]>(
     `
-      select id, version, title, estimated_minutes, is_active, created_at
+      select id, version, title, estimated_minutes, language_code, is_active, created_at
       from questionnaires
       where id = ?
       limit 1
@@ -639,7 +715,7 @@ async function getQuestionnaireMutationResult(
 ): Promise<AdminQuestionnaireMutationResult> {
   const [rows] = await connection.execute<QuestionnaireRow[]>(
     `
-      select id, version, title, estimated_minutes, is_active, created_at
+      select id, version, title, estimated_minutes, language_code, is_active, created_at
       from questionnaires
       where id = ?
       limit 1
@@ -657,6 +733,7 @@ async function getQuestionnaireMutationResult(
     version: questionnaire.version,
     title: questionnaire.title,
     estimatedMinutes: Number(questionnaire.estimated_minutes),
+    languageCode: questionnaire.language_code,
     isActive: toBoolean(questionnaire.is_active),
   };
 }
@@ -680,13 +757,14 @@ async function countRowsForConnection(
 
 async function replaceStructuralContent(
   connection: PoolConnection,
-  payload: ReplaceQuestionnaireContentInput,
+  payload: ReplaceQuestionnaireContentPayload,
 ): Promise<void> {
   await connection.execute<ResultSetHeader>(
-    "update questionnaires set title = ?, estimated_minutes = ? where id = ?",
+    "update questionnaires set title = ?, estimated_minutes = ?, language_code = ? where id = ?",
     [
       payload.title.trim(),
       payload.estimatedMinutes,
+      payload.languageCode,
       payload.questionnaireId,
     ],
   );
@@ -710,6 +788,7 @@ async function replaceStructuralContent(
     );
 
     for (const question of sortQuestions(block.questions)) {
+      const questionId = randomUUID();
       await connection.execute<ResultSetHeader>(
         `
           insert into questions (
@@ -720,28 +799,57 @@ async function replaceStructuralContent(
             block_position,
             text,
             scale_min,
-            scale_max
+            scale_max,
+            randomize_options
           )
-          values (?, ?, ?, ?, ?, ?, 0, 3)
+          values (?, ?, ?, ?, ?, ?, 0, 3, ?)
         `,
         [
-          randomUUID(),
+          questionId,
           payload.questionnaireId,
           blockId,
           getQuestionPosition(block.position, question.blockPosition),
           question.blockPosition,
           question.text.trim(),
+          question.randomizeOptions,
         ],
       );
+
+      for (const option of question.options.slice().sort((a, b) => a.score - b.score)) {
+        await connection.execute<ResultSetHeader>(
+          `
+            insert into question_options
+              (id, questionnaire_id, question_id, score, text)
+            values (?, ?, ?, ?, ?)
+          `,
+          [
+            randomUUID(),
+            payload.questionnaireId,
+            questionId,
+            option.score,
+            option.text.trim(),
+          ],
+        );
+      }
     }
   }
 }
 
 async function updateTextOnlyContent(
   connection: PoolConnection,
-  payload: ReplaceQuestionnaireContentInput,
+  payload: ReplaceQuestionnaireContentPayload,
 ): Promise<void> {
   await assertStructureMatchesExisting(connection, payload);
+  const questionnaire = await getQuestionnaireRowForUpdate(
+    connection,
+    payload.questionnaireId,
+  );
+
+  if (questionnaire.language_code !== payload.languageCode) {
+    throw new AdminQuestionnaireOperationError(
+      "Questionnaire language cannot be changed after responses or activation",
+    );
+  }
   await connection.execute<ResultSetHeader>(
     "update questionnaires set title = ?, estimated_minutes = ? where id = ?",
     [
@@ -781,13 +889,39 @@ async function updateTextOnlyContent(
           question.blockPosition,
         ],
       );
+
+      for (const option of question.options) {
+        await connection.execute<ResultSetHeader>(
+          `
+            update question_options
+            inner join questions
+              on questions.id = question_options.question_id
+             and questions.questionnaire_id = question_options.questionnaire_id
+            inner join question_blocks
+              on question_blocks.id = questions.block_id
+             and question_blocks.questionnaire_id = questions.questionnaire_id
+            set question_options.text = ?
+            where question_options.questionnaire_id = ?
+              and question_blocks.position = ?
+              and questions.block_position = ?
+              and question_options.score = ?
+          `,
+          [
+            option.text.trim(),
+            payload.questionnaireId,
+            block.position,
+            question.blockPosition,
+            option.score,
+          ],
+        );
+      }
     }
   }
 }
 
 async function assertStructureMatchesExisting(
   connection: PoolConnection,
-  payload: ReplaceQuestionnaireContentInput,
+  payload: ReplaceQuestionnaireContentPayload,
 ): Promise<void> {
   const [blocks] = await connection.execute<BlockRow[]>(
     `
@@ -800,7 +934,7 @@ async function assertStructureMatchesExisting(
   );
   const [questions] = await connection.execute<QuestionRow[]>(
     `
-      select questions.id, questions.block_id, questions.position, questions.block_position, questions.text
+      select questions.id, questions.block_id, questions.position, questions.block_position, questions.text, questions.randomize_options
       from questions
       join question_blocks
         on question_blocks.questionnaire_id = questions.questionnaire_id
@@ -840,6 +974,30 @@ async function assertStructureMatchesExisting(
       "Questionnaire structure cannot be changed after responses or activation",
     );
   }
+
+  const existingRandomizationByPosition = new Map(
+    questions.map((question) => {
+      const blockPosition = blockPositionById.get(question.block_id);
+      return [
+        `${blockPosition}:${question.block_position}`,
+        toBoolean(question.randomize_options),
+      ];
+    }),
+  );
+
+  for (const block of payload.blocks) {
+    for (const question of block.questions) {
+      if (
+        existingRandomizationByPosition.get(
+          `${block.position}:${question.blockPosition}`,
+        ) !== question.randomizeOptions
+      ) {
+        throw new AdminQuestionnaireOperationError(
+          "Answer randomization cannot be changed after responses or activation",
+        );
+      }
+    }
+  }
 }
 
 async function assertQuestionnaireCanBeActivated(
@@ -852,33 +1010,38 @@ async function assertQuestionnaireCanBeActivated(
     questionnaireId,
   );
   const questionCount = await countRowsForConnection(connection, "questions", questionnaireId);
-  const [invalidBlockRows] = await connection.execute<CountRow[]>(
+  const [invalidQuestionRows] = await connection.execute<CountRow[]>(
     `
       select count(*) as row_count
-      from (
-        select question_blocks.id
-        from question_blocks
-        left join questions
-          on questions.questionnaire_id = question_blocks.questionnaire_id
-         and questions.block_id = question_blocks.id
-         and questions.scale_min = 0
-         and questions.scale_max = 3
-        where question_blocks.questionnaire_id = ?
-        group by question_blocks.id
-        having count(questions.id) < 1
-           or count(questions.id) > 10
-      ) invalid_blocks
+      from questions
+      where questions.questionnaire_id = ?
+        and (
+          questions.scale_min <> 0
+          or questions.scale_max <> 3
+          or (
+            select count(*)
+            from question_options
+            where question_options.questionnaire_id = questions.questionnaire_id
+              and question_options.question_id = questions.id
+          ) <> 4
+          or (
+            select count(distinct question_options.score)
+            from question_options
+            where question_options.questionnaire_id = questions.questionnaire_id
+              and question_options.question_id = questions.id
+          ) <> 4
+        )
     `,
     [questionnaireId],
   );
-  const invalidBlockCount = Number(invalidBlockRows[0]?.row_count ?? 0);
+  const invalidQuestionCount = Number(invalidQuestionRows[0]?.row_count ?? 0);
 
   if (
     blockCount < 1 ||
     blockCount > 10 ||
     questionCount < blockCount ||
     questionCount > 100 ||
-    invalidBlockCount !== 0
+    invalidQuestionCount !== 0
   ) {
     throw new AdminQuestionnaireOperationError(
       "Questionnaire version is not complete",

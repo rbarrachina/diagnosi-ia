@@ -20,6 +20,7 @@ import {
   deleteAdminUserAction,
   deletePendingAdminEmailInvitationAction,
   setResponsibleAccessModeAction,
+  setResponsiblePortalStatusAction,
   setAdminUserActiveAction,
 } from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/app/admin/activation-button";
@@ -33,7 +34,9 @@ import { getAdminSessionState } from "@/lib/admin/auth";
 import {
   getAdminResultsMinimumSubmissions,
   getResponsibleAccessMode,
+  getResponsiblePortalStatus,
   type ResponsibleAccessMode,
+  type ResponsiblePortalStatus,
 } from "@/lib/auth/responsible-access";
 import { getCommunicationTemplate } from "@/lib/admin/communication-settings";
 import { getLanguageSettings } from "@/lib/admin/language-settings";
@@ -44,6 +47,7 @@ import {
 } from "@/lib/admin/centre-management";
 import { getAdminSummary } from "@/lib/admin/summary";
 import {
+  QUESTIONNAIRE_CODE_PLACEHOLDER,
   QUESTIONNAIRE_URL_PLACEHOLDER,
   type CommunicationTemplate,
 } from "@/lib/communication/email-template";
@@ -71,6 +75,10 @@ import {
   questionnaireIdSchema,
   type AdminResultsScopeInput,
 } from "@/lib/validation/schemas";
+import {
+  QUESTIONNAIRE_LANGUAGE_CODES,
+  QUESTIONNAIRE_LANGUAGE_LABELS,
+} from "@/lib/questionnaire/languages";
 
 export const dynamic = "force-dynamic";
 
@@ -107,6 +115,8 @@ const statusMessages: Record<string, string> = {
   deleted: "Qüestionari eliminat.",
   saved: "Contingut desat.",
   "settings-saved": "Configuració desada.",
+  "portal-closed": "Servei tancat en mode de prellançament.",
+  "portal-opened": "Servei obert.",
 };
 
 const errorMessages: Record<string, string> = {
@@ -152,11 +162,16 @@ function getAdminSection(params: { error?: string; section?: string; status?: st
     params.status === "admin-added" ||
     params.status === "admin-updated" ||
     params.status === "settings-saved" ||
+    params.status === "portal-closed" ||
+    params.status === "portal-opened" ||
     params.error === "admin-add" ||
     params.error === "admin-update" ||
     params.error === "settings"
   ) {
-    return params.status === "settings-saved" || params.error === "settings"
+    return params.status === "settings-saved" ||
+      params.status === "portal-closed" ||
+      params.status === "portal-opened" ||
+      params.error === "settings"
       ? "settings"
       : "admins";
   }
@@ -474,6 +489,21 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
           />
         </label>
         <label className="block text-sm font-medium text-muted">
+          Idioma del qüestionari i dels informes
+          <select
+            className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm"
+            defaultValue="ca"
+            name="languageCode"
+            required
+          >
+            {QUESTIONNAIRE_LANGUAGE_CODES.map((code) => (
+              <option key={code} value={code}>
+                {QUESTIONNAIRE_LANGUAGE_LABELS[code]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block text-sm font-medium text-muted">
           Punt de partida
           <select
             className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm"
@@ -529,7 +559,12 @@ function QuestionnaireEditor({
     detail.blocks.every(
       (block) =>
         block.questions.length >= 1 &&
-        block.questions.length <= MAX_QUESTIONS_PER_BLOCK,
+        block.questions.length <= MAX_QUESTIONS_PER_BLOCK &&
+        block.questions.every(
+          (question) =>
+            question.options.length === 4 &&
+            question.options.every((option) => option.text.trim().length > 0),
+        ),
     );
 
   return (
@@ -870,14 +905,63 @@ function SettingsPanel({
   languageSettings,
   minimumResponseCount,
   responsibleAccessMode,
+  responsiblePortalStatus,
 }: {
   communicationTemplate: CommunicationTemplate;
   languageSettings: LanguageSettings;
   minimumResponseCount: number;
   responsibleAccessMode: ResponsibleAccessMode;
+  responsiblePortalStatus: ResponsiblePortalStatus;
 }) {
   return (
     <section aria-label="Configuració">
+      <div className="mb-10 rounded-2xl border border-line bg-surface p-6">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
+              Disponibilitat del servei
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-ink">
+              {responsiblePortalStatus === "open"
+                ? "Servei obert"
+                : "Mode de prellançament"}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted">
+              {responsiblePortalStatus === "open"
+                ? "Els centres i el professorat poden accedir al servei."
+                : "Els centres i el professorat no poden iniciar sessió ni utilitzar el servei. L’administració continua disponible."}
+            </p>
+            {responsiblePortalStatus === "closed" ? (
+              <Link className="mt-3 inline-flex text-sm font-semibold text-action" href="/crear">
+                Prova l’accés com a administrador
+              </Link>
+            ) : null}
+          </div>
+          <form action={setResponsiblePortalStatusAction}>
+            <input
+              name="responsiblePortalStatus"
+              type="hidden"
+              value={responsiblePortalStatus === "open" ? "closed" : "open"}
+            />
+            <ConfirmSubmitButton
+              className={
+                responsiblePortalStatus === "open"
+                  ? "rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
+                  : "rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover"
+              }
+              message={
+                responsiblePortalStatus === "open"
+                  ? "Vols tancar ara el servei? Les sessions de centre i docents quedaran bloquejades en la propera petició."
+                  : "Vols obrir ara el servei? Els centres i el professorat hi podran accedir immediatament."
+              }
+            >
+              {responsiblePortalStatus === "open"
+                ? "Tanca el servei"
+                : "Obre el servei"}
+            </ConfirmSubmitButton>
+          </form>
+        </div>
+      </div>
       <form action={setResponsibleAccessModeAction}>
         <fieldset className="border-b border-line pb-10">
           <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
@@ -1007,8 +1091,9 @@ function SettingsPanel({
                 })}
               </div>
               <p className="mt-3 text-xs leading-5 text-muted">
-                El català és obligatori perquè ara és l’únic idioma funcional.
-                La resta d’opcions preparen el selector per a traduccions futures.
+                El català és l’idioma base i de reserva. Les llengües visibles
+                es poden seleccionar a la web i la preferència es conserva al
+                navegador sense detectar-ne l’idioma.
               </p>
             </div>
           </div>
@@ -1019,9 +1104,10 @@ function SettingsPanel({
           </legend>
           <div className="mt-4 max-w-4xl space-y-4 pl-4 text-sm text-muted">
             <p className="text-xs leading-5 text-muted">
-              Pots usar <code>{"{NOM_CENTRE}"}</code> al títol o al cos i{" "}
-              <code>{"{URL_QUESTIONARI}"}</code> al cos. El nom del centre només
-              apareixerà on hagis escrit la marca corresponent.
+              Pots usar <code>{"{NOM_CENTRE}"}</code> al títol o al cos,{" "}
+              <code>{QUESTIONNAIRE_URL_PLACEHOLDER}</code> per a l’enllaç i{" "}
+              <code>{QUESTIONNAIRE_CODE_PLACEHOLDER}</code> per al codi. El nom
+              del centre només apareixerà on hagis escrit la marca corresponent.
             </p>
             <label className="block">
               <span className="font-semibold text-ink">Títol del correu</span>
@@ -1046,8 +1132,10 @@ function SettingsPanel({
             </label>
             <p className="text-xs leading-5 text-muted">
               La marca <code>{QUESTIONNAIRE_URL_PLACEHOLDER}</code> se substituirà
-              automàticament per l&apos;enllaç públic específic de cada espai. Si
-              no hi és, l&apos;aplicació afegirà l&apos;enllaç al final del missatge.
+              per l&apos;enllaç públic i{" "}
+              <code>{QUESTIONNAIRE_CODE_PLACEHOLDER}</code> pel codi de cada
+              espai. Si falta alguna de les dues marques, l&apos;aplicació afegirà
+              igualment la dada corresponent al final del missatge.
             </p>
           </div>
         </fieldset>
@@ -1102,6 +1190,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     admins,
     adminInvitations,
     responsibleAccessMode,
+    responsiblePortalStatus,
     minimumResponseCount,
     communicationTemplate,
     languageSettings,
@@ -1115,6 +1204,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     activeSection === "settings"
       ? getResponsibleAccessMode()
       : Promise.resolve<ResponsibleAccessMode>("all_xtec"),
+    activeSection === "settings"
+      ? getResponsiblePortalStatus()
+      : Promise.resolve<ResponsiblePortalStatus>("closed"),
     activeSection === "settings" ||
     activeSection === "results" ||
     activeSection === "centres" ||
@@ -1316,6 +1408,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             languageSettings={languageSettings}
             minimumResponseCount={minimumResponseCount}
             responsibleAccessMode={responsibleAccessMode}
+            responsiblePortalStatus={responsiblePortalStatus}
           />
         )}
         </section>

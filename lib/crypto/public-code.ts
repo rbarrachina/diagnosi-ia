@@ -1,8 +1,10 @@
 import { randomInt } from "node:crypto";
+import {
+  PUBLIC_CODE_ALPHABET,
+  PUBLIC_CODE_PATTERN,
+} from "@/lib/validation/public-code";
 
-export const PUBLIC_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-export const PUBLIC_CODE_PATTERN =
-  /^C-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}$/;
+export { PUBLIC_CODE_ALPHABET, PUBLIC_CODE_PATTERN };
 
 export function generatePublicCode(): string {
   const chars = Array.from({ length: 8 }, () =>

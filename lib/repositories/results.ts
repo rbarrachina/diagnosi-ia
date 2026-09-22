@@ -12,6 +12,7 @@ import type {
   QuestionDefinition,
   ScaleValue,
 } from "@/lib/results/types";
+import type { QuestionnaireLanguageCode } from "@/lib/questionnaire/languages";
 import {
   adminResultsRequestSchema,
   type AdminResultsRequestInput,
@@ -34,12 +35,14 @@ type SpaceRow = RowDataPacket & {
   is_active: number | boolean;
   questionnaire_id: string;
   questionnaire_version: string;
+  language_code: QuestionnaireLanguageCode;
   centre_name: string;
 };
 
 type QuestionnaireRow = RowDataPacket & {
   id: string;
   version: string;
+  language_code: QuestionnaireLanguageCode;
 };
 
 type AdminResultsCentreRow = RowDataPacket & {
@@ -58,6 +61,12 @@ type QuestionRow = RowDataPacket & {
   block_id: string;
   position: number;
   block_position: number;
+  text: string;
+};
+
+type QuestionOptionRow = RowDataPacket & {
+  question_id: string;
+  score: number;
   text: string;
 };
 
@@ -138,6 +147,7 @@ async function loadSpaceByPublicCode(publicCode: string): Promise<SpaceRow> {
         diagnostic_spaces.is_active,
         questionnaires.id as questionnaire_id,
         questionnaires.version as questionnaire_version
+        , questionnaires.language_code
         , coalesce(
             centres.official_name,
             centre_accounts.display_name,
@@ -182,6 +192,7 @@ async function loadOwnerSpace(
         diagnostic_spaces.is_active,
         questionnaires.id as questionnaire_id,
         questionnaires.version as questionnaire_version
+        , questionnaires.language_code
         , coalesce(
             centres.official_name,
             centre_accounts.display_name,
@@ -215,7 +226,7 @@ async function loadOwnerSpace(
 async function loadQuestionnaireById(questionnaireId: string): Promise<QuestionnaireRow> {
   const [rows] = await mysqlPool.execute<QuestionnaireRow[]>(
     `
-      select id, version
+      select id, version, language_code
       from questionnaires
       where id = ?
       limit 1
@@ -265,6 +276,7 @@ async function getAggregatedResultsForSpace(space: SpaceRow) {
   const [
     [blocks],
     [questions],
+    [options],
     [submissionCounts],
     [answerCounts],
   ] = await Promise.all([
@@ -283,6 +295,15 @@ async function getAggregatedResultsForSpace(space: SpaceRow) {
         from questions
         where questionnaire_id = ?
         order by position asc
+      `,
+      [space.questionnaire_id],
+    ),
+    mysqlPool.execute<QuestionOptionRow[]>(
+      `
+        select question_id, score, text
+        from question_options
+        where questionnaire_id = ?
+        order by question_id asc, score asc
       `,
       [space.questionnaire_id],
     ),
@@ -318,10 +339,11 @@ async function getAggregatedResultsForSpace(space: SpaceRow) {
     publicCode: space.public_code,
     scopeLabel: space.centre_name,
     questionnaireVersion: space.questionnaire_version,
+    languageCode: space.language_code,
     generatedAt: new Date().toISOString(),
     totalSubmissions: Number(submissionCounts[0]?.submission_count ?? 0),
     blocks: mapBlocks(blocks),
-    questions: mapQuestions(questions),
+    questions: mapQuestions(questions, options),
     answerCounts: mapAnswerCounts(answerCounts),
   });
 }
@@ -338,6 +360,7 @@ async function getAggregatedResultsForQuestionnaire(
   const [
     [blocks],
     [questions],
+    [options],
     [diagnosticSpaceCounts],
     [submissionCounts],
     [answerCounts],
@@ -357,6 +380,15 @@ async function getAggregatedResultsForQuestionnaire(
         from questions
         where questionnaire_id = ?
         order by position asc
+      `,
+      [questionnaire.id],
+    ),
+    mysqlPool.execute<QuestionOptionRow[]>(
+      `
+        select question_id, score, text
+        from question_options
+        where questionnaire_id = ?
+        order by question_id asc, score asc
       `,
       [questionnaire.id],
     ),
@@ -431,13 +463,14 @@ async function getAggregatedResultsForQuestionnaire(
     publicCode: centre ? "CENTRE" : "GLOBAL",
     scopeLabel: centre?.name ?? "Tots els centres",
     questionnaireVersion: questionnaire.version,
+    languageCode: questionnaire.language_code,
     generatedAt: new Date().toISOString(),
     diagnosticSpaceCount: centre
       ? undefined
       : Number(diagnosticSpaceCounts[0]?.diagnostic_space_count ?? 0),
     totalSubmissions: Number(submissionCounts[0]?.submission_count ?? 0),
     blocks: mapBlocks(blocks),
-    questions: mapQuestions(questions),
+    questions: mapQuestions(questions, options),
     answerCounts: mapAnswerCounts(answerCounts),
   });
 }
@@ -450,13 +483,23 @@ function mapBlocks(blocks: BlockRow[]): BlockDefinition[] {
   }));
 }
 
-function mapQuestions(questions: QuestionRow[]): QuestionDefinition[] {
+function mapQuestions(
+  questions: QuestionRow[],
+  options: QuestionOptionRow[],
+): QuestionDefinition[] {
   return questions.map((question) => ({
     id: question.id,
     blockId: question.block_id,
     position: question.position,
     blockPosition: question.block_position,
     text: question.text,
+    options: options
+      .filter((option) => option.question_id === question.id)
+      .map((option) => ({
+        value: toScaleValue(option.score),
+        label: option.text,
+      }))
+      .sort((a, b) => a.value - b.value),
   }));
 }
 

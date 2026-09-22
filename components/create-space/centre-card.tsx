@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { CentreProfile } from "@/lib/centres/types";
+import { useLanguageSettings, useTranslations } from "@/components/i18n/language-settings-provider";
 
 export function CentreCard({
   initialCentre,
@@ -12,6 +13,9 @@ export function CentreCard({
   embedded?: boolean;
   hideHeading?: boolean;
 }) {
+  const messages = useTranslations();
+  const { language } = useLanguageSettings();
+  const copy = messages.centre;
   const [centre, setCentre] = useState(initialCentre);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +32,7 @@ export function CentreCard({
       };
 
       if (!response.ok || !payload.centre) {
-        throw new Error(payload.error ?? "No s'han pogut recarregar les dades.");
+        throw new Error(payload.error ?? copy.reloadError);
       }
 
       setCentre(payload.centre);
@@ -36,7 +40,7 @@ export function CentreCard({
       setError(
         refreshError instanceof Error
           ? refreshError.message
-          : "No s'han pogut recarregar les dades.",
+          : copy.reloadError,
       );
     } finally {
       setLoading(false);
@@ -59,7 +63,7 @@ export function CentreCard({
         ) : (
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
-              Fitxa del centre
+              {copy.profile}
             </p>
             <h2 className="mt-2 text-xl font-semibold text-ink">{centre.displayName}</h2>
           </div>
@@ -70,37 +74,36 @@ export function CentreCard({
           onClick={refresh}
           type="button"
         >
-          {loading ? "Recarregant..." : "Recarrega les dades"}
+          {loading ? copy.reloading : copy.reload}
         </button>
       </div>
 
       <dl className="mt-4 grid gap-x-6 gap-y-3 border-t border-line pt-4 text-sm sm:grid-cols-2">
-        <CentreField label="Codi" value={centre.officialCode} />
-        <CentreField label="Municipi" value={centre.municipality} />
-        <CentreField label="Àrea territorial" value={centre.territorialArea} />
-        <CentreField label="Servei educatiu" value={centre.educationalService} />
-        <CentreField label="Correu del centre" value={centre.email} />
-        <CentreField label="Nom del compte Google" value={centre.accountDisplayName} />
+        <CentreField emptyLabel={messages.common.noData} label={copy.code} value={centre.officialCode} />
+        <CentreField emptyLabel={messages.common.noData} label={copy.municipality} value={centre.municipality} />
+        <CentreField emptyLabel={messages.common.noData} label={copy.territorialArea} value={centre.territorialArea} />
+        <CentreField emptyLabel={messages.common.noData} label={copy.educationalService} value={centre.educationalService} />
+        <CentreField emptyLabel={messages.common.noData} label={copy.centreEmail} value={centre.email} />
+        <CentreField emptyLabel={messages.common.noData} label={copy.googleAccountName} value={centre.accountDisplayName} />
       </dl>
 
       <div className="mt-4 space-y-1 text-xs leading-5 text-muted">
         <p>
-          Darrera actualització correcta: {formatDate(centre.lastSuccessAt)}
+          {copy.lastSuccess}: {formatDate(centre.lastSuccessAt, language, copy.notAvailableYet)}
         </p>
-        <p>Darrer intent de consulta: {formatDate(centre.lastAttemptAt)}</p>
+        <p>{copy.lastAttempt}: {formatDate(centre.lastAttemptAt, language, copy.notAvailableYet)}</p>
         {centre.sourceStatus === "not_found" ? (
           <p className="font-semibold text-warning-text">
-            Centre no trobat a Dades Obertes.
+            {copy.notFound}
           </p>
         ) : null}
         {centre.sourceStatus === "unavailable" ? (
           <p className="font-semibold text-warning-text">
-            No hi ha dades disponibles en aquest moment.
+            {copy.unavailable}
           </p>
         ) : null}
         <p>
-          Fonts: Departament d’Educació — Dades Obertes de Catalunya i Relació
-          pública de Serveis Educatius de Zona.
+          {copy.sources}
         </p>
       </div>
 
@@ -116,24 +119,27 @@ export function CentreCard({
 function CentreField({
   label,
   value,
+  emptyLabel,
 }: {
   label: string;
   value: string | null;
+  emptyLabel: string;
 }) {
   return (
     <div>
       <dt className="font-semibold text-muted">{label}</dt>
-      <dd className="mt-0.5 text-ink">{value ?? "No hi ha dades"}</dd>
+      <dd className="mt-0.5 text-ink">{value ?? emptyLabel}</dd>
     </div>
   );
 }
 
-function formatDate(value: string | null): string {
+function formatDate(value: string | null, language: string, emptyLabel: string): string {
   if (!value) {
-    return "Encara no disponible";
+    return emptyLabel;
   }
 
-  return new Intl.DateTimeFormat("ca-ES", {
+  const locales: Record<string, string> = { CA: "ca-ES", ES: "es-ES", EU: "eu-ES", GL: "gl-ES", OC: "oc-ES" };
+  return new Intl.DateTimeFormat(locales[language] ?? "ca-ES", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));

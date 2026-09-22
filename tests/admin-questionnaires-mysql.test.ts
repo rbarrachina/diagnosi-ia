@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type QuestionnaireRow = {
@@ -5,6 +7,7 @@ type QuestionnaireRow = {
   version: string;
   title: string;
   estimated_minutes: number;
+  language_code: "ca" | "es" | "eu" | "gl" | "oc";
   is_active: number;
   created_at: string;
 };
@@ -23,6 +26,7 @@ type QuestionRow = {
   position: number;
   block_position: number;
   text: string;
+  randomize_options: number;
 };
 
 type ExecuteCall = {
@@ -64,6 +68,10 @@ const {
   replaceQuestionnaireContent,
   AdminQuestionnaireOperationError,
 } = await import("@/lib/admin/questionnaires");
+const questionnaireRepositorySource = readFileSync(
+  join(process.cwd(), "lib/admin/questionnaires.ts"),
+  "utf8",
+);
 
 describe("MySQL admin questionnaire mutations", () => {
   beforeEach(() => {
@@ -90,6 +98,7 @@ describe("MySQL admin questionnaire mutations", () => {
       version: "2026.3",
       title: " Nova versio ",
       estimatedMinutes: 10,
+      languageCode: "ca",
     });
 
     expect(result).toEqual({
@@ -97,6 +106,7 @@ describe("MySQL admin questionnaire mutations", () => {
       version: "2026.3",
       title: "Nova versio",
       estimatedMinutes: 10,
+      languageCode: "ca",
       isActive: false,
     });
     expect(connection.beginTransaction).toHaveBeenCalledOnce();
@@ -138,6 +148,7 @@ describe("MySQL admin questionnaire mutations", () => {
 
     expect(result.id).toBe("003");
     expect(result.estimatedMinutes).toBe(15);
+    expect(result.languageCode).toBe("ca");
     expect(blocks.filter((row) => row.questionnaire_id === "003")).toHaveLength(2);
     const copiedQuestions = questions.filter((row) => row.questionnaire_id === "003");
 
@@ -241,6 +252,15 @@ describe("MySQL admin questionnaire mutations", () => {
     ).toBe(false);
   });
 
+  it("uses a single valid completeness query before activation", () => {
+    expect(questionnaireRepositorySource).not.toMatch(
+      /group by question_blocks\.id\s+group by question_blocks\.id/,
+    );
+    expect(questionnaireRepositorySource).toContain(
+      "select count(distinct question_options.score)",
+    );
+  });
+
   it("deletes only inactive questionnaire versions and dependent anonymous rows", async () => {
     questionnaires.push(questionnaire("003", "2026.3", "Per eliminar", 0));
     blocks.push(block("01", "003", 1, "Bloc 1"));
@@ -274,6 +294,7 @@ function questionnaire(
     version,
     title,
     estimated_minutes: estimatedMinutes,
+    language_code: "ca",
     is_active: isActive,
     created_at: "2026-06-15 10:00:00.000",
   };
@@ -308,6 +329,7 @@ function question(
     position,
     block_position: blockPosition,
     text,
+    randomize_options: 0,
   };
 }
 
@@ -369,7 +391,7 @@ function createConnectionMock(): ConnectionMock {
       }
 
       if (
-        normalizedQuery.includes("select id, version, title, estimated_minutes, is_active, created_at") &&
+        normalizedQuery.includes("select id, version, title, estimated_minutes") &&
         normalizedQuery.includes("from questionnaires")
       ) {
         return [[questionnaires.find((row) => row.id === values[0])].filter(Boolean)];
@@ -384,6 +406,13 @@ function createConnectionMock(): ConnectionMock {
             .filter((row) => row.questionnaire_id === values[0])
             .sort((a, b) => a.position - b.position),
         ];
+      }
+
+      if (
+        normalizedQuery.trimStart().startsWith("select") &&
+        normalizedQuery.includes("from question_options")
+      ) {
+        return [[]];
       }
 
       if (
@@ -417,15 +446,21 @@ function createConnectionMock(): ConnectionMock {
         return [{ affectedRows: 1 }];
       }
 
+      if (normalizedQuery.includes("insert into question_options")) {
+        return [{ affectedRows: 1 }];
+      }
+
       if (normalizedQuery.includes("select count(*) as row_count")) {
         return [[{ row_count: getCountForQuery(normalizedQuery, String(values[0])) }]];
       }
 
       if (normalizedQuery.includes("update questionnaires") && normalizedQuery.includes("set title")) {
-        const target = questionnaires.find((row) => row.id === values[2]);
+        const hasLanguage = normalizedQuery.includes("language_code");
+        const target = questionnaires.find((row) => row.id === values[hasLanguage ? 3 : 2]);
         if (target) {
           target.title = String(values[0]);
           target.estimated_minutes = Number(values[1]);
+          if (hasLanguage) target.language_code = String(values[2]) as QuestionnaireRow["language_code"];
         }
         return [{ affectedRows: target ? 1 : 0 }];
       }
@@ -471,6 +506,10 @@ function createConnectionMock(): ConnectionMock {
           target.text = String(values[0]);
         }
         return [{ affectedRows: target ? 1 : 0 }];
+      }
+
+      if (normalizedQuery.includes("update question_options")) {
+        return [{ affectedRows: 1 }];
       }
 
       if (normalizedQuery.includes("delete from answers")) {

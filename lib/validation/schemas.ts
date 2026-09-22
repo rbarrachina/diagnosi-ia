@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PUBLIC_CODE_PATTERN } from "@/lib/crypto/public-code";
+import { PUBLIC_CODE_PATTERN } from "@/lib/validation/public-code";
 
 export const QUESTIONNAIRE_VERSION = "2026.2";
 export const EXPECTED_ANSWER_COUNT = 20;
@@ -35,10 +35,12 @@ export const answerValueSchema = z.union([
   z.literal(3),
 ]);
 
+export const questionnaireLanguageCodeSchema = z.enum(["ca", "es", "eu", "gl", "oc"]);
+
 export const submissionAnswerSchema = z
   .object({
     questionId: z.string().uuid(),
-    value: answerValueSchema,
+    optionId: z.string().uuid(),
   })
   .strict();
 
@@ -129,13 +131,48 @@ export const questionnaireEstimatedMinutesSchema = z.coerce
   .max(120);
 export const questionnaireBlockTitleSchema = z.string().trim().min(1).max(160);
 export const questionnaireQuestionTextSchema = z.string().trim().min(1).max(600);
+export const questionnaireOptionTextSchema = z.string().trim().min(1).max(300);
+const defaultQuestionOptions = [
+  { score: 0 as const, text: "Gens / No ho faig" },
+  { score: 1 as const, text: "Una mica / Ocasionalment" },
+  { score: 2 as const, text: "Bastant / Habitualment" },
+  { score: 3 as const, text: "Molt / Soc un referent al centre" },
+];
+
+export const adminQuestionOptionInputSchema = z
+  .object({
+    score: answerValueSchema,
+    text: questionnaireOptionTextSchema,
+  })
+  .strict();
 
 export const adminQuestionInputSchema = z
   .object({
     blockPosition: z.number().int().min(1).max(MAX_QUESTIONS_PER_BLOCK),
     text: questionnaireQuestionTextSchema,
+    randomizeOptions: z.boolean().default(false),
+    options: z.array(adminQuestionOptionInputSchema).length(4).default(defaultQuestionOptions),
   })
-  .strict();
+  .strict()
+  .superRefine((question, context) => {
+    const scores = question.options.map((option) => option.score).sort();
+    if (scores.join(",") !== "0,1,2,3") {
+      context.addIssue({
+        code: "custom",
+        message: "Each question must contain the four fixed scores",
+        path: ["options"],
+      });
+    }
+
+    const normalizedTexts = question.options.map((option) => option.text.trim().toLocaleLowerCase());
+    if (new Set(normalizedTexts).size !== normalizedTexts.length) {
+      context.addIssue({
+        code: "custom",
+        message: "Answer texts must be different within a question",
+        path: ["options"],
+      });
+    }
+  });
 
 export const adminQuestionBlockInputSchema = z
   .object({
@@ -186,6 +223,7 @@ export const createQuestionnaireDraftInputSchema = z
     version: questionnaireVersionSchema,
     title: questionnaireTitleSchema,
     estimatedMinutes: questionnaireEstimatedMinutesSchema,
+    languageCode: questionnaireLanguageCodeSchema.default("ca"),
   })
   .strict();
 
@@ -195,6 +233,7 @@ export const copyQuestionnaireVersionInputSchema = z
     newVersion: questionnaireVersionSchema,
     newTitle: questionnaireTitleSchema,
     estimatedMinutes: questionnaireEstimatedMinutesSchema,
+    languageCode: questionnaireLanguageCodeSchema.default("ca"),
   })
   .strict();
 
@@ -204,6 +243,7 @@ export const createQuestionnaireVersionInputSchema = z
     version: questionnaireVersionSchema,
     title: questionnaireTitleSchema,
     estimatedMinutes: questionnaireEstimatedMinutesSchema,
+    languageCode: questionnaireLanguageCodeSchema.default("ca"),
   })
   .strict();
 
@@ -212,6 +252,7 @@ export const replaceQuestionnaireContentInputSchema = z
     questionnaireId: questionnaireIdSchema,
     title: questionnaireTitleSchema,
     estimatedMinutes: questionnaireEstimatedMinutesSchema,
+    languageCode: questionnaireLanguageCodeSchema.default("ca"),
     blocks: adminQuestionnaireBlocksSchema,
     confirmAssignedEdit: z.boolean().default(false),
   })
@@ -255,6 +296,7 @@ export const setAdminUserActiveInputSchema = z
   .strict();
 
 export const responsibleAccessModeSchema = z.enum(["all_xtec", "centre_xtec"]);
+export const responsiblePortalStatusSchema = z.enum(["closed", "open"]);
 export const languageSettingsInputSchema = z
   .object({
     selectorVisible: z.boolean(),
@@ -287,16 +329,19 @@ export type AdminResultsRequestInput = z.infer<typeof adminResultsRequestSchema>
 export type AdminResultsScopeInput = z.infer<typeof adminResultsScopeSchema>;
 export type AdminQuestionInput = z.infer<typeof adminQuestionInputSchema>;
 export type AdminQuestionBlockInput = z.infer<typeof adminQuestionBlockInputSchema>;
-export type CreateQuestionnaireDraftInput = z.infer<
+export type CreateQuestionnaireDraftInput = z.input<
   typeof createQuestionnaireDraftInputSchema
 >;
-export type CopyQuestionnaireVersionInput = z.infer<
+export type CopyQuestionnaireVersionInput = z.input<
   typeof copyQuestionnaireVersionInputSchema
 >;
-export type CreateQuestionnaireVersionInput = z.infer<
+export type CreateQuestionnaireVersionInput = z.input<
   typeof createQuestionnaireVersionInputSchema
 >;
-export type ReplaceQuestionnaireContentInput = z.infer<
+export type ReplaceQuestionnaireContentInput = z.input<
+  typeof replaceQuestionnaireContentInputSchema
+>;
+export type ReplaceQuestionnaireContentPayload = z.infer<
   typeof replaceQuestionnaireContentInputSchema
 >;
 export type ActivateQuestionnaireVersionInput = z.infer<

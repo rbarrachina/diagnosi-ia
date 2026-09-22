@@ -250,6 +250,17 @@ function createPoolMock(): PoolMock {
         ];
       }
 
+      if (normalizedQuery.includes("from question_options")) {
+        return [
+          ["question-1", "question-2"].flatMap((questionId) => [
+            { question_id: questionId, score: 0, text: "Gens / No ho faig" },
+            { question_id: questionId, score: 1, text: "Una mica / Ocasionalment" },
+            { question_id: questionId, score: 2, text: "Bastant / Habitualment" },
+            { question_id: questionId, score: 3, text: "Molt / Soc un referent al centre" },
+          ]),
+        ];
+      }
+
       if (normalizedQuery.includes("count(*) as submission_count")) {
         return [[{ submission_count: 2 }]];
       }
@@ -266,6 +277,8 @@ function createPoolMock(): PoolMock {
               is_active: 1,
               questionnaire_id: "002",
               questionnaire_version: "2026.2",
+              language_code: "ca",
+              centre_name: "Institut de Prova",
             },
           ],
         ];
@@ -277,6 +290,7 @@ function createPoolMock(): PoolMock {
             {
               id: "002",
               version: "2026.2",
+              language_code: "ca",
             },
           ],
         ];

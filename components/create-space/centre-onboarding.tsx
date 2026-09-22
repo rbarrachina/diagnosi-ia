@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { CentreCard } from "@/components/create-space/centre-card";
 import { CentreEmailPolicyForm } from "@/components/create-space/centre-email-policy-form";
 import type { CentreProfile } from "@/lib/centres/types";
+import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 export function CentreOnboarding({
   centre,
@@ -13,6 +14,8 @@ export function CentreOnboarding({
   centre: CentreProfile;
 }) {
   const router = useRouter();
+  const messages = useTranslations();
+  const copy = messages.centre;
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +29,7 @@ export function CentreOnboarding({
         return;
       }
       const payload = (await response.json()) as { error?: string };
-      setError(payload.error ?? "No s'ha pogut confirmar la fitxa.");
+      setError(payload.error ?? copy.confirmError);
       setSaving(false);
     }
 
@@ -34,10 +37,9 @@ export function CentreOnboarding({
       <div className="w-full max-w-3xl text-ink">
         <CentreCard embedded initialCentre={centre} />
         <div className="mt-8 border-t border-line pt-7 text-left">
-          <h2 className="text-2xl font-semibold tracking-[-0.025em] text-ink">Confirma la fitxa</h2>
+          <h2 className="text-2xl font-semibold tracking-[-0.025em] text-ink">{copy.confirmProfile}</h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
-            Revisa les dades del centre. Si no s’han trobat, pots continuar i
-            recarregar-les més endavant.
+            {copy.confirmProfileHelp}
           </p>
           {error ? <p className="mt-3 text-sm text-red-800">{error}</p> : null}
           <button
@@ -46,7 +48,7 @@ export function CentreOnboarding({
             onClick={confirm}
             type="button"
           >
-            {saving ? "Confirmant..." : "Confirma i continua"}
+            {saving ? copy.confirming : copy.confirmAndContinue}
           </button>
         </div>
       </div>
@@ -63,7 +65,7 @@ export function CentreOnboarding({
           configured: false,
         }}
         onSaved={() => router.refresh()}
-        title="Configura els correus del professorat"
+        title={copy.configureTeacherEmails}
       />
     </div>
   );

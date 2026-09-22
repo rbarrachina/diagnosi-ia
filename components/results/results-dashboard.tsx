@@ -48,7 +48,8 @@ type ResultsDashboardProps = {
 type QuestionDistributionChartDatum = {
   name: string;
   questionText: string;
-  [key: string]: string | number;
+  optionLabels: Record<number, string>;
+  [key: string]: string | number | Record<number, string>;
 };
 
 function formatPercentage(value: number | null): string {
@@ -66,6 +67,9 @@ function questionDistributionData(block: BlockResult) {
   return block.questions.map((question) => ({
     name: `${block.position}.${question.blockPosition}`,
     questionText: question.text,
+    optionLabels: Object.fromEntries(
+      question.distribution.map((bucket) => [bucket.value, bucket.label]),
+    ),
     ...Object.fromEntries(
       ORDERED_SCALE_OPTIONS.map((option) => [
         option.shortLabel,
@@ -107,7 +111,7 @@ function OrderedScaleLegend() {
             className="h-2.5 w-2.5"
             style={{ backgroundColor: option.color }}
           />
-          {option.shortLabel}
+          {option.value} punts
         </li>
       ))}
     </ul>
@@ -132,7 +136,9 @@ function QuestionDistributionTooltip({
       <ul className="mt-2 space-y-1 text-sm">
         {ORDERED_SCALE_OPTIONS.map((option) => (
           <li className="flex justify-between gap-4" key={option.value}>
-            <span style={{ color: option.color }}>{option.label}</span>
+            <span style={{ color: option.color }}>
+              {option.value} · {question.optionLabels[option.value]}
+            </span>
             <span className="font-semibold text-ink">
               {formatTooltipPercentage(Number(question[option.shortLabel] ?? 0))}
             </span>
@@ -253,7 +259,7 @@ export function ResultsDashboard({
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ backgroundColor: option.color }}
                 />
-                {option.value} {option.shortLabel}
+                {option.value} punts
               </span>
             ))}
           </p>
@@ -401,7 +407,7 @@ export function ResultsDashboard({
                         key={option.value}
                         scope="col"
                       >
-                        {option.shortLabel}
+                        {option.value} punts
                       </th>
                     ))}
                   </tr>
@@ -420,6 +426,9 @@ export function ResultsDashboard({
 
                         return (
                           <td className="whitespace-nowrap py-3 pr-4 text-muted" key={option.value}>
+                            <span className="block font-medium text-ink">
+                              {bucket.label}
+                            </span>
                             {bucket.count} ({bucket.percentage.toFixed(1)}%)
                           </td>
                         );

@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 type Theme = "dark" | "light";
 
 const THEME_STORAGE_KEY = "diagnosi-theme";
 
 export function ThemeToggle() {
+  const messages = useTranslations();
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
@@ -34,7 +36,7 @@ export function ThemeToggle() {
 
   return (
     <button
-      aria-label={isDark ? "Activa el tema clar" : "Activa el tema fosc"}
+      aria-label={isDark ? messages.common.lightTheme : messages.common.darkTheme}
       aria-pressed={isDark}
       className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line bg-surface-soft text-ink shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-action hover:text-action focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper"
       onClick={toggleTheme}

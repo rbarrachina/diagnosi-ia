@@ -165,7 +165,7 @@ describe("MySQL diagnostic spaces repository", () => {
     expect(state.updatedTokens[0]).not.toContain("clear-token-1");
   });
 
-  it("resets an owner space in a transaction and removes anonymous responses", async () => {
+  it("resets an owner space in a transaction and removes pseudonymous responses", async () => {
     const result = await resetOwnerDiagnosticSpace({
       ownerUserId: "owner-1",
       publicCode: "C-AAAA-AAAA",
@@ -184,9 +184,7 @@ describe("MySQL diagnostic spaces repository", () => {
     expect(connection.calls.some((call) => call.query.includes("delete from submissions"))).toBe(
       true,
     );
-    expect(connection.calls.some((call) => call.query.includes("delete from submission_locks"))).toBe(
-      true,
-    );
+    expect(connection.calls.some((call) => call.query.includes("participant_user_id"))).toBe(false);
     expect(state.resetUpdates[0]).toContain("hash-token-1");
     expect(state.resetUpdates[0]).toContain("encrypted-token-1");
     expect(state.resetUpdates[0]).not.toContain("clear-token-1");

@@ -7,8 +7,8 @@ L'aplicació funciona amb Next.js i MySQL i disposa de:
 - qüestionari públic versionat;
 - Google OAuth i mode local de desenvolupament;
 - creació, gestió i reinici d'un espai per creador;
-- enviaments atòmics amb bloqueig contra respostes repetides;
-- resultats agregats i PDF;
+- enviaments atòmics amb vinculació pseudònima única contra respostes repetides;
+- resultats agregats i PDF, i resultats individuals exclusius del docent;
 - administració de versions, responsables, administradors, idiomes visibles i
   comunicat global;
 - gestió administrativa de centres amb suspensió reversible, reinicis,
@@ -17,11 +17,15 @@ L'aplicació funciona amb Next.js i MySQL i disposa de:
 - consulta administrativa agregada per a tots els centres o per a un centre
   identificat concret, sempre subjecta al llindar mínim.
 
-La versió 0.3.0 incorpora centres identificats, comptes responsables registrats
-i una fitxa territorial sincronitzable, mantenint anònim el professorat.
+La versió 0.5.0 incorpora resultats docents pseudonimitzats sense desar-ne el
+nom o el correu i manté els accessos institucionals exclusivament agregats.
 
-Queden fora de l'abast actual el rate limiting, la protecció anti-bots, la
-retenció automàtica i el tancament d'espais.
+La infraestructura d'internacionalització usa catàlegs tipats, selecció
+explícita i una cookie funcional. No fa detecció automàtica del navegador i
+manté separades les traduccions de la interfície dels qüestionaris versionats.
+
+Queden fora de l'abast actual la infraestructura compartida de rate limiting,
+la protecció anti-bots, la retenció automàtica i la política de còpies de seguretat.
 
 ## Fase 0 — Governança del repositori
 
@@ -67,6 +71,8 @@ Estat: completada.
 Estat: completada.
 
 - Google OAuth amb comptes XTEC per a responsables.
+- Mode de prellançament administrable, tancat per defecte i amb bloqueig
+  server-side de l'accés dels centres i del professorat.
 - Mode local només per desenvolupament.
 - Identificadors opacs derivats amb HMAC.
 - Un espai per centre o per compte XTEC de prova autoritzat, amb fitxa
@@ -112,8 +118,9 @@ Estat: completada.
 
 ## Fase 8 — Enduriment pendent
 
-- Afegir rate limiting sense desar IPs a la base de dades.
-- Definir protecció anti-bots compatible amb l'anonimat.
+- Substituir el rate limiting local en memòria per un servei compartit sense
+  desar IPs ni correus a la base de dades de diagnosis.
+- Definir protecció anti-bots compatible amb la minimització de dades.
 - Aprovar política de retenció i eliminació automàtica.
 - Definir caducitat automàtica d'espais.
 - Fer revisió legal o DPO.
@@ -141,6 +148,34 @@ Estat: completada.
 
 Cada canvi d'aquesta fase ha d'actualitzar els documents normatius, afegir
 proves i superar la checklist de privacitat.
+
+## Fase 10 — Resultats docents pseudonimitzats
+
+Estat: implementada.
+
+- Substituir `submission_locks` per `participant_submissions` com a font única
+  de propietat i prevenció de duplicats.
+- Eliminar explícitament les respostes de prova durant la migració, amb còpia
+  de seguretat prèvia i sense tocar dades estructurals.
+- Afegir accés docent per codi sense comprovació pública d'existència.
+- Afegir àrea docent, resultat propi i PDF sota demanda.
+- Permetre consultar participacions pròpies d'espais tancats i eliminar-les en
+  cascada en reiniciar o eliminar l'espai.
+- Mantenir les superfícies de centre i administració exclusivament agregades.
+
+## Fase 11 — Respostes configurables per pregunta
+
+Estat: implementada.
+
+- Afegir quatre opcions administrables amb puntuacions fixes `0–3` a cada
+  pregunta i validar-ne longitud, unicitat i completitud al servidor.
+- Fer que el client enviï `optionId` i derivar la puntuació dins la transacció.
+- Permetre ordre aleatori per pregunta amb colors neutres, estable durant cada
+  emplenament.
+- Mantenir resultats i informes ordenats per puntuació.
+- Fixar un idioma per versió i usar-lo als informes sense traduir preguntes ni
+  respostes.
+- Migrar les opcions històriques sense alterar respostes existents.
 
 ## Qualitat obligatòria
 

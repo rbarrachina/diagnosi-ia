@@ -1,7 +1,15 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LanguageSelector } from "@/components/home/language-selector";
 import { LanguageSettingsProvider } from "@/components/i18n/language-settings-provider";
+
+const refresh = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
+
+beforeEach(() => {
+  refresh.mockClear();
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ ok: true }))));
+});
 
 describe("language selector", () => {
   it("does not render when it is globally hidden", () => {
@@ -14,7 +22,7 @@ describe("language selector", () => {
     );
 
     expect(
-      screen.queryByRole("button", { name: "Idioma actual: català" }),
+      screen.queryByRole("button", { name: "Idioma: Català" }),
     ).not.toBeInTheDocument();
   });
 
@@ -31,12 +39,31 @@ describe("language selector", () => {
     );
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Idioma actual: català" }),
+      screen.getByRole("button", { name: "Idioma: Català" }),
     );
 
-    const languageRegion = screen.getByRole("region", { name: "Idiomes previstos" });
+    const languageRegion = screen.getByRole("region", { name: "Idiomes" });
     expect(within(languageRegion).getByText("Català")).toBeInTheDocument();
     expect(within(languageRegion).getByText("Castellano")).toBeInTheDocument();
     expect(within(languageRegion).queryByText("Euskara")).not.toBeInTheDocument();
+  });
+
+  it("stores an explicit selection and refreshes without reading browser preferences", async () => {
+    render(
+      <LanguageSettingsProvider
+        settings={{ selectorVisible: true, visibleLanguageCodes: ["CA", "ES"] }}
+      >
+        <LanguageSelector />
+      </LanguageSettingsProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Idioma: Català" }));
+    fireEvent.click(screen.getByRole("button", { name: /ES.*Castellano/ }));
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith(
+      "/api/language",
+      expect.objectContaining({ body: JSON.stringify({ language: "ES" }), method: "POST" }),
+    ));
+    expect(refresh).toHaveBeenCalledOnce();
   });
 });

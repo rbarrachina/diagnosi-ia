@@ -14,17 +14,17 @@ type ConnectionMock = {
   release: ReturnType<typeof vi.fn>;
   execute: ReturnType<typeof vi.fn>;
   calls: ExecuteCall[];
-  insertedLocks: unknown[][];
+  insertedLinks: unknown[][];
   insertedSubmissions: unknown[][];
   insertedAnswers: unknown[][];
 };
 
 type ConnectionOptions = {
   questionIds?: string[];
-  existingLockCount?: number;
+  existingParticipationCount?: number;
   submissionCount?: number;
   spaceFound?: boolean;
-  duplicateLock?: boolean;
+  duplicateParticipation?: boolean;
   failOnAnswerInsert?: boolean;
 };
 
@@ -58,13 +58,15 @@ const questionIds = Array.from(
   { length: 20 },
   (_, index) => `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
 );
+const optionIdFor = (questionIndex: number, score: number) =>
+  `10000000-0000-4000-8${score}00-${String(questionIndex + 1).padStart(12, "0")}`;
 
 const validPayload = {
   publicCode: "C-ABCD-EFGH",
   questionnaireVersion: "2026.2",
-  answers: questionIds.map((questionId) => ({
+  answers: questionIds.map((questionId, index) => ({
     questionId,
-    value: 1 as const,
+    optionId: optionIdFor(index, 1),
   })),
 };
 const testUser = { id: "account-1", email: "docent@xtec.cat" };
@@ -91,20 +93,20 @@ describe("MySQL submission repository", () => {
     expect(currentConnection.commit).toHaveBeenCalledOnce();
     expect(currentConnection.rollback).not.toHaveBeenCalled();
     expect(currentConnection.release).toHaveBeenCalledOnce();
-    expect(currentConnection.insertedLocks).toHaveLength(1);
+    expect(currentConnection.insertedLinks).toHaveLength(1);
     expect(currentConnection.insertedSubmissions).toHaveLength(1);
     expect(currentConnection.insertedAnswers).toHaveLength(20);
-    expect(currentConnection.insertedLocks[0]).toEqual([
-      "11111111-1111-4111-8111-111111111111",
-      "C-ABCD-EFGH",
+    expect(currentConnection.insertedLinks[0]).toEqual([
       expect.any(String),
+      "11111111-1111-4111-8111-111111111111",
+      "account-1",
     ]);
     expect(currentConnection.insertedSubmissions[0]).not.toContain("account-1");
     expect(currentConnection.insertedAnswers.flat()).not.toContain("account-1");
   });
 
-  it("checks whether the current account already has a submission lock", async () => {
-    currentConnection = createConnectionMock({ existingLockCount: 1 });
+  it("checks whether the current account already has a linked submission", async () => {
+    currentConnection = createConnectionMock({ existingParticipationCount: 1 });
 
     await expect(
       hasAccountSubmittedToPublicQuestionnaire({
@@ -114,41 +116,40 @@ describe("MySQL submission repository", () => {
     ).resolves.toBe(true);
 
     const [call] = currentConnection.calls;
-    expect(call.query).toContain("from submission_locks");
+    expect(call.query).toContain("from participant_submissions");
     expect(call.query).toContain("inner join diagnostic_spaces");
     expect(call.query).not.toContain("from submissions");
     expect(call.query).not.toContain("from answers");
-    expect(call.values).toEqual(["C-ABCD-EFGH", expect.any(String)]);
-    expect(call.values).not.toContain("account-1");
+    expect(call.values).toEqual(["C-ABCD-EFGH", "account-1"]);
   });
 
-  it("locks the diagnostic space row before writing the one-response lock", async () => {
+  it("locks the space before atomically linking the participant", async () => {
     await createSubmissionWithAnswers(validPayload, testUser);
 
     const spaceLockIndex = currentConnection.calls.findIndex((call) =>
       call.query.includes("for update"),
     );
-    const responseLockIndex = currentConnection.calls.findIndex((call) =>
-      call.query.includes("insert into submission_locks"),
+    const participantLinkIndex = currentConnection.calls.findIndex((call) =>
+      call.query.includes("insert into participant_submissions"),
     );
     const countIndex = currentConnection.calls.findIndex((call) =>
       call.query.includes("from submissions"),
     );
 
     expect(spaceLockIndex).toBeGreaterThanOrEqual(0);
-    expect(responseLockIndex).toBeGreaterThan(spaceLockIndex);
-    expect(countIndex).toBeGreaterThan(responseLockIndex);
+    expect(countIndex).toBeGreaterThan(spaceLockIndex);
+    expect(participantLinkIndex).toBeGreaterThan(countIndex);
   });
 
   it("rejects a second response from the same account before creating a submission", async () => {
-    currentConnection = createConnectionMock({ duplicateLock: true });
+    currentConnection = createConnectionMock({ duplicateParticipation: true });
 
     await expect(createSubmissionWithAnswers(validPayload, testUser)).rejects.toBeInstanceOf(
       DuplicateSubmissionRepositoryError,
     );
     expect(currentConnection.rollback).toHaveBeenCalledOnce();
     expect(currentConnection.commit).not.toHaveBeenCalled();
-    expect(currentConnection.insertedSubmissions).toHaveLength(0);
+    expect(currentConnection.insertedSubmissions).toHaveLength(1);
     expect(currentConnection.insertedAnswers).toHaveLength(0);
   });
 
@@ -161,7 +162,7 @@ describe("MySQL submission repository", () => {
     ).rejects.toBeInstanceOf(InvalidSubmissionRepositoryError);
 
     expect(currentConnection.rollback).toHaveBeenCalledOnce();
-    expect(currentConnection.insertedLocks).toHaveLength(0);
+    expect(currentConnection.insertedLinks).toHaveLength(0);
     expect(currentConnection.insertedSubmissions).toHaveLength(0);
   });
 
@@ -170,7 +171,10 @@ describe("MySQL submission repository", () => {
       ...validPayload,
       answers: [
         ...validPayload.answers.slice(0, 19),
-        { questionId: validPayload.answers[0].questionId, value: 2 as const },
+        {
+          questionId: validPayload.answers[0].questionId,
+          optionId: optionIdFor(0, 2),
+        },
       ],
     };
 
@@ -183,11 +187,14 @@ describe("MySQL submission repository", () => {
     expect(currentConnection.insertedAnswers).toHaveLength(0);
   });
 
-  it("rejects values outside the valid scale and rolls back", async () => {
+  it("rejects option identifiers outside the assigned question and rolls back", async () => {
     const invalidValuePayload = {
       ...validPayload,
       answers: [
-        { questionId: validPayload.answers[0].questionId, value: 4 },
+        {
+          questionId: validPayload.answers[0].questionId,
+          optionId: "99999999-9999-4999-8999-999999999998",
+        },
         ...validPayload.answers.slice(1),
       ],
     };
@@ -203,7 +210,10 @@ describe("MySQL submission repository", () => {
     const alienQuestionPayload = {
       ...validPayload,
       answers: [
-        { questionId: "99999999-9999-4999-8999-999999999999", value: 1 as const },
+        {
+          questionId: "99999999-9999-4999-8999-999999999999",
+          optionId: validPayload.answers[0].optionId,
+        },
         ...validPayload.answers.slice(1),
       ],
     };
@@ -261,7 +271,7 @@ describe("MySQL submission repository", () => {
 
   it("keeps MySQL submission writes server-side and private", () => {
     expect(repositorySource).toContain('import "server-only"');
-    expect(repositorySource).toContain("insert into submission_locks");
+    expect(repositorySource).toContain("insert into participant_submissions");
     expect(repositorySource).toContain("insert into submissions");
     expect(repositorySource).toContain("insert into answers");
     expect(repositorySource).not.toContain("export type");
@@ -270,14 +280,14 @@ describe("MySQL submission repository", () => {
 
 function createConnectionMock(options: ConnectionOptions = {}): ConnectionMock {
   const calls: ExecuteCall[] = [];
-  const insertedLocks: unknown[][] = [];
+  const insertedLinks: unknown[][] = [];
   const insertedSubmissions: unknown[][] = [];
   const insertedAnswers: unknown[][] = [];
   const activeQuestionIds = options.questionIds ?? questionIds;
 
   const connection: ConnectionMock = {
     calls,
-    insertedLocks,
+    insertedLinks,
     insertedSubmissions,
     insertedAnswers,
     beginTransaction: vi.fn(async () => undefined),
@@ -288,8 +298,8 @@ function createConnectionMock(options: ConnectionOptions = {}): ConnectionMock {
       const normalizedQuery = query.toLowerCase();
       calls.push({ query: normalizedQuery, values });
 
-      if (normalizedQuery.includes("from submission_locks")) {
-        return [[{ lock_count: options.existingLockCount ?? 0 }]];
+      if (normalizedQuery.includes("from participant_submissions")) {
+        return [[{ participation_count: options.existingParticipationCount ?? 0 }]];
       }
 
       if (normalizedQuery.includes("from diagnostic_spaces")) {
@@ -314,26 +324,28 @@ function createConnectionMock(options: ConnectionOptions = {}): ConnectionMock {
         return [[{ submission_count: options.submissionCount ?? 0 }]];
       }
 
-      if (normalizedQuery.includes("insert into submission_locks")) {
-        if (options.duplicateLock) {
-          throw Object.assign(new Error("Duplicate entry for key 'submission_locks_pkey'"), {
+      if (normalizedQuery.includes("insert into participant_submissions")) {
+        if (options.duplicateParticipation) {
+          throw Object.assign(new Error("Duplicate entry for participant"), {
             code: "ER_DUP_ENTRY",
             errno: 1062,
-            sqlMessage: "Duplicate entry for key 'submission_locks_pkey'",
+            sqlMessage: "Duplicate entry for participant",
           });
         }
 
-        insertedLocks.push(values);
+        insertedLinks.push(values);
         return [{ affectedRows: 1 }];
       }
 
       if (normalizedQuery.includes("from questions")) {
         return [
-          activeQuestionIds.map((id) => ({
-            id,
-            scale_min: 0,
-            scale_max: 3,
-          })),
+          activeQuestionIds.flatMap((id, questionIndex) =>
+            ([0, 1, 2, 3] as const).map((score) => ({
+              id,
+              option_id: optionIdFor(questionIndex, score),
+              score,
+            })),
+          ),
         ];
       }
 
@@ -347,7 +359,7 @@ function createConnectionMock(options: ConnectionOptions = {}): ConnectionMock {
           throw new Error("answer insert failed");
         }
 
-        const answerRowSize = 4;
+        const answerRowSize = 5;
         for (let index = 0; index < values.length; index += answerRowSize) {
           insertedAnswers.push(values.slice(index, index + answerRowSize));
         }

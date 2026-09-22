@@ -5,6 +5,8 @@ import type { RowDataPacket } from "mysql2/promise";
 import {
   DEFAULT_COMMUNICATION_BODY,
   DEFAULT_COMMUNICATION_SUBJECT,
+  QUESTIONNAIRE_CODE_PLACEHOLDER,
+  QUESTIONNAIRE_URL_PLACEHOLDER,
   type CommunicationTemplate,
 } from "@/lib/communication/email-template";
 import { mysqlPool } from "@/lib/db/client";
@@ -43,8 +45,10 @@ export async function getCommunicationTemplate(): Promise<CommunicationTemplate>
         settings.get(COMMUNICATION_SUBJECT_SETTING_KEY) ??
         DEFAULT_COMMUNICATION_SUBJECT,
       body:
-        settings.get(COMMUNICATION_BODY_SETTING_KEY) ??
-        DEFAULT_COMMUNICATION_BODY,
+        ensureRequiredCommunicationPlaceholders(
+          settings.get(COMMUNICATION_BODY_SETTING_KEY) ??
+            DEFAULT_COMMUNICATION_BODY,
+        ),
     };
   } catch (error) {
     if (isMissingSettingsTableError(error)) {
@@ -62,7 +66,7 @@ export async function setCommunicationTemplate(
   template: CommunicationTemplate,
 ): Promise<CommunicationTemplate> {
   const subject = template.subject.trim();
-  const body = template.body.trim();
+  const body = ensureRequiredCommunicationPlaceholders(template.body.trim());
 
   if (!subject || !body) {
     throw new CommunicationSettingsError();
@@ -85,6 +89,24 @@ export async function setCommunicationTemplate(
   );
 
   return { subject, body };
+}
+
+function ensureRequiredCommunicationPlaceholders(body: string): string {
+  const additions: string[] = [];
+
+  if (!body.includes(QUESTIONNAIRE_URL_PLACEHOLDER)) {
+    additions.push(`Podeu accedir-hi des d'aquest enllaç:\n${QUESTIONNAIRE_URL_PLACEHOLDER}`);
+  }
+
+  if (!body.includes(QUESTIONNAIRE_CODE_PLACEHOLDER)) {
+    additions.push(
+      `Per tornar-hi a accedir més endavant, conserveu aquest codi:\n${QUESTIONNAIRE_CODE_PLACEHOLDER}`,
+    );
+  }
+
+  return additions.length === 0
+    ? body
+    : `${body.trim()}\n\n${additions.join("\n\n")}`;
 }
 
 function isMissingSettingsTableError(error: unknown): boolean {

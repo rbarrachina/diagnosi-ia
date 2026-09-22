@@ -528,16 +528,6 @@ async function deleteCentreResponses(
     `,
     [centreId],
   );
-  await connection.execute(
-    `
-      delete submission_locks
-      from submission_locks
-      inner join diagnostic_spaces
-        on diagnostic_spaces.id = submission_locks.diagnostic_space_id
-      where diagnostic_spaces.centre_id = ?
-    `,
-    [centreId],
-  );
 }
 
 async function insertAuditAction(

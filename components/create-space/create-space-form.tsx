@@ -6,6 +6,7 @@ import {
   buildGmailComposeUrl,
   type CommunicationTemplate,
 } from "@/lib/communication/email-template";
+import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 export type CreatedSpaceResponse = {
   publicCode: string;
@@ -40,6 +41,8 @@ export function CreateSpaceForm({
   onSpaceChange,
   responsibleEmail,
 }: CreateSpaceFormProps) {
+  const messages = useTranslations();
+  const copy = messages.centre;
   const router = useRouter();
   const [state, setState] = useState<FormState>({ status: "idle" });
   const [space, setSpace] = useState<CreatedSpaceResponse | null>(existingSpace);
@@ -54,6 +57,7 @@ export function CreateSpaceForm({
     ? buildGmailComposeUrl({
         ...communicationTemplate,
         centreName,
+        publicCode: displayedSpace.publicCode,
         publicUrl: displayedSpace.publicUrl,
         senderEmail: responsibleEmail,
       })
@@ -67,7 +71,7 @@ export function CreateSpaceForm({
     } catch {
       setCopyState("idle");
       setActionError(
-        "No s’ha pogut copiar l’enllaç. Selecciona’l i copia’l manualment.",
+        copy.copyError,
       );
     }
   }
@@ -89,7 +93,7 @@ export function CreateSpaceForm({
         const errorPayload = (await response.json().catch(() => null)) as {
           error?: string;
         } | null;
-        throw new Error(errorPayload?.error ?? "No s'ha pogut crear l'espai.");
+        throw new Error(errorPayload?.error ?? copy.createError);
       }
 
       const data = (await response.json()) as CreatedSpaceResponse;
@@ -102,14 +106,14 @@ export function CreateSpaceForm({
         status: "error",
         message: error instanceof Error
           ? error.message
-          : "No s'ha pogut crear l'espai. Torna-ho a provar.",
+          : copy.createRetryError,
       });
     }
   }
 
   async function regenerateSharedLink(publicCode: string) {
     const confirmed = window.confirm(
-      "Aquesta acció regenerarà l’accés privat als resultats. L’enllaç antic deixarà de funcionar. Si no comparteixes el nou enllaç, ningú podrà accedir als resultats amb l’enllaç privat.",
+      copy.regenerateConfirm,
     );
 
     if (!confirmed) {
@@ -125,7 +129,7 @@ export function CreateSpaceForm({
       });
 
       if (!response.ok) {
-        throw new Error("No s'ha pogut regenerar l'enllaç privat.");
+        throw new Error(copy.regenerateError);
       }
 
       const data = (await response.json()) as { sharedResultsUrl: string };
@@ -139,7 +143,7 @@ export function CreateSpaceForm({
       );
       setCopyState("idle");
     } catch {
-      setActionError("No s'ha pogut regenerar l'enllaç privat.");
+      setActionError(copy.regenerateError);
     } finally {
       setRegenerating(false);
     }
@@ -147,7 +151,7 @@ export function CreateSpaceForm({
 
   async function resetSpace(publicCode: string) {
     const confirmed = window.confirm(
-      "Aquesta acció eliminarà totes les respostes recollides fins ara i generarà nous enllaços. Els enllaços antics deixaran de funcionar.",
+      copy.resetConfirm,
     );
 
     if (!confirmed) {
@@ -163,7 +167,7 @@ export function CreateSpaceForm({
       });
 
       if (!response.ok) {
-        throw new Error("No s'ha pogut reiniciar el qüestionari.");
+        throw new Error(copy.resetError);
       }
 
       const data = (await response.json()) as CreatedSpaceResponse;
@@ -171,7 +175,7 @@ export function CreateSpaceForm({
       onSpaceChange?.(data);
       setCopyState("idle");
     } catch {
-      setActionError("No s'ha pogut reiniciar el qüestionari.");
+      setActionError(copy.resetError);
     } finally {
       setResetting(false);
     }
@@ -181,17 +185,16 @@ export function CreateSpaceForm({
     <div className="flex h-full flex-col text-left text-ink">
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-action">
-          Espai de diagnosi
+          {copy.diagnosisSpace}
         </p>
         <h2
           className="text-2xl font-semibold tracking-[-0.025em] text-ink sm:text-3xl"
           id="workspace-questionnaire-heading"
         >
-          Qüestionari del centre
+          {copy.centreQuestionnaire}
         </h2>
         <p className="max-w-2xl text-sm leading-6 text-muted sm:text-base">
-          Comparteix l’accés amb el claustre i consulta sempre els resultats de
-          manera conjunta.
+          {copy.questionnaireIntro}
         </p>
       </div>
 
@@ -202,7 +205,7 @@ export function CreateSpaceForm({
           onClick={handleCreateSpace}
           type="button"
         >
-          {state.status === "submitting" ? "Creant..." : "Crear el qüestionari"}
+          {state.status === "submitting" ? copy.creating : copy.createQuestionnaire}
         </button>
       ) : null}
 
@@ -223,18 +226,18 @@ export function CreateSpaceForm({
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
-                Qüestionari actiu
+                {copy.activeQuestionnaire}
               </p>
               <p className="mt-2 break-words text-xl font-semibold leading-snug text-ink sm:text-2xl">
                 {displayedSpace.questionnaireTitle}
               </p>
               <p className="mt-1 text-sm font-medium text-muted">
-                Versió {displayedSpace.questionnaireVersion}
+                {messages.common.version} {displayedSpace.questionnaireVersion}
               </p>
             </div>
             <div className="flex w-full items-center justify-between rounded-2xl border border-line bg-surface-soft px-5 py-4 sm:w-auto sm:min-w-44 sm:gap-7">
               <span className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted">
-                Respostes
+                {messages.common.responses}
               </span>
               <span className="text-3xl font-semibold leading-none text-ink">
                 {displayedSpace.totalSubmissions}
@@ -258,16 +261,16 @@ export function CreateSpaceForm({
                   className="text-base font-semibold text-ink"
                   id="public-link-heading"
                 >
-                  Comparteix el qüestionari
+                  {copy.shareQuestionnaire}
                 </h3>
                 <p className="mt-1 text-sm leading-6 text-muted">
-                  Envia aquest enllaç al professorat perquè pugui respondre.
+                  {copy.shareQuestionnaireHelp}
                 </p>
               </div>
             </div>
             <div className="mt-4 flex flex-col gap-3 lg:flex-row">
               <label className="min-w-0 flex-1">
-                <span className="sr-only">Enllaç públic per al professorat</span>
+                <span className="sr-only">{copy.publicLink}</span>
                 <input
                   className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none"
                   readOnly
@@ -279,7 +282,7 @@ export function CreateSpaceForm({
                 onClick={() => copyToClipboard(displayedSpace.publicUrl, "public")}
                 type="button"
               >
-                {copyState === "public" ? "Copiat" : "Copia"}
+                {copyState === "public" ? messages.common.copied : messages.common.copy}
               </button>
               <button
                 aria-expanded={showEmailConfirmation}
@@ -287,18 +290,23 @@ export function CreateSpaceForm({
                 onClick={() => setShowEmailConfirmation((current) => !current)}
                 type="button"
               >
-                Envia el correu
+                {copy.sendEmail}
               </button>
             </div>
             {showEmailConfirmation && gmailComposeUrl ? (
               <div className="mt-4 rounded-xl border border-info-border bg-info-bg p-4 text-sm leading-6 text-muted">
                 <p>
-                  Gmail s&apos;obrirà amb el compte{" "}
-                  <strong className="text-ink">{responsibleEmail}</strong>.
+                  {copy.gmailAccount.split("{email}")[0]}
+                  <strong className="text-ink">{responsibleEmail}</strong>
+                  {copy.gmailAccount.split("{email}")[1]}
                 </p>
                 <p className="mt-1">
-                  Afegeix al camp “Per a” els correus dels docents del centre
-                  abans d&apos;enviar el missatge.
+                  {copy.gmailRecipients}
+                </p>
+                <p className="mt-1">
+                  {copy.gmailIncludes.split("{code}")[0]}
+                  <strong className="text-ink">{displayedSpace.publicCode}</strong>
+                  {copy.gmailIncludes.split("{code}")[1]}
                 </p>
                 <a
                   className="mt-3 inline-flex rounded-full bg-action px-4 py-2 font-semibold text-action-contrast transition hover:bg-action-hover"
@@ -306,7 +314,7 @@ export function CreateSpaceForm({
                   rel="noreferrer"
                   target="_blank"
                 >
-                  Obre Gmail
+                  {copy.openGmail}
                 </a>
               </div>
             ) : null}
@@ -329,28 +337,28 @@ export function CreateSpaceForm({
                     className="text-base font-semibold text-ink"
                     id="results-link-heading"
                   >
-                    Comparteix els resultats
+                    {copy.shareResults}
                   </h3>
                   <span className="rounded-full border border-line bg-surface px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted">
-                    Opcional
+                    {messages.common.optional}
                   </span>
                 </div>
                 <p className="mt-1 text-sm leading-6 text-muted">
-                  Dona accés als resultats de conjunt als docents del claustre.
+                  {copy.shareResultsHelp}
                 </p>
               </div>
             </div>
             <div className="mt-4 flex flex-col gap-3 lg:flex-row">
               <label className="min-w-0 flex-1">
                 <span className="sr-only">
-                  Enllaç privat compartit de resultats
+                  {copy.privateResultsLink}
                 </span>
                 <input
                   className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none"
                   readOnly
                   value={
                     displayedSpace.sharedResultsUrl ??
-                    "Cal regenerar l’enllaç privat."
+                    copy.regenerateRequired
                   }
                 />
               </label>
@@ -364,7 +372,7 @@ export function CreateSpaceForm({
                 }
                 type="button"
               >
-                {copyState === "shared" ? "Copiat" : "Copia"}
+                {copyState === "shared" ? messages.common.copied : messages.common.copy}
               </button>
               <button
                 className="rounded-full border border-line bg-surface px-5 py-3 text-sm font-semibold text-muted transition hover:border-action hover:text-action disabled:cursor-not-allowed disabled:opacity-50"
@@ -372,12 +380,11 @@ export function CreateSpaceForm({
                 onClick={() => regenerateSharedLink(displayedSpace.publicCode)}
                 type="button"
               >
-                {regenerating ? "Regenerant..." : "Regenerar"}
+                {regenerating ? copy.regenerating : copy.regenerate}
               </button>
             </div>
             <p className="mt-4 text-xs leading-5 text-muted">
-              L&apos;enllaç es desa xifrat. Si el regeneres, l&apos;anterior
-              deixarà de funcionar.
+              {copy.encryptedLinkHelp}
             </p>
           </section>
 
@@ -390,10 +397,10 @@ export function CreateSpaceForm({
                 className="text-sm font-semibold text-ink"
                 id="danger-zone-heading"
               >
-                Vols començar de nou?
+                {copy.startAgain}
               </h3>
               <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
-                El reinici elimina totes les respostes i genera enllaços nous.
+                {copy.resetHelp}
               </p>
             </div>
             <button
@@ -402,15 +409,15 @@ export function CreateSpaceForm({
               onClick={() => resetSpace(displayedSpace.publicCode)}
               type="button"
             >
-              {resetting ? "Reiniciant..." : "Reiniciar qüestionari"}
+              {resetting ? copy.resetting : copy.resetQuestionnaire}
             </button>
           </section>
 
           <p aria-live="polite" className="sr-only">
             {copyState === "public"
-              ? "Enllaç públic copiat"
+              ? copy.publicCopied
               : copyState === "shared"
-                ? "Enllaç privat copiat"
+                ? copy.privateCopied
                 : ""}
           </p>
         </div>

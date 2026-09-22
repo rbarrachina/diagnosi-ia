@@ -1,5 +1,9 @@
 import type { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/auth/responsible-access", () => ({
+  getResponsiblePortalStatus: vi.fn(async () => "open"),
+}));
 
 import { GET as login } from "@/app/auth/login/route";
 import { POST as logout } from "@/app/auth/logout/route";

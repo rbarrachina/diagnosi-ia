@@ -3,14 +3,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import packageJson from "@/package.json";
 
 vi.mock("server-only", () => ({}));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+vi.mock("@/lib/i18n/locale", () => ({ getCurrentLanguage: vi.fn(async () => "CA") }));
+
+let responsiblePortalStatus: "closed" | "open" = "open";
 
 vi.mock("@/lib/auth/responsible-access", () => ({
   getResponsibleAccessMode: vi.fn(async () => "centre_xtec"),
+  getResponsiblePortalStatus: vi.fn(async () => responsiblePortalStatus),
 }));
 
 const { default: Home } = await import("@/app/page");
 
 beforeEach(() => {
+  responsiblePortalStatus = "open";
   const values = new Map<string, string>();
 
   Object.defineProperty(window, "localStorage", {
@@ -60,17 +66,15 @@ describe("initial page", () => {
       screen.getByRole("heading", { level: 3, name: "El docent respon" }),
     ).toBeInTheDocument();
     expect(screen.getByText(/documentació de competència digital docent/)).toBeVisible();
-    expect(
-      screen.getByText("orientacions per a l’ús de la IA als centres educatius"),
-    ).toBeVisible();
+    expect(screen.getByText(/orientacions per a l’ús de la IA/)).toBeVisible();
     expect(screen.getByText("Un únic espai de diagnosi per centre")).toBeVisible();
     expect(
-      screen.getByText("Participació anònima i resultats de conjunt"),
+      screen.getByText("El centre només veu resultats de conjunt"),
     ).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "Crea o gestiona l’espai de diagnosi" }),
     ).not.toBeInTheDocument();
-    expect(screen.getByText(/No pot crear cap compte a l’aplicació/)).toBeVisible();
+    expect(screen.getByText(/identificador pseudònim permet recuperar/)).toBeVisible();
     expect(
       screen.getByRole("link", { name: "Ves a la mostra del qüestionari" }),
     ).toHaveAttribute("href", "#mostra-questionari");
@@ -116,6 +120,24 @@ describe("initial page", () => {
     expect(dialog).not.toHaveAttribute("open");
   });
 
+  it("shows prelaunch mode without exposing a centre login link", async () => {
+    responsiblePortalStatus = "closed";
+    render(await Home());
+
+    const accessButtons = screen.getAllByRole("button", {
+      name: "Accés de centres properament",
+    });
+
+    expect(accessButtons).toHaveLength(2);
+    expect(accessButtons.every((button) => button.hasAttribute("disabled"))).toBe(true);
+    expect(screen.queryByRole("link", { name: "Accedeix amb XTEC" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Codi del qüestionari")).toBeDisabled();
+    expect(screen.getByText("Accés docent properament")).toBeVisible();
+    expect(
+      screen.queryByRole("link", { name: "Consulta les meves participacions" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("allows switching the visual theme", async () => {
     render(await Home());
 
@@ -133,13 +155,13 @@ describe("initial page", () => {
     render(await Home());
 
     const languageButton = screen.getByRole("button", {
-      name: "Idioma actual: català",
+      name: "Idioma: Català",
     });
     fireEvent.click(languageButton);
 
     expect(languageButton).toHaveAttribute("aria-expanded", "true");
     const languageRegion = screen.getByRole("region", {
-      name: "Idiomes previstos",
+      name: "Idiomes",
     });
     expect(within(languageRegion).getByText("Català")).toBeInTheDocument();
     expect(within(languageRegion).getByText("Castellano")).toBeInTheDocument();

@@ -18,7 +18,9 @@ describe("MySQL schema privacy constraints", () => {
     expect(schema).toContain('"centres"');
     expect(schema).toContain('"centre_accounts"');
     expect(schema).toContain("^[^@[:space:]]+@xtec");
-    expect(schema).not.toMatch(/teacher|participant|ip_address|user_agent|device/i);
+    expect(schema).toContain('"participant_submissions"');
+    expect(schema).toContain('participantUserId: varchar("participant_user_id"');
+    expect(schema).not.toMatch(/teacher|ip_address|user_agent|device/i);
     expect(schema).not.toMatch(/submission.*email|answer.*email/i);
   });
 
@@ -74,10 +76,23 @@ describe("MySQL schema privacy constraints", () => {
     );
   });
 
-  it("keeps answers keyed by anonymous submission and question", () => {
+  it("keeps answers keyed by pseudonymous submission and question", () => {
     expect(schema).toContain('"answers"');
     expect(schema).toContain("columns: [table.submissionId, table.questionId]");
     expect(schema).toContain("answers_value_check");
+  });
+
+  it("allows one pseudonymous participation per account and space", () => {
+    const participantDefinition = schema.slice(
+      schema.indexOf("export const participantSubmissions"),
+      schema.indexOf("export const answers"),
+    );
+    expect(participantDefinition).toContain(
+      'uniqueIndex("participant_submissions_space_user_unique")',
+    );
+    expect(participantDefinition).toContain("table.diagnosticSpaceId");
+    expect(participantDefinition).toContain("table.participantUserId");
+    expect(participantDefinition).not.toMatch(/email|displayName|ip_address|user_agent|device/i);
   });
 
   it("keeps current and future MySQL questionnaire questions on the 0..3 scale", () => {

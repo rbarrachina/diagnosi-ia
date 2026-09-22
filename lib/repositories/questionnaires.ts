@@ -8,10 +8,13 @@ import {
   centres,
   diagnosticSpaces,
   questionBlocks,
+  questionOptions,
   questionnaires,
   questions,
 } from "@/lib/db/schema";
-import type { Question, QuestionBlock } from "@/lib/questionnaire/types";
+import type { Question, QuestionBlock, QuestionOption } from "@/lib/questionnaire/types";
+import type { QuestionnaireLanguageCode } from "@/lib/questionnaire/languages";
+import type { ScaleValue } from "@/lib/questionnaire/scale";
 
 export type QuestionnaireWithContent = {
   id: string;
@@ -19,6 +22,7 @@ export type QuestionnaireWithContent = {
   title: string;
   estimatedMinutes: number;
   isActive: boolean;
+  languageCode: QuestionnaireLanguageCode;
   blocks: QuestionBlock[];
 };
 
@@ -42,6 +46,14 @@ type QuestionRow = {
   position: number;
   blockPosition: number;
   text: string;
+  randomizeOptions: boolean;
+};
+
+type OptionRow = {
+  id: string;
+  questionId: string;
+  score: number;
+  text: string;
 };
 
 function mapQuestionnaireContent(params: {
@@ -51,11 +63,25 @@ function mapQuestionnaireContent(params: {
     title: string;
     estimatedMinutes: number;
     isActive: boolean;
+    languageCode: QuestionnaireLanguageCode;
   };
   blocks: BlockRow[];
   questions: QuestionRow[];
+  options: OptionRow[];
 }): QuestionnaireWithContent {
   const questionsByBlock = new Map<string, Question[]>();
+  const optionsByQuestion = new Map<string, QuestionOption[]>();
+
+  for (const option of params.options) {
+    const mappedOption: QuestionOption = {
+      id: option.id,
+      score: option.score as ScaleValue,
+      text: option.text,
+    };
+    const questionOptions = optionsByQuestion.get(option.questionId) ?? [];
+    questionOptions.push(mappedOption);
+    optionsByQuestion.set(option.questionId, questionOptions);
+  }
 
   for (const question of params.questions) {
     const mappedQuestion: Question = {
@@ -63,6 +89,10 @@ function mapQuestionnaireContent(params: {
       position: question.position,
       blockPosition: question.blockPosition,
       text: question.text,
+      randomizeOptions: question.randomizeOptions,
+      options: (optionsByQuestion.get(question.id) ?? []).sort(
+        (a, b) => a.score - b.score,
+      ),
     };
 
     const blockQuestions = questionsByBlock.get(question.blockId) ?? [];
@@ -95,6 +125,7 @@ export async function getQuestionnaireById(
       title: questionnaires.title,
       estimatedMinutes: questionnaires.estimatedMinutes,
       isActive: questionnaires.isActive,
+      languageCode: questionnaires.languageCode,
     })
     .from(questionnaires)
     .where(eq(questionnaires.id, questionnaireId))
@@ -106,7 +137,7 @@ export async function getQuestionnaireById(
     return null;
   }
 
-  const [blockRows, questionRows] = await Promise.all([
+  const [blockRows, questionRows, optionRows] = await Promise.all([
     db
       .select({
         id: questionBlocks.id,
@@ -123,16 +154,31 @@ export async function getQuestionnaireById(
         position: questions.position,
         blockPosition: questions.blockPosition,
         text: questions.text,
+        randomizeOptions: questions.randomizeOptions,
       })
       .from(questions)
       .where(eq(questions.questionnaireId, questionnaire.id))
       .orderBy(asc(questions.position)),
+    db
+      .select({
+        id: questionOptions.id,
+        questionId: questionOptions.questionId,
+        score: questionOptions.score,
+        text: questionOptions.text,
+      })
+      .from(questionOptions)
+      .where(eq(questionOptions.questionnaireId, questionnaire.id))
+      .orderBy(asc(questionOptions.score)),
   ]);
 
   return mapQuestionnaireContent({
-    questionnaire,
+    questionnaire: {
+      ...questionnaire,
+      languageCode: questionnaire.languageCode as QuestionnaireLanguageCode,
+    },
     blocks: blockRows,
     questions: questionRows,
+    options: optionRows,
   });
 }
 

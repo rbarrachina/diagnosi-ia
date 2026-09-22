@@ -1,11 +1,10 @@
-const QUESTION_OPTIONS = [
-  { label: "Gens / No ho faig", value: 0 },
-  { label: "Una mica / Ocasionalment", value: 1 },
-  { label: "Bastant / Habitualment", value: 2 },
-  { label: "Molt / Soc un referent al centre", value: 3 },
-] as const;
+"use client";
+
+import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 export function QuestionPreview() {
+  const messages = useTranslations();
+  const copy = messages.home;
   return (
     <section
       aria-labelledby="question-preview-title"
@@ -17,39 +16,38 @@ export function QuestionPreview() {
       <div className="relative mx-auto max-w-6xl" id="mostra-questionari">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
-            Una mirada al qüestionari
+            {copy.previewEyebrow}
           </p>
           <h2
             className="mt-4 text-balance text-3xl font-semibold tracking-[-0.035em] sm:text-5xl lg:mt-2 lg:text-4xl"
             id="question-preview-title"
           >
-            Preguntes clares per obtenir una visió compartida
+            {copy.previewTitle}
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-muted lg:mt-3 lg:text-base lg:leading-7">
-            El professorat respon 20 afirmacions breus distribuïdes en cinc
-            blocs. Cada pregunta ofereix quatre nivells de resposta.
+            {copy.previewIntro}
           </p>
         </div>
 
         <div className="home-question-frame relative mx-auto mt-14 max-w-5xl rounded-[2rem] border border-line p-2.5 sm:p-4 lg:mt-6 lg:p-3">
           <div
-            aria-label="Exemple de la primera pregunta del qüestionari"
+            aria-label={copy.previewGroup}
             className="home-question-paper rounded-[1.45rem] border border-line p-6 sm:p-9 lg:p-6"
             role="group"
           >
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold uppercase tracking-[0.13em] text-action">
-                  Exemple
+                  {copy.example}
                 </span>
               </div>
               <span className="text-sm font-semibold text-muted">
-                Pregunta 1 de 20
+                {copy.questionProgress}
               </span>
             </div>
 
             <div
-              aria-label="Progrés de l’exemple: 5 %"
+              aria-label={copy.progressLabel}
               className="mt-5 h-2 overflow-hidden rounded-full bg-accent-soft lg:mt-3 lg:h-1.5"
               role="img"
             >
@@ -58,32 +56,31 @@ export function QuestionPreview() {
 
             <div className="mt-9 lg:mt-5">
               <p className="text-xs font-semibold uppercase tracking-[0.15em] text-action">
-                Bloc 1 · Alfabetització i ús crític de la IA
+                {copy.block}
               </p>
               <h3 className="mt-4 max-w-4xl text-balance text-2xl font-semibold leading-tight tracking-[-0.025em] sm:text-3xl lg:mt-2 lg:text-2xl">
                 <span className="mr-2 text-action">1.1.</span>
-                Identifico oportunitats i limitacions de la IA en contextos
-                educatius.
+                {copy.question}
               </h3>
             </div>
 
             <ul
-              aria-label="Opcions de resposta de l’exemple"
+              aria-label={copy.answerOptionsLabel}
               className="mt-8 grid gap-3 sm:grid-cols-2 lg:mt-5 lg:gap-2"
             >
-              {QUESTION_OPTIONS.map((option) => (
+              {copy.options.map((label, value) => (
                 <li
-                  className={`home-scale-option home-scale-option-${option.value} flex min-h-20 items-center gap-4 rounded-2xl border px-4 py-4 sm:px-5 lg:min-h-14 lg:py-2.5`}
-                  key={option.value}
+                  className={`home-scale-option home-scale-option-${value} flex min-h-20 items-center gap-4 rounded-2xl border px-4 py-4 sm:px-5 lg:min-h-14 lg:py-2.5`}
+                  key={value}
                 >
                   <span
                     aria-hidden="true"
                     className="home-scale-number inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold lg:h-8 lg:w-8"
                   >
-                    {option.value}
+                    {value}
                   </span>
                   <span className="font-medium leading-6 text-ink">
-                    {option.label}
+                    {label}
                   </span>
                 </li>
               ))}
@@ -92,8 +89,7 @@ export function QuestionPreview() {
             <div className="mt-7 flex items-start gap-3 rounded-2xl bg-accent-soft px-4 py-3.5 text-sm leading-6 text-muted sm:items-center lg:mt-4 lg:py-2.5">
               <PreviewIcon />
               <p>
-                Aquesta mostra és només informativa: no permet seleccionar cap
-                resposta ni envia cap dada.
+                {copy.previewNotice}
               </p>
             </div>
           </div>

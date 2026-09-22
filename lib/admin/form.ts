@@ -23,6 +23,7 @@ export function parseQuestionnaireContentFormData(
     questionnaireId: getRequiredFormString(formData, "questionnaireId"),
     title: getRequiredFormString(formData, "title"),
     estimatedMinutes: getRequiredFormString(formData, "estimatedMinutes"),
+    languageCode: getRequiredFormString(formData, "languageCode"),
     confirmAssignedEdit: formData.get("confirmAssignedEdit") === "yes",
     blocks: blockPositions.map((blockPosition) => {
       const questionPositions = formData
@@ -39,6 +40,17 @@ export function parseQuestionnaireContentFormData(
             formData,
             `block-${blockPosition}-question-${questionPosition}`,
           ),
+          randomizeOptions:
+            formData.get(
+              `block-${blockPosition}-question-${questionPosition}-randomize`,
+            ) === "yes",
+          options: ([0, 1, 2, 3] as const).map((score) => ({
+            score,
+            text: getRequiredFormString(
+              formData,
+              `block-${blockPosition}-question-${questionPosition}-option-${score}`,
+            ),
+          })),
         })),
       };
     }),

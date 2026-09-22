@@ -29,12 +29,14 @@ import {
   createQuestionnaireVersionInputSchema,
   deleteQuestionnaireVersionInputSchema,
   responsibleAccessModeSchema,
+  responsiblePortalStatusSchema,
   languageSettingsInputSchema,
   setAdminUserActiveInputSchema,
 } from "@/lib/validation/schemas";
 import {
   setAdminResultsMinimumSubmissions,
   setResponsibleAccessMode,
+  setResponsiblePortalStatus,
 } from "@/lib/auth/responsible-access";
 import { setCommunicationTemplate } from "@/lib/admin/communication-settings";
 import { setLanguageSettings } from "@/lib/admin/language-settings";
@@ -60,7 +62,9 @@ type AdminActionStatus =
   | "created"
   | "deleted"
   | "saved"
-  | "settings-saved";
+  | "settings-saved"
+  | "portal-closed"
+  | "portal-opened";
 
 type AdminActionError =
   | "activation-confirmation"
@@ -134,6 +138,7 @@ export async function createQuestionnaireVersionAction(formData: FormData) {
       version: getRequiredFormString(formData, "version"),
       title: getRequiredFormString(formData, "title"),
       estimatedMinutes: getRequiredFormString(formData, "estimatedMinutes"),
+      languageCode: getRequiredFormString(formData, "languageCode"),
     });
     result = await createQuestionnaireVersion(payload);
   } catch (error) {
@@ -355,6 +360,28 @@ export async function setResponsibleAccessModeAction(formData: FormData) {
 
   revalidatePath("/", "layout");
   redirect(adminPath({ section: "settings", status: "settings-saved" }));
+}
+
+export async function setResponsiblePortalStatusAction(formData: FormData) {
+  await requireAdminActorId();
+  let status: "closed" | "open";
+
+  try {
+    status = responsiblePortalStatusSchema.parse(
+      getRequiredFormString(formData, "responsiblePortalStatus"),
+    );
+    await setResponsiblePortalStatus(status);
+  } catch {
+    redirect(adminPath({ error: "settings", section: "settings" }));
+  }
+
+  revalidatePath("/", "layout");
+  redirect(
+    adminPath({
+      section: "settings",
+      status: status === "open" ? "portal-opened" : "portal-closed",
+    }),
+  );
 }
 
 export async function setAdminCentreSuspendedAction(formData: FormData) {

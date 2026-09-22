@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "@/components/i18n/language-settings-provider";
+
 export type WorkspaceView = "questionnaire" | "profile" | "settings";
 export type WorkspaceAccess = "preview" | "results";
 
@@ -16,12 +18,6 @@ type NavigationLink = {
   label: string;
   mobileLabel: string;
 };
-
-const navigationItems: NavigationItem[] = [
-  { icon: "profile", label: "Fitxa", view: "profile" },
-  { icon: "settings", label: "Configuració", view: "settings" },
-  { icon: "questionnaire", label: "Qüestionari", view: "questionnaire" },
-];
 
 export function CentreSidebar({
   centreName,
@@ -44,18 +40,20 @@ export function CentreSidebar({
   resultsUrl?: string;
   view?: WorkspaceView;
 }) {
-  const navigationLinks = getNavigationLinks(questionnairePreviewUrl, resultsUrl);
+  const copy = useTranslations().centre;
+  const navigationItems = getNavigationItems(copy);
+  const navigationLinks = getNavigationLinks(copy, questionnairePreviewUrl, resultsUrl);
 
   return (
     <aside
-      aria-label="Navegació de l’espai del centre"
+      aria-label={copy.navigation}
       className={`centre-sidebar hidden h-full shrink-0 flex-col overflow-hidden border-r border-line bg-[color-mix(in_srgb,var(--color-paper)_88%,transparent)] px-3 py-5 backdrop-blur-md transition-[width] duration-200 md:flex md:w-[72px] ${
         expanded ? "lg:w-60" : "lg:w-[72px]"
       }`}
     >
       <div className="mb-6 px-2">
         <button
-          aria-label={expanded ? "Plega la barra lateral" : "Expandeix la barra lateral"}
+          aria-label={expanded ? copy.collapseSidebar : copy.expandSidebar}
           className="group relative mb-4 hidden h-9 w-9 items-center justify-center rounded-xl text-muted transition hover:bg-accent-soft hover:text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus lg:inline-flex"
           onClick={onToggle}
           type="button"
@@ -63,7 +61,7 @@ export function CentreSidebar({
           <SidebarToggleIcon expanded={expanded} />
           <NavigationTooltip
             hideOnExpandedDesktop={false}
-            label={expanded ? "Plega" : "Expandeix"}
+            label={expanded ? copy.collapse : copy.expand}
           />
         </button>
         <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-accent-soft text-action lg:hidden">
@@ -72,7 +70,7 @@ export function CentreSidebar({
         {expanded ? (
           <div className="centre-sidebar-expanded-content hidden lg:block">
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-action">
-              Espai del centre
+              {copy.area}
             </p>
             <p className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-ink">
               {centreName}
@@ -81,7 +79,7 @@ export function CentreSidebar({
         ) : null}
       </div>
 
-      <nav aria-label="Seccions del centre" className="space-y-1.5">
+      <nav aria-label={copy.sections} className="space-y-1.5">
         {navigationItems.filter((item) => hasCentre || item.view === "questionnaire").map((item) => (
           <SidebarItem
             active={view === item.view}
@@ -96,7 +94,7 @@ export function CentreSidebar({
           <div className="mt-4 space-y-1.5 border-t border-line pt-4">
             {expanded ? (
               <p className="centre-sidebar-expanded-content mb-2 hidden px-3 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted lg:block">
-                Accessos
+                {copy.accesses}
               </p>
             ) : null}
             {navigationLinks.map((item) => (
@@ -129,7 +127,9 @@ export function CentreMobileNavigation({
   resultsUrl?: string;
   view?: WorkspaceView;
 }) {
-  const navigationLinks = getNavigationLinks(questionnairePreviewUrl, resultsUrl);
+  const copy = useTranslations().centre;
+  const navigationItems = getNavigationItems(copy);
+  const navigationLinks = getNavigationLinks(copy, questionnairePreviewUrl, resultsUrl);
   const visibleItems = navigationItems.filter(
     (item) => hasCentre || item.view === "questionnaire",
   );
@@ -137,7 +137,7 @@ export function CentreMobileNavigation({
 
   return (
     <nav
-      aria-label="Seccions del centre"
+      aria-label={copy.sections}
       className={`fixed inset-x-0 bottom-0 z-40 grid border-t border-line bg-surface px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_36px_var(--app-shadow)] md:hidden ${
         itemCount >= 5
           ? "grid-cols-5"
@@ -181,6 +181,7 @@ export function CentreMobileNavigation({
 }
 
 function getNavigationLinks(
+  copy: ReturnType<typeof useTranslations>["centre"],
   questionnairePreviewUrl?: string,
   resultsUrl?: string,
 ): NavigationLink[] {
@@ -191,8 +192,8 @@ function getNavigationLinks(
       access: "preview",
       href: questionnairePreviewUrl,
       icon: "preview",
-      label: "Veure qüestionari",
-      mobileLabel: "Visualitza",
+      label: copy.viewQuestionnaire,
+      mobileLabel: copy.preview,
     });
   }
   if (resultsUrl) {
@@ -200,12 +201,20 @@ function getNavigationLinks(
       access: "results",
       href: resultsUrl,
       icon: "results",
-      label: "Ves als resultats",
-      mobileLabel: "Resultats",
+      label: copy.goToResults,
+      mobileLabel: copy.results,
     });
   }
 
   return links;
+}
+
+function getNavigationItems(copy: ReturnType<typeof useTranslations>["centre"]): NavigationItem[] {
+  return [
+    { icon: "profile", label: copy.navProfile, view: "profile" },
+    { icon: "settings", label: copy.navSettings, view: "settings" },
+    { icon: "questionnaire", label: copy.navQuestionnaire, view: "questionnaire" },
+  ];
 }
 
 function getWorkspaceViewHref(view: WorkspaceView) {

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import type { ReactNode } from "react";
 import { LanguageSettingsProvider } from "@/components/i18n/language-settings-provider";
+import { VisualPreferencesInitializer } from "@/components/layout/visual-preferences-initializer";
 import { getLanguageSettings } from "@/lib/admin/language-settings";
+import { getCurrentLanguage } from "@/lib/i18n/locale";
 import "./globals.css";
 import "./styles/tokens.css";
 import "./styles/shell.css";
@@ -13,45 +14,12 @@ import "./styles/admin.css";
 
 export const dynamic = "force-dynamic";
 
-const themeInitializer = `
-  (function () {
-    try {
-      var storedTheme = window.localStorage.getItem("diagnosi-theme");
-      var theme =
-        storedTheme === "dark" || storedTheme === "light"
-          ? storedTheme
-          : window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light";
-      document.documentElement.dataset.theme = theme;
-      document.documentElement.style.colorScheme = theme;
-
-      var storedSidebar = window.localStorage.getItem(
-        "diagnosi-ia:centre-sidebar-expanded"
-      );
-      document.documentElement.dataset.centreSidebar =
-        storedSidebar === "false" ? "collapsed" : "expanded";
-
-      var storedAdminSidebar = window.localStorage.getItem(
-        "diagnosi-ia:admin-sidebar-expanded"
-      );
-      document.documentElement.dataset.adminSidebar =
-        storedAdminSidebar === "false" ? "collapsed" : "expanded";
-    } catch (error) {
-      document.documentElement.dataset.theme = "light";
-      document.documentElement.style.colorScheme = "light";
-      document.documentElement.dataset.centreSidebar = "expanded";
-      document.documentElement.dataset.adminSidebar = "expanded";
-    }
-  })();
-`;
-
 export const metadata: Metadata = {
   title: {
     default: "Diagnosi IA",
     template: "%s | Diagnosi IA",
   },
-  description: "Diagnosi anònima de conjunt sobre l'ús educatiu de la IA.",
+  description: "Diagnosi pseudonimitzada sobre l'ús educatiu de la IA.",
   referrer: "no-referrer",
 };
 
@@ -60,17 +28,16 @@ export default async function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const languageSettings = await getLanguageSettings();
+  const [languageSettings, language] = await Promise.all([
+    getLanguageSettings(),
+    getCurrentLanguage(),
+  ]);
 
   return (
-    <html lang="ca" suppressHydrationWarning>
-      <head>
-        <Script id="theme-initializer" strategy="beforeInteractive">
-          {themeInitializer}
-        </Script>
-      </head>
+    <html lang={language.toLowerCase()} suppressHydrationWarning>
       <body>
-        <LanguageSettingsProvider settings={languageSettings}>
+        <VisualPreferencesInitializer />
+        <LanguageSettingsProvider language={language} settings={languageSettings}>
           {children}
         </LanguageSettingsProvider>
       </body>

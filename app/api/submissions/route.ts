@@ -13,11 +13,19 @@ import {
   getCentreEmailPolicyForPublicCode,
   isEmailAllowedByCentrePolicy,
 } from "@/lib/centres/email-policy";
+import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request): Promise<Response> {
   try {
+    if ((await getResponsiblePortalStatus()) === "closed") {
+      return Response.json(
+        { error: "El servei encara no està disponible." },
+        { status: 503 },
+      );
+    }
+
     const user = await getCurrentAuthenticatedUser();
 
     if (!user) {
@@ -36,14 +44,17 @@ export async function POST(request: Request): Promise<Response> {
 
     if (!policy || !isEmailAllowedByCentrePolicy(user.email, policy)) {
       return Response.json(
-        { error: "Aquest compte Google no pertany a un domini admès." },
+        { error: "No s'ha pogut validar l'accés al qüestionari." },
         { status: 403 },
       );
     }
 
     await createSubmission(payload, user);
 
-    return Response.json({ ok: true }, { status: 201 });
+    return Response.json(
+      { ok: true, resultsPath: `/docent/resultats/${payload.publicCode}` },
+      { status: 201 },
+    );
   } catch (error) {
     if (error instanceof DuplicateSubmissionError) {
       return Response.json(

@@ -8,6 +8,7 @@ import type {
   ScaleOption,
   ScaleValue,
 } from "@/lib/results/types";
+import type { QuestionnaireLanguageCode } from "@/lib/questionnaire/languages";
 
 export const SCALE_OPTIONS: ScaleOption[] = [
   { value: 0, label: "Gens / No ho faig" },
@@ -39,8 +40,9 @@ function createEmptyDistribution(): Record<ScaleValue, number> {
 function formatDistribution(
   counts: Record<ScaleValue, number>,
   total: number,
+  options: ScaleOption[] = SCALE_OPTIONS,
 ): DistributionBucket[] {
-  return SCALE_OPTIONS.map((option) => ({
+  return options.slice().sort((a, b) => a.value - b.value).map((option) => ({
     ...option,
     count: counts[option.value],
     percentage: total === 0 ? 0 : roundToTwoDecimals((counts[option.value] / total) * 100),
@@ -89,36 +91,86 @@ function mergeDistributionCounts(
   return merged;
 }
 
-function interpretationForPercentage(percentageValue: number | null): string {
+const interpretations: Record<QuestionnaireLanguageCode, [string, string, string, string, string]> = {
+  ca: [
+    "Encara no hi ha respostes per interpretar els resultats.",
+    "La diagnosi mostra un ús inicial de la IA. Convé prioritzar criteris compartits, alfabetització bàsica i acompanyament docent.",
+    "La diagnosi mostra un ús en desenvolupament. Hi ha pràctiques presents, però encara desiguals o no consolidades.",
+    "La diagnosi mostra un ús habitual i bastant consolidat de la IA, amb oportunitat de revisar qualitat, coherència i seguretat.",
+    "La diagnosi mostra un ús molt consolidat de la IA, amb persones o pràctiques que poden actuar com a referents per compartir criteris i acompanyar l’equip.",
+  ],
+  es: [
+    "Todavía no hay respuestas para interpretar los resultados.",
+    "La diagnosis muestra un uso inicial de la IA. Conviene priorizar criterios compartidos, alfabetización básica y acompañamiento docente.",
+    "La diagnosis muestra un uso en desarrollo. Hay prácticas presentes, pero todavía son desiguales o no están consolidadas.",
+    "La diagnosis muestra un uso habitual y bastante consolidado de la IA, con margen para revisar la calidad, la coherencia y la seguridad.",
+    "La diagnosis muestra un uso muy consolidado de la IA, con personas o prácticas que pueden actuar como referentes para compartir criterios y acompañar al equipo.",
+  ],
+  eu: [
+    "Oraindik ez dago emaitzak interpretatzeko erantzunik.",
+    "Diagnosiak IAren hasierako erabilera erakusten du. Komeni da irizpide partekatuak, oinarrizko alfabetizazioa eta irakasleen laguntza lehenestea.",
+    "Diagnosiak garatzen ari den erabilera erakusten du. Badira praktikak, baina oraindik ez dira berdinak edo sendotuak.",
+    "Diagnosiak IAren erabilera ohikoa eta nahiko sendotua erakusten du, kalitatea, koherentzia eta segurtasuna berrikusteko aukerarekin.",
+    "Diagnosiak IAren erabilera oso sendotua erakusten du; pertsona edo praktika batzuek erreferente gisa jardun dezakete irizpideak partekatzeko eta taldeari laguntzeko.",
+  ],
+  gl: [
+    "Aínda non hai respostas para interpretar os resultados.",
+    "A diagnose mostra un uso inicial da IA. Convén priorizar criterios compartidos, alfabetización básica e acompañamento docente.",
+    "A diagnose mostra un uso en desenvolvemento. Hai prácticas presentes, pero aínda son desiguais ou non están consolidadas.",
+    "A diagnose mostra un uso habitual e bastante consolidado da IA, con marxe para revisar a calidade, a coherencia e a seguridade.",
+    "A diagnose mostra un uso moi consolidado da IA, con persoas ou prácticas que poden actuar como referentes para compartir criterios e acompañar o equipo.",
+  ],
+  oc: [
+    "Encara non i a responses entà interpretar es resultats.",
+    "Era diagnòsi mòstre un usatge iniciau dera IA. Cau priorizar critèris compartits, alfabetizacion basica e acompanhament docent.",
+    "Era diagnòsi mòstre un usatge en desvolopament. I a practiques presentes, mès encara son desiguaus o non consolidades.",
+    "Era diagnòsi mòstre un usatge abituau e pro consolidat dera IA, damb marge entà revisar era qualitat, era coeréncia e era seguretat.",
+    "Era diagnòsi mòstre un usatge fòrça consolidat dera IA, damb persones o practiques que pòden actuar coma referents entà compartir critèris e acompanhar er equip.",
+  ],
+};
+
+function interpretationForPercentage(
+  percentageValue: number | null,
+  languageCode: QuestionnaireLanguageCode,
+): string {
+  const messages = interpretations[languageCode];
   if (percentageValue === null) {
-    return "Encara no hi ha respostes per interpretar els resultats.";
+    return messages[0];
   }
 
   if (percentageValue < 25) {
-    return "La diagnosi mostra un ús inicial de la IA. Convé prioritzar criteris compartits, alfabetització bàsica i acompanyament docent.";
+    return messages[1];
   }
 
   if (percentageValue < 50) {
-    return "La diagnosi mostra un ús en desenvolupament. Hi ha pràctiques presents, però encara desiguals o no consolidades.";
+    return messages[2];
   }
 
   if (percentageValue < 75) {
-    return "La diagnosi mostra un ús habitual i bastant consolidat de la IA, amb oportunitat de revisar qualitat, coherència i seguretat.";
+    return messages[3];
   }
 
-  return "La diagnosi mostra un ús molt consolidat de la IA, amb persones o pràctiques que poden actuar com a referents per compartir criteris i acompanyar l'equip.";
+  return messages[4];
 }
 
 function summarizeBlocks(
   blocks: { title: string; average: number | null }[],
   mode: "strengths" | "improvements",
+  languageCode: QuestionnaireLanguageCode,
 ): string[] {
   const eligibleBlocks = blocks.filter(
     (block): block is { title: string; average: number } => block.average !== null,
   );
 
   if (eligibleBlocks.length === 0) {
-    return ["Encara no hi ha prou dades de conjunt per identificar patrons."];
+    const emptyMessages: Record<QuestionnaireLanguageCode, string> = {
+      ca: "Encara no hi ha prou dades de conjunt per identificar patrons.",
+      es: "Todavía no hay suficientes datos agregados para identificar patrones.",
+      eu: "Oraindik ez dago ereduak identifikatzeko adina datu agregaturik.",
+      gl: "Aínda non hai suficientes datos agregados para identificar patróns.",
+      oc: "Encara non i a pro donades agregades entà identificar patrons.",
+    };
+    return [emptyMessages[languageCode]];
   }
 
   const sortedBlocks = [...eligibleBlocks].sort((a, b) =>
@@ -136,6 +188,7 @@ export function calculateAggregatedResults(params: {
   publicCode: string;
   scopeLabel?: string;
   questionnaireVersion: string;
+  languageCode?: AggregatedResults["languageCode"];
   generatedAt: string;
   diagnosticSpaceCount?: number;
   totalSubmissions: number;
@@ -143,6 +196,7 @@ export function calculateAggregatedResults(params: {
   questions: QuestionDefinition[];
   answers: AnswerRecord[];
 }): AggregatedResults {
+  const languageCode = params.languageCode ?? "ca";
   const questionsByBlock = new Map<string, QuestionDefinition[]>();
   const answersByQuestion = new Map<string, AnswerRecord[]>();
 
@@ -177,7 +231,11 @@ export function calculateAggregatedResults(params: {
             blockPosition: question.blockPosition,
             text: question.text,
             average: averagePercentage(questionAnswers.map((answer) => answer.value)),
-            distribution: formatDistribution(distributionCounts, params.totalSubmissions),
+            distribution: formatDistribution(
+              distributionCounts,
+              params.totalSubmissions,
+              question.options ?? SCALE_OPTIONS,
+            ),
           };
         });
 
@@ -199,6 +257,7 @@ export function calculateAggregatedResults(params: {
     publicCode: params.publicCode,
     scopeLabel: params.scopeLabel,
     questionnaireVersion: params.questionnaireVersion,
+    languageCode,
     generatedAt: params.generatedAt,
     diagnosticSpaceCount: params.diagnosticSpaceCount,
     totalSubmissions: params.totalSubmissions,
@@ -206,9 +265,9 @@ export function calculateAggregatedResults(params: {
     lowResponseWarning: params.totalSubmissions > 0 && params.totalSubmissions < LOW_RESPONSE_THRESHOLD,
     scale: SCALE_OPTIONS,
     blocks: blockResults,
-    interpretation: interpretationForPercentage(globalAverage),
-    strengths: summarizeBlocks(blockResults, "strengths"),
-    improvementAreas: summarizeBlocks(blockResults, "improvements"),
+    interpretation: interpretationForPercentage(globalAverage, languageCode),
+    strengths: summarizeBlocks(blockResults, "strengths", languageCode),
+    improvementAreas: summarizeBlocks(blockResults, "improvements", languageCode),
   };
 }
 
@@ -217,6 +276,7 @@ export function calculateAggregatedResultsFromCounts(params: {
   publicCode: string;
   scopeLabel?: string;
   questionnaireVersion: string;
+  languageCode?: AggregatedResults["languageCode"];
   generatedAt: string;
   diagnosticSpaceCount?: number;
   totalSubmissions: number;
@@ -224,6 +284,7 @@ export function calculateAggregatedResultsFromCounts(params: {
   questions: QuestionDefinition[];
   answerCounts: AnswerCountRecord[];
 }): AggregatedResults {
+  const languageCode = params.languageCode ?? "ca";
   const questionsByBlock = new Map<string, QuestionDefinition[]>();
   const countsByQuestion = new Map<string, Record<ScaleValue, number>>();
 
@@ -256,7 +317,11 @@ export function calculateAggregatedResultsFromCounts(params: {
             blockPosition: question.blockPosition,
             text: question.text,
             average: weightedAveragePercentage(distributionCounts),
-            distribution: formatDistribution(distributionCounts, params.totalSubmissions),
+            distribution: formatDistribution(
+              distributionCounts,
+              params.totalSubmissions,
+              question.options ?? SCALE_OPTIONS,
+            ),
           };
         });
 
@@ -286,6 +351,7 @@ export function calculateAggregatedResultsFromCounts(params: {
     publicCode: params.publicCode,
     scopeLabel: params.scopeLabel,
     questionnaireVersion: params.questionnaireVersion,
+    languageCode,
     generatedAt: params.generatedAt,
     diagnosticSpaceCount: params.diagnosticSpaceCount,
     totalSubmissions: params.totalSubmissions,
@@ -293,8 +359,8 @@ export function calculateAggregatedResultsFromCounts(params: {
     lowResponseWarning: params.totalSubmissions > 0 && params.totalSubmissions < LOW_RESPONSE_THRESHOLD,
     scale: SCALE_OPTIONS,
     blocks: blockResults,
-    interpretation: interpretationForPercentage(globalAverage),
-    strengths: summarizeBlocks(blockResults, "strengths"),
-    improvementAreas: summarizeBlocks(blockResults, "improvements"),
+    interpretation: interpretationForPercentage(globalAverage, languageCode),
+    strengths: summarizeBlocks(blockResults, "strengths", languageCode),
+    improvementAreas: summarizeBlocks(blockResults, "improvements", languageCode),
   };
 }

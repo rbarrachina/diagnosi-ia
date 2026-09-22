@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { LoginButton, LogoutButton } from "@/components/auth/auth-actions";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { AppHeader } from "@/components/layout/app-header";
@@ -7,12 +7,17 @@ import { QuestionnaireForm } from "@/components/questionnaire/questionnaire-form
 import { getCurrentAuthenticatedUser } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
 import { loadPublicQuestionnaire } from "@/lib/questionnaire/load-public-questionnaire";
-import { hasAccountSubmittedToPublicQuestionnaire } from "@/lib/repositories/submissions";
 import {
-  acceptedDomainLabels,
   getCentreEmailPolicyForPublicCode,
   isEmailAllowedByCentrePolicy,
 } from "@/lib/centres/email-policy";
+import { getParticipantResult } from "@/lib/repositories/participant-results";
+import {
+  canAttemptParticipantCode,
+  clearParticipantCodeFailures,
+  recordParticipantCodeFailure,
+} from "@/lib/participants/access-rate-limit";
+import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
 
 export const dynamic = "force-dynamic";
 
@@ -33,25 +38,37 @@ export default async function QuestionnairePage({ params }: QuestionnairePagePro
     notFound();
   }
 
-  const questionnaire = await loadPublicQuestionnaire(publicCode);
-
-  if (!questionnaire) {
-    notFound();
+  if ((await getResponsiblePortalStatus()) === "closed") {
+    redirect("/auth/error?reason=service-closed");
   }
 
-  const policy = await getCentreEmailPolicyForPublicCode(publicCode);
-  if (!policy?.configured) {
-    notFound();
-  }
   const user = await getCurrentAuthenticatedUser();
-  const isAllowed = user ? isEmailAllowedByCentrePolicy(user.email, policy) : false;
-  const alreadySubmitted =
-    user && isAllowed
-      ? await hasAccountSubmittedToPublicQuestionnaire({
-          accountId: user.id,
-          publicCode,
-        })
-      : false;
+
+  if (user) {
+    const existing = await getParticipantResult({
+      participantUserId: user.id,
+      publicCode,
+    });
+    if (existing) {
+      clearParticipantCodeFailures(user.id);
+      redirect(`/docent/resultats/${publicCode}`);
+    }
+  }
+
+  const mayAttempt = user ? canAttemptParticipantCode(user.id) : false;
+  const [questionnaire, policy] = user && mayAttempt
+    ? await Promise.all([
+        loadPublicQuestionnaire(publicCode),
+        getCentreEmailPolicyForPublicCode(publicCode),
+      ])
+    : [null, null];
+  const isAllowed = Boolean(
+    user && questionnaire && policy && isEmailAllowedByCentrePolicy(user.email, policy),
+  );
+  if (user) {
+    if (isAllowed) clearParticipantCodeFailures(user.id);
+    else recordParticipantCodeFailure(user.id);
+  }
 
   return (
     <main className="app-shell relative min-h-screen overflow-hidden text-ink">
@@ -77,19 +94,13 @@ export default async function QuestionnairePage({ params }: QuestionnairePagePro
       >
         {!user ? (
           <QuestionnaireLoginNotice
-            acceptedDomains={acceptedDomainLabels(policy)}
-            centreName={questionnaire.centreName}
             publicCode={publicCode}
           />
         ) : !isAllowed ? (
-          <QuestionnaireForbiddenNotice
-            acceptedDomains={acceptedDomainLabels(policy)}
-            publicCode={publicCode}
-          />
+          <QuestionnaireForbiddenNotice publicCode={publicCode} />
         ) : (
           <QuestionnaireForm
-            alreadySubmitted={alreadySubmitted}
-            questionnaire={questionnaire}
+            questionnaire={questionnaire!}
           />
         )}
       </section>
@@ -98,26 +109,22 @@ export default async function QuestionnairePage({ params }: QuestionnairePagePro
 }
 
 function QuestionnaireLoginNotice({
-  centreName,
-  acceptedDomains,
   publicCode,
 }: {
-  centreName: string;
-  acceptedDomains: string[];
   publicCode: string;
 }) {
   return (
     <div className="questionnaire-panel mx-auto max-w-3xl p-7 text-center sm:p-10">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action sm:text-sm">
-        {centreName}
+        Accés docent
       </p>
       <h1 className="mt-4 text-3xl font-bold tracking-[-0.035em] text-ink sm:text-4xl">
         Inicia sessió amb Google
       </h1>
       <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted sm:text-base sm:leading-7">
-        Cal validar un compte dels dominis {formatDomains(acceptedDomains)} per
-        evitar més d’una resposta per compte. L’aplicació no desa el correu ni
-        el vincula a les respostes.
+        Cal validar el compte Google abans de comprovar el codi i l’accés al
+        qüestionari. No es mostrarà cap dada del centre fins que l’autorització
+        s’hagi completat.
       </p>
       <div className="mt-7">
         <LoginButton label="Accedeix amb Google" next={`/q/${publicCode}`} />
@@ -127,10 +134,8 @@ function QuestionnaireLoginNotice({
 }
 
 function QuestionnaireForbiddenNotice({
-  acceptedDomains,
   publicCode,
 }: {
-  acceptedDomains: string[];
   publicCode: string;
 }) {
   return (
@@ -142,16 +147,11 @@ function QuestionnaireForbiddenNotice({
         Accés no autoritzat
       </h1>
       <p className="mx-auto mt-3 max-w-lg text-sm leading-6">
-        Només es permet respondre amb un compte dels dominis{" "}
-        {formatDomains(acceptedDomains)}.
+        No s’ha pogut validar el codi, l’estat del qüestionari o el compte.
       </p>
       <div className="mt-6 flex justify-center">
         <LogoutButton next={`/q/${publicCode}`} />
       </div>
     </div>
   );
-}
-
-function formatDomains(domains: string[]): string {
-  return domains.join(" o ");
 }

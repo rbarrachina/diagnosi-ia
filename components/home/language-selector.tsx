@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLanguageSettings } from "@/components/i18n/language-settings-provider";
-import { AVAILABLE_LANGUAGES } from "@/lib/i18n/languages";
+import { AVAILABLE_LANGUAGES, type LanguageCode } from "@/lib/i18n/languages";
 
 export function LanguageSelector() {
-  const { selectorVisible, visibleLanguageCodes } = useLanguageSettings();
+  const { language: currentLanguage, messages, selectorVisible, visibleLanguageCodes } = useLanguageSettings();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -46,23 +48,35 @@ export function LanguageSelector() {
   const languages = AVAILABLE_LANGUAGES.filter(({ code }) =>
     visibleLanguageCodes.includes(code),
   );
+  const currentLabel = AVAILABLE_LANGUAGES.find(({ code }) => code === currentLanguage)?.label ?? "Català";
+
+  async function selectLanguage(language: LanguageCode) {
+    const response = await fetch("/api/language", {
+      body: JSON.stringify({ language }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+    if (!response.ok) return;
+    setIsOpen(false);
+    router.refresh();
+  }
 
   return (
     <div className="relative" ref={containerRef}>
       <button
         aria-controls={menuId}
         aria-expanded={isOpen}
-        aria-label="Idioma actual: català"
+        aria-label={`${messages.common.language}: ${currentLabel}`}
         className="inline-flex h-10 items-center justify-center rounded-full border border-line bg-surface-soft px-3 text-xs font-bold tracking-[0.08em] text-action shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-action hover:bg-surface focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper"
         onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
-        CA
+        {currentLanguage}
       </button>
 
       {isOpen ? (
         <div
-          aria-label="Idiomes previstos"
+          aria-label={messages.common.languages}
           className="fixed right-4 top-20 mt-3 w-52 rounded-2xl border border-line bg-surface p-2 shadow-[0_18px_60px_var(--app-shadow)] backdrop-blur-xl sm:absolute sm:right-0 sm:top-auto"
           id={menuId}
           role="region"
@@ -73,6 +87,11 @@ export function LanguageSelector() {
               className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm"
               key={language.code}
             >
+              <button
+                className="flex w-full items-center justify-between text-left"
+                onClick={() => void selectLanguage(language.code)}
+                type="button"
+              >
               <span className="flex items-center gap-3">
                 <span className="w-7 text-xs font-bold tracking-wide text-action">
                   {language.code}
@@ -81,7 +100,8 @@ export function LanguageSelector() {
                   {language.label}
                 </span>
               </span>
-              {language.code === "CA" ? <CheckIcon /> : null}
+              {language.code === currentLanguage ? <CheckIcon /> : null}
+              </button>
             </li>
           ))}
           </ul>

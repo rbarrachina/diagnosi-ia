@@ -9,6 +9,9 @@ import type { AppAuthenticatedUser } from "@/lib/auth/local";
 export const RESPONSIBLE_ACCESS_MODES = ["all_xtec", "centre_xtec"] as const;
 export const DEFAULT_RESPONSIBLE_ACCESS_MODE = "all_xtec";
 export const RESPONSIBLE_ACCESS_MODE_SETTING_KEY = "responsible_access_mode";
+export const RESPONSIBLE_PORTAL_STATUSES = ["closed", "open"] as const;
+export const DEFAULT_RESPONSIBLE_PORTAL_STATUS = "closed";
+export const RESPONSIBLE_PORTAL_STATUS_SETTING_KEY = "responsible_portal_status";
 export const ADMIN_RESULTS_MINIMUM_SUBMISSIONS_SETTING_KEY =
   "admin_results_minimum_submissions";
 export const DEFAULT_ADMIN_RESULTS_MINIMUM_SUBMISSIONS = 0;
@@ -16,6 +19,16 @@ export const MIN_ADMIN_RESULTS_MINIMUM_SUBMISSIONS = 0;
 export const MAX_ADMIN_RESULTS_MINIMUM_SUBMISSIONS = 10;
 
 export type ResponsibleAccessMode = (typeof RESPONSIBLE_ACCESS_MODES)[number];
+export type ResponsiblePortalStatus = (typeof RESPONSIBLE_PORTAL_STATUSES)[number];
+export type ResponsibleAccessReason =
+  | "not_xtec"
+  | "not_centre_xtec"
+  | "prelaunch"
+  | "suspended";
+
+export type ResponsibleAccessDecision =
+  | { allowed: true }
+  | { allowed: false; reason: ResponsibleAccessReason };
 
 type SettingRow = RowDataPacket & {
   setting_value: string;
@@ -86,6 +99,58 @@ export async function setResponsibleAccessMode(
   return mode;
 }
 
+export function isResponsiblePortalStatus(
+  value: string | null | undefined,
+): value is ResponsiblePortalStatus {
+  return RESPONSIBLE_PORTAL_STATUSES.includes(value as ResponsiblePortalStatus);
+}
+
+export async function getResponsiblePortalStatus(): Promise<ResponsiblePortalStatus> {
+  try {
+    const [rows] = await mysqlPool.execute<SettingRow[]>(
+      `
+        select setting_value
+        from app_settings
+        where setting_key = ?
+        limit 1
+      `,
+      [RESPONSIBLE_PORTAL_STATUS_SETTING_KEY],
+    );
+    const status = rows[0]?.setting_value;
+
+    return isResponsiblePortalStatus(status)
+      ? status
+      : DEFAULT_RESPONSIBLE_PORTAL_STATUS;
+  } catch (error) {
+    if (isMissingSettingsTableError(error)) {
+      return DEFAULT_RESPONSIBLE_PORTAL_STATUS;
+    }
+
+    throw error;
+  }
+}
+
+export async function setResponsiblePortalStatus(
+  status: ResponsiblePortalStatus,
+): Promise<ResponsiblePortalStatus> {
+  if (!isResponsiblePortalStatus(status)) {
+    throw new ResponsibleAccessSettingsError();
+  }
+
+  await mysqlPool.execute(
+    `
+      insert into app_settings (setting_key, setting_value)
+      values (?, ?)
+      on duplicate key update
+        setting_value = values(setting_value),
+        updated_at = current_timestamp(3)
+    `,
+    [RESPONSIBLE_PORTAL_STATUS_SETTING_KEY, status],
+  );
+
+  return status;
+}
+
 export function isAdminResultsMinimumSubmissions(value: number) {
   return (
     Number.isInteger(value) &&
@@ -143,25 +208,38 @@ export async function setAdminResultsMinimumSubmissions(
 export async function canUseResponsibleAccess(
   user: AppAuthenticatedUser,
 ): Promise<boolean> {
+  return (await getResponsibleAccessDecision(user)).allowed;
+}
+
+export async function getResponsibleAccessDecision(
+  user: AppAuthenticatedUser,
+): Promise<ResponsibleAccessDecision> {
   if (!isXtecEmail(user.email)) {
-    return false;
+    return { allowed: false, reason: "not_xtec" };
+  }
+
+  const isAdmin = await isActiveAdminUser(user.id);
+  if ((await getResponsiblePortalStatus()) === "closed" && !isAdmin) {
+    return { allowed: false, reason: "prelaunch" };
   }
 
   if (await isResponsibleCentreSuspended(user.id)) {
-    return false;
+    return { allowed: false, reason: "suspended" };
   }
 
   if (isXtecCentreEmail(user.email)) {
-    return true;
+    return { allowed: true };
   }
 
   const mode = await getResponsibleAccessMode();
 
   if (mode === "all_xtec") {
-    return true;
+    return { allowed: true };
   }
 
-  return isActiveAdminUser(user.id);
+  return isAdmin
+    ? { allowed: true }
+    : { allowed: false, reason: "not_centre_xtec" };
 }
 
 export async function isResponsibleCentreSuspended(
