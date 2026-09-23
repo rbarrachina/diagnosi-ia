@@ -24,7 +24,7 @@ type FormState =
   | { status: "submitting" }
   | { status: "error"; message: string };
 
-type CopyState = "idle" | "public" | "shared";
+type CopyState = "idle" | "public";
 
 export type CreateSpaceFormProps = {
   centreName: string;
@@ -47,7 +47,6 @@ export function CreateSpaceForm({
   const [state, setState] = useState<FormState>({ status: "idle" });
   const [space, setSpace] = useState<CreatedSpaceResponse | null>(existingSpace);
   const [copyState, setCopyState] = useState<CopyState>("idle");
-  const [regenerating, setRegenerating] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
@@ -108,44 +107,6 @@ export function CreateSpaceForm({
           ? error.message
           : copy.createRetryError,
       });
-    }
-  }
-
-  async function regenerateSharedLink(publicCode: string) {
-    const confirmed = window.confirm(
-      copy.regenerateConfirm,
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    setRegenerating(true);
-    setActionError(null);
-
-    try {
-      const response = await fetch(`/api/spaces/${publicCode}/results-token`, {
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        throw new Error(copy.regenerateError);
-      }
-
-      const data = (await response.json()) as { sharedResultsUrl: string };
-      setSpace((currentSpace) =>
-        currentSpace
-          ? {
-              ...currentSpace,
-              sharedResultsUrl: data.sharedResultsUrl,
-            }
-          : currentSpace,
-      );
-      setCopyState("idle");
-    } catch {
-      setActionError(copy.regenerateError);
-    } finally {
-      setRegenerating(false);
     }
   }
 
@@ -225,7 +186,8 @@ export function CreateSpaceForm({
         <div className="mt-8 space-y-6 border-t border-line pt-7 text-left">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
+              <p className="inline-flex items-center gap-2 rounded-full border border-success-border bg-success-bg px-3 py-1 text-xs font-semibold text-success-text">
+                <span aria-hidden="true" className="h-2 w-2 rounded-full bg-current" />
                 {copy.activeQuestionnaire}
               </p>
               <p className="mt-2 break-words text-xl font-semibold leading-snug text-ink sm:text-2xl">
@@ -235,38 +197,41 @@ export function CreateSpaceForm({
                 {messages.common.version} {displayedSpace.questionnaireVersion}
               </p>
             </div>
-            <div className="flex w-full items-center justify-between rounded-2xl border border-line bg-surface-soft px-5 py-4 sm:w-auto sm:min-w-44 sm:gap-7">
+            <a
+              className="group flex w-full items-center justify-between rounded-2xl border border-line bg-surface-soft px-5 py-4 transition hover:border-action hover:bg-accent-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:w-auto sm:min-w-44 sm:gap-7"
+              href={displayedSpace.ownerResultsUrl}
+            >
               <span className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted">
                 {messages.common.responses}
               </span>
-              <span className="text-3xl font-semibold leading-none text-ink">
-                {displayedSpace.totalSubmissions}
+              <span className="flex items-center gap-3">
+                <span className="text-3xl font-semibold leading-none text-ink">
+                  {displayedSpace.totalSubmissions}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="text-xl text-action transition-transform group-hover:translate-x-0.5"
+                >
+                  →
+                </span>
               </span>
-            </div>
+            </a>
           </div>
 
           <section
             aria-labelledby="public-link-heading"
             className="rounded-2xl border border-line bg-surface-soft p-5 shadow-[0_12px_32px_rgb(34_73_118_/_0.06)] sm:p-6"
           >
-            <div className="flex items-start gap-3">
-              <span
-                aria-hidden="true"
-                className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-action text-action-contrast"
+            <div>
+              <h3
+                className="text-base font-semibold text-ink"
+                id="public-link-heading"
               >
-                1
-              </span>
-              <div>
-                <h3
-                  className="text-base font-semibold text-ink"
-                  id="public-link-heading"
-                >
-                  {copy.shareQuestionnaire}
-                </h3>
-                <p className="mt-1 text-sm leading-6 text-muted">
-                  {copy.shareQuestionnaireHelp}
-                </p>
-              </div>
+                {copy.shareQuestionnaire}
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-muted">
+                {copy.shareQuestionnaireHelp}
+              </p>
             </div>
             <div className="mt-4 flex flex-col gap-3 lg:flex-row">
               <label className="min-w-0 flex-1">
@@ -278,11 +243,15 @@ export function CreateSpaceForm({
                 />
               </label>
               <button
-                className="rounded-full bg-action px-5 py-3 text-sm font-semibold text-action-contrast shadow-[0_8px_22px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover"
+                className={`rounded-full px-5 py-3 text-sm font-semibold shadow-[0_8px_22px_var(--app-action-shadow)] transition hover:-translate-y-0.5 ${
+                  copyState === "public"
+                    ? "border border-success-border bg-success-bg text-success-text"
+                    : "bg-action text-action-contrast hover:bg-action-hover"
+                }`}
                 onClick={() => copyToClipboard(displayedSpace.publicUrl, "public")}
                 type="button"
               >
-                {copyState === "public" ? messages.common.copied : messages.common.copy}
+                {copyState === "public" ? `✓ ${messages.common.copied}` : messages.common.copy}
               </button>
               <button
                 aria-expanded={showEmailConfirmation}
@@ -320,105 +289,41 @@ export function CreateSpaceForm({
             ) : null}
           </section>
 
-          <section
-            aria-labelledby="results-link-heading"
-            className="rounded-2xl border border-line bg-surface-soft p-5 sm:p-6"
-          >
-            <div className="flex items-start gap-3">
-              <span
-                aria-hidden="true"
-                className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft font-semibold text-action"
-              >
-                2
-              </span>
+          <details className="group border-t border-line pt-6">
+            <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl px-1 py-2 text-sm font-semibold text-muted transition hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus [&::-webkit-details-marker]:hidden">
+              {copy.advancedOptions}
+              <span aria-hidden="true" className="text-lg transition group-open:rotate-180">⌄</span>
+            </summary>
+            <section
+              aria-labelledby="danger-zone-heading"
+              className="mt-3 flex flex-col gap-4 rounded-2xl border border-danger-border bg-danger-bg p-5 sm:flex-row sm:items-center sm:justify-between"
+            >
               <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3
-                    className="text-base font-semibold text-ink"
-                    id="results-link-heading"
-                  >
-                    {copy.shareResults}
-                  </h3>
-                  <span className="rounded-full border border-line bg-surface px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted">
-                    {messages.common.optional}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm leading-6 text-muted">
-                  {copy.shareResultsHelp}
+                <h3
+                  className="text-sm font-semibold text-ink"
+                  id="danger-zone-heading"
+                >
+                  {copy.startAgain}
+                </h3>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
+                  {copy.resetHelp}
                 </p>
               </div>
-            </div>
-            <div className="mt-4 flex flex-col gap-3 lg:flex-row">
-              <label className="min-w-0 flex-1">
-                <span className="sr-only">
-                  {copy.privateResultsLink}
-                </span>
-                <input
-                  className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none"
-                  readOnly
-                  value={
-                    displayedSpace.sharedResultsUrl ??
-                    copy.regenerateRequired
-                  }
-                />
-              </label>
               <button
-                className="rounded-full border border-line bg-surface px-5 py-3 text-sm font-semibold text-muted transition hover:border-action hover:text-action disabled:opacity-50"
-                disabled={!displayedSpace.sharedResultsUrl}
-                onClick={() =>
-                  displayedSpace.sharedResultsUrl
-                    ? copyToClipboard(displayedSpace.sharedResultsUrl, "shared")
-                    : undefined
-                }
+                className="inline-flex shrink-0 justify-center rounded-full border border-danger-border bg-surface px-5 py-2.5 text-sm font-semibold text-danger-text transition hover:bg-danger-bg disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={resetting}
+                onClick={() => resetSpace(displayedSpace.publicCode)}
                 type="button"
               >
-                {copyState === "shared" ? messages.common.copied : messages.common.copy}
+                {resetting ? copy.resetting : copy.resetQuestionnaire}
               </button>
-              <button
-                className="rounded-full border border-line bg-surface px-5 py-3 text-sm font-semibold text-muted transition hover:border-action hover:text-action disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={regenerating || resetting}
-                onClick={() => regenerateSharedLink(displayedSpace.publicCode)}
-                type="button"
-              >
-                {regenerating ? copy.regenerating : copy.regenerate}
-              </button>
-            </div>
-            <p className="mt-4 text-xs leading-5 text-muted">
-              {copy.encryptedLinkHelp}
-            </p>
-          </section>
-
-          <section
-            aria-labelledby="danger-zone-heading"
-            className="flex flex-col gap-4 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div>
-              <h3
-                className="text-sm font-semibold text-ink"
-                id="danger-zone-heading"
-              >
-                {copy.startAgain}
-              </h3>
-              <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
-                {copy.resetHelp}
-              </p>
-            </div>
-            <button
-              className="inline-flex shrink-0 justify-center rounded-full border border-danger-border bg-transparent px-5 py-2.5 text-sm font-semibold text-danger-text transition hover:bg-danger-bg disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={resetting || regenerating}
-              onClick={() => resetSpace(displayedSpace.publicCode)}
-              type="button"
-            >
-              {resetting ? copy.resetting : copy.resetQuestionnaire}
-            </button>
-          </section>
+            </section>
+          </details>
 
           <p aria-live="polite" className="sr-only">
             {copyState === "public"
               ? copy.publicCopied
-              : copyState === "shared"
-                ? copy.privateCopied
-                : ""}
+              : ""}
           </p>
         </div>
       ) : null}

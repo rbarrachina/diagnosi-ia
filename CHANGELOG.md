@@ -57,6 +57,29 @@ Semantic Versioning.
 
 ### Changed
 
+- Traslladada la compartició de l’enllaç privat a la pantalla `Resultats` i
+  simplificada la navegació lateral del centre eliminant-ne el separador
+  `Accessos`.
+- Millorada la gestió del centre amb una previsualització més explícita, un
+  comptador de respostes enllaçat, l’estat actiu visible, confirmacions de còpia
+  reforçades i el reinici replegat dins d’opcions avançades.
+- Reforçada a la portada la visibilitat de l’accés docent a les participacions
+  pròpies amb dues targetes diferenciades per a l’accés amb codi i la recuperació
+  de participacions anteriors.
+- Ajustades les quatre seccions principals de la portada perquè ocupin com a
+  mínim una pantalla completa i mantinguin el contingut centrat.
+- Corregida la posició dels salts interns de la portada perquè les seccions no
+  quedin desplaçades cap avall sota la capçalera fixa.
+- Compactada la segona pantalla de la portada perquè el subtítol ocupi una sola
+  línia en escriptori i l’accés a la pantalla següent continuï visible.
+- Intercanviat l’ordre de les dues últimes pantalles de la portada: la mostra
+  del qüestionari precedeix ara l’accés docent.
+- Afegit a la mostra del qüestionari l’indicador inferior per avançar fins a
+  l’accés docent.
+- Unificada l’escala tipogràfica dels títols principals de les pantalles 2, 3
+  i 4 de la portada.
+- Integrat el peu de pàgina dins l’alçada de la quarta pantalla i reduït l’espai
+  inferior de les targetes perquè el peu sigui visible en arribar-hi.
 - El comunicat al professorat inclou sempre l'enllaç directe i el codi del
   qüestionari, també quan la plantilla administrativa omet alguna de les dues
   marques.

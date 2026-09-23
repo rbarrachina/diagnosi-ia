@@ -91,12 +91,7 @@ export function CentreSidebar({
           />
         ))}
         {navigationLinks.length > 0 ? (
-          <div className="mt-4 space-y-1.5 border-t border-line pt-4">
-            {expanded ? (
-              <p className="centre-sidebar-expanded-content mb-2 hidden px-3 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted lg:block">
-                {copy.accesses}
-              </p>
-            ) : null}
+          <div className="space-y-1.5">
             {navigationLinks.map((item) => (
               <SidebarLink
                 active={activeAccess === item.access}
@@ -192,7 +187,7 @@ function getNavigationLinks(
       access: "preview",
       href: questionnairePreviewUrl,
       icon: "preview",
-      label: copy.viewQuestionnaire,
+      label: copy.preview,
       mobileLabel: copy.preview,
     });
   }
@@ -201,7 +196,7 @@ function getNavigationLinks(
       access: "results",
       href: resultsUrl,
       icon: "results",
-      label: copy.goToResults,
+      label: copy.results,
       mobileLabel: copy.results,
     });
   }

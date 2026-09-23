@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import {
   Bar,
   BarChart,
@@ -35,6 +36,7 @@ const CHART_INITIAL_DIMENSION = { height: 1, width: 1 } as const;
 
 type ResultsDashboardProps = {
   integrated?: boolean;
+  introContent?: ReactNode;
   results: AggregatedResults;
   eyebrow?: string;
   isDownloading: boolean;
@@ -151,6 +153,7 @@ function QuestionDistributionTooltip({
 
 export function ResultsDashboard({
   integrated = false,
+  introContent,
   eyebrow = "Resultats de conjunt",
   results,
   isDownloading,
@@ -201,6 +204,8 @@ export function ResultsDashboard({
           ) : null}
         </div>
       </div>
+
+      {introContent}
 
       {noticeText ? (
         <div className="mt-6 rounded-md border border-info-border bg-info-bg px-4 py-3 text-sm leading-6 text-info-text">

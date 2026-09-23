@@ -30,7 +30,7 @@ describe("create space form", () => {
     });
   });
 
-  it("separates questionnaire sharing, result sharing and destructive actions", () => {
+  it("keeps questionnaire sharing and destructive actions in questionnaire management", () => {
     render(
       <CreateSpaceForm
         centreName="Institut Escola El Til·ler"
@@ -44,17 +44,24 @@ describe("create space form", () => {
       screen.getByRole("heading", { name: "Comparteix el qüestionari" }),
     ).toBeVisible();
     expect(
-      screen.getByRole("heading", { name: "Comparteix els resultats" }),
-    ).toBeVisible();
-    expect(screen.getByText("Opcional")).toBeVisible();
+      screen.queryByRole("heading", { name: "Comparteix els resultats" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Qüestionari actiu")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Respostes 4" })).toHaveAttribute(
+      "href",
+      space.ownerResultsUrl,
+    );
+    expect(
+      screen.getByRole("heading", { name: "Vols començar de nou?" }),
+    ).not.toBeVisible();
+
+    fireEvent.click(screen.getByText("Opcions avançades"));
+
     expect(
       screen.getByRole("heading", { name: "Vols començar de nou?" }),
     ).toBeVisible();
     expect(screen.getByDisplayValue(space.publicUrl)).toHaveAccessibleName(
       "Enllaç públic per al professorat",
-    );
-    expect(screen.getByDisplayValue(space.sharedResultsUrl!)).toHaveAccessibleName(
-      "Enllaç privat compartit de resultats",
     );
   });
 
@@ -76,5 +83,20 @@ describe("create space form", () => {
     expect(emailButton).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("link", { name: "Obre Gmail" })).toBeVisible();
     expect(screen.getByText("a8075669@xtec.cat")).toBeVisible();
+  });
+
+  it("shows a clear confirmation after copying the questionnaire link", async () => {
+    render(
+      <CreateSpaceForm
+        centreName="Institut Escola El Til·ler"
+        communicationTemplate={{ subject: "Assumpte", body: "Cos" }}
+        existingSpace={space}
+        responsibleEmail="a8075669@xtec.cat"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Copia" }));
+
+    expect(await screen.findByRole("button", { name: "✓ Copiat" })).toBeVisible();
   });
 });
