@@ -1,6 +1,6 @@
 #com-funciona,
 #mostra-questionari {
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 0;
 }
 
 html:has(.home-hero) {

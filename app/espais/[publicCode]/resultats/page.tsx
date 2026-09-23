@@ -90,7 +90,11 @@ export default async function OwnerResultsPage({ params }: OwnerResultsPageProps
         resultsUrl={ownerSpace.ownerResultsUrl}
       >
         <div className="workspace-results mx-auto w-full max-w-6xl">
-          <OwnerResultsClient publicCode={publicCode} results={results} />
+          <OwnerResultsClient
+            publicCode={publicCode}
+            results={results}
+            sharedResultsUrl={ownerSpace.sharedResultsUrl}
+          />
         </div>
       </CentreRouteFrame>
     </CentreAppShell>

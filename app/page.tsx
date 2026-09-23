@@ -94,22 +94,23 @@ export default async function Home() {
       </section>
 
       <section
-        className="relative border-t border-line bg-section px-5 py-24 sm:px-8 sm:py-32"
+        className="relative flex min-h-[100svh] items-center border-t border-line bg-section px-5 py-14 sm:px-8 sm:py-16"
+        id="com-funciona"
       >
-        <div className="mx-auto max-w-6xl" id="com-funciona">
-          <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto w-full max-w-6xl">
+          <div className="mx-auto max-w-6xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
               {copy.rolesEyebrow}
             </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-5xl">
+            <h2 className="mx-auto mt-4 max-w-3xl text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
               {copy.rolesTitle}
             </h2>
-            <p className="mt-5 text-lg leading-8 text-muted">
+            <p className="mt-5 text-lg leading-8 text-muted lg:whitespace-nowrap">
               {copy.rolesIntro}
             </p>
           </div>
 
-          <div className="mt-14 grid gap-5 lg:grid-cols-3">
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
             <article className="home-card flex flex-col rounded-3xl border border-line p-7 sm:p-8">
               <RoleIcon type="foundation" />
               <p className="mt-7 text-xs font-semibold uppercase tracking-[0.14em] text-action">
@@ -162,7 +163,7 @@ export default async function Home() {
             </article>
           </div>
 
-          <div className="mt-14 flex justify-center">
+          <div className="mt-8 flex justify-center">
             <a
               aria-label={copy.questionnaireSampleLink}
               className="home-scroll-cue flex h-9 w-6 justify-center rounded-full border border-line pt-2 transition hover:border-action focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper"
@@ -174,29 +175,50 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="border-t border-line bg-paper px-5 py-20 sm:px-8" id="acces-docent">
-        <div className="mx-auto max-w-2xl rounded-3xl border border-line bg-surface p-7 sm:p-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">{copy.teacherEyebrow}</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight">{copy.teacherTitle}</h2>
-          <p className="mt-4 leading-7 text-muted">{copy.teacherHelp}</p>
-          <div className="mt-6">
-            <ParticipantCodeAccessForm disabled={!responsiblePortalOpen} />
-          </div>
-          {responsiblePortalOpen ? (
-            <a className="mt-5 inline-flex text-sm font-semibold text-action" href="/docent">
-              {copy.teacherHistory}
-            </a>
-          ) : (
-            <span className="mt-5 inline-flex cursor-not-allowed text-sm font-semibold text-muted opacity-60">
-              {copy.teacherAccessSoon}
-            </span>
-          )}
-        </div>
-      </section>
-
       <QuestionPreview />
 
-      <SiteFooter />
+      <div className="flex min-h-[100svh] flex-col">
+        <section className="flex flex-1 items-center border-t border-line bg-paper px-5 py-10 sm:px-8 sm:py-12" id="acces-docent">
+          <div className="mx-auto w-full max-w-5xl">
+            <p className="text-center text-sm font-semibold uppercase tracking-[0.16em] text-action">
+              {copy.teacherEyebrow}
+            </p>
+            <div className="mt-6 grid gap-5 md:grid-cols-2">
+              <article className="rounded-3xl border border-line bg-surface p-7 shadow-[0_14px_40px_var(--app-shadow)] sm:p-9">
+                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{copy.teacherTitle}</h2>
+                <p className="mt-4 leading-7 text-muted">{copy.teacherHelp}</p>
+                <div className="mt-6">
+                  <ParticipantCodeAccessForm disabled={!responsiblePortalOpen} />
+                </div>
+              </article>
+
+              <article className="flex flex-col rounded-3xl border border-line bg-surface p-7 shadow-[0_14px_40px_var(--app-shadow)] sm:p-9">
+                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                  {copy.teacherHistoryTitle}
+                </h2>
+                <p className="mt-4 flex-1 leading-7 text-muted">
+                  {copy.teacherHistoryHelp}
+                </p>
+                {responsiblePortalOpen ? (
+                  <a
+                    className="group mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-action bg-surface px-5 text-sm font-semibold text-action transition hover:bg-accent-soft focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper sm:w-auto sm:self-start"
+                    href="/docent"
+                  >
+                    {copy.teacherHistory}
+                    <ArrowIcon />
+                  </a>
+                ) : (
+                  <span className="mt-6 inline-flex cursor-not-allowed text-sm font-semibold text-muted opacity-60">
+                    {copy.teacherAccessSoon}
+                  </span>
+                )}
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <SiteFooter />
+      </div>
     </main>
   );
 }

@@ -63,7 +63,7 @@ describe("centre workspace", () => {
     expect(screen.getByText("Resultats integrats")).toBeVisible();
     expect(screen.getByText("Peu de Diagnosi IA")).toBeInTheDocument();
     expect(
-      screen.getAllByRole("link", { name: "Ves als resultats" })[0],
+      screen.getAllByRole("link", { name: "Resultats" })[0],
     ).toHaveAttribute("aria-current", "page");
     expect(
       screen.getAllByRole("link", { name: "Qüestionari" })[0],
@@ -112,14 +112,15 @@ describe("centre workspace", () => {
     );
 
     const questionnaireLinks = screen.getAllByRole("link", {
-      name: "Veure qüestionari",
+      name: "Previsualització",
     });
     const resultsLinks = screen.getAllByRole("link", {
-      name: "Ves als resultats",
+      name: "Resultats",
     });
 
     expect(questionnaireLinks).toHaveLength(2);
     expect(resultsLinks).toHaveLength(2);
+    expect(screen.queryByText("Accessos")).not.toBeInTheDocument();
     expect(questionnaireLinks[0]).toHaveAttribute(
       "href",
       "/espais/C-TEST-1234/questionari",

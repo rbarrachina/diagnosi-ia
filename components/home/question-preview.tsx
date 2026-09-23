@@ -8,18 +8,19 @@ export function QuestionPreview() {
   return (
     <section
       aria-labelledby="question-preview-title"
-      className="home-question-showcase relative overflow-hidden border-t border-line px-5 py-24 sm:px-8 sm:py-32 lg:flex lg:min-h-[calc(100svh-5rem)] lg:items-center lg:py-8"
+      className="home-question-showcase relative flex min-h-[100svh] items-center overflow-hidden border-t border-line px-5 py-20 sm:px-8 sm:py-24 lg:py-8"
+      id="mostra-questionari"
     >
       <div aria-hidden="true" className="home-question-grid absolute inset-0" />
       <div aria-hidden="true" className="home-question-orb" />
 
-      <div className="relative mx-auto max-w-6xl" id="mostra-questionari">
+      <div className="relative mx-auto w-full max-w-6xl">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
             {copy.previewEyebrow}
           </p>
           <h2
-            className="mt-4 text-balance text-3xl font-semibold tracking-[-0.035em] sm:text-5xl lg:mt-2 lg:text-4xl"
+            className="mt-4 text-balance text-3xl font-semibold tracking-[-0.035em] sm:text-4xl lg:mt-2"
             id="question-preview-title"
           >
             {copy.previewTitle}
@@ -93,6 +94,16 @@ export function QuestionPreview() {
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="mt-5 flex justify-center">
+          <a
+            aria-label={copy.teacherButton}
+            className="home-scroll-cue flex h-9 w-6 justify-center rounded-full border border-line pt-2 transition hover:border-action focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper"
+            href="#acces-docent"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-action" />
+          </a>
         </div>
       </div>
     </section>

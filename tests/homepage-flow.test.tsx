@@ -39,6 +39,21 @@ describe("initial page", () => {
         name: "Diagnosi de la competència digital docent en IA",
       }),
     ).toBeInTheDocument();
+    for (const sectionId of [
+      "inici",
+      "com-funciona",
+      "mostra-questionari",
+    ]) {
+      expect(document.getElementById(sectionId)).toHaveClass("min-h-[100svh]");
+    }
+    expect(document.getElementById("acces-docent")?.parentElement).toHaveClass(
+      "min-h-[100svh]",
+    );
+    expect(
+      document.getElementById("mostra-questionari")!.compareDocumentPosition(
+        document.getElementById("acces-docent")!,
+      ) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(
       screen.getByText(
         "[OIA-12] Fer una diagnosi de quina és la competència digital docent en IA del claustre",
@@ -65,8 +80,24 @@ describe("initial page", () => {
     expect(
       screen.getByRole("heading", { level: 3, name: "El docent respon" }),
     ).toBeInTheDocument();
+    for (const title of [
+      "Una diagnosi compartida per avançar amb criteri",
+      "Preguntes clares per obtenir una visió compartida",
+      "Entra amb el codi del qüestionari",
+      "Ja hi has participat?",
+    ]) {
+      expect(screen.getByRole("heading", { level: 2, name: title })).toHaveClass(
+        "text-3xl",
+        "sm:text-4xl",
+      );
+    }
     expect(screen.getByText(/documentació de competència digital docent/)).toBeVisible();
     expect(screen.getByText(/orientacions per a l’ús de la IA/)).toBeVisible();
+    expect(
+      screen.getByText(
+        "Una base pedagògica comuna, un espai gestionat pel centre i una participació docent pseudonimitzada.",
+      ),
+    ).toHaveClass("lg:whitespace-nowrap");
     expect(screen.getByText("Un únic espai de diagnosi per centre")).toBeVisible();
     expect(
       screen.getByText("El centre només veu resultats de conjunt"),
@@ -78,6 +109,20 @@ describe("initial page", () => {
     expect(
       screen.getByRole("link", { name: "Ves a la mostra del qüestionari" }),
     ).toHaveAttribute("href", "#mostra-questionari");
+    expect(
+      screen.getAllByRole("link", { name: "Accés docent" }).some(
+        (link) => link.getAttribute("href") === "#acces-docent",
+      ),
+    ).toBe(true);
+    expect(
+      screen.getByRole("link", { name: "Consulta les meves participacions" }),
+    ).toHaveClass("border-action", "rounded-2xl");
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Ja hi has participat?" }),
+    ).toBeVisible();
+    expect(
+      screen.getByText(/consulta exclusivament les teves respostes i resultats/),
+    ).toBeVisible();
     expect(
       screen.getByRole("link", {
         name: "Accessibilitat: WCAG 2.2, s’obre en una pestanya nova",
