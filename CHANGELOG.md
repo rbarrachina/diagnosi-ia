@@ -35,6 +35,10 @@ Semantic Versioning.
 
 ### Security
 
+- Separades les cookies de sessió docent i responsable. L'OAuth docent ja no
+  demana el perfil nominal i la seva cookie no conté el nom; conserva només
+  l'identificador pseudònim, el correu necessari per revalidar el domini i la
+  caducitat. La cookie compartida anterior s'elimina en la petició següent.
 - El centre i l'administració continuen rebent exclusivament resultats agregats;
   les consultes individuals deriven el propietari de la sessió i no accepten
   identificadors de participant o submission del navegador.

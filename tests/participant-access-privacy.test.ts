@@ -8,12 +8,21 @@ describe("participant access privacy", () => {
     expect(source).not.toContain("getCentreEmailPolicyForPublicCode");
     expect(source).not.toContain("loadPublicQuestionnaire");
     expect(source).toContain("OAuthStateCookiePayload");
+    expect(source).toContain("includeProfile: !isParticipant");
   });
 
   it("uses a generic participant callback error", () => {
     const source = readFileSync(join(process.cwd(), "app/auth/callback/route.ts"), "utf8");
     expect(source).toContain("participant-access");
     expect(source).toContain("canAttemptParticipantCode");
+    expect(source).toContain("createParticipantSessionCookieValue");
+    expect(source).toContain("createResponsibleSessionCookieValue");
+  });
+
+  it("removes the legacy shared session cookie on the next request", () => {
+    const source = readFileSync(join(process.cwd(), "proxy.ts"), "utf8");
+    expect(source).toContain("LEGACY_SESSION_COOKIE_NAME");
+    expect(source).toContain("response.cookies.delete");
   });
 
   it("blocks every participant surface while the service is closed", () => {
@@ -51,7 +60,7 @@ describe("participant access privacy", () => {
       join(process.cwd(), "app/api/docent/results/pdf/route.ts"),
       "utf8",
     );
-    expect(source).toContain("getCurrentAuthenticatedUser");
+    expect(source).toContain("getCurrentParticipantUser");
     expect(source).toContain("participantUserId: user.id");
     expect(source).not.toMatch(/participantUserId\s*=\s*formData|submissionId\s*=\s*formData/);
     expect(source).toContain('"Cache-Control": "private, no-store, max-age=0"');

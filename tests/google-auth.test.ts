@@ -7,10 +7,15 @@ import {
   verifyGoogleIdToken,
 } from "@/lib/auth/google";
 import {
-  createSessionCookieValue,
+  createParticipantSessionCookieValue,
+  createResponsibleSessionCookieValue,
   createSignedCookieValue,
-  parseSessionCookieValue,
+  getSessionMaxAgeSeconds,
+  PARTICIPANT_SESSION_COOKIE_NAME,
+  parseParticipantSessionCookieValue,
+  parseResponsibleSessionCookieValue,
   parseSignedCookieValue,
+  RESPONSIBLE_SESSION_COOKIE_NAME,
 } from "@/lib/auth/session-cookie";
 
 const originalEnv = { ...process.env };
@@ -31,6 +36,7 @@ describe("Google OAuth", () => {
   it("builds a Google authorization URL for XTEC accounts", () => {
     const url = buildGoogleAuthorizationUrl({
       hostedDomain: "xtec.cat",
+      includeProfile: true,
       nonce: "nonce-value",
       redirectUri: "http://localhost:3000/auth/callback",
       state: "state-value",
@@ -47,12 +53,14 @@ describe("Google OAuth", () => {
   it("allows the Google account chooser when two domains are admitted", () => {
     const url = buildGoogleAuthorizationUrl({
       hostedDomain: null,
+      includeProfile: false,
       nonce: "nonce-value",
       redirectUri: "http://localhost:3000/auth/callback",
       state: "state-value",
     });
 
     expect(url.searchParams.has("hd")).toBe(false);
+    expect(url.searchParams.get("scope")).toBe("openid email");
   });
 
   it("exchanges a Google authorization code", async () => {
@@ -132,6 +140,10 @@ describe("Google OAuth", () => {
   });
 
   it("signs auth cookies and rejects tampering", () => {
+    expect(PARTICIPANT_SESSION_COOKIE_NAME).not.toBe(
+      RESPONSIBLE_SESSION_COOKIE_NAME,
+    );
+
     const signedValue = createSignedCookieValue({ state: "abc" });
 
     expect(parseSignedCookieValue<{ state: string }>(signedValue)).toEqual({
@@ -139,16 +151,44 @@ describe("Google OAuth", () => {
     });
     expect(parseSignedCookieValue(`${signedValue}tampered`)).toBeNull();
 
-    const sessionCookie = createSessionCookieValue({
+    const user = {
       id: "00000000-0000-4000-8000-000000000001",
       email: "usuari.prova@xtec.cat",
       displayName: "Usuari Prova",
-    });
+    };
+    const responsibleSessionCookie = createResponsibleSessionCookieValue(user);
+    const participantSessionCookie = createParticipantSessionCookieValue(user);
 
-    expect(parseSessionCookieValue(sessionCookie)).toEqual({
+    expect(parseResponsibleSessionCookieValue(responsibleSessionCookie)).toEqual({
       id: "00000000-0000-4000-8000-000000000001",
       email: "usuari.prova@xtec.cat",
       displayName: "Usuari Prova",
     });
+    expect(parseParticipantSessionCookieValue(participantSessionCookie)).toEqual({
+      id: "00000000-0000-4000-8000-000000000001",
+      email: "usuari.prova@xtec.cat",
+      displayName: null,
+    });
+    expect(parseParticipantSessionCookieValue(responsibleSessionCookie)).toBeNull();
+    expect(parseResponsibleSessionCookieValue(participantSessionCookie)).toBeNull();
+
+    const [participantPayload] = participantSessionCookie.split(".");
+    const decodedParticipantPayload = JSON.parse(
+      Buffer.from(participantPayload, "base64url").toString("utf8"),
+    ) as Record<string, unknown>;
+    expect(Object.keys(decodedParticipantPayload).sort()).toEqual([
+      "email",
+      "expiresAt",
+      "participantUserId",
+      "role",
+    ]);
+  });
+
+  it("caps authentication sessions at eight hours", () => {
+    process.env.AUTH_SESSION_MAX_AGE_SECONDS = String(60 * 60);
+    expect(getSessionMaxAgeSeconds()).toBe(60 * 60);
+
+    process.env.AUTH_SESSION_MAX_AGE_SECONDS = String(60 * 60 * 24);
+    expect(getSessionMaxAgeSeconds()).toBe(60 * 60 * 8);
   });
 });

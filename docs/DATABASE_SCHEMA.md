@@ -235,3 +235,8 @@ contenien només dades de prova. Després elimina `submission_locks` i crea la
 vinculació nova. No modifica centres, responsables, espais, qüestionaris,
 versions, administradors ni configuració. Després del desplegament cal verificar
 que les dades de prova s'han eliminat i que la taula antiga ja no existeix.
+
+La migració `0017_participant_session_copy.sql` corregeix només els textos
+globals que encara contenen les afirmacions predeterminades antigues sobre
+l'anonimat o l'absència total de correu. No modifica plantilles personalitzades
+que no continguin literalment aquestes frases ni cap dada de participants.

@@ -103,7 +103,7 @@ Us convidem a respondre el qüestionari de diagnosi sobre l'ús educatiu de la i
 Podeu accedir-hi des d'aquest enllaç:
 {URL_QUESTIONARI}
 
-Les respostes són anònimes i els resultats es tractaran sempre de manera agregada.
+No es demana el nom docent. El correu només es conserva durant la sessió per validar el domini i no es desa a la base de dades ni es vincula a les respostes. Cada participant pot recuperar els seus resultats amb el mateix compte, mentre que el centre només veu dades agregades.
 
 Gràcies per la vostra participació.`;
 

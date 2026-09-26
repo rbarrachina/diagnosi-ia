@@ -120,6 +120,13 @@
       "when": 1789918577201,
       "tag": "0016_sad_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1790457485000,
+      "tag": "0017_participant_session_copy",
+      "breakpoints": true
     }
   ]
 }

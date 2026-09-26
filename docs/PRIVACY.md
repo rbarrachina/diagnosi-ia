@@ -4,17 +4,19 @@
 
 Diagnosi IA identifica el centre promotor i minimitza les dades del professorat.
 El centre no és anònim davant l'aplicacio ni davant l'administracio autoritzada.
-No es desen el nom ni el correu del professorat, però cada participació queda
-vinculada a un identificador opac derivat del compte Google. Aquesta dada és
-personal i pseudonimitzada: permet recuperar els resultats propis, però no es
-mostra al centre ni a l'administració.
+No es recull el nom del professorat ni se'n persisteix el correu a MySQL. El
+correu només es conserva temporalment a la cookie docent per validar el domini,
+i cada participació queda vinculada a un identificador opac derivat del compte
+Google. Aquesta dada és personal i pseudonimitzada: permet recuperar els
+resultats propis, però no es mostra al centre ni a l'administració.
 
 ## Dades prohibides
 
 No es pot recollir ni desar del professorat participant:
 
 - nom o cognoms;
-- correu electrònic;
+- correu electrònic fora de la sessió docent mínima o en qualsevol taula, log,
+  resposta o exportació;
 - comptes o perfils docents amb nom o correu a la base de dades de diagnosi;
 - identificadors proporcionats pel navegador o hashes simples del correu;
 - IP, user agent o informació del dispositiu;
@@ -35,8 +37,11 @@ No es pot recollir ni desar del professorat participant:
 - HMAC i valor xifrat del token privat.
 - Versió i estat del qüestionari.
 - Submissions i respostes tancades amb identificadors tècnics.
-- Identificador opac derivat del `sub` de Google amb HMAC, exclusivament a la
-  vinculació `participant_submissions`.
+- Identificador opac derivat del `sub` de Google amb HMAC, persistent
+  exclusivament a la vinculació `participant_submissions` i temporalment a la
+  sessió docent per acreditar la propietat.
+- Correu docent dins una cookie de sessió específica, `HttpOnly`, signada i amb
+  una durada màxima de vuit hores, només per validar i revalidar el domini.
 - Timestamps tècnics que només es mostren al participant propietari quan formen
   part de la data de realització.
 
@@ -51,11 +56,15 @@ gestionar el seu espai de prova. Aquesta funció de responsable no identifica
 els docents que participen en el qüestionari ni es relaciona amb les seves
 respostes.
 
-El professorat inicia sessió amb Google. El servidor usa el correu
-transitòriament per validar el domini durant el primer accés i deriva del `sub`
-un identificador opac amb HMAC. `participant_submissions` vincula aquest
-identificador amb una única submission per espai; no conté correu, nom, domini,
-IP ni metadades de dispositiu.
+El professorat inicia sessió amb Google amb els permisos `openid email`, sense
+demanar el perfil nominal. El servidor deriva del `sub` un identificador opac
+amb HMAC i crea una cookie docent separada de la del responsable. Aquesta
+cookie només conté el rol, l'identificador pseudònim, el correu i la caducitat;
+és `HttpOnly`, està signada però no xifrada i dura com a màxim vuit hores. El
+correu permet validar el domini en l'accés i revalidar-lo dins la transacció de
+resposta, però no s'insereix a MySQL, logs, respostes ni exportacions.
+`participant_submissions` vincula l'identificador amb una única submission per
+espai; no conté correu, nom, domini, IP ni metadades de dispositiu.
 
 Cada centre ha de triar entre `@xtec.cat` o un domini propi exacte. Les dues
 opcions no es poden activar alhora, fet que evita que una mateixa persona pugui

@@ -57,6 +57,7 @@ export function getGoogleRedirectUri(requestUrl: string): string {
 
 export function buildGoogleAuthorizationUrl(params: {
   hostedDomain?: string | null;
+  includeProfile: boolean;
   nonce: string;
   redirectUri: string;
   state: string;
@@ -67,7 +68,10 @@ export function buildGoogleAuthorizationUrl(params: {
   url.searchParams.set("client_id", config.clientId);
   url.searchParams.set("redirect_uri", params.redirectUri);
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "openid email profile");
+  url.searchParams.set(
+    "scope",
+    params.includeProfile ? "openid email profile" : "openid email",
+  );
   url.searchParams.set("state", params.state);
   url.searchParams.set("nonce", params.nonce);
   if (params.hostedDomain) {

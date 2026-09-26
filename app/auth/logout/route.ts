@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { isLocalAuthEnabled } from "@/lib/auth/local";
-import { SESSION_COOKIE_NAME } from "@/lib/auth/session-cookie";
+import {
+  LEGACY_SESSION_COOKIE_NAME,
+  PARTICIPANT_SESSION_COOKIE_NAME,
+  RESPONSIBLE_SESSION_COOKIE_NAME,
+} from "@/lib/auth/session-cookie";
 import { resolveAppUrl } from "@/lib/http/app-url";
 import { safeRelativePath } from "@/lib/http/redirect";
 
@@ -17,6 +21,8 @@ export async function POST(request: Request) {
   }
 
   const response = NextResponse.redirect(redirectUrl);
-  response.cookies.delete(SESSION_COOKIE_NAME);
+  response.cookies.delete(RESPONSIBLE_SESSION_COOKIE_NAME);
+  response.cookies.delete(PARTICIPANT_SESSION_COOKIE_NAME);
+  response.cookies.delete(LEGACY_SESSION_COOKIE_NAME);
   return response;
 }

@@ -126,6 +126,9 @@ AUTH_USER_ID_SECRET=replace-with-at-least-32-random-characters
 AUTH_SESSION_MAX_AGE_SECONDS=28800
 ```
 
+`AUTH_SESSION_MAX_AGE_SECONDS` pot reduir la durada de la sessió, però el
+servidor la limita sempre a un màxim de 28.800 segons (vuit hores).
+
 El client OAuth de Google ha de tenir autoritzada aquesta redireccio:
 
 ```text
@@ -176,7 +179,8 @@ L'identificador desat a MySQL és un UUID opac
 derivat amb HMAC. Per als responsables de centre es desen el correu, el nom
 visible i la fitxa institucional a `centre_accounts` i `centres`. Aquestes
 dades no es desen a `submissions` ni `answers`. El professorat participant
-continua sense perfil ni correu a la base de dades.
+continua sense perfil ni correu a la base de dades; el correu només existeix a
+la sessió docent temporal per revalidar el domini.
 
 Per verificar `npm start` en local cal activar explícitament
 `LOCAL_AUTH_ALLOW_PRODUCTION=true` en el procés. No s'ha d'activar en un
@@ -237,7 +241,7 @@ i nom visible del compte responsable. No ha de recollir ni desar del professorat
 participant:
 
 - nom o cognoms dels docents
-- correus electrònics
+- correus electrònics fora de la sessió docent temporal
 - perfils d'usuari amb nom o correu
 - identificadors proporcionats pel navegador
 - informació del dispositiu
@@ -249,10 +253,12 @@ participant:
 gestionar l'espai del centre. El professorat participant continua sense compte
 intern ni perfil.
 
-El correu docent només s'usa transitòriament per validar el domini exacte; no
-s'insereix a MySQL. L'identificador opac derivat del `sub` de Google amb HMAC és
-una dada personal pseudonimitzada i només s'utilitza per impedir duplicats i
-autoritzar la recuperació de la participació pròpia.
+El correu docent només es conserva transitòriament a una cookie docent
+`HttpOnly`, signada i separada de la sessió responsable, per validar i revalidar
+el domini exacte; no s'insereix a MySQL. La sessió no conté el nom docent i
+l'OAuth docent no demana el perfil nominal. L'identificador opac derivat del
+`sub` de Google amb HMAC és una dada personal pseudonimitzada i només s'utilitza
+per impedir duplicats i autoritzar la recuperació de la participació pròpia.
 
 ## Llicència
 

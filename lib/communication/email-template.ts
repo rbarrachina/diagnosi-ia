@@ -15,7 +15,7 @@ ${QUESTIONNAIRE_URL_PLACEHOLDER}
 Per tornar-hi a accedir més endavant, conserveu aquest codi:
 ${QUESTIONNAIRE_CODE_PLACEHOLDER}
 
-No es desa el nom ni el correu docent. Cada participant pot recuperar els seus resultats amb el mateix compte, mentre que el centre només veu dades agregades.
+No es demana el nom docent. El correu només es conserva durant la sessió per validar el domini i no es desa a la base de dades ni es vincula a les respostes. Cada participant pot recuperar els seus resultats amb el mateix compte, mentre que el centre només veu dades agregades.
 
 Gràcies per la vostra participació.`;
 

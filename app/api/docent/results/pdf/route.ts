@@ -1,4 +1,4 @@
-import { getCurrentAuthenticatedUser } from "@/lib/auth/session";
+import { getCurrentParticipantUser } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
 import { renderParticipantReportPdf } from "@/lib/pdf/render-participant-report";
 import { getParticipantResult } from "@/lib/repositories/participant-results";
@@ -15,7 +15,7 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    const user = await getCurrentAuthenticatedUser();
+    const user = await getCurrentParticipantUser();
     if (!user) return Response.json({ error: "Cal iniciar sessió." }, { status: 401 });
     const formData = await request.formData();
     if (

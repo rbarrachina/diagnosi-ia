@@ -4,7 +4,7 @@ import { LoginButton, LogoutButton } from "@/components/auth/auth-actions";
 import { ParticipantCodeAccessForm } from "@/components/participants/code-access-form";
 import { AppHeader } from "@/components/layout/app-header";
 import { ThemeToggle } from "@/components/home/theme-toggle";
-import { getCurrentAuthenticatedUser } from "@/lib/auth/session";
+import { getCurrentParticipantUser } from "@/lib/auth/session";
 import { listParticipantResults } from "@/lib/repositories/participant-results";
 import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
 
@@ -15,7 +15,7 @@ export default async function ParticipantAreaPage() {
     redirect("/auth/error?reason=service-closed");
   }
 
-  const user = await getCurrentAuthenticatedUser();
+  const user = await getCurrentParticipantUser();
   if (!user) {
     return (
       <main className="app-shell min-h-screen bg-paper text-ink">
@@ -41,7 +41,7 @@ export default async function ParticipantAreaPage() {
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">Accés privat</p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight">Les meves diagnosis</h1>
         <p className="mt-4 max-w-2xl leading-7 text-muted">
-          Només es mostren les participacions vinculades de manera pseudònima al compte actual. No es mostra ni es desa aquí el teu nom o correu.
+          Només es mostren les participacions vinculades de manera pseudònima al compte actual. No demanem el teu nom; el correu només es conserva durant la sessió per validar el domini i no es desa a la base de dades.
         </p>
 
         <div className="mt-8 rounded-2xl border border-line bg-surface p-5">
