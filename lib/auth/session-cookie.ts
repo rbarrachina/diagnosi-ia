@@ -3,12 +3,28 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import type { AppAuthenticatedUser } from "@/lib/auth/local";
+import {
+  PARTICIPANT_SESSION_COOKIE_NAME,
+  RESPONSIBLE_SESSION_COOKIE_NAME,
+} from "@/lib/auth/cookie-names";
 
-export const SESSION_COOKIE_NAME = "diagnosi_ia_auth";
+export {
+  LEGACY_SESSION_COOKIE_NAME,
+  PARTICIPANT_SESSION_COOKIE_NAME,
+  RESPONSIBLE_SESSION_COOKIE_NAME,
+} from "@/lib/auth/cookie-names";
 
 const DEFAULT_SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
 
-type SessionCookiePayload = AppAuthenticatedUser & {
+type ResponsibleSessionCookiePayload = AppAuthenticatedUser & {
+  role: "responsible";
+  expiresAt: number;
+};
+
+type ParticipantSessionCookiePayload = {
+  role: "participant";
+  participantUserId: string;
+  email: string;
   expiresAt: number;
 };
 
@@ -25,7 +41,7 @@ export function getSessionMaxAgeSeconds(): number {
   const configuredValue = Number(process.env.AUTH_SESSION_MAX_AGE_SECONDS);
 
   if (Number.isInteger(configuredValue) && configuredValue >= 300) {
-    return configuredValue;
+    return Math.min(configuredValue, DEFAULT_SESSION_MAX_AGE_SECONDS);
   }
 
   return DEFAULT_SESSION_MAX_AGE_SECONDS;
@@ -82,22 +98,37 @@ export function parseSignedCookieValue<T>(value: string | undefined): T | null {
   }
 }
 
-export function createSessionCookieValue(user: AppAuthenticatedUser): string {
+export function createResponsibleSessionCookieValue(
+  user: AppAuthenticatedUser,
+): string {
   return createSignedCookieValue({
+    role: "responsible",
     id: user.id,
     email: user.email,
     displayName: user.displayName,
     expiresAt: Date.now() + getSessionMaxAgeSeconds() * 1000,
-  } satisfies SessionCookiePayload);
+  } satisfies ResponsibleSessionCookiePayload);
 }
 
-export function parseSessionCookieValue(
+export function createParticipantSessionCookieValue(
+  user: Pick<AppAuthenticatedUser, "id" | "email">,
+): string {
+  return createSignedCookieValue({
+    role: "participant",
+    participantUserId: user.id,
+    email: user.email,
+    expiresAt: Date.now() + getSessionMaxAgeSeconds() * 1000,
+  } satisfies ParticipantSessionCookiePayload);
+}
+
+export function parseResponsibleSessionCookieValue(
   value: string | undefined,
 ): AppAuthenticatedUser | null {
-  const payload = parseSignedCookieValue<SessionCookiePayload>(value);
+  const payload = parseSignedCookieValue<ResponsibleSessionCookiePayload>(value);
 
   if (
     !payload ||
+    payload.role !== "responsible" ||
     typeof payload.id !== "string" ||
     typeof payload.email !== "string" ||
     typeof payload.expiresAt !== "number" ||
@@ -116,10 +147,46 @@ export function parseSessionCookieValue(
   };
 }
 
-export async function getSessionCookieUser(): Promise<AppAuthenticatedUser | null> {
+export function parseParticipantSessionCookieValue(
+  value: string | undefined,
+): AppAuthenticatedUser | null {
+  const payload = parseSignedCookieValue<ParticipantSessionCookiePayload>(value);
+
+  if (
+    !payload ||
+    payload.role !== "participant" ||
+    typeof payload.participantUserId !== "string" ||
+    typeof payload.email !== "string" ||
+    typeof payload.expiresAt !== "number" ||
+    payload.expiresAt <= Date.now()
+  ) {
+    return null;
+  }
+
+  return {
+    id: payload.participantUserId,
+    email: payload.email.toLowerCase(),
+    displayName: null,
+  };
+}
+
+export async function getResponsibleSessionCookieUser(): Promise<AppAuthenticatedUser | null> {
   try {
     const cookieStore = await cookies();
-    return parseSessionCookieValue(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+    return parseResponsibleSessionCookieValue(
+      cookieStore.get(RESPONSIBLE_SESSION_COOKIE_NAME)?.value,
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function getParticipantSessionCookieUser(): Promise<AppAuthenticatedUser | null> {
+  try {
+    const cookieStore = await cookies();
+    return parseParticipantSessionCookieValue(
+      cookieStore.get(PARTICIPANT_SESSION_COOKIE_NAME)?.value,
+    );
   } catch {
     return null;
   }

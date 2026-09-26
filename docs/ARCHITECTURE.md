@@ -51,8 +51,10 @@
 
 El navegador pot rebre el qüestionari després de l'autorització, resultats
 agregats per als rols institucionals i les respostes pròpies per al docent
-autenticat. No pot importar el client de base de dades ni rebre identificadors
-interns, l'identificador pseudònim o secrets.
+autenticat. Conserva l'identificador pseudònim i el correu només dins la cookie
+docent `HttpOnly`, inaccessible al JavaScript de l'aplicació. No pot importar
+el client de base de dades ni rebre aquests valors en payloads, identificadors
+interns de la base de dades o secrets.
 
 ### Servidor Next.js
 
@@ -86,15 +88,25 @@ comparteixen amb el client.
 
 ## Autenticació i autorització
 
-`AUTH_MODE=google` inicia el flux OAuth, valida el token de Google al servidor i
-crea una cookie `httpOnly` signada. Els responsables han de tenir correu
+`AUTH_MODE=google` inicia el flux OAuth i valida el token de Google al servidor.
+Les sessions de responsable i participant tenen cookies i esquemes diferents,
+totes dues `HttpOnly`, `SameSite=Lax`, signades i amb una durada màxima de vuit
+hores, configurable només a la baixa. La cookie responsable conté l'identificador opac, el
+correu, el nom visible i la caducitat. La cookie docent no està xifrada i només
+conté el rol, l'identificador pseudònim, el correu necessari per revalidar el
+domini i la caducitat; no conté el nom. Els responsables han de tenir correu
 `@xtec.cat`. El professorat ha de coincidir exactament amb l'única opció triada
 pel centre: `@xtec.cat` o el domini propi de Google Workspace configurat.
 
+L'OAuth de responsables demana `openid email profile`; el del professorat
+demana només `openid email`. Les rutes institucionals només accepten la cookie
+responsable i les rutes docents només accepten la cookie participant.
+
 L'identificador desat per a responsables i participants és un UUID opac derivat
 del `sub` de Google amb HMAC. El correu i nom del responsable es desen a
-`centre_accounts`; del participant només es desa l'identificador opac a
-`participant_submissions`, mai el correu, el nom o el perfil.
+`centre_accounts`; del participant només es persisteix l'identificador opac a
+`participant_submissions`. El correu docent queda limitat a la sessió temporal
+i mai no es desa a MySQL; el nom o perfil docent no es demana ni es conserva.
 
 `AUTH_MODE=local` és exclusiu de desenvolupament. En producció queda
 desactivat, tret d'una habilitació explícita destinada només a verificacions

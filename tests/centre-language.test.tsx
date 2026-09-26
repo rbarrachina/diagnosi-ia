@@ -33,7 +33,9 @@ describe("centre workspace language", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Correos admitidos" })).toBeVisible();
-    expect(screen.getByText(/No se guarda su correo/)).toBeVisible();
+    expect(
+      screen.getByText(/El correo solo se conserva durante la sesión/),
+    ).toBeVisible();
     expect(screen.getByRole("navigation", { name: "Secciones del centro" })).toBeVisible();
     expect(screen.getByRole("link", { name: "Configuración" })).toBeVisible();
     expect(screen.getByRole("link", { name: "Previsualización" })).toBeVisible();

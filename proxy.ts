@@ -1,10 +1,17 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { LEGACY_SESSION_COOKIE_NAME } from "@/lib/auth/cookie-names";
 
 export async function proxy(request: NextRequest) {
-  return NextResponse.next({
+  const response = NextResponse.next({
     request,
   });
+
+  if (request.cookies.has(LEGACY_SESSION_COOKIE_NAME)) {
+    response.cookies.delete(LEGACY_SESSION_COOKIE_NAME);
+  }
+
+  return response;
 }
 
 export const config = {

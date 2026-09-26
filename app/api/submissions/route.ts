@@ -1,5 +1,5 @@
 import { readJsonRequestBody } from "@/lib/http/request";
-import { getCurrentAuthenticatedUser } from "@/lib/auth/session";
+import { getCurrentParticipantUser } from "@/lib/auth/session";
 import {
   createSubmission,
   DuplicateSubmissionError,
@@ -26,7 +26,7 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    const user = await getCurrentAuthenticatedUser();
+    const user = await getCurrentParticipantUser();
 
     if (!user) {
       return Response.json(
