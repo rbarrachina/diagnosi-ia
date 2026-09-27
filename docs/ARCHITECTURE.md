@@ -212,7 +212,11 @@ plantilla, de manera que el correu sempre permet l'accés inicial i posterior.
 1. La portada només valida al navegador el format del codi i inicia OAuth amb
    el codi dins l'estat signat; no comprova públicament si existeix.
 2. Després del callback, el servidor aplica el límit d'intents i comprova de
-   manera conjunta codi, estat, domini o participació prèvia. Qualsevol error és genèric.
+   manera conjunta codi, estat, domini o participació prèvia. Els errors del callback són genèrics.
+   Amb sessió docent vigent, la pàgina del qüestionari torna a `/docent` en
+   cas d'error. Per a codis actius amb domini incompatible, el servidor de
+   l'àrea docent revalida codi, política i límit d'intents abans de mostrar
+   exclusivament el domini requerit. Els altres errors continuen sent genèrics.
 3. Una participació existent es pot consultar encara que l'espai estigui tancat.
 4. Les consultes i el PDF reben el codi públic, però deriven sempre el propietari
    de la sessió. No accepten `participant_user_id` ni `submission_id` del navegador.
@@ -260,7 +264,8 @@ administratives a `admin_centre_actions`.
 
 ## Gestió d'errors i observabilitat
 
-Els errors visibles són genèrics. No es registren tokens, payloads complets de
+Els errors visibles són genèrics, amb l'excepció autenticada del domini requerit
+documentada a `docs/PRIVACY.md`. No es registren tokens, payloads complets de
 respostes, correus de participants, IPs ni informació de dispositiu.
 
 ## Accessibilitat

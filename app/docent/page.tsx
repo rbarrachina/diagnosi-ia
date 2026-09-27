@@ -10,10 +10,15 @@ import { ThemeToggle } from "@/components/home/theme-toggle";
 import { getCurrentParticipantUser } from "@/lib/auth/session";
 import { listParticipantResults } from "@/lib/repositories/participant-results";
 import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
+import { getParticipantAccessErrorDomain } from "@/lib/participants/access-error-domain";
 
 export const dynamic = "force-dynamic";
 
-export default async function ParticipantAreaPage() {
+export default async function ParticipantAreaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; code?: string }>;
+}) {
   const t = await getServerInterfaceTranslator();
   if ((await getResponsiblePortalStatus()) === "closed") {
     redirect("/auth/error?reason=service-closed");
@@ -36,6 +41,10 @@ export default async function ParticipantAreaPage() {
   }
 
   const participations = await listParticipantResults(user.id);
+  const { error, code } = await searchParams;
+  const requiredDomain = error === "participant-access"
+    ? await getParticipantAccessErrorDomain(user, code)
+    : null;
 
   return (
     <main className="app-shell min-h-screen bg-paper text-ink">
@@ -56,7 +65,17 @@ export default async function ParticipantAreaPage() {
 
         <div className="mt-8 rounded-2xl border border-line bg-surface p-5">
           <h2 className="font-semibold"><InterfaceText messageKey="accedeixAUnAltreQuestionari" /></h2>
-          <div className="mt-4"><ParticipantCodeAccessForm /></div>
+          {error === "participant-access" && (
+            <div className="mt-4 rounded-xl border border-danger-border bg-danger-bg p-4 text-danger-text" role="alert">
+              <p className="font-semibold"><InterfaceText messageKey="noSHaPogutAccedirAlQuestionari" /></p>
+              <p className="mt-2 text-sm">
+                {requiredDomain
+                  ? <InterfaceText messageKey="questionariRequereixDomini" values={{ domain: requiredDomain }} />
+                  : <InterfaceText messageKey="noSHaPogutValidarLAccesDocentRevisaElCodi" />}
+              </p>
+            </div>
+          )}
+          <div className="mt-4"><ParticipantCodeAccessForm authenticated /></div>
         </div>
 
         <div className="mt-8 grid gap-4">

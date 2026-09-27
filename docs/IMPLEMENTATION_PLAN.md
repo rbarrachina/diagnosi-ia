@@ -175,6 +175,8 @@ Estat: implementada.
 - Permetre consultar participacions pròpies d'espais tancats i eliminar-les en
   cascada en reiniciar o eliminar l'espai.
 - Mantenir les superfícies de centre i administració exclusivament agregades.
+- Mostrar el domini requerit només en errors d'accés amb sessió docent vàlida,
+  codi actiu i intents no bloquejats, segons l'excepció aprovada a privacitat.
 
 ## Fase 11 — Respostes configurables per pregunta
 

@@ -13,6 +13,7 @@ export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps
   const t = await getServerInterfaceTranslator();
   const { reason } = await searchParams;
   const serviceClosed = reason === "service-closed";
+  const participantAccessError = reason === "participant-domain" || reason === "participant-access";
   const message =
     serviceClosed
       ? t("elServeiEncaraNoEstaDisponibleTornaHoAProvarQuan")
@@ -24,7 +25,7 @@ export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps
         ? t("calAccedirAmbUnCompteOficialDeCentreXtecOAmb")
       : reason === "xtec"
       ? t("nomesEsPermetLAccesAmbUnCompteXtec")
-      : reason === "participant-domain" || reason === "participant-access"
+      : participantAccessError
         ? t("noSHaPogutValidarLAccesDocentRevisaElCodi")
       : t("noSHaPogutCompletarLAutenticacio");
 
@@ -33,7 +34,11 @@ export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps
       <section className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-6 text-center">
         <div className="rounded-md border border-red-200 bg-red-50 p-6 text-red-900 shadow-sm">
           <h1 className="text-2xl font-semibold">
-            {serviceClosed ? t("serveiEnPrellancament") : t("accesNoAutoritzat")}
+            {serviceClosed
+              ? t("serveiEnPrellancament")
+              : participantAccessError
+                ? t("noSHaPogutAccedirAlQuestionari")
+                : t("accesNoAutoritzat")}
           </h1>
           <p className="mt-3 text-sm leading-6">{message}</p>
           <Link

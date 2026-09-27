@@ -196,6 +196,14 @@ export function CreateSpaceForm({
               <p className="mt-1 text-sm font-medium text-muted">
                 {messages.common.version} {displayedSpace.questionnaireVersion}
               </p>
+              <dl className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <dt className="text-sm font-medium text-muted">
+                  {messages.common.questionnaireCode}
+                </dt>
+                <dd className="rounded-lg border border-line bg-surface px-3 py-1 font-mono text-base font-semibold tracking-wide text-ink">
+                  {displayedSpace.publicCode}
+                </dd>
+              </dl>
             </div>
             <a
               className="group flex w-full items-center justify-between rounded-2xl border border-line bg-surface-soft px-5 py-4 transition hover:border-action hover:bg-accent-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:w-auto sm:min-w-44 sm:gap-7"
