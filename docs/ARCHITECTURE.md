@@ -45,6 +45,17 @@
   recuperar-los; mai en text pla.
 - Els tokens no apareixen en query strings, logs, errors o PDFs.
 
+### Defensa HTTP
+
+`next.config.ts` envia CSP en mode `Content-Security-Policy-Report-Only` com a
+fase d'observació. Abans de passar-la a mode d'aplicació cal revisar les
+violacions representatives en tots els fluxos i evitar permetre scripts
+arbitraris. El cos JSON de les peticions es consumeix en streaming i es
+cancel·la quan supera el límit de cada endpoint; `Content-Length` és només una
+comprovació anticipada. El proxy o proveïdor d'allotjament també ha d'aplicar
+un límit de mida de petició. Aquest repositori no fixa el proveïdor ni en pot
+confirmar les proteccions actives.
+
 ## Límits de confiança
 
 ### Navegador
