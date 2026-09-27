@@ -7,6 +7,8 @@ export const eu: Messages = {
     "language": "Hizkuntza",
     "languages": "Hizkuntzak",
     "questionnaireCode": "Galdetegiaren kodea",
+    "questionnaireCodeFormatHelp": "Kodearen formatua: C-XXXX-XXXX.",
+    "questionnaireCodeFormatError": "Egiaztatu formatua: C-XXXX-XXXX izan behar du, talde bakoitzean lau karaktererekin.",
     "access": "Sartu",
     "centreDialogClose": "Itxi ikastetxeko sarbidea",
     "centreArea": "Ikastetxearen gunea",

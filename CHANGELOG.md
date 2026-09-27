@@ -6,6 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Millora els errors de formulari: identifica i enfoca les preguntes pendents,
+  associa l'error al control i explica el format del codi sense revelar si
+  existeix.
+
 - Avisa abans d'abandonar un qüestionari amb respostes pendents. Si la sessió
   docent caduca en enviar, permet autenticar-se en una pestanya nova i reprendre
   l'enviament des de la pàgina original sense desar cap esborrany al navegador.

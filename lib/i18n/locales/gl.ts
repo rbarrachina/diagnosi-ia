@@ -7,6 +7,8 @@ export const gl: Messages = {
     "language": "Linguaxe",
     "languages": "Linguas",
     "questionnaireCode": "Código do cuestionario",
+    "questionnaireCodeFormatHelp": "Formato do código: C-XXXX-XXXX.",
+    "questionnaireCodeFormatError": "Revisa o formato: debe ser C-XXXX-XXXX, con catro caracteres en cada grupo.",
     "access": "Acceso",
     "centreDialogClose": "Pechar o acceso do centro",
     "centreArea": "Espazo do centro",

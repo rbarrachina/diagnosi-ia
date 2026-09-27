@@ -524,6 +524,13 @@ Quan l'ordre és fix es poden conservar els colors graduats. El navegador envia
 només l'identificador de l'opció i el servidor n'obté la puntuació. Els
 resultats i informes ordenen sempre les opcions de `0` a `3`.
 
+Quan falten respostes, el formulari identifica les preguntes pendents, les
+associa als controls corresponents i porta el focus a la primera. La llista
+d'errors permet saltar directament a qualsevol pregunta pendent. El formulari
+d'accés per codi explica el format requerit i associa l'error de format al camp.
+La comprovació pública només valida el format; els errors posteriors que podrien
+revelar si un codi existeix continuen sent genèrics.
+
 Cada espai de diagnosi admet un màxim de 300 respostes completes. Quan s'arriba
 a aquest límit, el formulari ja no accepta nous enviaments i informa que el
 qüestionari ha arribat al màxim de respostes.

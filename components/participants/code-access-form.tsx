@@ -8,8 +8,10 @@ const PUBLIC_CODE_PATTERN = /^C-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}-[ABCDEFGHJK
 export function ParticipantCodeAccessForm({ disabled = false }: { disabled?: boolean }) {
   const messages = useTranslations();
   const [code, setCode] = useState("");
+  const [touched, setTouched] = useState(false);
   const normalizedCode = code.trim().toUpperCase();
   const valid = PUBLIC_CODE_PATTERN.test(normalizedCode);
+  const invalid = touched && code.length > 0 && !valid;
 
   return (
     <form
@@ -25,12 +27,16 @@ export function ParticipantCodeAccessForm({ disabled = false }: { disabled?: boo
       </label>
       <input
         autoComplete="off"
+        aria-describedby={invalid ? "participant-code-error" : "participant-code-help"}
+        aria-invalid={invalid || undefined}
         className="min-h-12 flex-1 rounded-xl border border-line bg-surface px-4 font-mono uppercase text-ink outline-none focus:border-action focus:ring-2 focus:ring-focus"
         id="participant-code"
         disabled={disabled}
         maxLength={12}
+        onBlur={() => setTouched(true)}
         onChange={(event) => setCode(event.target.value)}
         placeholder="C-XXXX-XXXX"
+        required
         spellCheck={false}
         value={code}
       />
@@ -41,6 +47,15 @@ export function ParticipantCodeAccessForm({ disabled = false }: { disabled?: boo
       >
         {messages.common.access}
       </button>
+      <p
+        className={`text-sm sm:basis-full ${invalid ? "text-danger-text" : "text-muted"}`}
+        id={invalid ? "participant-code-error" : "participant-code-help"}
+        role={invalid ? "alert" : undefined}
+      >
+        {invalid
+          ? messages.common.questionnaireCodeFormatError
+          : messages.common.questionnaireCodeFormatHelp}
+      </p>
     </form>
   );
 }
