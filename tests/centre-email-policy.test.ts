@@ -6,9 +6,43 @@ vi.mock("@/lib/db/client", () => ({ mysqlPool: {} }));
 const {
   centreEmailPolicySchema,
   isEmailAllowedByCentrePolicy,
+  isGoogleAccountAllowedByCentrePolicy,
 } = await import("@/lib/centres/email-policy");
 
 describe("centre email policy", () => {
+  it("requires an exact email domain and the matching verified Workspace domain", () => {
+    const policy = {
+      allowXtec: false,
+      customDomain: "escola.cat",
+      configured: true,
+    };
+
+    expect(
+      isGoogleAccountAllowedByCentrePolicy(
+        "docent@escola.cat",
+        "escola.cat",
+        policy,
+      ),
+    ).toBe(true);
+    expect(
+      isGoogleAccountAllowedByCentrePolicy("docent@escola.cat", null, policy),
+    ).toBe(false);
+    expect(
+      isGoogleAccountAllowedByCentrePolicy(
+        "docent@escola.cat",
+        "other.cat",
+        policy,
+      ),
+    ).toBe(false);
+    expect(
+      isGoogleAccountAllowedByCentrePolicy(
+        "docent@sub.escola.cat",
+        "escola.cat",
+        policy,
+      ),
+    ).toBe(false);
+  });
+
   it("normalizes a custom domain and accepts an exact match", () => {
     const policy = centreEmailPolicySchema.parse({
       allowXtec: false,

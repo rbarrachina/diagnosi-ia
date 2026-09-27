@@ -24,7 +24,7 @@ export class DuplicateSubmissionError extends Error {
 
 export async function createSubmission(
   payload: SubmissionRequestInput,
-  user: Pick<AppAuthenticatedUser, "id" | "email">,
+  user: Pick<AppAuthenticatedUser, "id" | "email" | "hostedDomain">,
 ): Promise<void> {
   try {
     await createSubmissionWithAnswers(payload, user);

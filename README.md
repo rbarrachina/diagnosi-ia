@@ -174,13 +174,16 @@ Amb `AUTH_MODE=local`, l'usuari local `LOCAL_AUTH_EMAIL` actua com a creador
 XTEC provisional. Amb `AUTH_MODE=google`, `/auth/login` redirigeix a Google
 OAuth, valida el `id_token` server-side, exigeix email `@xtec.cat` i crea una
 sessio `httpOnly` signada per als responsables. El professorat usa Google OAuth
-amb `@xtec.cat`, un domini propi exacte configurat pel centre o tots dos.
+amb `@xtec.cat` o el domini propi exacte triat pel centre. El servidor verifica
+la signatura de l'`id_token` amb les claus públiques de Google i comprova
+emissor, destinatari, caducitat i `nonce`; per al professorat també exigeix que
+el claim signat `hd` coincideixi amb el domini configurat.
 L'identificador desat a MySQL és un UUID opac
 derivat amb HMAC. Per als responsables de centre es desen el correu, el nom
 visible i la fitxa institucional a `centre_accounts` i `centres`. Aquestes
 dades no es desen a `submissions` ni `answers`. El professorat participant
-continua sense perfil ni correu a la base de dades; el correu només existeix a
-la sessió docent temporal per revalidar el domini.
+continua sense perfil ni correu a la base de dades; el correu i el claim `hd`
+només existeixen a la sessió docent temporal per revalidar el domini.
 
 Per verificar `npm start` en local cal activar explícitament
 `LOCAL_AUTH_ALLOW_PRODUCTION=true` en el procés. No s'ha d'activar en un
@@ -253,11 +256,11 @@ participant:
 gestionar l'espai del centre. El professorat participant continua sense compte
 intern ni perfil.
 
-El correu docent només es conserva transitòriament a una cookie docent
-`HttpOnly`, signada i separada de la sessió responsable, per validar i revalidar
-el domini exacte; no s'insereix a MySQL. La sessió no conté el nom docent i
-l'OAuth docent no demana el perfil nominal. L'identificador opac derivat del
-`sub` de Google amb HMAC és una dada personal pseudonimitzada i només s'utilitza
+El correu docent i el claim `hd` només es conserven transitòriament a una cookie
+docent `HttpOnly`, signada i separada de la sessió responsable, per validar i
+revalidar el domini exacte; no s'insereixen a MySQL. La sessió no conté el nom
+docent i l'OAuth docent no demana el perfil nominal. L'identificador opac
+derivat del `sub` de Google amb HMAC és una dada personal pseudonimitzada i només s'utilitza
 per impedir duplicats i autoritzar la recuperació de la participació pròpia.
 
 ## Llicència

@@ -62,6 +62,22 @@ export function isEmailAllowedByCentrePolicy(
   );
 }
 
+/** Require both the exact email domain and Google's signed Workspace `hd` claim. */
+export function isGoogleAccountAllowedByCentrePolicy(
+  email: string,
+  hostedDomain: string | null | undefined,
+  policy: Pick<CentreEmailPolicy, "allowXtec" | "customDomain" | "configured">,
+): boolean {
+  const acceptedEmailDomain = policy.allowXtec
+    ? "xtec.cat"
+    : policy.customDomain?.toLowerCase();
+  return Boolean(
+    acceptedEmailDomain &&
+      isEmailAllowedByCentrePolicy(email, policy) &&
+      hostedDomain?.toLowerCase() === acceptedEmailDomain,
+  );
+}
+
 export function acceptedDomainLabels(
   policy: Pick<CentreEmailPolicy, "allowXtec" | "customDomain">,
 ): string[] {

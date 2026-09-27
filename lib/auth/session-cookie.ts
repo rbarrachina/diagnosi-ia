@@ -25,6 +25,7 @@ type ParticipantSessionCookiePayload = {
   role: "participant";
   participantUserId: string;
   email: string;
+  hostedDomain: string | null;
   expiresAt: number;
 };
 
@@ -106,17 +107,19 @@ export function createResponsibleSessionCookieValue(
     id: user.id,
     email: user.email,
     displayName: user.displayName,
+    hostedDomain: user.hostedDomain ?? null,
     expiresAt: Date.now() + getSessionMaxAgeSeconds() * 1000,
   } satisfies ResponsibleSessionCookiePayload);
 }
 
 export function createParticipantSessionCookieValue(
-  user: Pick<AppAuthenticatedUser, "id" | "email">,
+  user: Pick<AppAuthenticatedUser, "id" | "email" | "hostedDomain">,
 ): string {
   return createSignedCookieValue({
     role: "participant",
     participantUserId: user.id,
     email: user.email,
+    hostedDomain: user.hostedDomain ?? null,
     expiresAt: Date.now() + getSessionMaxAgeSeconds() * 1000,
   } satisfies ParticipantSessionCookiePayload);
 }
@@ -144,6 +147,10 @@ export function parseResponsibleSessionCookieValue(
       typeof payload.displayName === "string" && payload.displayName.trim()
         ? payload.displayName.trim()
         : null,
+    hostedDomain:
+      typeof payload.hostedDomain === "string" && payload.hostedDomain.trim()
+        ? payload.hostedDomain.trim().toLowerCase()
+        : null,
   };
 }
 
@@ -167,6 +174,10 @@ export function parseParticipantSessionCookieValue(
     id: payload.participantUserId,
     email: payload.email.toLowerCase(),
     displayName: null,
+    hostedDomain:
+      typeof payload.hostedDomain === "string" && payload.hostedDomain.trim()
+        ? payload.hostedDomain.trim().toLowerCase()
+        : null,
   };
 }
 

@@ -9,7 +9,7 @@ import {
   type SubmissionRequestInput,
 } from "@/lib/validation/schemas";
 import type { AppAuthenticatedUser } from "@/lib/auth/local";
-import { isEmailAllowedByCentrePolicy } from "@/lib/centres/email-policy";
+import { isGoogleAccountAllowedByCentrePolicy } from "@/lib/centres/email-policy";
 
 export class InvalidSubmissionRepositoryError extends Error {
   constructor() {
@@ -91,7 +91,7 @@ export async function hasAccountSubmittedToPublicQuestionnaire(params: {
 
 export async function createSubmissionWithAnswers(
   payload: SubmissionRequestInput,
-  user: Pick<AppAuthenticatedUser, "id" | "email">,
+  user: Pick<AppAuthenticatedUser, "id" | "email" | "hostedDomain">,
 ): Promise<void> {
   const connection = await mysqlPool.getConnection();
 
@@ -100,7 +100,7 @@ export async function createSubmissionWithAnswers(
 
     const space = await lockActiveDiagnosticSpace(connection, payload);
     if (
-      !isEmailAllowedByCentrePolicy(user.email, {
+      !isGoogleAccountAllowedByCentrePolicy(user.email, user.hostedDomain, {
         allowXtec: Boolean(space.allow_xtec),
         customDomain: space.custom_domain,
         configured: Boolean(space.email_policy_configured_at),

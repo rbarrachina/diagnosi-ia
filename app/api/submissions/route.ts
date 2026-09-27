@@ -11,7 +11,7 @@ import {
 } from "@/lib/validation/schemas";
 import {
   getCentreEmailPolicyForPublicCode,
-  isEmailAllowedByCentrePolicy,
+  isGoogleAccountAllowedByCentrePolicy,
 } from "@/lib/centres/email-policy";
 import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
 
@@ -42,7 +42,10 @@ export async function POST(request: Request): Promise<Response> {
     );
     const policy = await getCentreEmailPolicyForPublicCode(payload.publicCode);
 
-    if (!policy || !isEmailAllowedByCentrePolicy(user.email, policy)) {
+    if (
+      !policy ||
+      !isGoogleAccountAllowedByCentrePolicy(user.email, user.hostedDomain, policy)
+    ) {
       return Response.json(
         { error: "No s'ha pogut validar l'accés al qüestionari." },
         { status: 403 },

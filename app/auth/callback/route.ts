@@ -3,7 +3,7 @@ import {
   exchangeGoogleAuthorizationCode,
   getGoogleOAuthConfig,
   getGoogleRedirectUri,
-  googleTokenInfoToAppUser,
+  googleIdTokenToAppUser,
   isGoogleAuthEnabled,
   verifyGoogleIdToken,
 } from "@/lib/auth/google";
@@ -29,7 +29,7 @@ import { isXtecEmail } from "@/lib/auth/xtec";
 import { registerResponsibleCentreAccount } from "@/lib/centres/centre-profiles";
 import {
   getCentreEmailPolicyForPublicCode,
-  isEmailAllowedByCentrePolicy,
+  isGoogleAccountAllowedByCentrePolicy,
 } from "@/lib/centres/email-policy";
 import { hasAccountSubmittedToPublicQuestionnaire } from "@/lib/repositories/submissions";
 import {
@@ -99,11 +99,11 @@ export async function GET(request: NextRequest) {
       code,
       redirectUri: getGoogleRedirectUri(request.url),
     });
-    const tokenInfo = await verifyGoogleIdToken({
+    const tokenClaims = await verifyGoogleIdToken({
       idToken,
       nonce: statePayload.nonce,
     });
-    const user = googleTokenInfoToAppUser(tokenInfo);
+    const user = googleIdTokenToAppUser(tokenClaims);
 
     let isParticipantAllowed = statePayload.purpose !== "participant";
     if (statePayload.purpose === "participant" && !statePayload.publicCode) {
@@ -121,7 +121,11 @@ export async function GET(request: NextRequest) {
           alreadyParticipated ||
           Boolean(
             participantPolicy &&
-              isEmailAllowedByCentrePolicy(user.email, participantPolicy),
+              isGoogleAccountAllowedByCentrePolicy(
+                user.email,
+                user.hostedDomain,
+                participantPolicy,
+              ),
           );
       }
       if (isParticipantAllowed) clearParticipantCodeFailures(user.id);

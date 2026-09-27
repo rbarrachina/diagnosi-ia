@@ -51,10 +51,10 @@
 
 El navegador pot rebre el qüestionari després de l'autorització, resultats
 agregats per als rols institucionals i les respostes pròpies per al docent
-autenticat. Conserva l'identificador pseudònim i el correu només dins la cookie
-docent `HttpOnly`, inaccessible al JavaScript de l'aplicació. No pot importar
-el client de base de dades ni rebre aquests valors en payloads, identificadors
-interns de la base de dades o secrets.
+autenticat. Conserva l'identificador pseudònim, el correu i el claim `hd` només
+dins la cookie docent `HttpOnly`, inaccessible al JavaScript de l'aplicació. No
+pot importar el client de base de dades ni rebre aquests valors en payloads,
+identificadors interns de la base de dades o secrets.
 
 ### Servidor Next.js
 
@@ -88,15 +88,24 @@ comparteixen amb el client.
 
 ## Autenticació i autorització
 
-`AUTH_MODE=google` inicia el flux OAuth i valida el token de Google al servidor.
+`AUTH_MODE=google` inicia el flux OAuth i verifica el `id_token` al servidor
+amb `google-auth-library`, que valida la signatura amb les claus públiques de
+Google i en gestiona la rotació. Després es comproven explícitament `iss`, `aud`,
+`exp` i el `nonce` de la petició. El paràmetre OAuth `hd` només orienta el
+selector de comptes; no prova l'afiliació. Per al professorat, tant el domini
+exacte del correu com el claim signat `hd` han de coincidir amb la política del
+centre.
+
 Les sessions de responsable i participant tenen cookies i esquemes diferents,
 totes dues `HttpOnly`, `SameSite=Lax`, signades i amb una durada màxima de vuit
-hores, configurable només a la baixa. La cookie responsable conté l'identificador opac, el
-correu, el nom visible i la caducitat. La cookie docent no està xifrada i només
-conté el rol, l'identificador pseudònim, el correu necessari per revalidar el
-domini i la caducitat; no conté el nom. Els responsables han de tenir correu
-`@xtec.cat`. El professorat ha de coincidir exactament amb l'única opció triada
-pel centre: `@xtec.cat` o el domini propi de Google Workspace configurat.
+hores, configurable només a la baixa. La cookie responsable conté
+l'identificador opac, el correu, el nom visible, el domini allotjat i la
+caducitat. La cookie docent no està xifrada i només conté el rol,
+l'identificador pseudònim, el correu i el claim `hd` necessari per revalidar el
+domini; no conté el nom. Els
+responsables han de tenir correu `@xtec.cat`. El professorat ha de coincidir
+exactament amb l'única opció triada pel centre: `@xtec.cat` o el domini propi
+de Google Workspace configurat.
 
 L'OAuth de responsables demana `openid email profile`; el del professorat
 demana només `openid email`. Les rutes institucionals només accepten la cookie

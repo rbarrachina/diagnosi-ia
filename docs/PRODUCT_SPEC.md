@@ -366,15 +366,22 @@ trobat. El servidor genera:
 - Token privat llarg i criptograficament segur.
 
 La capa d'autenticació és server-side. El mode
-`AUTH_MODE=google` valida el `id_token` amb Google. Per als responsables demana
-`openid email profile` i exigeix email `@xtec.cat`; per al professorat demana
-només `openid email` i exigeix el domini exacte configurat pel centre.
+`AUTH_MODE=google` verifica la signatura de l'`id_token` amb `google-auth-library`
+i les claus públiques rotatives de Google, i comprova emissor, destinatari,
+caducitat i `nonce`. Per als responsables demana `openid email profile` i
+exigeix email `@xtec.cat`; per al professorat demana només `openid email` i
+exigeix que tant el domini exacte del correu com el claim signat `hd` coincideixin
+amb la política del centre. El paràmetre OAuth `hd` només orienta el selector i
+no substitueix la comprovació del token.
+
 Per als responsables desa a MySQL l'identificador opac, el correu i el nom
 visible del compte, separats de les respostes. Per als participants no demana
 el nom i només persisteix a MySQL un identificador opac derivat amb HMAC. El
 correu es conserva a la cookie docent `HttpOnly`, signada però no xifrada,
 durant un màxim de vuit hores per revalidar el domini; no s'insereix a cap
-taula. Les sessions docent i responsable tenen cookies i esquemes separats. El mode
+taula. El claim `hd` verificat també s'hi conserva temporalment per revalidar
+la pertinença a Google Workspace. Les sessions docent i responsable tenen
+cookies i esquemes separats. El mode
 `AUTH_MODE=local` queda com a ajuda de desenvolupament.
 
 Per a qualsevol responsable autoritzat que accedeix a crear un espai, el
@@ -493,9 +500,11 @@ El formulari ha de mostrar:
 Per obrir el formulari, el docent ha d'iniciar sessio amb un compte Google del
 domini admès. Aquesta sessió no demana el perfil nominal ni crea un perfil
 docent. El correu es conserva només a la cookie docent temporal per revalidar
-el domini i no s'insereix a MySQL. El servidor deriva del `sub` un identificador
-opac amb HMAC i el vincula a la submission a `participant_submissions`. La
-restricció única per espai i participant impedeix una segona resposta.
+el domini i, amb el claim `hd` verificat, confirmar que el compte és de Google
+Workspace; cap dels dos valors no s'insereix a MySQL. El servidor deriva del
+`sub` un identificador opac amb HMAC i el vincula a la submission a
+`participant_submissions`. La restricció única per espai i participant
+impedeix una segona resposta.
 
 El docent respon totes les preguntes obligatories de la versio assignada a
 l'espai. Cada pregunta té exactament quatre respostes, redactades per

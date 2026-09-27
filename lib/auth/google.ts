@@ -1,14 +1,15 @@
 import "server-only";
 
 import { createHmac, randomBytes } from "node:crypto";
+import { OAuth2Client } from "google-auth-library";
 import { resolveAppUrl } from "@/lib/http/app-url";
 import { getAuthUserIdSecret } from "@/lib/auth/session-cookie";
 import type { AppAuthenticatedUser } from "@/lib/auth/local";
 
 const GOOGLE_AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
-const GOOGLE_TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo";
 const GOOGLE_ISSUERS = new Set(["https://accounts.google.com", "accounts.google.com"]);
+const googleAuthClient = new OAuth2Client();
 
 type GoogleOAuthConfig = {
   clientId: string;
@@ -21,15 +22,16 @@ type GoogleTokenResponse = {
   error_description?: string;
 };
 
-export type GoogleIdTokenInfo = {
+export type GoogleIdTokenClaims = {
   iss: string;
   sub: string;
   aud: string;
   email: string;
-  email_verified: string | boolean;
-  exp: string | number;
+  email_verified: boolean;
+  exp: number;
   nonce?: string;
   name?: string;
+  hd?: string;
 };
 
 export function isGoogleAuthEnabled(): boolean {
@@ -117,52 +119,60 @@ export async function exchangeGoogleAuthorizationCode(params: {
 export async function verifyGoogleIdToken(params: {
   idToken: string;
   nonce: string;
-}): Promise<GoogleIdTokenInfo> {
+}): Promise<GoogleIdTokenClaims> {
   const config = requireGoogleOAuthConfig();
-  const response = await fetch(
-    `${GOOGLE_TOKENINFO_URL}?id_token=${encodeURIComponent(params.idToken)}`,
-    { cache: "no-store" },
-  );
-
-  if (!response.ok) {
-    throw new Error("Google id token verification failed");
-  }
-
-  const tokenInfo = (await response.json()) as GoogleIdTokenInfo;
-  const expiresAt = Number(tokenInfo.exp) * 1000;
+  const ticket = await googleAuthClient.verifyIdToken({
+    idToken: params.idToken,
+    audience: config.clientId,
+  });
+  const payload = ticket.getPayload();
 
   if (
-    !GOOGLE_ISSUERS.has(tokenInfo.iss) ||
-    tokenInfo.aud !== config.clientId ||
-    !tokenInfo.sub ||
-    typeof tokenInfo.email !== "string" ||
-    (tokenInfo.email_verified !== true && tokenInfo.email_verified !== "true") ||
-    !Number.isFinite(expiresAt) ||
-    expiresAt <= Date.now() ||
-    tokenInfo.nonce !== params.nonce
+    !payload ||
+    typeof payload.iss !== "string" ||
+    !GOOGLE_ISSUERS.has(payload.iss) ||
+    payload.aud !== config.clientId ||
+    typeof payload.sub !== "string" ||
+    !payload.sub ||
+    typeof payload.email !== "string" ||
+    payload.email_verified !== true ||
+    typeof payload.exp !== "number" ||
+    !Number.isFinite(payload.exp) ||
+    payload.exp * 1000 <= Date.now() ||
+    payload.nonce !== params.nonce
   ) {
     throw new Error("Google id token claims are invalid");
   }
 
   return {
-    ...tokenInfo,
-    email: tokenInfo.email.toLowerCase(),
+    iss: payload.iss,
+    sub: payload.sub,
+    aud: config.clientId,
+    email: payload.email.toLowerCase(),
+    email_verified: true,
+    exp: payload.exp,
+    nonce: payload.nonce,
     name:
-      typeof tokenInfo.name === "string" && tokenInfo.name.trim()
-        ? tokenInfo.name.trim()
+      typeof payload.name === "string" && payload.name.trim()
+        ? payload.name.trim()
         : undefined,
+    hd: typeof payload.hd === "string" ? payload.hd : undefined,
   };
 }
 
-export function googleTokenInfoToAppUser(
-  tokenInfo: Pick<GoogleIdTokenInfo, "iss" | "sub" | "email" | "name">,
+export function googleIdTokenToAppUser(
+  tokenClaims: Pick<GoogleIdTokenClaims, "iss" | "sub" | "email" | "name" | "hd">,
 ): AppAuthenticatedUser {
   return {
-    id: createOpaqueGoogleUserId(tokenInfo.iss, tokenInfo.sub),
-    email: tokenInfo.email.toLowerCase(),
+    id: createOpaqueGoogleUserId(tokenClaims.iss, tokenClaims.sub),
+    email: tokenClaims.email.toLowerCase(),
     displayName:
-      typeof tokenInfo.name === "string" && tokenInfo.name.trim()
-        ? tokenInfo.name.trim()
+      typeof tokenClaims.name === "string" && tokenClaims.name.trim()
+        ? tokenClaims.name.trim()
+        : null,
+    hostedDomain:
+      typeof tokenClaims.hd === "string" && tokenClaims.hd.trim()
+        ? tokenClaims.hd.trim().toLowerCase()
         : null,
   };
 }

@@ -29,10 +29,15 @@ Data de revisió: 2026-09-16.
 - No es demanen ni es conserven noms, IPs o informació de dispositiu del
   professorat participant, ni se'n persisteixen correus fora de la sessió.
 - El domini docent es valida després de Google OAuth i es torna a validar dins
-  la transacció abans d'inserir la resposta.
+  la transacció abans d'inserir la resposta; la validació compara el domini del
+  correu i el claim `hd` signat amb la política exacta del centre.
 - La sessió docent està separada de la responsable i no conté el nom. El correu
-  docent només existeix transitòriament a la cookie `HttpOnly` signada, però no
-  xifrada, per revalidar el domini i no s'insereix en cap taula.
+  docent i el claim `hd` només existeixen transitòriament a la cookie `HttpOnly`
+  signada, però no xifrada, per revalidar el domini; no s'insereixen en cap
+  taula.
+- Els tokens `id_token` es validen localment amb la biblioteca oficial de Google
+  i les claus públiques rotatives, amb comprovació d'emissor, destinatari,
+  caducitat i `nonce`; no es consulta l'endpoint `tokeninfo`.
 
 ## Controls que s'han de repetir a cada PR
 

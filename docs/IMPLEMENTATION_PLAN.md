@@ -148,7 +148,12 @@ Estat: completada.
 - Permetre triar exclusivament entre `@xtec.cat` o un domini propi exacte de
   Google Workspace.
 - Validar el domini després de l'OAuth i novament dins la transacció de
-  resposta, sense persistir el correu docent fora de la cookie temporal.
+  resposta, comprovant el domini del correu i el claim signat `hd` contra la
+  política exacta del centre; conservar-los només a la cookie docent temporal,
+  sense persistir-los a MySQL.
+- Verificar signatura, emissor, destinatari, caducitat i `nonce` dels tokens
+  amb `google-auth-library` i les claus públiques rotatives de Google, no amb
+  l'endpoint de depuració `tokeninfo`.
 
 Cada canvi d'aquesta fase ha d'actualitzar els documents normatius, afegir
 proves i superar la checklist de privacitat.

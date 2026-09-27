@@ -59,12 +59,22 @@ respostes.
 El professorat inicia sessió amb Google amb els permisos `openid email`, sense
 demanar el perfil nominal. El servidor deriva del `sub` un identificador opac
 amb HMAC i crea una cookie docent separada de la del responsable. Aquesta
-cookie només conté el rol, l'identificador pseudònim, el correu i la caducitat;
-és `HttpOnly`, està signada però no xifrada i dura com a màxim vuit hores. El
-correu permet validar el domini en l'accés i revalidar-lo dins la transacció de
-resposta, però no s'insereix a MySQL, logs, respostes ni exportacions.
+cookie només conté el rol, l'identificador pseudònim, el correu, el claim `hd`
+verificat i la caducitat. És `HttpOnly`, està signada però no xifrada i dura
+com a màxim vuit hores. El
+correu i el claim `hd` permeten validar el domini en l'accés i revalidar-lo dins
+la transacció de resposta, però no s'insereixen a MySQL, logs, respostes ni
+exportacions.
 `participant_submissions` vincula l'identificador amb una única submission per
 espai; no conté correu, nom, domini, IP ni metadades de dispositiu.
+
+La verificació del token es fa al servidor amb la biblioteca oficial
+`google-auth-library`, que comprova la signatura amb claus públiques de Google;
+es mantenen les comprovacions d'emissor, destinatari, caducitat i `nonce`. Per
+autoritzar una participació, el servidor compara el domini exacte del correu i
+el claim `hd` signat amb la política del centre. El claim `hd` només es conserva
+transitòriament a la sessió signada per poder repetir la comprovació en mostrar
+i enviar el qüestionari; no s'escriu a MySQL ni a logs.
 
 Cada centre ha de triar entre `@xtec.cat` o un domini propi exacte. Les dues
 opcions no es poden activar alhora, fet que evita que una mateixa persona pugui

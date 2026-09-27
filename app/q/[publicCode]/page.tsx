@@ -9,7 +9,7 @@ import { isPublicCode } from "@/lib/crypto/public-code";
 import { loadPublicQuestionnaire } from "@/lib/questionnaire/load-public-questionnaire";
 import {
   getCentreEmailPolicyForPublicCode,
-  isEmailAllowedByCentrePolicy,
+  isGoogleAccountAllowedByCentrePolicy,
 } from "@/lib/centres/email-policy";
 import { getParticipantResult } from "@/lib/repositories/participant-results";
 import {
@@ -63,7 +63,8 @@ export default async function QuestionnairePage({ params }: QuestionnairePagePro
       ])
     : [null, null];
   const isAllowed = Boolean(
-    user && questionnaire && policy && isEmailAllowedByCentrePolicy(user.email, policy),
+    user && questionnaire && policy &&
+      isGoogleAccountAllowedByCentrePolicy(user.email, user.hostedDomain, policy),
   );
   if (user) {
     if (isAllowed) clearParticipantCodeFailures(user.id);
