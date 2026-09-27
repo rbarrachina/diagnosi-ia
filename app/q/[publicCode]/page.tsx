@@ -4,7 +4,7 @@ import { LoginButton, LogoutButton } from "@/components/auth/auth-actions";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { AppHeader } from "@/components/layout/app-header";
 import { QuestionnaireForm } from "@/components/questionnaire/questionnaire-form";
-import { getCurrentAuthenticatedUser } from "@/lib/auth/session";
+import { getCurrentParticipantUser } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
 import { loadPublicQuestionnaire } from "@/lib/questionnaire/load-public-questionnaire";
 import {
@@ -42,7 +42,7 @@ export default async function QuestionnairePage({ params }: QuestionnairePagePro
     redirect("/auth/error?reason=service-closed");
   }
 
-  const user = await getCurrentAuthenticatedUser();
+  const user = await getCurrentParticipantUser();
 
   if (user) {
     const existing = await getParticipantResult({

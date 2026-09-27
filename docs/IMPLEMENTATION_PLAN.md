@@ -17,8 +17,10 @@ L'aplicació funciona amb Next.js i MySQL i disposa de:
 - consulta administrativa agregada per a tots els centres o per a un centre
   identificat concret, sempre subjecta al llindar mínim.
 
-La versió 0.5.0 incorpora resultats docents pseudonimitzats sense desar-ne el
-nom o el correu i manté els accessos institucionals exclusivament agregats.
+La versió 0.5.0 incorpora resultats docents pseudonimitzats sense demanar-ne el
+nom ni persistir-ne el correu a MySQL. El correu queda temporalment a la sessió
+docent mínima per revalidar el domini, i els accessos institucionals continuen
+sent exclusivament agregats.
 
 La infraestructura d'internacionalització usa catàlegs tipats, selecció
 explícita i una cookie funcional. No fa detecció automàtica del navegador i
@@ -84,6 +86,8 @@ Estat: completada.
 Estat: completada.
 
 - Sessió Google d'un domini admès pel centre requerida per respondre.
+- Sessió docent separada de la responsable, sense nom visible i amb el correu
+  limitat a la cookie temporal necessària per revalidar el domini.
 - Bloqueig HMAC separat de submissions i answers.
 - Validació de totes les preguntes de la versió assignada.
 - Valors 0, 1, 2 i 3.
@@ -145,7 +149,8 @@ Estat: completada.
   Google Workspace.
 - Validar el domini després de l'OAuth i novament dins la transacció de
   resposta, comprovant el domini del correu i el claim signat `hd` contra la
-  política exacta del centre, sense persistir aquests valors.
+  política exacta del centre; conservar-los només a la cookie docent temporal,
+  sense persistir-los a MySQL.
 - Verificar signatura, emissor, destinatari, caducitat i `nonce` dels tokens
   amb `google-auth-library` i les claus públiques rotatives de Google, no amb
   l'endpoint de depuració `tokeninfo`.

@@ -15,6 +15,7 @@ import {
 import {
   createSignedCookieValue,
   getAuthSessionSecret,
+  LEGACY_SESSION_COOKIE_NAME,
   shouldUseSecureCookies,
 } from "@/lib/auth/session-cookie";
 import { resolveAppUrl } from "@/lib/http/app-url";
@@ -53,11 +54,14 @@ export async function GET(request: NextRequest) {
   const redirectUri = getGoogleRedirectUri(request.url);
   const authorizationUrl = buildGoogleAuthorizationUrl({
     hostedDomain: isParticipant ? null : "xtec.cat",
+    includeProfile: !isParticipant,
     nonce,
     redirectUri,
     state,
   });
   const response = NextResponse.redirect(authorizationUrl);
+
+  response.cookies.delete(LEGACY_SESSION_COOKIE_NAME);
 
   response.cookies.set(
     OAUTH_STATE_COOKIE_NAME,

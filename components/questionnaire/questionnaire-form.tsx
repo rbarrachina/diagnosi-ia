@@ -296,9 +296,10 @@ function IntroPage({
           centre a partir de dades de conjunt.
         </p>
         <p>
-          No es desa el nom ni el correu. La participació queda vinculada a un
-          identificador pseudònim per poder recuperar-ne els resultats amb el
-          mateix compte.
+          No demanem el nom. El correu només es conserva durant la sessió per
+          validar el domini i no es desa a la base de dades. La participació
+          queda vinculada a un identificador pseudònim per poder recuperar-ne
+          els resultats amb el mateix compte.
         </p>
         <p>
           El centre i l’administració només poden consultar resultats agregats;

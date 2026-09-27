@@ -126,6 +126,9 @@ AUTH_USER_ID_SECRET=replace-with-at-least-32-random-characters
 AUTH_SESSION_MAX_AGE_SECONDS=28800
 ```
 
+`AUTH_SESSION_MAX_AGE_SECONDS` pot reduir la durada de la sessió, però el
+servidor la limita sempre a un màxim de 28.800 segons (vuit hores).
+
 El client OAuth de Google ha de tenir autoritzada aquesta redireccio:
 
 ```text
@@ -171,12 +174,16 @@ Amb `AUTH_MODE=local`, l'usuari local `LOCAL_AUTH_EMAIL` actua com a creador
 XTEC provisional. Amb `AUTH_MODE=google`, `/auth/login` redirigeix a Google
 OAuth, valida el `id_token` server-side, exigeix email `@xtec.cat` i crea una
 sessio `httpOnly` signada per als responsables. El professorat usa Google OAuth
-amb `@xtec.cat`, un domini propi exacte configurat pel centre o tots dos.
+amb `@xtec.cat` o el domini propi exacte triat pel centre. El servidor verifica
+la signatura de l'`id_token` amb les claus públiques de Google i comprova
+emissor, destinatari, caducitat i `nonce`; per al professorat també exigeix que
+el claim signat `hd` coincideixi amb el domini configurat.
 L'identificador desat a MySQL és un UUID opac
 derivat amb HMAC. Per als responsables de centre es desen el correu, el nom
 visible i la fitxa institucional a `centre_accounts` i `centres`. Aquestes
 dades no es desen a `submissions` ni `answers`. El professorat participant
-continua sense perfil ni correu a la base de dades.
+continua sense perfil ni correu a la base de dades; el correu i el claim `hd`
+només existeixen a la sessió docent temporal per revalidar el domini.
 
 Per verificar `npm start` en local cal activar explícitament
 `LOCAL_AUTH_ALLOW_PRODUCTION=true` en el procés. No s'ha d'activar en un
@@ -237,7 +244,7 @@ i nom visible del compte responsable. No ha de recollir ni desar del professorat
 participant:
 
 - nom o cognoms dels docents
-- correus electrònics
+- correus electrònics fora de la sessió docent temporal
 - perfils d'usuari amb nom o correu
 - identificadors proporcionats pel navegador
 - informació del dispositiu
@@ -249,10 +256,12 @@ participant:
 gestionar l'espai del centre. El professorat participant continua sense compte
 intern ni perfil.
 
-El correu docent només s'usa transitòriament per validar el domini exacte; no
-s'insereix a MySQL. L'identificador opac derivat del `sub` de Google amb HMAC és
-una dada personal pseudonimitzada i només s'utilitza per impedir duplicats i
-autoritzar la recuperació de la participació pròpia.
+El correu docent i el claim `hd` només es conserven transitòriament a una cookie
+docent `HttpOnly`, signada i separada de la sessió responsable, per validar i
+revalidar el domini exacte; no s'insereixen a MySQL. La sessió no conté el nom
+docent i l'OAuth docent no demana el perfil nominal. L'identificador opac
+derivat del `sub` de Google amb HMAC és una dada personal pseudonimitzada i només s'utilitza
+per impedir duplicats i autoritzar la recuperació de la participació pròpia.
 
 ## Llicència
 

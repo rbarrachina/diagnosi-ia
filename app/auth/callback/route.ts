@@ -9,11 +9,14 @@ import {
 } from "@/lib/auth/google";
 import { isLocalAuthEnabled } from "@/lib/auth/local";
 import {
-  createSessionCookieValue,
+  createParticipantSessionCookieValue,
+  createResponsibleSessionCookieValue,
   getAuthSessionSecret,
   getSessionMaxAgeSeconds,
+  LEGACY_SESSION_COOKIE_NAME,
+  PARTICIPANT_SESSION_COOKIE_NAME,
   parseSignedCookieValue,
-  SESSION_COOKIE_NAME,
+  RESPONSIBLE_SESSION_COOKIE_NAME,
   shouldUseSecureCookies,
 } from "@/lib/auth/session-cookie";
 import {
@@ -74,6 +77,7 @@ export async function GET(request: NextRequest) {
   ) {
     const response = NextResponse.redirect(errorRedirect);
     response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
+    response.cookies.delete(LEGACY_SESSION_COOKIE_NAME);
     return response;
   }
 
@@ -85,7 +89,8 @@ export async function GET(request: NextRequest) {
       new URL("/auth/error?reason=service-closed", appUrl),
     );
     response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
-    response.cookies.delete(SESSION_COOKIE_NAME);
+    response.cookies.delete(PARTICIPANT_SESSION_COOKIE_NAME);
+    response.cookies.delete(LEGACY_SESSION_COOKIE_NAME);
     return response;
   }
 
@@ -140,7 +145,8 @@ export async function GET(request: NextRequest) {
         ),
       );
       response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
-      response.cookies.delete(SESSION_COOKIE_NAME);
+      response.cookies.delete(getSessionCookieName(statePayload.purpose));
+      response.cookies.delete(LEGACY_SESSION_COOKIE_NAME);
       return response;
     }
 
@@ -164,7 +170,8 @@ export async function GET(request: NextRequest) {
           ),
         );
         response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
-        response.cookies.delete(SESSION_COOKIE_NAME);
+        response.cookies.delete(RESPONSIBLE_SESSION_COOKIE_NAME);
+        response.cookies.delete(LEGACY_SESSION_COOKIE_NAME);
         return response;
       }
     }
@@ -180,7 +187,13 @@ export async function GET(request: NextRequest) {
 
     const response = NextResponse.redirect(new URL(statePayload.next, appUrl));
     response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
-    response.cookies.set(SESSION_COOKIE_NAME, createSessionCookieValue(user), {
+    response.cookies.delete(LEGACY_SESSION_COOKIE_NAME);
+    const sessionCookieName = getSessionCookieName(statePayload.purpose);
+    const sessionCookieValue =
+      statePayload.purpose === "participant"
+        ? createParticipantSessionCookieValue(user)
+        : createResponsibleSessionCookieValue(user);
+    response.cookies.set(sessionCookieName, sessionCookieValue, {
       httpOnly: true,
       maxAge: getSessionMaxAgeSeconds(),
       path: "/",
@@ -191,11 +204,18 @@ export async function GET(request: NextRequest) {
   } catch {
     const response = NextResponse.redirect(errorRedirect);
     response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
-    response.cookies.delete(SESSION_COOKIE_NAME);
+    response.cookies.delete(getSessionCookieName(statePayload.purpose));
+    response.cookies.delete(LEGACY_SESSION_COOKIE_NAME);
     return response;
   }
 }
 
 function isResponsiblePortalDestination(next: string): boolean {
   return next === "/crear" || next.startsWith("/espais/");
+}
+
+function getSessionCookieName(purpose: OAuthStateCookiePayload["purpose"]): string {
+  return purpose === "participant"
+    ? PARTICIPANT_SESSION_COOKIE_NAME
+    : RESPONSIBLE_SESSION_COOKIE_NAME;
 }

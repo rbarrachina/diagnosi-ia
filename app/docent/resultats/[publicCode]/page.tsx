@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AppHeader } from "@/components/layout/app-header";
 import { ThemeToggle } from "@/components/home/theme-toggle";
-import { getCurrentAuthenticatedUser } from "@/lib/auth/session";
+import { getCurrentParticipantUser } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
 import { getParticipantResult } from "@/lib/repositories/participant-results";
 import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
@@ -16,7 +16,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
 
   const { publicCode } = await params;
   if (!isPublicCode(publicCode)) notFound();
-  const user = await getCurrentAuthenticatedUser();
+  const user = await getCurrentParticipantUser();
   if (!user) redirect(`/auth/login?next=${encodeURIComponent(`/docent/resultats/${publicCode}`)}`);
   const result = await getParticipantResult({ participantUserId: user.id, publicCode });
   if (!result) notFound();

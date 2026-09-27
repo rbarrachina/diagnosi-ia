@@ -1,7 +1,10 @@
 import "server-only";
 
 import { getLocalAuthUser, type AppAuthenticatedUser } from "@/lib/auth/local";
-import { getSessionCookieUser } from "@/lib/auth/session-cookie";
+import {
+  getParticipantSessionCookieUser,
+  getResponsibleSessionCookieUser,
+} from "@/lib/auth/session-cookie";
 import { isXtecEmail } from "@/lib/auth/xtec";
 import type { ResponsibleAccessReason } from "@/lib/auth/responsible-access";
 
@@ -20,7 +23,7 @@ export type ResponsibleSessionState =
   | { status: "unauthenticated" };
 
 export async function getXtecSessionState(): Promise<XtecSessionState> {
-  const user = await getCurrentAuthenticatedUser();
+  const user = await getCurrentResponsibleUser();
 
   if (!user) {
     return { status: "unauthenticated" };
@@ -32,7 +35,7 @@ export async function getXtecSessionState(): Promise<XtecSessionState> {
 }
 
 export async function getResponsibleSessionState(): Promise<ResponsibleSessionState> {
-  const user = await getCurrentAuthenticatedUser();
+  const user = await getCurrentResponsibleUser();
 
   if (!user) {
     return { status: "unauthenticated" };
@@ -64,6 +67,10 @@ export async function getRequiredXtecUser(): Promise<AppAuthenticatedUser> {
   return session.user;
 }
 
-export async function getCurrentAuthenticatedUser(): Promise<AppAuthenticatedUser | null> {
-  return getLocalAuthUser() ?? (await getSessionCookieUser());
+export async function getCurrentResponsibleUser(): Promise<AppAuthenticatedUser | null> {
+  return getLocalAuthUser() ?? (await getResponsibleSessionCookieUser());
+}
+
+export async function getCurrentParticipantUser(): Promise<AppAuthenticatedUser | null> {
+  return getLocalAuthUser() ?? (await getParticipantSessionCookieUser());
 }

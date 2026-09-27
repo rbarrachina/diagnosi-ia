@@ -23,13 +23,19 @@ local controlat per variables d'entorn.
   separats de les respostes.
 - El nom oficial del centre es pot mostrar a les pàgines, correus i informes
   vinculats exclusivament al seu espai.
-- No recollir noms, cognoms, correus electrònics, IPs ni informació del dispositiu del professorat participant.
-- Es pot desar exclusivament l'identificador opac derivat del `sub` de Google
-  mitjançant HMAC, separat a `participant_submissions`; és una dada personal
+- No recollir noms, cognoms, IPs ni informació del dispositiu del professorat
+  participant. El correu només es pot obtenir de Google per validar el domini i
+  conservar temporalment a la sessió docent mínima.
+- Es pot persistir exclusivament l'identificador opac derivat del `sub` de
+  Google mitjançant HMAC, separat a `participant_submissions`; la sessió docent
+  mínima també el pot contenir per acreditar la propietat. És una dada personal
   pseudonimitzada i només serveix perquè el docent recuperi la seva participació.
 - No crear comptes d'usuari per al professorat participant.
-- No desar el correu del professorat: només es pot usar transitòriament per
-  validar el domini durant el primer accés.
+- No persistir el correu del professorat a MySQL, logs ni respostes. Només es
+  pot conservar a la cookie docent `HttpOnly`, signada i amb un màxim de vuit
+  hores, per validar el domini durant l'accés i revalidar-lo en enviar respostes.
+- La sessió docent no pot contenir el nom visible ni compartir cookie o esquema
+  amb la sessió de responsables.
 - Els comptes OAuth de responsables només poden servir per propietat i gestio
   del centre i dels seus espais; no s'han de barrejar amb respostes individuals.
 - No afegir respostes obertes.

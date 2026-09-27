@@ -9,8 +9,10 @@ públic amb el professorat i consulta resultats de conjunt amb OAuth o amb un
 enllaç privat.
 
 L'aplicació desa i mostra la identitat institucional del centre i del compte
-responsable. Del docent no desa nom ni correu, però vincula la participació a
-un identificador pseudònim perquè només ell en pugui recuperar els resultats.
+responsable. Del docent no demana el nom ni persisteix el correu a MySQL: el
+correu només es conserva temporalment a la sessió per revalidar el domini. La
+participació es vincula a un identificador pseudònim perquè només el docent en
+pugui recuperar els resultats.
 
 `main` conté l'aplicació activa amb MySQL i aplica aquest model de
 pseudonimització com a dada personal protegida.
@@ -29,7 +31,8 @@ pseudonimització com a dada personal protegida.
 
 ## Fora d'abast
 
-- Perfils, gestio o emmagatzematge de correus del professorat participant.
+- Perfils, gestio o persistència de correus del professorat participant fora de
+  la sessió mínima necessària per revalidar el domini.
 - Perfils docents, cerca o seguiment individual per part del centre o administració.
 - Respostes obertes.
 - Exportacio de dades individuals per part del centre o administració.
@@ -363,16 +366,22 @@ trobat. El servidor genera:
 - Token privat llarg i criptograficament segur.
 
 La capa d'autenticació és server-side. El mode
-`AUTH_MODE=google` verifica localment la signatura de l'`id_token` amb
-`google-auth-library` i les claus públiques rotatives de Google, i comprova
-emissor, destinatari, caducitat i `nonce`. Per als responsables exigeix email
-`@xtec.cat`; per al professorat exigeix que tant el domini exacte del correu
-com el claim signat `hd` coincideixin amb la política del centre. El paràmetre
-OAuth `hd` només orienta el selector de comptes i no substitueix aquesta
-comprovació del token.
+`AUTH_MODE=google` verifica la signatura de l'`id_token` amb `google-auth-library`
+i les claus públiques rotatives de Google, i comprova emissor, destinatari,
+caducitat i `nonce`. Per als responsables demana `openid email profile` i
+exigeix email `@xtec.cat`; per al professorat demana només `openid email` i
+exigeix que tant el domini exacte del correu com el claim signat `hd` coincideixin
+amb la política del centre. El paràmetre OAuth `hd` només orienta el selector i
+no substitueix la comprovació del token.
+
 Per als responsables desa a MySQL l'identificador opac, el correu i el nom
-visible del compte, separats de les respostes. Per als participants només usa
-un identificador opac derivat amb HMAC. El mode
+visible del compte, separats de les respostes. Per als participants no demana
+el nom i només persisteix a MySQL un identificador opac derivat amb HMAC. El
+correu es conserva a la cookie docent `HttpOnly`, signada però no xifrada,
+durant un màxim de vuit hores per revalidar el domini; no s'insereix a cap
+taula. El claim `hd` verificat també s'hi conserva temporalment per revalidar
+la pertinença a Google Workspace. Les sessions docent i responsable tenen
+cookies i esquemes separats. El mode
 `AUTH_MODE=local` queda com a ajuda de desenvolupament.
 
 Per a qualsevol responsable autoritzat que accedeix a crear un espai, el
@@ -477,8 +486,9 @@ El formulari ha de mostrar:
 
 - Objectiu de la diagnosi.
 - Informació clara sobre la vinculació pseudònima i la recuperació de resultats.
-- Identificació del centre promotor, però no recollida de noms, correus, IP,
-  dispositiu ni respostes obertes del professorat.
+- Identificació del centre promotor, però no recollida de noms, IP, dispositiu
+  ni respostes obertes del professorat, ni persistència del correu fora de la
+  sessió mínima.
 - Resultats propis per al docent i només de conjunt per al centre i l'administració.
 - Indicacio que cal respondre una sola vegada.
 - Emoji de rellotge amb els minuts estimats necessaris per respondre el
@@ -488,12 +498,13 @@ El formulari ha de mostrar:
   accions.
 
 Per obrir el formulari, el docent ha d'iniciar sessio amb un compte Google del
-domini admès. Aquesta sessio no crea un perfil docent ni desa el correu a
-MySQL. El claim `hd` validat es conserva transitòriament a la cookie signada
-per repetir la comprovació del domini, però no es desa a la base de dades. El
-servidor deriva del `sub` un identificador opac amb HMAC i el vincula a la
-submission a `participant_submissions`. La restricció única per espai i
-participant impedeix una segona resposta.
+domini admès. Aquesta sessió no demana el perfil nominal ni crea un perfil
+docent. El correu es conserva només a la cookie docent temporal per revalidar
+el domini i, amb el claim `hd` verificat, confirmar que el compte és de Google
+Workspace; cap dels dos valors no s'insereix a MySQL. El servidor deriva del
+`sub` un identificador opac amb HMAC i el vincula a la submission a
+`participant_submissions`. La restricció única per espai i participant
+impedeix una segona resposta.
 
 El docent respon totes les preguntes obligatories de la versio assignada a
 l'espai. Cada pregunta té exactament quatre respostes, redactades per
@@ -615,7 +626,7 @@ d'estructura crea una nova versió.
 
 ### Text introductori del formulari
 
-"No es desa el teu nom ni correu. La participació queda vinculada a un identificador pseudònim perquè puguis recuperar les respostes i resultats amb el mateix compte. El centre i l'administració només veuen dades agregades. Respon una sola vegada."
+"No demanem el teu nom. El correu es conserva només durant la sessió per validar el domini i no es desa a la base de dades ni es vincula a les respostes. La participació queda vinculada a un identificador pseudònim perquè puguis recuperar les respostes i resultats amb el mateix compte. El centre i l'administració només veuen dades agregades. Respon una sola vegada."
 
 ### Avis amb poques respostes
 
