@@ -52,6 +52,9 @@ Semantic Versioning.
 
 ### Security
 
+- Actualitzats Next.js i `eslint-config-next` a la versió exacta `16.3.6`
+  per corregir vulnerabilitats conegudes del framework, inclosa la denegació
+  de servei en Server Actions (S01).
 - Separades les cookies de sessió docent i responsable. L'OAuth docent ja no
   demana el perfil nominal i la seva cookie no conté el nom; conserva només
   l'identificador pseudònim, el correu necessari per revalidar el domini i la

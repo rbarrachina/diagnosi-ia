@@ -189,6 +189,8 @@ export function QuestionnaireForm({
       }
 
       submissionSaved.current = true;
+      // Reload server-rendered results after saving, without reusing prefetched data.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign(`/docent/resultats/${questionnaire.publicCode}`);
     } catch (error) {
       setSubmitState({

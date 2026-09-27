@@ -19,6 +19,8 @@ export function ParticipantCodeAccessForm({ disabled = false }: { disabled?: boo
       onSubmit={(event) => {
         event.preventDefault();
         if (disabled || !valid) return;
+        // The OAuth Route Handler requires a full browser navigation.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.assign(`/auth/login?next=${encodeURIComponent(`/q/${normalizedCode}`)}`);
       }}
     >
