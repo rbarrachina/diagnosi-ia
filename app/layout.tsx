@@ -1,3 +1,4 @@
+import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { LanguageSettingsProvider } from "@/components/i18n/language-settings-provider";
@@ -14,14 +15,17 @@ import "./styles/admin.css";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Diagnosi IA",
-    template: "%s | Diagnosi IA",
-  },
-  description: "Diagnosi pseudonimitzada sobre l'ús educatiu de la IA.",
-  referrer: "no-referrer",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getServerInterfaceTranslator();
+  return {
+    title: {
+      default: "Diagnosi IA",
+      template: "%s | Diagnosi IA",
+    },
+    description: t("diagnosiPseudonimitzadaSobreLUsEducatiuDeLaIa"),
+    referrer: "no-referrer",
+  };
+}
 
 export default async function RootLayout({
   children,

@@ -1,3 +1,6 @@
+import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
+
+import { InterfaceText } from "@/components/i18n/interface-text";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { LoginButton, LogoutButton } from "@/components/auth/auth-actions";
@@ -21,9 +24,12 @@ import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Qüestionari",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getServerInterfaceTranslator();
+  return {
+    title: t("questionari"),
+  };
+}
 
 type QuestionnairePageProps = {
   params: Promise<{
@@ -109,26 +115,25 @@ export default async function QuestionnairePage({ params }: QuestionnairePagePro
   );
 }
 
-function QuestionnaireLoginNotice({
+async function QuestionnaireLoginNotice({
   publicCode,
 }: {
   publicCode: string;
 }) {
+  const t = await getServerInterfaceTranslator();
   return (
     <div className="questionnaire-panel mx-auto max-w-3xl p-7 text-center sm:p-10">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action sm:text-sm">
-        Accés docent
+        <InterfaceText messageKey="accesDocent" />
       </p>
       <h1 className="mt-4 text-3xl font-bold tracking-[-0.035em] text-ink sm:text-4xl">
-        Inicia sessió amb Google
+        <InterfaceText messageKey="iniciaSessioAmbGoogle" />
       </h1>
       <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted sm:text-base sm:leading-7">
-        Cal validar el compte Google abans de comprovar el codi i l’accés al
-        qüestionari. No es mostrarà cap dada del centre fins que l’autorització
-        s’hagi completat.
+        <InterfaceText messageKey="calValidarElCompteGoogleAbansDeComprovarElCodiI" />
       </p>
       <div className="mt-7">
-        <LoginButton label="Accedeix amb Google" next={`/q/${publicCode}`} />
+        <LoginButton label={t("accedeixAmbGoogle")} next={`/q/${publicCode}`} />
       </div>
     </div>
   );
@@ -142,13 +147,13 @@ function QuestionnaireForbiddenNotice({
   return (
     <div className="mx-auto max-w-3xl rounded-3xl border border-danger-border bg-danger-bg p-8 text-center text-danger-text shadow-[0_18px_60px_var(--app-shadow)] backdrop-blur-xl sm:p-10">
       <p className="text-xs font-semibold uppercase tracking-[0.18em]">
-        Accés al qüestionari
+        <InterfaceText messageKey="accesAlQuestionari" />
       </p>
       <h1 className="mt-4 text-3xl font-bold tracking-[-0.035em]">
-        Accés no autoritzat
+        <InterfaceText messageKey="accesNoAutoritzat" />
       </h1>
       <p className="mx-auto mt-3 max-w-lg text-sm leading-6">
-        No s’ha pogut validar el codi, l’estat del qüestionari o el compte.
+        <InterfaceText messageKey="noSHaPogutValidarElCodiLEstatDelQuestionari" />
       </p>
       <div className="mt-6 flex justify-center">
         <LogoutButton next={`/q/${publicCode}`} />

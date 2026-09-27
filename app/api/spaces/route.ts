@@ -1,3 +1,4 @@
+import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import { getResponsibleSessionState } from "@/lib/auth/session";
 import type { ResponsibleAccessReason } from "@/lib/auth/responsible-access";
 import {
@@ -12,6 +13,7 @@ import { registerResponsibleCentreAccount } from "@/lib/centres/centre-profiles"
 export const runtime = "nodejs";
 
 export async function POST(request: Request): Promise<Response> {
+  const t = await getServerInterfaceTranslator();
   try {
     const payload = await readJsonRequestBody(request, {
       allowEmpty: true,
@@ -22,7 +24,7 @@ export async function POST(request: Request): Promise<Response> {
     const session = await getResponsibleSessionState();
 
     if (session.status === "unauthenticated") {
-      return Response.json({ error: "Cal iniciar sessió." }, { status: 401 });
+      return Response.json({ error: t("calIniciarSessio") }, { status: 401 });
     }
 
     if (session.status === "forbidden") {
@@ -36,14 +38,14 @@ export async function POST(request: Request): Promise<Response> {
 
     if (!centre) {
       return Response.json(
-        { error: "No s'ha pogut preparar la fitxa del responsable." },
+        { error: t("noSHaPogutPrepararLaFitxaDelResponsable") },
         { status: 403 },
       );
     }
 
     if (!centre.profileConfirmedAt || !centre.emailPolicyConfiguredAt) {
       return Response.json(
-        { error: "Completa primer la configuració inicial de l'espai." },
+        { error: t("completaPrimerLaConfiguracioInicialDeLEspai") },
         { status: 409 },
       );
     }
@@ -72,13 +74,13 @@ export async function POST(request: Request): Promise<Response> {
       return Response.json(
         {
           error:
-            "Aquest centre o compte responsable ja té un qüestionari. El pots gestionar o reiniciar des d'aquesta pantalla.",
+            t("aquestCentreOCompteResponsableJaTeUnQuestionariElPots"),
         },
         { status: 409 },
       );
     }
 
-    return Response.json({ error: "No s'ha pogut crear l'espai." }, { status: 400 });
+    return Response.json({ error: t("noSHaPogutCrearLEspai") }, { status: 400 });
   }
 }
 

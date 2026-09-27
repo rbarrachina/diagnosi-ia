@@ -5,9 +5,10 @@ import { gl } from "@/lib/i18n/locales/gl";
 import { oc } from "@/lib/i18n/locales/oc";
 import type { Messages } from "@/lib/i18n/locales/types";
 import type { LanguageCode } from "@/lib/i18n/languages";
+import { resolveCatalogue } from "@/lib/i18n/resolve-catalogue";
 
 export const messages: Record<LanguageCode, Messages> = { CA: ca, ES: es, EU: eu, GL: gl, OC: oc };
 
 export function getMessages(language: LanguageCode): Messages {
-  return messages[language] ?? ca;
+  return resolveCatalogue<Messages>(ca, messages[language]);
 }

@@ -80,7 +80,10 @@ comparteixen amb el client.
 - `lib/participants/`: autorització, limitació d'intents i models de resultats propis.
 - `lib/i18n/`: llengües disponibles, lectura de la cookie funcional i catàlegs
   tipats per llengua. No es detecta l'idioma del navegador; el català és el
-  valor per defecte i de reserva.
+  valor per defecte i de reserva per a cada clau absent o buida. Els catàlegs
+  compartits `interface-*.ts` alimenten el traductor de servidor i el component
+  `InterfaceText` del client. La interpolació substitueix els paràmetres sense
+  modificar els textos versionats del qüestionari.
 - `lib/admin/`: administració autoritzada.
 - `lib/crypto/`: codis, HMAC i xifrat.
 - `lib/pdf/`: renderització server-side de l'informe.
@@ -272,8 +275,8 @@ de verificació manual i els límits de l’auditoria es documenten a
   vertical perquè el contingut entri transparent per sota i es difumini
   progressivament cap a la part superior. El selector clar/fosc desa la
   preferència a `localStorage`; no envia aquesta preferència al servidor. El
-  selector d'idioma és informatiu, es presenta com a `CA` desplegable i no
-  modifica la llengua de la pàgina. El layout arrel carrega la configuració
+  selector d'idioma mostra la llengua activa i actualitza els textos de la
+  interfície amb una preferència explícita en cookie. El layout arrel carrega la configuració
   global que en controla la visibilitat i les llengües previstes a totes les
   capçaleres compartides, inclosa la del qüestionari públic. La mostra de
   pregunta situada al final

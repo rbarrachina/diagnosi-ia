@@ -1,3 +1,4 @@
+import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import { getResponsibleSessionState } from "@/lib/auth/session";
 import type { ResponsibleAccessReason } from "@/lib/auth/responsible-access";
 import { isPublicCode } from "@/lib/crypto/public-code";
@@ -16,17 +17,18 @@ export async function POST(
   request: Request,
   { params }: ResetSpaceRouteProps,
 ): Promise<Response> {
+  const t = await getServerInterfaceTranslator();
   try {
     const { publicCode } = await params;
 
     if (!isPublicCode(publicCode)) {
-      return Response.json({ error: "Codi públic invàlid." }, { status: 400 });
+      return Response.json({ error: t("codiPublicInvalid") }, { status: 400 });
     }
 
     const session = await getResponsibleSessionState();
 
     if (session.status === "unauthenticated") {
-      return Response.json({ error: "Cal iniciar sessió." }, { status: 401 });
+      return Response.json({ error: t("calIniciarSessio") }, { status: 401 });
     }
 
     if (session.status === "forbidden") {
@@ -45,7 +47,7 @@ export async function POST(
     return Response.json(result);
   } catch {
     return Response.json(
-      { error: "No s'ha pogut reiniciar el qüestionari." },
+      { error: t("noSHaPogutReiniciarElQuestionari") },
       { status: 400 },
     );
   }

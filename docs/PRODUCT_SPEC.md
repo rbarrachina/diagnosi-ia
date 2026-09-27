@@ -183,12 +183,15 @@ prefix de llengua i una preferència absent o no vàlida torna al català. El
 català és l’idioma base i de reserva.
 
 Les traduccions de la interfície es mantenen en fitxers tipats separats per
-llengua i àmbit funcional. Els textos versionats del qüestionari no es poden
-substituir des d’aquesta capa: cada traducció s’ha d’associar explícitament a
-la versió corresponent per no alterar qüestionaris històrics.
+llengua i àmbit funcional. Si una clau no té traducció o el text és buit,
+s'utilitza el text català d'aquella clau. Les preguntes i opcions de resposta
+es conserven en l'idioma en què les ha escrit el centre, sense traduccions
+automàtiques ni nous atributs d'idioma al formulari.
 
-La portada i l'espai de creació i gestió dels centres consumeixen aquests
-catàlegs. Les cadenes compartides, com les accions de copiar, desar, versions i
+La portada, els espais de centre i docent, l'administració i els controls del
+qüestionari i dels resultats consumeixen aquests catàlegs, inclosos els errors
+d'accés, els missatges dels endpoints i les metadades de pàgina.
+Les cadenes compartides, com les accions de copiar, desar, versions i
 recomptes de respostes, es defineixen una sola vegada a l'àmbit comú.
 Els catàlegs d'euskera, gallec i aranès són complets funcionalment però resten
 marcats com a esborranys fins que una revisió lingüística professional en
@@ -317,9 +320,9 @@ vertical manté transparent la vora inferior, fa translúcid el centre i aplica
 una opacitat reforçada al centre i el màxim difuminat a la part superior. La informació
 metodològica, l'indicador i l'explicació dels rols queden a continuació i no
 apareixen en el primer viewport. El tema triat es conserva només com a
-preferència visual local del navegador. El selector d'idioma és informatiu:
-mostra només `CA` en repòs i desplega el català i la resta de llengües
-previstes, però no modifica l'idioma de la pàgina.
+preferència visual local del navegador. El selector d'idioma mostra la llengua
+activa i permet canviar els textos de la interfície entre les llengües
+habilitades a la configuració global.
 
 Al final de la segona pantalla, una icona de desplaçament sense text enllaça
 amb transició suau a la mostra del qüestionari. L'enllaç conserva una etiqueta

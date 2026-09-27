@@ -1,7 +1,9 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 type ConfirmSubmitButtonProps = {
-  children: string;
+  children: ReactNode;
   className: string;
   disabled?: boolean;
   message: string;

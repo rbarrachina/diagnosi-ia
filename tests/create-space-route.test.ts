@@ -10,6 +10,7 @@ vi.mock("@/lib/spaces/create-space", () => ({
   createDiagnosticSpace: mocks.create,
   OwnerSpaceAlreadyExistsError: class extends Error {},
 }));
+vi.mock("@/lib/i18n/locale", () => ({ getCurrentLanguage: async () => "CA" }));
 const { POST } = await import("@/app/api/spaces/route");
 const user = { id: "responsible-1", email: "docent.prova@xtec.cat", displayName: "Prova" };
 let centre: CentreProfile;

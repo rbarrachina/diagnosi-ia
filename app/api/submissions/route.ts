@@ -1,3 +1,4 @@
+import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import { readJsonRequestBody } from "@/lib/http/request";
 import { getCurrentParticipantUser } from "@/lib/auth/session";
 import {
@@ -18,10 +19,11 @@ import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
 export const runtime = "nodejs";
 
 export async function POST(request: Request): Promise<Response> {
+  const t = await getServerInterfaceTranslator();
   try {
     if ((await getResponsiblePortalStatus()) === "closed") {
       return Response.json(
-        { error: "El servei encara no està disponible." },
+        { error: t("elServeiEncaraNoEstaDisponible") },
         { status: 503 },
       );
     }
@@ -30,7 +32,7 @@ export async function POST(request: Request): Promise<Response> {
 
     if (!user) {
       return Response.json(
-        { error: "Cal iniciar sessió amb Google per respondre." },
+        { error: t("calIniciarSessioAmbGooglePerRespondre") },
         { status: 401 },
       );
     }
@@ -47,7 +49,7 @@ export async function POST(request: Request): Promise<Response> {
       !isGoogleAccountAllowedByCentrePolicy(user.email, user.hostedDomain, policy)
     ) {
       return Response.json(
-        { error: "No s'ha pogut validar l'accés al qüestionari." },
+        { error: t("noSHaPogutValidarLAccesAlQuestionari") },
         { status: 403 },
       );
     }
@@ -61,7 +63,7 @@ export async function POST(request: Request): Promise<Response> {
   } catch (error) {
     if (error instanceof DuplicateSubmissionError) {
       return Response.json(
-        { error: "Aquest compte Google ja ha enviat una resposta per aquest qüestionari." },
+        { error: t("aquestCompteGoogleJaHaEnviatUnaRespostaPerAquestQuestionari") },
         { status: 409 },
       );
     }
@@ -69,14 +71,14 @@ export async function POST(request: Request): Promise<Response> {
     if (error instanceof SubmissionLimitReachedError) {
       return Response.json(
         {
-          error: `Aquest qüestionari ja ha arribat al màxim de ${MAX_SUBMISSIONS_PER_SPACE} respostes.`,
+          error: t("aquestQuestionariJaHaArribatAlMaximDeValue0Respostes", { value0: MAX_SUBMISSIONS_PER_SPACE }),
         },
         { status: 409 },
       );
     }
 
     return Response.json(
-      { error: "No s'han pogut desar les respostes." },
+      { error: t("noSHanPogutDesarLesRespostes") },
       { status: 400 },
     );
   }

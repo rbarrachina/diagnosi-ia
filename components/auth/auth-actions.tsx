@@ -1,5 +1,7 @@
 "use client";
 
+import { InterfaceText, useInterfaceTranslator } from "@/components/i18n/interface-text";
+
 import type { ResponsibleAccessMode } from "@/lib/auth/responsible-access";
 import { useTranslations } from "@/components/i18n/language-settings-provider";
 
@@ -9,15 +11,16 @@ type LoginButtonProps = {
 };
 
 export function LoginButton({
-  label = "Accedeix amb el compte XTEC",
+  label,
   next = "/crear",
 }: LoginButtonProps) {
+  const t = useInterfaceTranslator();
   return (
     <a
       className="inline-flex rounded-md bg-action px-5 py-3 text-sm font-semibold text-action-contrast transition hover:bg-action-hover"
       href={`/auth/login?next=${encodeURIComponent(next)}`}
     >
-      {label}
+      {label ?? t("accedeixAmbElCompteXtec")}
     </a>
   );
 }
@@ -55,23 +58,23 @@ export function XtecAccessNotice({
   responsibleAccessMode = "all_xtec",
   next = "/crear",
 }: XtecAccessNoticeProps) {
+  const t = useInterfaceTranslator();
   const isCentreOnly = responsibleAccessMode === "centre_xtec";
 
   return (
     <div className="flex h-full flex-col justify-center rounded-md border border-line bg-white p-6 text-center shadow-sm">
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
-          Crear qüestionari
+          <InterfaceText messageKey="crearQuestionari" />
         </p>
-        <h2 className="text-xl font-semibold text-ink">Soc responsable</h2>
+        <h2 className="text-xl font-semibold text-ink"><InterfaceText messageKey="socResponsable" /></h2>
         <p className="mx-auto max-w-md text-sm leading-6 text-slate-700">
           {isCentreOnly ? (
             <strong className="font-semibold text-ink">
-              Només poden accedir amb un correu electrònic de centre
-              @xtec.cat amb codi de centre, per exemple a0123456@xtec.cat.
+              <InterfaceText messageKey="nomesPodenAccedirAmbUnCorreuElectronicDeCentreXtecCat" />
             </strong>
           ) : (
-            "Per crear i gestionar qüestionaris cal accedir amb un compte XTEC."
+            t("perCrearIGestionarQuestionarisCalAccedirAmbUnCompteXtec")
           )}
         </p>
       </div>
@@ -85,9 +88,9 @@ export function XtecAccessNotice({
 export function XtecForbiddenNotice() {
   return (
     <div className="rounded-md border border-red-200 bg-red-50 p-6 text-center text-red-900 shadow-sm">
-      <h2 className="text-xl font-semibold">Accés no autoritzat</h2>
+      <h2 className="text-xl font-semibold"><InterfaceText messageKey="accesNoAutoritzat" /></h2>
       <p className="mt-3 text-sm leading-6">
-        Només es permet l’accés amb un compte XTEC.
+        <InterfaceText messageKey="nomesEsPermetLAccesAmbUnCompteXtec" />
       </p>
       <div className="mt-5 flex justify-center">
         <LogoutButton next="/" />

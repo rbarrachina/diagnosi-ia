@@ -1,5 +1,7 @@
 "use client";
 
+import { InterfaceText } from "@/components/i18n/interface-text";
+
 import { useState } from "react";
 
 import type { AdminCentreOption } from "@/lib/admin/types";
@@ -66,15 +68,13 @@ export function AdminResultsFilters({
       />
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="text-sm font-medium text-muted">
-          Centre
-          <select
+        <label className="text-sm font-medium text-muted"><InterfaceText messageKey="centre" />{" "}<select
             className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm"
             name="centreId"
             onChange={(event) => selectCentre(event.target.value)}
             value={centreId}
           >
-            <option value="all">Tots els centres</option>
+            <option value="all"><InterfaceText messageKey="totsElsCentres" /></option>
             {availableCentres.map((centre) => (
               <option key={centre.id} value={centre.id}>
                 {formatCentreOption(centre)}
@@ -84,17 +84,14 @@ export function AdminResultsFilters({
         </label>
 
         <label className="text-sm font-medium text-muted">
-          Qüestionari
-          <select
+          <InterfaceText messageKey="questionari" />{" "}<select
             className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm"
             name="questionnaireId"
             onChange={(event) => setQuestionnaireId(event.target.value)}
             required
             value={questionnaireId}
           >
-            <option value="">
-              Tria un qüestionari
-            </option>
+            <option value=""><InterfaceText messageKey="triaUnQuestionari" /></option>
             {availableVersions.map((version) => (
               <option key={version.id} value={version.id}>
                 {version.version} · {version.title}
@@ -107,9 +104,7 @@ export function AdminResultsFilters({
           className="self-start rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover disabled:bg-muted md:col-span-2"
           disabled={!questionnaireId}
           type="submit"
-        >
-          Mostra resultats
-        </button>
+        ><InterfaceText messageKey="mostraResultats" /></button>
       </div>
     </form>
   );

@@ -1,4 +1,7 @@
 "use client";
+import type { InterfaceTranslator } from "@/lib/i18n/interface-messages";
+
+import { InterfaceText, useInterfaceTranslator } from "@/components/i18n/interface-text";
 
 import type { ReactNode } from "react";
 import {
@@ -54,13 +57,13 @@ type QuestionDistributionChartDatum = {
   [key: string]: string | number | Record<number, string>;
 };
 
-function formatPercentage(value: number | null): string {
-  return value === null ? "Sense dades" : `${value.toFixed(1)}%`;
+function formatPercentage(value: number | null, t: InterfaceTranslator): string {
+  return value === null ? t("senseDades") : `${value.toFixed(1)}%`;
 }
 
-function blockChartData(blocks: BlockResult[]) {
+function blockChartData(blocks: BlockResult[], t: InterfaceTranslator) {
   return blocks.map((block) => ({
-    name: `Bloc ${block.position}`,
+    name: t("blocValue0", { value0: block.position }),
     percentatge: block.average ?? 0,
   }));
 }
@@ -113,8 +116,7 @@ function OrderedScaleLegend() {
             className="h-2.5 w-2.5"
             style={{ backgroundColor: option.color }}
           />
-          {option.value} punts
-        </li>
+          {option.value}{" "}<InterfaceText messageKey="punts" /></li>
       ))}
     </ul>
   );
@@ -154,7 +156,7 @@ function QuestionDistributionTooltip({
 export function ResultsDashboard({
   integrated = false,
   introContent,
-  eyebrow = "Resultats de conjunt",
+  eyebrow,
   results,
   isDownloading,
   managementHref,
@@ -163,6 +165,7 @@ export function ResultsDashboard({
   onDownloadPdf,
   title = "Diagnosi IA",
 }: ResultsDashboardProps) {
+  const t = useInterfaceTranslator();
   const chartAccent = "var(--color-action)";
 
   return (
@@ -174,14 +177,14 @@ export function ResultsDashboard({
       <div className="flex flex-col gap-4 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">
-            {eyebrow}
+            {eyebrow ?? t("resultatsDeConjunt")}
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-normal text-ink">
             {title}
           </h1>
           <p className="mt-2 text-sm text-muted">
             {metadataText ??
-              `${results.scopeLabel ?? `Codi ${results.publicCode}`} · Qüestionari ${results.questionnaireVersion}`}
+              t("scopeQuestionariVersion", { scope: results.scopeLabel ?? t("codiCode", { code: results.publicCode }), version: results.questionnaireVersion })}
           </p>
         </div>
 
@@ -192,15 +195,13 @@ export function ResultsDashboard({
             onClick={onDownloadPdf}
             type="button"
           >
-            {isDownloading ? "Generant PDF..." : "Descarrega l'informe PDF"}
+            {isDownloading ? t("generantPdf") : t("descarregaLInformePdf")}
           </button>
           {managementHref ? (
             <a
               className="rounded-md bg-action px-4 py-3 text-center text-sm font-semibold text-action-contrast transition hover:bg-action-hover"
               href={managementHref}
-            >
-              Torna a la gestió
-            </a>
+            ><InterfaceText messageKey="tornaALaGestio" /></a>
           ) : null}
         </div>
       </div>
@@ -215,7 +216,7 @@ export function ResultsDashboard({
 
       {results.lowResponseWarning ? (
         <div className="mt-6 rounded-md border border-warning-border bg-warning-bg px-4 py-3 text-sm leading-6 text-warning-text">
-          Poques respostes: interpreta els resultats amb prudència.
+          <InterfaceText messageKey="poquesRespostesInterpretaElsResultatsAmbPrudencia" />
         </div>
       ) : null}
 
@@ -229,7 +230,7 @@ export function ResultsDashboard({
         {results.diagnosticSpaceCount !== undefined ? (
           <div className="rounded-md border border-line bg-surface p-4 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-              Centres
+              <InterfaceText messageKey="centres" />
             </p>
             <p className="mt-2 text-3xl font-semibold text-ink">
               {results.diagnosticSpaceCount}
@@ -238,7 +239,7 @@ export function ResultsDashboard({
         ) : null}
         <div className="rounded-md border border-line bg-surface p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-            Respostes
+            <InterfaceText messageKey="respostes" />
           </p>
           <p className="mt-2 text-3xl font-semibold text-ink">
             {results.totalSubmissions}
@@ -246,15 +247,15 @@ export function ResultsDashboard({
         </div>
         <div className="rounded-md border border-line bg-surface p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-            Percentatge global
+            <InterfaceText messageKey="percentatgeGlobal" />
           </p>
           <p className="mt-2 text-3xl font-semibold text-ink">
-            {formatPercentage(results.globalAverage)}
+            {formatPercentage(results.globalAverage, t)}
           </p>
         </div>
         <div className="rounded-md border border-line bg-surface p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-            Escala
+            <InterfaceText messageKey="escala" />
           </p>
           <p className="mt-2 text-sm leading-6 text-muted">
             {ORDERED_SCALE_OPTIONS.map((option) => (
@@ -264,8 +265,7 @@ export function ResultsDashboard({
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ backgroundColor: option.color }}
                 />
-                {option.value} punts
-              </span>
+                {option.value}{" "}<InterfaceText messageKey="punts" /></span>
             ))}
           </p>
         </div>
@@ -273,7 +273,7 @@ export function ResultsDashboard({
 
       <div className="mt-6 rounded-md border border-line bg-surface p-5 shadow-sm">
         <h2 className="text-center text-lg font-semibold text-ink">
-          Percentatge per blocs
+          <InterfaceText messageKey="percentatgePerBlocs" />
         </h2>
         <div className="mt-4 grid gap-6 lg:grid-cols-2">
           <div aria-hidden="true" className="h-72 min-w-0">
@@ -283,7 +283,7 @@ export function ResultsDashboard({
               minWidth={0}
               width="100%"
             >
-              <BarChart data={blockChartData(results.blocks)}>
+              <BarChart data={blockChartData(results.blocks, t)}>
                 <CartesianGrid stroke="#d8dee6" strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis domain={[0, 100]} unit="%" />
@@ -299,7 +299,7 @@ export function ResultsDashboard({
               minWidth={0}
               width="100%"
             >
-              <RadarChart data={blockChartData(results.blocks)}>
+              <RadarChart data={blockChartData(results.blocks, t)}>
                 <PolarGrid stroke="#d8dee6" />
                 <PolarAngleAxis dataKey="name" tick={{ fill: "#334155", fontSize: 12 }} />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tickCount={5} />
@@ -308,7 +308,7 @@ export function ResultsDashboard({
                   dataKey="percentatge"
                   fill={chartAccent}
                   fillOpacity={0.24}
-                  name="Percentatge"
+                  name={t("percentatge")}
                   stroke={chartAccent}
                   strokeWidth={2}
                 />
@@ -319,7 +319,9 @@ export function ResultsDashboard({
         <dl className="mt-5 grid gap-3 border-t border-line pt-4 text-sm text-muted sm:grid-cols-2 lg:grid-cols-3">
           {results.blocks.map((block) => (
             <div className="flex gap-2" key={block.position}>
-              <dt className="shrink-0 font-semibold text-ink">Bloc {block.position}</dt>
+              <dt className="shrink-0 font-semibold text-ink">
+                <InterfaceText messageKey="bloc" />{" "}{block.position}
+              </dt>
               <dd>{block.title}</dd>
             </div>
           ))}
@@ -327,13 +329,13 @@ export function ResultsDashboard({
       </div>
 
       <div className="mt-6 rounded-md border border-line bg-surface p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-ink">Interpretació breu</h2>
+        <h2 className="text-lg font-semibold text-ink"><InterfaceText messageKey="interpretacioBreu" /></h2>
         <p className="mt-3 text-sm leading-6 text-muted">{results.interpretation}</p>
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <section className="rounded-md border border-line bg-surface p-5 shadow-sm">
-          <h2 className="text-lg font-semibold text-ink">Fortaleses</h2>
+          <h2 className="text-lg font-semibold text-ink"><InterfaceText messageKey="fortaleses" /></h2>
           <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
             {results.strengths.map((strength) => (
               <li key={strength}>{strength}</li>
@@ -341,7 +343,7 @@ export function ResultsDashboard({
           </ul>
         </section>
         <section className="rounded-md border border-line bg-surface p-5 shadow-sm">
-          <h2 className="text-lg font-semibold text-ink">Marge de millora</h2>
+          <h2 className="text-lg font-semibold text-ink"><InterfaceText messageKey="margeDeMillora" /></h2>
           <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
             {results.improvementAreas.map((area) => (
               <li key={area}>{area}</li>
@@ -361,7 +363,7 @@ export function ResultsDashboard({
                 {block.position}. {block.title}
               </h2>
               <p className="text-sm font-semibold text-muted">
-                Percentatge {formatPercentage(block.average)}
+                <InterfaceText messageKey="percentatge" />{" "}{formatPercentage(block.average, t)}
               </p>
             </div>
 
@@ -393,7 +395,7 @@ export function ResultsDashboard({
             <div className="mt-5 overflow-x-auto">
               <table className="w-full min-w-[900px] table-fixed border-collapse text-left text-sm">
                 <caption className="sr-only">
-                  Resultats agregats del bloc {block.position}: {block.title}
+                  <InterfaceText messageKey="resultatsAgregatsDelBloc" />{" "}{block.position}: {block.title}
                 </caption>
                 <colgroup>
                   <col />
@@ -404,16 +406,17 @@ export function ResultsDashboard({
                 </colgroup>
                 <thead>
                   <tr className="border-b border-line text-xs uppercase tracking-[0.08em] text-muted">
-                    <th className="py-2 pr-4" scope="col">Pregunta</th>
-                    <th className="whitespace-nowrap py-2 pr-4" scope="col">Percentatge</th>
+                    <th className="py-2 pr-4" scope="col"><InterfaceText messageKey="pregunta" /></th>
+                    <th className="whitespace-nowrap py-2 pr-4" scope="col">
+                      <InterfaceText messageKey="percentatge" />
+                    </th>
                     {ORDERED_SCALE_OPTIONS.map((option) => (
                       <th
                         className={`whitespace-nowrap py-2 pr-4 ${option.headerClass}`}
                         key={option.value}
                         scope="col"
                       >
-                        {option.value} punts
-                      </th>
+                        {option.value}{" "}<InterfaceText messageKey="punts" /></th>
                     ))}
                   </tr>
                 </thead>
@@ -424,7 +427,7 @@ export function ResultsDashboard({
                         {block.position}.{question.blockPosition}. {question.text}
                       </td>
                       <td className="whitespace-nowrap py-3 pr-4 font-semibold text-ink">
-                        {formatPercentage(question.average)}
+                        {formatPercentage(question.average, t)}
                       </td>
                       {ORDERED_SCALE_OPTIONS.map((option) => {
                         const bucket = distributionForOption(question, option.value);

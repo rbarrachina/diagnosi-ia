@@ -1,5 +1,7 @@
 "use client";
 
+import { InterfaceText, useInterfaceTranslator } from "@/components/i18n/interface-text";
+
 import { useEffect, useRef, useState } from "react";
 import { ResultsDashboard } from "@/components/results/results-dashboard";
 import { readPrivateTokenFromLocation } from "@/lib/results/private-token-session";
@@ -15,6 +17,7 @@ type ResultsState =
   | { status: "error"; message: string };
 
 export function ResultsClient({ publicCode }: ResultsClientProps) {
+  const t = useInterfaceTranslator();
   const [state, setState] = useState<ResultsState>({ status: "loading" });
   const [isDownloading, setIsDownloading] = useState(false);
   const privateTokenRef = useRef<string | null>(null);
@@ -35,7 +38,7 @@ export function ResultsClient({ publicCode }: ResultsClientProps) {
         if (isMounted) {
           setState({
             status: "error",
-            message: "L'enllaç privat no inclou cap token de resultats.",
+            message: t("lEnllacPrivatNoInclouCapTokenDeResultats"),
           });
         }
         return;
@@ -66,7 +69,7 @@ export function ResultsClient({ publicCode }: ResultsClientProps) {
         if (isMounted) {
           setState({
             status: "error",
-            message: "No s'han pogut carregar els resultats de conjunt.",
+            message: t("noSHanPogutCarregarElsResultatsDeConjunt"),
           });
         }
       }
@@ -77,7 +80,7 @@ export function ResultsClient({ publicCode }: ResultsClientProps) {
     return () => {
       isMounted = false;
     };
-  }, [publicCode]);
+  }, [publicCode, t]);
 
   async function handleDownloadPdf() {
     const privateToken = privateTokenRef.current;
@@ -85,7 +88,7 @@ export function ResultsClient({ publicCode }: ResultsClientProps) {
     if (!privateToken) {
       setState({
         status: "error",
-        message: "No hi ha cap token privat vàlid per generar l'informe.",
+        message: t("noHiHaCapTokenPrivatValidPerGenerarLInforme"),
       });
       return;
     }
@@ -120,7 +123,7 @@ export function ResultsClient({ publicCode }: ResultsClientProps) {
     } catch {
       setState({
         status: "error",
-        message: "No s'ha pogut descarregar l'informe PDF.",
+        message: t("noSHaPogutDescarregarLInformePdf"),
       });
     } finally {
       setIsDownloading(false);
@@ -134,9 +137,7 @@ export function ResultsClient({ publicCode }: ResultsClientProps) {
           aria-live="polite"
           className="rounded-md border border-line bg-surface px-4 py-3 text-sm text-muted shadow-sm"
           role="status"
-        >
-          Carregant resultats de conjunt...
-        </p>
+        ><InterfaceText messageKey="carregantResultatsDeConjunt" /></p>
       </section>
     );
   }
@@ -148,7 +149,9 @@ export function ResultsClient({ publicCode }: ResultsClientProps) {
           className="rounded-md border border-red-200 bg-red-50 p-5 text-red-900"
           role="alert"
         >
-          <h1 className="text-xl font-semibold">No es poden mostrar els resultats</h1>
+          <h1 className="text-xl font-semibold">
+            <InterfaceText messageKey="noEsPodenMostrarElsResultats" />
+          </h1>
           <p className="mt-2 text-sm leading-6">{state.message}</p>
         </div>
       </section>
