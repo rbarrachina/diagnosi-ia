@@ -531,6 +531,14 @@ qüestionari ha arribat al màxim de respostes.
 Quan el servidor accepta l'enviament, redirigeix al resultat propi. La base de
 dades és l'única font de veritat; no es manté cap bloqueig paral·lel al navegador.
 
+Les respostes encara no enviades només es mantenen a la memòria de la pàgina:
+no es desen a localStorage, sessionStorage, cookies ni al servidor. Si hi ha
+respostes pendents, el navegador avisa abans de recarregar, tancar o abandonar
+la pàgina. Si la sessió docent caduca en enviar, el formulari conserva les
+respostes a la pàgina oberta i ofereix tornar a autenticar-se en una pestanya
+nova; després d'autenticar-se, el docent pot enviar-les des de la pàgina
+original. Recarregar-la o tancar-la encara esborra les respostes pendents.
+
 ### Àrea i resultats docents
 
 Rutes: `/docent` i `/docent/resultats/[publicCode]`
