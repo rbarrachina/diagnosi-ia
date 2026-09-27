@@ -57,6 +57,14 @@ un identificador opac amb HMAC. `participant_submissions` vincula aquest
 identificador amb una única submission per espai; no conté correu, nom, domini,
 IP ni metadades de dispositiu.
 
+La verificació del token es fa al servidor amb la biblioteca oficial
+`google-auth-library`, que comprova la signatura amb claus públiques de Google;
+es mantenen les comprovacions d'emissor, destinatari, caducitat i `nonce`. Per
+autoritzar una participació, el servidor compara el domini exacte del correu i
+el claim `hd` signat amb la política del centre. El claim `hd` només es conserva
+transitòriament a la sessió signada per poder repetir la comprovació en mostrar
+i enviar el qüestionari; no s'escriu a MySQL ni a logs.
+
 Cada centre ha de triar entre `@xtec.cat` o un domini propi exacte. Les dues
 opcions no es poden activar alhora, fet que evita que una mateixa persona pugui
 respondre amb dos comptes de dominis admesos diferents sense haver de relacionar

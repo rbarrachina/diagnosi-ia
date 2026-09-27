@@ -6,6 +6,8 @@ export type AppAuthenticatedUser = {
   id: string;
   email: string;
   displayName: string | null;
+  /** Verified Google Workspace domain, transiently carried in the signed session. */
+  hostedDomain?: string | null;
 };
 
 export function isLocalAuthEnabled(): boolean {
@@ -33,6 +35,9 @@ export function getLocalAuthUser(): AppAuthenticatedUser | null {
     id,
     email,
     displayName,
+    // Local auth is an explicitly enabled development-only shortcut; model
+    // the configured email domain so local questionnaire flows remain usable.
+    hostedDomain: email.slice(email.lastIndexOf("@") + 1),
   };
 }
 

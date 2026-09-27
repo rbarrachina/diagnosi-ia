@@ -86,10 +86,15 @@ comparteixen amb el client.
 
 ## Autenticació i autorització
 
-`AUTH_MODE=google` inicia el flux OAuth, valida el token de Google al servidor i
-crea una cookie `httpOnly` signada. Els responsables han de tenir correu
-`@xtec.cat`. El professorat ha de coincidir exactament amb l'única opció triada
-pel centre: `@xtec.cat` o el domini propi de Google Workspace configurat.
+`AUTH_MODE=google` inicia el flux OAuth i verifica el `id_token` al servidor
+amb `google-auth-library`, que valida la signatura amb les claus públiques de
+Google i en gestiona la rotació. Després es comproven explícitament `iss`, `aud`,
+`exp` i el `nonce` de la petició abans de crear una cookie `httpOnly` signada.
+Els responsables han de tenir correu `@xtec.cat`. Per al professorat,
+coincideixen tant el domini exacte del correu com el claim signat `hd` amb
+l'única opció triada pel centre: `@xtec.cat` o el domini propi de Google
+Workspace configurat. El paràmetre OAuth `hd` és només una indicació al
+selector de comptes i no una prova d'afiliació.
 
 L'identificador desat per a responsables i participants és un UUID opac derivat
 del `sub` de Google amb HMAC. El correu i nom del responsable es desen a

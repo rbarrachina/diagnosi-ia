@@ -87,6 +87,7 @@ export function createSessionCookieValue(user: AppAuthenticatedUser): string {
     id: user.id,
     email: user.email,
     displayName: user.displayName,
+    hostedDomain: user.hostedDomain ?? null,
     expiresAt: Date.now() + getSessionMaxAgeSeconds() * 1000,
   } satisfies SessionCookiePayload);
 }
@@ -112,6 +113,10 @@ export function parseSessionCookieValue(
     displayName:
       typeof payload.displayName === "string" && payload.displayName.trim()
         ? payload.displayName.trim()
+        : null,
+    hostedDomain:
+      typeof payload.hostedDomain === "string" && payload.hostedDomain.trim()
+        ? payload.hostedDomain.trim().toLowerCase()
         : null,
   };
 }

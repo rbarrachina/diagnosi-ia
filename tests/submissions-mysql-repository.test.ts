@@ -69,7 +69,11 @@ const validPayload = {
     optionId: optionIdFor(index, 1),
   })),
 };
-const testUser = { id: "account-1", email: "docent@xtec.cat" };
+const testUser = {
+  id: "account-1",
+  email: "docent@xtec.cat",
+  hostedDomain: "xtec.cat",
+};
 
 const serviceSource = readFileSync(
   join(process.cwd(), "lib/submissions/create-submission.ts"),
@@ -153,18 +157,22 @@ describe("MySQL submission repository", () => {
     expect(currentConnection.insertedAnswers).toHaveLength(0);
   });
 
-  it("revalidates the current email domain inside the transaction", async () => {
-    await expect(
-      createSubmissionWithAnswers(validPayload, {
-        id: "account-2",
-        email: "docent@un altre.cat",
-      }),
-    ).rejects.toBeInstanceOf(InvalidSubmissionRepositoryError);
+  it.each([null, "other.cat"])(
+    "rejects submissions when the Google Workspace claim is missing or does not match (%s)",
+    async (hostedDomain) => {
+      await expect(
+        createSubmissionWithAnswers(validPayload, {
+          id: "account-2",
+          email: "docent@xtec.cat",
+          hostedDomain,
+        }),
+      ).rejects.toBeInstanceOf(InvalidSubmissionRepositoryError);
 
-    expect(currentConnection.rollback).toHaveBeenCalledOnce();
-    expect(currentConnection.insertedLinks).toHaveLength(0);
-    expect(currentConnection.insertedSubmissions).toHaveLength(0);
-  });
+      expect(currentConnection.rollback).toHaveBeenCalledOnce();
+      expect(currentConnection.insertedLinks).toHaveLength(0);
+      expect(currentConnection.insertedSubmissions).toHaveLength(0);
+    },
+  );
 
   it("rejects duplicate answers and rolls back", async () => {
     const duplicatePayload = {

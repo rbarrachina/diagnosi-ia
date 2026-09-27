@@ -363,9 +363,13 @@ trobat. El servidor genera:
 - Token privat llarg i criptograficament segur.
 
 La capa d'autenticació és server-side. El mode
-`AUTH_MODE=google` valida el `id_token` amb Google. Per als responsables exigeix
-email `@xtec.cat`; per al professorat exigeix el domini exacte configurat pel
-centre.
+`AUTH_MODE=google` verifica localment la signatura de l'`id_token` amb
+`google-auth-library` i les claus públiques rotatives de Google, i comprova
+emissor, destinatari, caducitat i `nonce`. Per als responsables exigeix email
+`@xtec.cat`; per al professorat exigeix que tant el domini exacte del correu
+com el claim signat `hd` coincideixin amb la política del centre. El paràmetre
+OAuth `hd` només orienta el selector de comptes i no substitueix aquesta
+comprovació del token.
 Per als responsables desa a MySQL l'identificador opac, el correu i el nom
 visible del compte, separats de les respostes. Per als participants només usa
 un identificador opac derivat amb HMAC. El mode
@@ -484,7 +488,9 @@ El formulari ha de mostrar:
   accions.
 
 Per obrir el formulari, el docent ha d'iniciar sessio amb un compte Google del
-domini admès. Aquesta sessio no crea un perfil docent ni desa el correu. El
+domini admès. Aquesta sessio no crea un perfil docent ni desa el correu a
+MySQL. El claim `hd` validat es conserva transitòriament a la cookie signada
+per repetir la comprovació del domini, però no es desa a la base de dades. El
 servidor deriva del `sub` un identificador opac amb HMAC i el vincula a la
 submission a `participant_submissions`. La restricció única per espai i
 participant impedeix una segona resposta.

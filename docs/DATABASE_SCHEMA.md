@@ -17,6 +17,8 @@ respostes.
 - Les operacions multi-taula són transaccionals.
 - Les consultes institucionals retornen només recomptes agregats; les consultes
   docents filtren per l'identificador pseudònim de la sessió.
+- Els claims OAuth `email` i `hd` són dades transitòries d'autorització i no
+  formen part de l'esquema; no es desen a les taules de participació.
 
 ## Relacions
 

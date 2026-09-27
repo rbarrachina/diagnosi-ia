@@ -19,6 +19,7 @@
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",
     "drizzle-orm": "^0.45.2",
+    "google-auth-library": "^11.1.0",
     "mysql2": "^3.22.5",
     "next": "^16.2.7",
     "react": "^19.0.0",

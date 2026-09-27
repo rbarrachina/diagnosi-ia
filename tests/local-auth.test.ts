@@ -24,6 +24,7 @@ describe("local provisional auth", () => {
       id: "00000000-0000-4000-8000-000000000001",
       email: "usuari.prova@xtec.cat",
       displayName: "Usuari local XTEC",
+      hostedDomain: "xtec.cat",
     });
     expect(session).toEqual({
       status: "authenticated",
@@ -31,6 +32,7 @@ describe("local provisional auth", () => {
         id: "00000000-0000-4000-8000-000000000001",
         email: "usuari.prova@xtec.cat",
         displayName: "Usuari local XTEC",
+        hostedDomain: "xtec.cat",
       },
     });
   });

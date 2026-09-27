@@ -6,6 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Substitueix la consulta de depuració `tokeninfo` per la verificació local de
+  signatura i claims dels tokens Google, i exigeix que el domini del correu i
+  el claim Workspace `hd` coincideixin amb la política del centre.
+
 - Cada pregunta disposa ara de quatre textos de resposta administrables amb
   puntuacions fixes `0–3`, opció d'ordre aleatori i colors neutres quan es
   barregen.

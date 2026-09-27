@@ -1,9 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+const { mockVerifyIdToken } = vi.hoisted(() => ({
+  mockVerifyIdToken: vi.fn(),
+}));
+
+vi.mock("google-auth-library", () => ({
+  OAuth2Client: class {
+    verifyIdToken = mockVerifyIdToken;
+  },
+}));
+
 import {
   buildGoogleAuthorizationUrl,
   exchangeGoogleAuthorizationCode,
-  googleTokenInfoToAppUser,
+  googleIdTokenToAppUser,
   verifyGoogleIdToken,
 } from "@/lib/auth/google";
 import {
@@ -25,6 +35,7 @@ describe("Google OAuth", () => {
       GOOGLE_CLIENT_ID: "google-client-id",
       GOOGLE_CLIENT_SECRET: "google-client-secret",
     };
+    mockVerifyIdToken.mockReset();
     vi.restoreAllMocks();
   });
 
@@ -74,32 +85,36 @@ describe("Google OAuth", () => {
     expect(String(requestInit?.body)).toContain("code=oauth-code");
   });
 
-  it("verifies Google id token claims and derives an opaque UUID user id", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
-        Response.json({
+  it("verifies the signed Google token, its claims, and derives an opaque UUID user id", async () => {
+    mockVerifyIdToken.mockResolvedValue({
+      getPayload: () =>
+        ({
           iss: "https://accounts.google.com",
           sub: "google-subject",
           aud: "google-client-id",
           email: "Persona.Prova@xtec.cat",
-          email_verified: "true",
+          email_verified: true,
           exp: Math.floor(Date.now() / 1000) + 300,
           nonce: "nonce-value",
           name: "Persona Prova",
-        }),
-      ),
-    );
+          hd: "xtec.cat",
+        }) as never,
+    });
 
-    const tokenInfo = await verifyGoogleIdToken({
+    const tokenClaims = await verifyGoogleIdToken({
       idToken: "google-id-token",
       nonce: "nonce-value",
     });
-    const user = googleTokenInfoToAppUser(tokenInfo);
+    const user = googleIdTokenToAppUser(tokenClaims);
 
-    expect(tokenInfo.email).toBe("persona.prova@xtec.cat");
+    expect(tokenClaims.email).toBe("persona.prova@xtec.cat");
     expect(user.email).toBe("persona.prova@xtec.cat");
     expect(user.displayName).toBe("Persona Prova");
+    expect(user.hostedDomain).toBe("xtec.cat");
+    expect(mockVerifyIdToken).toHaveBeenCalledWith({
+      idToken: "google-id-token",
+      audience: "google-client-id",
+    });
     expect(user.id).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
     );
@@ -107,21 +122,26 @@ describe("Google OAuth", () => {
     expect(user.id).not.toContain("persona.prova");
   });
 
-  it("rejects invalid Google token claims", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
-        Response.json({
+  it.each([
+    { name: "issuer", claims: { iss: "https://attacker.example" } },
+    { name: "audience", claims: { aud: "another-client-id" } },
+    { name: "expiration", claims: { exp: Math.floor(Date.now() / 1000) - 1 } },
+    { name: "nonce", claims: { nonce: "wrong-nonce" } },
+    { name: "email verification", claims: { email_verified: false } },
+  ])("rejects an invalid Google token $name", async ({ claims }) => {
+    mockVerifyIdToken.mockResolvedValue({
+      getPayload: () =>
+        ({
           iss: "https://accounts.google.com",
           sub: "google-subject",
-          aud: "another-client-id",
+          aud: "google-client-id",
           email: "persona.prova@xtec.cat",
-          email_verified: "true",
+          email_verified: true,
           exp: Math.floor(Date.now() / 1000) + 300,
           nonce: "nonce-value",
-        }),
-      ),
-    );
+          ...claims,
+        }) as never,
+    });
 
     await expect(
       verifyGoogleIdToken({
@@ -129,6 +149,14 @@ describe("Google OAuth", () => {
         nonce: "nonce-value",
       }),
     ).rejects.toThrow("Google id token claims are invalid");
+  });
+
+  it("rejects a token when Google's signature verifier rejects it", async () => {
+    mockVerifyIdToken.mockRejectedValue(new Error("invalid signature"));
+
+    await expect(
+      verifyGoogleIdToken({ idToken: "tampered-token", nonce: "nonce-value" }),
+    ).rejects.toThrow("invalid signature");
   });
 
   it("signs auth cookies and rejects tampering", () => {
@@ -143,12 +171,14 @@ describe("Google OAuth", () => {
       id: "00000000-0000-4000-8000-000000000001",
       email: "usuari.prova@xtec.cat",
       displayName: "Usuari Prova",
+      hostedDomain: "xtec.cat",
     });
 
     expect(parseSessionCookieValue(sessionCookie)).toEqual({
       id: "00000000-0000-4000-8000-000000000001",
       email: "usuari.prova@xtec.cat",
       displayName: "Usuari Prova",
+      hostedDomain: "xtec.cat",
     });
   });
 });
