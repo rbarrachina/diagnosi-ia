@@ -50,4 +50,24 @@ describe("readJsonRequestBody", () => {
       readJsonRequestBody(jsonRequest(""), { maxBytes: 16 }),
     ).rejects.toBeInstanceOf(RequestBodyError);
   });
+
+  it("rejects a streamed body as soon as it exceeds the byte limit", async () => {
+    const request = new Request("http://localhost/api/test", {
+      body: new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('{"first":1}'));
+          controller.enqueue(new TextEncoder().encode('{"second":2}'));
+        },
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      // Node's Request implementation requires this for streaming uploads.
+      // @ts-expect-error duplex is supported by the runtime Request constructor.
+      duplex: "half",
+    });
+
+    await expect(
+      readJsonRequestBody(request, { maxBytes: 12 }),
+    ).rejects.toBeInstanceOf(RequestBodyError);
+  });
 });
