@@ -6,6 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Avisa abans d'abandonar un qüestionari amb respostes pendents. Si la sessió
+  docent caduca en enviar, permet autenticar-se en una pestanya nova i reprendre
+  l'enviament des de la pàgina original sense desar cap esborrany al navegador.
+
 - Substitueix la consulta de depuració `tokeninfo` per la verificació local de
   signatura i claims dels tokens Google, i exigeix que el domini del correu i
   el claim Workspace `hd` coincideixin amb la política del centre.

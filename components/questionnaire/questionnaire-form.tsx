@@ -43,6 +43,7 @@ export function QuestionnaireForm({
     () => orderedOptionsFor(questions),
   );
   const hasPreparedOptionOrder = useRef(false);
+  const submissionSaved = useRef(false);
 
   const totalPages = questionnaire.blocks.length + 1;
   const progressPercentage =
@@ -52,6 +53,23 @@ export function QuestionnaireForm({
   const currentBlock = currentStep > 0 ? questionnaire.blocks[currentStep - 1] : null;
   const isLastBlock = currentStep === questionnaire.blocks.length;
   const alreadySubmitted = !isReadOnly && alreadySubmittedByAccount;
+  const hasPendingAnswers =
+    !isReadOnly &&
+    submitState.status !== "submitted" &&
+    Object.keys(answers).length > 0;
+
+  useEffect(() => {
+    if (!hasPendingAnswers) return;
+
+    function warnBeforeLeaving(event: BeforeUnloadEvent) {
+      if (submissionSaved.current) return;
+      event.preventDefault();
+      event.returnValue = "";
+    }
+
+    window.addEventListener("beforeunload", warnBeforeLeaving);
+    return () => window.removeEventListener("beforeunload", warnBeforeLeaving);
+  }, [hasPendingAnswers]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -131,11 +149,19 @@ export function QuestionnaireForm({
         const errorPayload = (await response.json().catch(() => null)) as {
           error?: string;
         } | null;
+        if (response.status === 401) {
+          setSubmitState({
+            status: "error",
+            message: "La sessió ha caducat. Torna a iniciar sessió en una pestanya nova i després envia les respostes des d'aquesta pàgina.",
+          });
+          return;
+        }
         throw new Error(
           errorPayload?.error ?? "No s'han pogut desar les respostes.",
         );
       }
 
+      submissionSaved.current = true;
       window.location.assign(`/docent/resultats/${questionnaire.publicCode}`);
     } catch (error) {
       setSubmitState({
@@ -205,6 +231,16 @@ export function QuestionnaireForm({
           role="alert"
         >
           {submitState.message}
+          {submitState.message.startsWith("La sessió ha caducat.") ? (
+            <a
+              className="ml-1 font-semibold underline underline-offset-2"
+              href={`/auth/login?next=${encodeURIComponent(`/q/${questionnaire.publicCode}`)}`}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Torna a autenticar-te
+            </a>
+          ) : null}
         </p>
       ) : null}
 

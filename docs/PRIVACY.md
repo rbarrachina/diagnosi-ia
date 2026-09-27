@@ -68,6 +68,13 @@ exportacions.
 `participant_submissions` vincula l'identificador amb una única submission per
 espai; no conté correu, nom, domini, IP ni metadades de dispositiu.
 
+Les respostes no enviades del qüestionari només viuen a l'estat en memòria de la
+pàgina oberta. No es creen esborranys locals ni remots, de manera que una
+recarrega o tancament les elimina. El navegador mostra el seu avís de sortida
+quan hi ha respostes pendents. Si la sessió caduca durant l'enviament, es pot
+autenticar de nou en una pestanya separada i tornar a enviar des de la pàgina
+original mentre continuï oberta.
+
 La verificació del token es fa al servidor amb la biblioteca oficial
 `google-auth-library`, que comprova la signatura amb claus públiques de Google;
 es mantenen les comprovacions d'emissor, destinatari, caducitat i `nonce`. Per
