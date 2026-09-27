@@ -1,3 +1,4 @@
+import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import { getResponsibleSessionState } from "@/lib/auth/session";
 import type { ResponsibleAccessReason } from "@/lib/auth/responsible-access";
 import { readJsonRequestBody } from "@/lib/http/request";
@@ -12,11 +13,12 @@ function reportFilename(publicCode: string): string {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const t = await getServerInterfaceTranslator();
   try {
     const session = await getResponsibleSessionState();
 
     if (session.status === "unauthenticated") {
-      return Response.json({ error: "Cal iniciar sessió." }, { status: 401 });
+      return Response.json({ error: t("calIniciarSessio") }, { status: 401 });
     }
 
     if (session.status === "forbidden") {
@@ -46,13 +48,13 @@ export async function POST(request: Request): Promise<Response> {
   } catch (error) {
     if (error instanceof ResultsAccessError) {
       return Response.json(
-        { error: "No s'han pogut validar les credencials de resultats." },
+        { error: t("noSHanPogutValidarLesCredencialsDeResultats") },
         { status: 403 },
       );
     }
 
     return Response.json(
-      { error: "No s'ha pogut generar l'informe PDF." },
+      { error: t("noSHaPogutGenerarLInformePdf") },
       { status: 400 },
     );
   }

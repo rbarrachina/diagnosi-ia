@@ -1,4 +1,5 @@
 "use client";
+import { useInterfaceTranslator } from "@/components/i18n/interface-text";
 
 import { useState } from "react";
 import { ResultsDashboard } from "@/components/results/results-dashboard";
@@ -35,6 +36,7 @@ export function AdminResultsClient({
   results,
   scope,
 }: AdminResultsClientProps) {
+  const t = useInterfaceTranslator();
   const [isDownloading, setIsDownloading] = useState(false);
 
   async function handleDownloadPdf() {
@@ -73,14 +75,14 @@ export function AdminResultsClient({
 
   return (
     <ResultsDashboard
-      eyebrow="Resultats d'administració"
+      eyebrow={t("resultatsDAdministracio")}
       integrated
       isDownloading={isDownloading}
-      metadataText={`${results.scopeLabel} · Qüestionari ${results.questionnaireVersion}`}
-      noticeText={`Només es computen els centres amb més de ${minimumResponseCount} respostes. Els centres amb ${minimumResponseCount} respostes o menys no s'inclouen en aquests resultats.`}
+      metadataText={t("scopeQuestionariVersion", { scope: results.scopeLabel ?? "", version: results.questionnaireVersion })}
+      noticeText={t("nomesEsComputenElsCentresAmbMesDeValue0RespostesEls", { value0: minimumResponseCount, value1: minimumResponseCount })}
       onDownloadPdf={handleDownloadPdf}
       results={results}
-      title={scope === "centre" ? "Resultats del centre" : "Resultats globals"}
+      title={scope === "centre" ? t("resultatsDelCentre") : t("resultatsGlobals")}
     />
   );
 }

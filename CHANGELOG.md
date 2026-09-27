@@ -6,6 +6,11 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Centralitza i tradueix els textos comuns de la web, l'administració, l'àrea
+  docent, els controls del qüestionari i els errors dels endpoints. Cada clau
+  absent o buida recupera el text català; les preguntes i opcions del centre
+  es conserven sense canvis.
+
 - Millora els errors de formulari: identifica i enfoca les preguntes pendents,
   associa l'error al control i explica el format del codi sense revelar si
   existeix.

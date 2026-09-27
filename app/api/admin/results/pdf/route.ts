@@ -1,3 +1,4 @@
+import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import { getRequiredAdminUser, AdminAccessError } from "@/lib/admin/auth";
 import { readJsonRequestBody } from "@/lib/http/request";
 import { renderDiagnosticReportPdf } from "@/lib/pdf/render-report";
@@ -19,6 +20,7 @@ function reportFilename(questionnaireVersion: string): string {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const t = await getServerInterfaceTranslator();
   try {
     await getRequiredAdminUser();
 
@@ -31,7 +33,7 @@ export async function POST(request: Request): Promise<Response> {
 
     if (payload.scope === "centre" && results.totalSubmissions === 0) {
       return Response.json(
-        { error: "Aquest centre no supera el llindar mínim de respostes." },
+        { error: t("aquestCentreNoSuperaElLlindarMinimDeRespostes") },
         { status: 409 },
       );
     }
@@ -46,18 +48,18 @@ export async function POST(request: Request): Promise<Response> {
     });
   } catch (error) {
     if (error instanceof AdminAccessError) {
-      return Response.json({ error: "Cal accés d'administració." }, { status: 403 });
+      return Response.json({ error: t("calAccesDAdministracio") }, { status: 403 });
     }
 
     if (error instanceof ResultsAccessError) {
       return Response.json(
-        { error: "No s'ha pogut trobar l'àmbit de resultats sol·licitat." },
+        { error: t("noSHaPogutTrobarLAmbitDeResultatsSolLicitat") },
         { status: 404 },
       );
     }
 
     return Response.json(
-      { error: "No s'ha pogut generar l'informe PDF." },
+      { error: t("noSHaPogutGenerarLInformePdf") },
       { status: 400 },
     );
   }

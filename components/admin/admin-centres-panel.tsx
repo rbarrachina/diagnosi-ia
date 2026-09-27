@@ -1,3 +1,6 @@
+import { createInterfaceTranslator, type InterfaceTranslator } from "@/lib/i18n/interface-messages";
+
+import { InterfaceText } from "@/components/i18n/interface-text";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -21,51 +24,51 @@ export function AdminCentresPanel({
   filter,
   minimumResponseCount,
   search,
+  t = createInterfaceTranslator("CA"),
 }: {
+  t?: InterfaceTranslator;
   centre: AdminManagedCentreDetail | null;
   centres: AdminManagedCentreSummary[];
   filter: AdminCentreFilter;
   minimumResponseCount: number;
   search: string;
 }) {
+
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)]">
-      <section aria-label="Llista de centres">
+      <section aria-label={t("llistaDeCentres")}>
         <form action="/admin" className="flex gap-2" method="get">
           <input name="section" type="hidden" value="centres" />
           {filter !== "all" ? (
             <input name="filter" type="hidden" value={filter} />
           ) : null}
           <label className="min-w-0 flex-1 text-sm font-medium text-muted">
-            <span className="sr-only">Cerca centres</span>
+            <span className="sr-only"><InterfaceText messageKey="cercaCentres" /></span>
             <input
               className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm"
               defaultValue={search}
               maxLength={100}
               name="q"
-              placeholder="Nom, codi, municipi o correu"
+              placeholder={t("nomCodiMunicipiOCorreu")}
               type="search"
             />
           </label>
           <button
             className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover"
             type="submit"
-          >
-            Cerca
-          </button>
+          ><InterfaceText messageKey="cerca" /></button>
         </form>
 
         {filter !== "all" ? (
           <div className="mt-3 flex items-center justify-between gap-3 rounded-md bg-accent-soft px-3 py-2 text-xs text-muted">
             <span>
-              Filtre: <strong className="font-semibold text-ink">{filterLabel(filter)}</strong>
+              <InterfaceText messageKey="filtre" />{" "}<strong className="font-semibold text-ink">{filterLabel(filter, t)}
+            </strong>
             </span>
             <Link
               className="font-semibold text-action hover:text-action-hover"
               href="/admin?section=centres"
-            >
-              Mostra tots
-            </Link>
+            ><InterfaceText messageKey="mostraTots" /></Link>
           </div>
         ) : null}
 
@@ -91,26 +94,26 @@ export function AdminCentresPanel({
                         .join(" · ") || item.responsibleEmail}
                     </p>
                   </div>
-                  <StatusBadge hasSpace={item.hasSpace} suspended={item.isSuspended} />
+                  <StatusBadge t={t} hasSpace={item.hasSpace} suspended={item.isSuspended} />
                 </div>
                 <p className="mt-2 text-xs text-muted">
-                  {formatResponseCount(item.totalSubmissions, minimumResponseCount)}
+                  {formatResponseCount(item.totalSubmissions, minimumResponseCount, t)}
                 </p>
               </Link>
             ))
           ) : (
             <p className="px-3 py-8 text-sm text-muted">
-              No s’ha trobat cap centre.
+              <InterfaceText messageKey="noSHaTrobatCapCentre" />
             </p>
           )}
         </div>
       </section>
 
       {centre ? (
-        <CentreDetail centre={centre} minimumResponseCount={minimumResponseCount} />
+        <CentreDetail t={t} centre={centre} minimumResponseCount={minimumResponseCount} />
       ) : (
         <section className="py-8 text-sm text-muted">
-          Selecciona un centre per consultar-ne la fitxa i les accions disponibles.
+          <InterfaceText messageKey="seleccionaUnCentrePerConsultarNeLaFitxaILesAccions" />
         </section>
       )}
     </div>
@@ -120,10 +123,13 @@ export function AdminCentresPanel({
 function CentreDetail({
   centre,
   minimumResponseCount,
+  t = createInterfaceTranslator("CA"),
 }: {
+  t?: InterfaceTranslator;
   centre: AdminManagedCentreDetail;
   minimumResponseCount: number;
 }) {
+
   const deleteConfirmation = centre.officialCode ?? centre.centreEmail;
 
   return (
@@ -132,129 +138,130 @@ function CentreDetail({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-action">
-              Fitxa del centre
+              <InterfaceText messageKey="fitxaDelCentre" />
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-ink">
               {centre.displayName}
             </h2>
           </div>
-          <StatusBadge hasSpace={centre.hasSpace} suspended={centre.isSuspended} />
+          <StatusBadge t={t} hasSpace={centre.hasSpace} suspended={centre.isSuspended} />
         </div>
         <dl className="mt-6 grid gap-x-8 gap-y-5 border-t border-line pt-6 sm:grid-cols-2">
-          <Detail label="Codi oficial" value={centre.officialCode ?? "No disponible"} />
-          <Detail label="Correu institucional" value={centre.centreEmail} />
-          <Detail label="Municipi" value={centre.municipality ?? "No disponible"} />
-          <Detail label="Àrea territorial" value={centre.territorialArea ?? "No disponible"} />
-          <Detail label="Servei educatiu" value={centre.educationalService ?? "No disponible"} />
+          <Detail label={t("codiOficial")} value={centre.officialCode ?? t("noDisponible")} />
+          <Detail label={t("correuInstitucional")} value={centre.centreEmail} />
+          <Detail label={t("municipi")} value={centre.municipality ?? t("noDisponible")} />
+          <Detail label={t("areaTerritorial")} value={centre.territorialArea ?? t("noDisponible")} />
+          <Detail label={t("serveiEducatiu")} value={centre.educationalService ?? t("noDisponible")} />
           <Detail
-            label="Fitxa confirmada"
-            value={centre.profileConfirmedAt ? formatDate(centre.profileConfirmedAt) : "Pendent"}
+            label={t("fitxaConfirmada")}
+            value={centre.profileConfirmedAt ? formatDate(centre.profileConfirmedAt) : t("pendent")}
           />
-          <Detail label="Dades institucionals" value={sourceStatusLabel(centre.sourceStatus)} />
+          <Detail label={t("dadesInstitucionals")} value={sourceStatusLabel(centre.sourceStatus, t)} />
         </dl>
       </section>
 
       <section className="border-t border-line pt-8">
         <h3 className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
-          Identificació i accés
+          <InterfaceText messageKey="identificacioIAcces" />
         </h3>
         <dl className="mt-5 grid gap-x-8 gap-y-5 pl-4 sm:grid-cols-2">
-          <Detail label="Responsable" value={centre.responsibleName ?? "Sense nom visible"} />
-          <Detail label="Correu responsable" value={centre.responsibleEmail} />
-          <Detail label="Primer registre" value={formatDate(centre.responsibleCreatedAt)} />
+          <Detail label={t("responsable")} value={centre.responsibleName ?? t("senseNomVisible")} />
+          <Detail label={t("correuResponsable")} value={centre.responsibleEmail} />
+          <Detail label={t("primerRegistre")} value={formatDate(centre.responsibleCreatedAt)} />
           <Detail
-            label="Darrer accés"
-            value={centre.lastLoginAt ? formatDate(centre.lastLoginAt) : "Encara no consta"}
+            label={t("darrerAcces")}
+            value={centre.lastLoginAt ? formatDate(centre.lastLoginAt) : t("encaraNoConsta")}
           />
-          <Detail label="Accés XTEC" value={centre.allowXtec ? "Admès" : "No admès"} />
-          <Detail label="Domini del centre" value={centre.customDomain ? `@${centre.customDomain}` : "No configurat"} />
+          <Detail label={t("accesXtec")} value={centre.allowXtec ? t("admes") : t("noAdmes")} />
+          <Detail label={t("dominiDelCentre")} value={centre.customDomain ? `@${centre.customDomain}` : t("noConfigurat")} />
           <Detail
-            label="Política de correus"
-            value={centre.emailPolicyConfiguredAt ? "Configurada" : "Pendent"}
+            label={t("politicaDeCorreus")}
+            value={centre.emailPolicyConfiguredAt ? t("configurada") : t("pendent")}
           />
         </dl>
         <p className="mt-4 pl-4 text-xs leading-5 text-muted">
-          L’aplicació no desa ni mostra els correus del professorat participant.
+          <InterfaceText messageKey="lAplicacioNoDesaNiMostraElsCorreusDelProfessoratParticipant" />
         </p>
       </section>
 
       <section className="border-t border-line pt-8">
         <h3 className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
-          Qüestionari i resultats
+          <InterfaceText messageKey="questionariIResultats" />
         </h3>
         <dl className="mt-5 grid gap-x-8 gap-y-5 pl-4 sm:grid-cols-2">
           <Detail
-            label="Qüestionari"
-            value={centre.space ? `${centre.space.questionnaireVersion} · ${centre.space.questionnaireTitle}` : "Sense espai"}
+            label={t("questionari")}
+            value={centre.space ? `${centre.space.questionnaireVersion} · ${centre.space.questionnaireTitle}` : t("senseEspai")}
           />
           <Detail
-            label="Respostes"
-            value={formatResponseCount(centre.totalSubmissions, minimumResponseCount)}
+            label={t("respostes")}
+            value={formatResponseCount(centre.totalSubmissions, minimumResponseCount, t)}
           />
-          <Detail label="Codi públic" value={centre.space?.publicCode ?? "No disponible"} />
+          <Detail label={t("codiPublic")} value={centre.space?.publicCode ?? t("noDisponible")} />
           <Detail
-            label="Estat de l’espai"
-            value={centre.space?.isActive ? "Publicat" : centre.space ? "Tancat" : "Sense espai"}
+            label={t("estatDeLEspai")}
+            value={centre.space?.isActive ? t("publicat") : centre.space ? t("tancat") : t("senseEspai")}
           />
         </dl>
         {centre.space && centre.totalSubmissions > minimumResponseCount ? (
           <Link
             className="ml-4 mt-5 inline-flex rounded-md border border-line px-4 py-2 text-sm font-semibold text-action hover:bg-accent-soft"
             href={`/admin?section=results&scope=centre&centreId=${encodeURIComponent(centre.id)}&questionnaireId=${encodeURIComponent(centre.space.questionnaireId)}`}
-          >
-            Consulta els resultats agregats
-          </Link>
+          ><InterfaceText messageKey="consultaElsResultatsAgregats" /></Link>
         ) : null}
       </section>
 
       <section className="border-t border-line pt-8">
         <h3 className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
-          Accions administratives
+          <InterfaceText messageKey="accionsAdministratives" />
         </h3>
         <div className="mt-5 space-y-5 pl-4">
           <ActionRow
-            description={centre.isSuspended ? "Torna a permetre l’accés del responsable i activa l’espai." : "Impedeix l’accés del responsable i desactiva el qüestionari públic."}
-            title={centre.isSuspended ? "Reactiva el centre" : "Suspèn el centre"}
+            description={centre.isSuspended ? t("tornaAPermetreLAccesDelResponsableIActivaLEspai") : t("impedeixLAccesDelResponsableIDesactivaElQuestionariPublic")}
+            title={centre.isSuspended ? t("reactivaElCentre") : t("suspenElCentre")}
           >
             <form action={setAdminCentreSuspendedAction}>
               <input name="centreId" type="hidden" value={centre.id} />
               <input name="suspended" type="hidden" value={centre.isSuspended ? "false" : "true"} />
               <ConfirmSubmitButton
                 className="rounded-md border border-line px-3 py-2 text-sm font-semibold text-ink hover:bg-surface-soft"
-                message={centre.isSuspended ? "Vols reactivar aquest centre?" : "Vols suspendre aquest centre? El qüestionari públic deixarà d’estar disponible."}
+                message={centre.isSuspended ? t("volsReactivarAquestCentre") : t("volsSuspendreAquestCentreElQuestionariPublicDeixaraDEstarDisponible")}
               >
-                {centre.isSuspended ? "Reactiva" : "Suspèn"}
+                {centre.isSuspended ? t("reactiva") : t("suspen")}
               </ConfirmSubmitButton>
             </form>
           </ActionRow>
 
           <DestructiveActionForm
+        t={t}
             action={resetAdminCentreResponsesAction}
-            buttonLabel="Elimina les respostes"
+            buttonLabel={t("eliminaLesRespostes")}
             centreId={centre.id}
-            description="Elimina respostes i vinculacions pseudònimes, però conserva l’espai, l’enllaç i la configuració."
+            description={t("eliminaRespostesIVinculacionsPseudonimesPeroConservaLEspaiLEnllac")}
             disabled={!centre.space || centre.totalSubmissions === 0}
-            title="Reinicia les respostes"
+            title={t("reiniciaLesRespostes")}
           />
           <DestructiveActionForm
+        t={t}
             action={resetAdminCentreSpaceAction}
-            buttonLabel="Reinicia el qüestionari"
+            buttonLabel={t("reiniciaElQuestionari")}
             centreId={centre.id}
-            description="Elimina les respostes, assigna la versió activa i genera enllaços i tokens nous."
+            description={t("eliminaLesRespostesAssignaLaVersioActivaIGeneraEnllacosI")}
             disabled={!centre.space}
-            title="Reinicia completament l’espai"
+            title={t("reiniciaCompletamentLEspai")}
           />
 
           <div className="border-t border-danger-border pt-5">
-            <h4 className="font-semibold text-danger-text">Elimina definitivament el centre</h4>
+            <h4 className="font-semibold text-danger-text">
+              <InterfaceText messageKey="eliminaDefinitivamentElCentre" />
+            </h4>
             <p className="mt-1 text-sm leading-6 text-muted">
-              Elimina la fitxa, el compte responsable, l’espai i totes les respostes associades. El registre mínim de l’actuació administrativa es conserva.
+              <InterfaceText messageKey="eliminaLaFitxaElCompteResponsableLEspaiITotesLes" />
             </p>
             <form action={deleteAdminCentreAction} className="mt-3 max-w-md">
               <input name="centreId" type="hidden" value={centre.id} />
               <label className="block text-sm text-muted">
-                Escriu <strong className="font-semibold text-ink">{deleteConfirmation}</strong> per confirmar
-                <input
+                <InterfaceText messageKey="escriu" />{" "}<strong className="font-semibold text-ink">{deleteConfirmation}</strong>{" "}<InterfaceText messageKey="perConfirmar" />{" "}<input
                   autoComplete="off"
                   className="mt-2 w-full rounded-md border border-danger-border bg-surface px-3 py-2 text-sm"
                   name="confirmation"
@@ -264,10 +271,8 @@ function CentreDetail({
               </label>
               <ConfirmSubmitButton
                 className="mt-3 rounded-md bg-danger-text px-4 py-2 text-sm font-semibold text-white"
-                message="Aquesta eliminació és irreversible. Vols eliminar definitivament el centre i totes les seves dades?"
-              >
-                Elimina definitivament
-              </ConfirmSubmitButton>
+                message={t("aquestaEliminacioEsIrreversibleVolsEliminarDefinitivamentElCentreITotes")}
+              ><InterfaceText messageKey="eliminaDefinitivament" /></ConfirmSubmitButton>
             </form>
           </div>
         </div>
@@ -275,18 +280,18 @@ function CentreDetail({
 
       <section className="border-t border-line pt-8">
         <h3 className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
-          Activitat administrativa recent
+          <InterfaceText messageKey="activitatAdministrativaRecent" />
         </h3>
         {centre.recentActions.length > 0 ? (
           <ul className="mt-5 divide-y divide-line pl-4 text-sm">
             {centre.recentActions.map((action) => (
               <li className="flex flex-wrap justify-between gap-2 py-3" key={action.id}>
                 <span className="font-medium text-ink">
-                  {actionLabel(action.action)}
+                  {actionLabel(action.action, t)}
                   {action.affectedSubmissions > minimumResponseCount
-                    ? ` · ${action.affectedSubmissions} respostes`
+                    ? t("value0Respostes", { value0: action.affectedSubmissions })
                     : action.affectedSubmissions > 0
-                      ? ` · ≤ ${minimumResponseCount} respostes`
+                      ? t("value0Respostes2", { value0: minimumResponseCount })
                       : ""}
                 </span>
                 <span className="text-muted">
@@ -296,7 +301,9 @@ function CentreDetail({
             ))}
           </ul>
         ) : (
-          <p className="mt-5 pl-4 text-sm text-muted">Encara no hi ha actuacions registrades.</p>
+          <p className="mt-5 pl-4 text-sm text-muted">
+            <InterfaceText messageKey="encaraNoHiHaActuacionsRegistrades" />
+          </p>
         )}
       </section>
     </div>
@@ -310,7 +317,9 @@ function DestructiveActionForm({
   description,
   disabled,
   title,
+  t = createInterfaceTranslator("CA"),
 }: {
+  t?: InterfaceTranslator;
   action: (formData: FormData) => Promise<void>;
   buttonLabel: string;
   centreId: string;
@@ -318,6 +327,7 @@ function DestructiveActionForm({
   disabled: boolean;
   title: string;
 }) {
+
   return (
     <ActionRow description={description} title={title}>
       <form action={action}>
@@ -330,13 +340,11 @@ function DestructiveActionForm({
             required
             type="checkbox"
             value="confirmed"
-          />
-          Confirmo que aquesta acció elimina dades i no es pot desfer.
-        </label>
+          /><InterfaceText messageKey="confirmoQueAquestaAccioEliminaDadesINoEsPotDesfer" /></label>
         <ConfirmSubmitButton
           className="rounded-md border border-danger-border px-3 py-2 text-sm font-semibold text-danger-text hover:bg-danger-bg disabled:opacity-50"
           disabled={disabled}
-          message="Aquesta acció és irreversible. Vols continuar?"
+          message={t("aquestaAccioEsIrreversibleVolsContinuar")}
         >
           {buttonLabel}
         </ConfirmSubmitButton>
@@ -377,11 +385,14 @@ function Detail({ label, value }: { label: string; value: string }) {
 function StatusBadge({
   hasSpace,
   suspended,
+  t = createInterfaceTranslator("CA"),
 }: {
+  t?: InterfaceTranslator;
   hasSpace: boolean;
   suspended: boolean;
 }) {
-  const label = suspended ? "Suspès" : hasSpace ? "Actiu" : "Pendent";
+
+  const label = suspended ? t("suspes") : hasSpace ? t("actiu") : t("pendent");
   return (
     <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
       suspended
@@ -395,10 +406,10 @@ function StatusBadge({
   );
 }
 
-function formatResponseCount(total: number, minimum: number): string {
-  if (total === 0) return "Cap resposta";
-  if (total <= minimum) return `No supera el llindar (≤ ${minimum})`;
-  return `${total} ${total === 1 ? "resposta" : "respostes"}`;
+function formatResponseCount(total: number, minimum: number, t: InterfaceTranslator): string {
+  if (total === 0) return t("capResposta");
+  if (total <= minimum) return t("noSuperaElLlindarValue0", { value0: minimum });
+  return `${total} ${total === 1 ? t("resposta2") : t("respostes3")}`;
 }
 
 function formatDate(value: string): string {
@@ -419,37 +430,37 @@ function centreHref(
   return `/admin?${params.toString()}`;
 }
 
-function filterLabel(filter: AdminCentreFilter): string {
+function filterLabel(filter: AdminCentreFilter, t: InterfaceTranslator): string {
   return {
-    all: "Tots els centres",
-    active: "Centres actius",
-    suspended: "Centres suspesos",
-    pending: "Pendents de configuració",
-    active_without_questionnaire: "Centres actius sense qüestionari",
-    without_questionnaire: "Sense qüestionari",
+    all: t("totsElsCentres"),
+    active: t("centresActius"),
+    suspended: t("centresSuspesos"),
+    pending: t("pendentsDeConfiguracio"),
+    active_without_questionnaire: t("centresActiusSenseQuestionari"),
+    without_questionnaire: t("senseQuestionari"),
     with_questionnaire_without_responses:
-      "Amb qüestionari però sense respostes",
-    without_responses: "Sense respostes",
+      t("ambQuestionariPeroSenseRespostes"),
+    without_responses: t("senseRespostes"),
   }[filter];
 }
 
-function actionLabel(action: AdminCentreAction): string {
+function actionLabel(action: AdminCentreAction, t: InterfaceTranslator): string {
   const labels: Record<AdminCentreAction, string> = {
-    suspended: "Centre suspès",
-    reactivated: "Centre reactivat",
-    responses_reset: "Respostes reiniciades",
-    space_reset: "Espai reiniciat",
-    deleted: "Centre eliminat",
+    suspended: t("centreSuspes"),
+    reactivated: t("centreReactivat"),
+    responses_reset: t("respostesReiniciades"),
+    space_reset: t("espaiReiniciat"),
+    deleted: t("centreEliminat"),
   };
   return labels[action];
 }
 
-function sourceStatusLabel(status: string): string {
+function sourceStatusLabel(status: string, t: InterfaceTranslator): string {
   const labels: Record<string, string> = {
-    pending: "Pendent de consulta",
-    ok: "Verificades",
-    not_found: "Centre no trobat",
-    unavailable: "Font no disponible",
+    pending: t("pendentDeConsulta"),
+    ok: t("verificades"),
+    not_found: t("centreNoTrobat"),
+    unavailable: t("fontNoDisponible"),
   };
-  return labels[status] ?? "No disponible";
+  return labels[status] ?? t("noDisponible");
 }

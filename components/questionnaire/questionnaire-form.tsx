@@ -1,5 +1,7 @@
 "use client";
 
+import { InterfaceText, useInterfaceTranslator } from "@/components/i18n/interface-text";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SCALE_OPTIONS } from "@/lib/questionnaire/scale";
 import type {
@@ -14,7 +16,7 @@ type SubmitState =
   | { status: "idle" }
   | { status: "submitting" }
   | { status: "submitted" }
-  | { status: "error"; message: string };
+  | { status: "error"; message: string; reauthenticate?: boolean };
 
 type QuestionnaireFormProps = {
   alreadySubmitted?: boolean;
@@ -29,6 +31,7 @@ export function QuestionnaireForm({
   questionnaire,
   mode = "response",
 }: QuestionnaireFormProps) {
+  const t = useInterfaceTranslator();
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [currentStep, setCurrentStep] = useState(0);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
@@ -96,7 +99,7 @@ export function QuestionnaireForm({
     if (!isReadOnly && currentStep === 0 && alreadySubmitted) {
       setSubmitState({
         status: "error",
-        message: "Aquest usuari ja ha respost l'enquesta.",
+        message: t("aquestUsuariJaHaRespostLEnquesta"),
       });
       return;
     }
@@ -114,7 +117,7 @@ export function QuestionnaireForm({
       if (missingIds[0]) focusQuestion(missingIds[0]);
       setSubmitState({
         status: "error",
-        message: "Falten respostes en aquest bloc. Revisa les preguntes indicades.",
+        message: t("faltenRespostesEnAquestBlocRevisaLesPreguntesIndicades"),
       });
       return;
     }
@@ -127,7 +130,7 @@ export function QuestionnaireForm({
     if (alreadySubmitted) {
       setSubmitState({
         status: "error",
-        message: "Aquest usuari ja ha respost l'enquesta.",
+        message: t("aquestUsuariJaHaRespostLEnquesta"),
       });
       return;
     }
@@ -145,7 +148,7 @@ export function QuestionnaireForm({
       if (firstMissing) focusQuestion(firstMissing);
       setSubmitState({
         status: "error",
-        message: "Falten respostes. Revisa les preguntes indicades abans d'enviar.",
+        message: t("faltenRespostesRevisaLesPreguntesIndicadesAbansDEnviar"),
       });
       return;
     }
@@ -175,12 +178,13 @@ export function QuestionnaireForm({
         if (response.status === 401) {
           setSubmitState({
             status: "error",
-            message: "La sessió ha caducat. Torna a iniciar sessió en una pestanya nova i després envia les respostes des d'aquesta pàgina.",
+            message: t("laSessioHaCaducatTornaAIniciarSessioEnUnaPestanya"),
+            reauthenticate: true,
           });
           return;
         }
         throw new Error(
-          errorPayload?.error ?? "No s'han pogut desar les respostes.",
+          errorPayload?.error ?? t("noSHanPogutDesarLesRespostes"),
         );
       }
 
@@ -191,7 +195,7 @@ export function QuestionnaireForm({
         status: "error",
         message: error instanceof Error
           ? error.message
-          : "No s'han pogut desar les respostes. Torna-ho a provar.",
+          : t("noSHanPogutDesarLesRespostesTornaHoAProvar"),
       });
     }
   }
@@ -200,17 +204,15 @@ export function QuestionnaireForm({
     return (
       <div className="questionnaire-panel p-8 text-center sm:p-10">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action">
-          Qüestionari completat
+          <InterfaceText messageKey="questionariCompletat" />
         </p>
         <h1
           className="mt-4 text-3xl font-bold tracking-[-0.035em] text-ink"
           id="questionnaire-step-heading"
           tabIndex={-1}
-        >
-          Gràcies
-        </h1>
+        ><InterfaceText messageKey="gracies" /></h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted sm:text-base">
-          Les respostes s&apos;han enregistrat correctament.
+          <InterfaceText messageKey="lesRespostesSHanEnregistratCorrectament" />
         </p>
         <ProgressBar percentage={progressPercentage} />
       </div>
@@ -279,22 +281,20 @@ export function QuestionnaireForm({
                       }}
                       type="button"
                     >
-                      Pregunta {block.position}.{question.blockPosition}: {questionCopy.prompt}
+                      <InterfaceText messageKey="pregunta" />{" "}{block.position}.{question.blockPosition}: {questionCopy.prompt}
                     </button>
                   </li>
                 );
               })}
             </ul>
           ) : null}
-          {submitState.message.startsWith("La sessió ha caducat.") ? (
+          {submitState.reauthenticate ? (
             <a
               className="ml-1 font-semibold underline underline-offset-2"
               href={`/auth/login?next=${encodeURIComponent(`/q/${questionnaire.publicCode}`)}`}
               rel="noreferrer"
               target="_blank"
-            >
-              Torna a autenticar-te
-            </a>
+            ><InterfaceText messageKey="tornaAAutenticarTe" /></a>
           ) : null}
         </div>
       ) : null}
@@ -310,9 +310,7 @@ export function QuestionnaireForm({
               setCurrentStep((step) => Math.max(0, step - 1));
             }}
             type="button"
-          >
-            Anterior
-          </button>
+          ><InterfaceText messageKey="anterior" /></button>
 
           {isReadOnly && isLastBlock ? (
             <button
@@ -322,9 +320,7 @@ export function QuestionnaireForm({
                 setCurrentStep(0);
               }}
               type="button"
-            >
-              Torna a l&apos;inici
-            </button>
+            ><InterfaceText messageKey="tornaALInici" /></button>
           ) : isLastBlock ? (
             <button
               className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-action-contrast shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-muted"
@@ -332,16 +328,14 @@ export function QuestionnaireForm({
               onClick={submitAnswers}
               type="button"
             >
-              {submitState.status === "submitting" ? "Enviant..." : "Envia les respostes"}
+              {submitState.status === "submitting" ? t("enviant") : t("enviaLesRespostes")}
             </button>
           ) : (
             <button
               className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-action-contrast shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover"
               onClick={goToNextStep}
               type="button"
-            >
-              Continua
-            </button>
+            ><InterfaceText messageKey="continua" /></button>
           )}
         </div>
       ) : null}
@@ -364,6 +358,7 @@ function IntroPage({
   questionCount: number;
   questionnaire: PublicQuestionnaire;
 }) {
+  const t = useInterfaceTranslator();
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action sm:text-sm">
@@ -374,49 +369,32 @@ function IntroPage({
         id="questionnaire-step-heading"
         tabIndex={-1}
       >
-        {isReadOnly ? "Previsualització del qüestionari" : "Qüestionari"}
+        {isReadOnly ? t("previsualitzacioDelQuestionari") : t("questionari")}
       </h1>
       {isReadOnly ? (
         <p className="mt-4 rounded-md border border-info-border bg-info-bg px-4 py-3 text-sm font-semibold leading-6 text-info-text">
-          Aquesta pantalla només serveix per visualitzar el qüestionari. No es
-          pot respondre, no es desa cap resposta i no compta com una participació.
+          <InterfaceText messageKey="aquestaPantallaNomesServeixPerVisualitzarElQuestionariNoEsPot" />
         </p>
       ) : null}
       <div className="mt-7 grid gap-x-8 gap-y-5 text-sm leading-6 text-muted sm:grid-cols-2 sm:text-base sm:leading-7">
+        <p><InterfaceText messageKey="lObjectiuEsConeixerElGrauDUsEducatiuDeLa" /></p>
+        <p><InterfaceText messageKey="noDemanemElNomElCorreuNomesEsConservaDurantLa" /></p>
+        <p><InterfaceText messageKey="elCentreILAdministracioNomesPodenConsultarResultatsAgregatsNo" /></p>
         <p>
-          L&apos;objectiu és conèixer el grau d&apos;ús educatiu de la IA al
-          centre a partir de dades de conjunt.
-        </p>
-        <p>
-          No demanem el nom. El correu només es conserva durant la sessió per
-          validar el domini i no es desa a la base de dades. La participació
-          queda vinculada a un identificador pseudònim per poder recuperar-ne
-          els resultats amb el mateix compte.
-        </p>
-        <p>
-          El centre i l’administració només poden consultar resultats agregats;
-          no poden veure, cercar ni exportar participacions individuals.
-        </p>
-        <p>
-          La diagnosi consta de {questionCount} preguntes obligatòries. Cada
-          docent l’ha de respondre una sola vegada.
+          <InterfaceText messageKey="laDiagnosiConstaDeCountPreguntesObligatoriesCadaDocentLHa" values={{ count: questionCount }} />
         </p>
       </div>
       <div className="mt-8 grid gap-5 border-t border-line pt-7 sm:grid-cols-2 sm:items-start">
         <dl className="space-y-2 text-sm leading-6 text-muted">
           <div className="flex items-center gap-2">
             <dt className="flex items-center gap-2 font-semibold text-ink">
-              <span aria-hidden="true">📋</span>
-              Versió del qüestionari:
-            </dt>
+              <span aria-hidden="true">📋</span><InterfaceText messageKey="versioDelQuestionari" /></dt>
             <dd>{questionnaire.questionnaireVersion}</dd>
           </div>
           <div className="flex items-center gap-2">
             <dt className="flex items-center gap-2 font-semibold text-ink">
-              <span aria-hidden="true">⏱️</span>
-              Temps estimat:
-            </dt>
-            <dd>{questionnaire.estimatedMinutes} minuts</dd>
+              <span aria-hidden="true">⏱️</span><InterfaceText messageKey="tempsEstimat" /></dt>
+            <dd>{questionnaire.estimatedMinutes}{" "}<InterfaceText messageKey="minuts" /></dd>
           </div>
         </dl>
         <div className="flex flex-col gap-3 sm:items-end">
@@ -425,9 +403,7 @@ function IntroPage({
               className="max-w-md text-sm font-semibold leading-5 text-warning-text sm:text-right"
               role="status"
             >
-              <span aria-hidden="true">✅</span>{" "}
-              Aquest usuari ja ha respost l&apos;enquesta i no la pot tornar a fer.
-            </p>
+              <span aria-hidden="true">✅</span>{" "}<InterfaceText messageKey="aquestUsuariJaHaRespostLEnquestaINoLaPot" /></p>
           ) : null}
           <button
             className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-action-contrast shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-muted"
@@ -435,7 +411,7 @@ function IntroPage({
             onClick={onStart}
             type="button"
           >
-            {isReadOnly ? "Veure blocs" : "Comença el qüestionari"}
+            {isReadOnly ? t("veureBlocs") : t("comencaElQuestionari")}
           </button>
         </div>
       </div>
@@ -461,7 +437,7 @@ function BlockPage({
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action sm:text-sm">
-        Bloc {block.position}
+        <InterfaceText messageKey="bloc" />{" "}{block.position}
       </p>
       <h2
         className="mt-4 text-2xl font-bold tracking-[-0.03em] text-ink sm:text-3xl"
@@ -498,7 +474,7 @@ function BlockPage({
             </legend>
             {questionIsMissing ? (
               <p className="mt-2 text-sm font-semibold text-danger-text" id={errorId}>
-                Cal respondre aquesta pregunta.
+                <InterfaceText messageKey="calRespondreAquestaPregunta" />
               </p>
             ) : null}
             <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -602,15 +578,16 @@ function splitQuestionCopy(text: string): {
 }
 
 function ProgressBar({ percentage }: { percentage: number }) {
+  const t = useInterfaceTranslator();
   return (
     <div className="mt-6">
       <div className="flex items-center justify-between text-xs font-semibold text-muted">
-        <span>Progrés</span>
+        <span><InterfaceText messageKey="progres" /></span>
         <span>{percentage}%</span>
       </div>
       <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-accent-soft shadow-inner">
         <div
-          aria-label="Progrés del qüestionari"
+          aria-label={t("progresDelQuestionari")}
           aria-valuemax={100}
           aria-valuemin={0}
           aria-valuenow={percentage}

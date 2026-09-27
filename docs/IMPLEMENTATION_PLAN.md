@@ -25,6 +25,10 @@ sent exclusivament agregats.
 La infraestructura d'internacionalització usa catàlegs tipats, selecció
 explícita i una cookie funcional. No fa detecció automàtica del navegador i
 manté separades les traduccions de la interfície dels qüestionaris versionats.
+Els catàlegs cobreixen també l'administració, l'àrea docent, els controls del
+qüestionari i els errors dels endpoints, amb reserva catalana per clau absent
+o buida. Les proves comproven la conservació de les preguntes originals,
+els paràmetres dels missatges i la recuperació de la sessió caducada.
 
 Queden fora de l'abast actual la infraestructura compartida de rate limiting,
 la protecció anti-bots, la retenció automàtica i la política de còpies de seguretat.

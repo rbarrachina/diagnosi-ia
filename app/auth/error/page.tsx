@@ -1,3 +1,6 @@
+import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
+
+import { InterfaceText } from "@/components/i18n/interface-text";
 import Link from "next/link";
 
 type AuthErrorPageProps = {
@@ -7,37 +10,36 @@ type AuthErrorPageProps = {
 };
 
 export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps) {
+  const t = await getServerInterfaceTranslator();
   const { reason } = await searchParams;
   const serviceClosed = reason === "service-closed";
   const message =
     serviceClosed
-      ? "El servei encara no està disponible. Torna-ho a provar quan s’hagi obert des de l’administració."
+      ? t("elServeiEncaraNoEstaDisponibleTornaHoAProvarQuan")
       : reason === "centre-access-closed"
-      ? "L’accés dels centres encara no està disponible. Torna-ho a provar quan s’hagi obert el servei."
+      ? t("lAccesDelsCentresEncaraNoEstaDisponibleTornaHoA")
       : reason === "centre-suspended"
-        ? "L’accés d’aquest centre està suspès. Contacta amb l’administració de l’aplicació."
+        ? t("lAccesDAquestCentreEstaSuspesContactaAmbLAdministracio")
       : reason === "centre-account-required"
-        ? "Cal accedir amb un compte oficial de centre XTEC o amb un compte administrador actiu."
+        ? t("calAccedirAmbUnCompteOficialDeCentreXtecOAmb")
       : reason === "xtec"
-      ? "Només es permet l’accés amb un compte XTEC."
+      ? t("nomesEsPermetLAccesAmbUnCompteXtec")
       : reason === "participant-domain" || reason === "participant-access"
-        ? "No s’ha pogut validar l’accés docent. Revisa el codi o torna-ho a provar més endavant."
-      : "No s’ha pogut completar l’autenticació.";
+        ? t("noSHaPogutValidarLAccesDocentRevisaElCodi")
+      : t("noSHaPogutCompletarLAutenticacio");
 
   return (
     <main className="min-h-screen bg-paper">
       <section className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-6 text-center">
         <div className="rounded-md border border-red-200 bg-red-50 p-6 text-red-900 shadow-sm">
           <h1 className="text-2xl font-semibold">
-            {serviceClosed ? "Servei en prellançament" : "Accés no autoritzat"}
+            {serviceClosed ? t("serveiEnPrellancament") : t("accesNoAutoritzat")}
           </h1>
           <p className="mt-3 text-sm leading-6">{message}</p>
           <Link
             className="mt-6 inline-flex rounded-md bg-action px-5 py-3 text-sm font-semibold text-action-contrast transition hover:bg-action-hover"
             href="/"
-          >
-            Torna a l’inici
-          </Link>
+          ><InterfaceText messageKey="tornaALInici2" /></Link>
         </div>
       </section>
     </main>

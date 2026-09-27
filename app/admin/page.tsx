@@ -1,3 +1,7 @@
+import type { InterfaceMessageKey } from "@/lib/i18n/interface-messages";
+import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
+
+import { InterfaceText } from "@/components/i18n/interface-text";
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -82,9 +86,12 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Administració",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getServerInterfaceTranslator();
+  return {
+    title: t("administracio"),
+  };
+}
 
 type AdminPageProps = {
   searchParams: Promise<{
@@ -99,43 +106,43 @@ type AdminPageProps = {
   }>;
 };
 
-const statusMessages: Record<string, string> = {
-  activated: "Versió activada.",
-  "admin-added": "Invitació d'administrador creada.",
-  "admin-deleted": "Rol d'administrador eliminat.",
-  "admin-invitation-deleted": "Invitació pendent eliminada.",
-  "admin-updated": "Estat de l'administrador actualitzat.",
-  "centre-deleted": "Centre i dades associades eliminats.",
-  "centre-reactivated": "Centre reactivat.",
-  "centre-responses-reset": "Respostes del centre eliminades.",
-  "centre-space-reset": "Espai del centre reiniciat.",
-  "centre-suspended": "Centre suspès.",
-  copied: "Versió copiada.",
-  created: "Esborrany creat.",
-  deleted: "Qüestionari eliminat.",
-  saved: "Contingut desat.",
-  "settings-saved": "Configuració desada.",
-  "portal-closed": "Servei tancat en mode de prellançament.",
-  "portal-opened": "Servei obert.",
+const statusMessages: Record<string, InterfaceMessageKey> = {
+  activated: "versioActivada",
+  "admin-added": "invitacioDAdministradorCreada",
+  "admin-deleted": "rolDAdministradorEliminat",
+  "admin-invitation-deleted": "invitacioPendentEliminada",
+  "admin-updated": "estatDeLAdministradorActualitzat",
+  "centre-deleted": "centreIDadesAssociadesEliminats",
+  "centre-reactivated": "centreReactivat2",
+  "centre-responses-reset": "respostesDelCentreEliminades",
+  "centre-space-reset": "espaiDelCentreReiniciat",
+  "centre-suspended": "centreSuspes2",
+  copied: "versioCopiada",
+  created: "esborranyCreat",
+  deleted: "questionariEliminat",
+  saved: "contingutDesat",
+  "settings-saved": "configuracioDesada",
+  "portal-closed": "serveiTancatEnModeDePrellancament",
+  "portal-opened": "serveiObert",
 };
 
-const errorMessages: Record<string, string> = {
-  "activation-confirmation": "Cal confirmar l'activació.",
-  activate: "No s'ha pogut activar la versió. Revisa que sigui completa.",
-  "admin-add": "No s'ha pogut crear la invitació. Revisa que sigui un correu @xtec.cat.",
-  "admin-delete": "No s'ha pogut eliminar el rol d'administrador.",
-  "admin-invitation-delete": "No s'ha pogut eliminar la invitació pendent.",
-  "admin-update": "No s'ha pogut actualitzar l'administrador.",
-  "centre-action": "No s’ha pogut completar l’acció sobre el centre.",
-  "centre-confirmation": "No s’ha pogut completar l’acció. Revisa la confirmació.",
-  copy: "No s'ha pogut copiar la versió.",
-  create: "No s'ha pogut crear la versió. Revisa que les dades siguin vàlides.",
-  "create-title-exists": "No s'ha pogut crear la versió perquè el títol ja existeix.",
-  "create-version-exists": "No s'ha pogut crear la versió perquè la versió ja existeix.",
-  delete: "No s'ha pogut eliminar el qüestionari.",
-  "delete-confirmation": "Cal confirmar l'eliminació total.",
-  save: "No s'ha pogut desar. Revisa l'avís d'edició i que no s'eliminin preguntes amb respostes.",
-  settings: "No s'ha pogut desar la configuració.",
+const errorMessages: Record<string, InterfaceMessageKey> = {
+  "activation-confirmation": "calConfirmarLActivacio",
+  activate: "noSHaPogutActivarLaVersioRevisaQueSiguiCompleta",
+  "admin-add": "noSHaPogutCrearLaInvitacioRevisaQueSiguiUn",
+  "admin-delete": "noSHaPogutEliminarElRolDAdministrador",
+  "admin-invitation-delete": "noSHaPogutEliminarLaInvitacioPendent",
+  "admin-update": "noSHaPogutActualitzarLAdministrador",
+  "centre-action": "noSHaPogutCompletarLAccioSobreElCentre",
+  "centre-confirmation": "noSHaPogutCompletarLAccioRevisaLaConfirmacio",
+  copy: "noSHaPogutCopiarLaVersio",
+  create: "noSHaPogutCrearLaVersioRevisaQueLesDades",
+  "create-title-exists": "noSHaPogutCrearLaVersioPerqueElTitolJa",
+  "create-version-exists": "noSHaPogutCrearLaVersioPerqueLaVersioJa",
+  delete: "noSHaPogutEliminarElQuestionari",
+  "delete-confirmation": "calConfirmarLEliminacioTotal",
+  save: "noSHaPogutDesarRevisaLAvisDEdicioI",
+  settings: "noSHaPogutDesarLaConfiguracio",
 };
 
 function formatDate(value: string) {
@@ -253,22 +260,25 @@ function AdminEntryShell({ children }: { children: ReactNode }) {
   );
 }
 
-function AdminAccessDenied({
+async function AdminAccessDenied({
   email,
   reason,
 }: {
   email: string | null;
   reason: "not_admin" | "not_xtec";
 }) {
+  const t = await getServerInterfaceTranslator();
   return (
     <AdminEntryShell>
       <div className="rounded-2xl border border-danger-border bg-danger-bg p-7 text-center text-danger-text shadow-[0_16px_48px_var(--app-shadow)] backdrop-blur-xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em]">Administració</p>
-        <h1 className="mt-3 text-2xl font-semibold">Accés no autoritzat</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em]">
+          <InterfaceText messageKey="administracio" />
+        </p>
+        <h1 className="mt-3 text-2xl font-semibold"><InterfaceText messageKey="accesNoAutoritzat" /></h1>
         <p className="mt-3 text-sm leading-6">
           {reason === "not_xtec"
-            ? "Només es permet l'accés amb un compte XTEC."
-            : "Aquest compte no té permisos d'administració actius."}
+            ? t("nomesEsPermetLAccesAmbUnCompteXtec2")
+            : t("aquestCompteNoTePermisosDAdministracioActius")}
         </p>
         {email ? <p className="mt-2 text-sm font-medium">{email}</p> : null}
         <div className="mt-5 flex justify-center">
@@ -283,15 +293,17 @@ function AdminSetupError() {
   return (
     <AdminEntryShell>
       <div className="rounded-2xl border border-warning-border bg-warning-bg p-7 text-center text-warning-text shadow-[0_16px_48px_var(--app-shadow)] backdrop-blur-xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em]">Administració</p>
-        <h1 className="mt-3 text-2xl font-semibold">Administració no configurada</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em]">
+          <InterfaceText messageKey="administracio" />
+        </p>
+        <h1 className="mt-3 text-2xl font-semibold">
+          <InterfaceText messageKey="administracioNoConfigurada" />
+        </h1>
         <p className="mt-3 text-sm leading-6">
-          Cal aplicar les migracions d&apos;administració a la base de dades
-          configurada abans d&apos;entrar a aquesta pantalla.
+          <InterfaceText messageKey="calAplicarLesMigracionsDAdministracioALaBaseDeDades" />
         </p>
         <p className="mt-3 text-sm leading-6">
-          Revisa que existeixi `admin_users` a MySQL i que la configuració
-          local apunti a la base de dades correcta.
+          <InterfaceText messageKey="revisaQueExisteixiAdmin_usersAMysqlIQueLaConfiguracioLocal" />
         </p>
         <div className="mt-5 flex justify-center">
           <LogoutButton next="/admin" />
@@ -312,10 +324,9 @@ function VersionList({
     <section className="admin-panel p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-ink">Versions</h2>
+          <h2 className="text-lg font-semibold text-ink"><InterfaceText messageKey="versions" /></h2>
           <p className="mt-1 text-sm text-muted">
-            {versions.length} versions de qüestionari
-          </p>
+            {versions.length}{" "}<InterfaceText messageKey="versionsDeQuestionari" /></p>
         </div>
       </div>
 
@@ -339,7 +350,7 @@ function VersionList({
                     <span className="font-semibold text-ink">{version.version}</span>
                     {version.isActive ? (
                       <span className="rounded bg-success-bg px-2 py-0.5 text-xs font-semibold text-success-text">
-                        Activa
+                        <InterfaceText messageKey="activa" />
                       </span>
                     ) : null}
                   </div>
@@ -348,10 +359,10 @@ function VersionList({
                 <span className="text-xs text-muted">ID {version.id}</span>
               </div>
               <div className="mt-3 grid grid-cols-4 gap-2 text-xs text-muted">
-                <span>{version.blockCount} blocs</span>
-                <span>{version.questionCount} preguntes</span>
-                <span>{version.diagnosticSpaceCount} espais</span>
-                <span>{version.totalSubmissions} respostes</span>
+                <span>{version.blockCount}{" "}<InterfaceText messageKey="blocs" /></span>
+                <span>{version.questionCount}{" "}<InterfaceText messageKey="preguntes" /></span>
+                <span>{version.diagnosticSpaceCount}{" "}<InterfaceText messageKey="espais" /></span>
+                <span>{version.totalSubmissions}{" "}<InterfaceText messageKey="respostes3" /></span>
               </div>
             </Link>
           );
@@ -359,7 +370,7 @@ function VersionList({
 
         {versions.length === 0 ? (
           <p className="rounded-md border border-dashed border-line p-4 text-sm text-muted">
-            Encara no hi ha cap versió.
+            <InterfaceText messageKey="encaraNoHiHaCapVersio" />
           </p>
         ) : null}
       </div>
@@ -367,7 +378,7 @@ function VersionList({
   );
 }
 
-function AdminResultsPanel({
+async function AdminResultsPanel({
   centres,
   minimumResponseCount,
   selectedCentreId,
@@ -382,6 +393,7 @@ function AdminResultsPanel({
   selectedScope: AdminResultsScopeInput;
   versions: AdminQuestionnaireSummary[];
 }) {
+  const t = await getServerInterfaceTranslator();
   const selectedVersion = versions.find((version) => version.id === selectedQuestionnaireId);
 
   return (
@@ -408,8 +420,8 @@ function AdminResultsPanel({
       ) : (
         <p className="py-8 text-sm text-muted">
           {versions.length === 0
-            ? "Encara no hi ha cap versió de qüestionari per mostrar."
-            : "Tria una versió del qüestionari per generar els resultats."}
+            ? t("encaraNoHiHaCapVersioDeQuestionariPerMostrar")
+            : t("triaUnaVersioDelQuestionariPerGenerarElsResultats")}
         </p>
       )}
     </div>
@@ -436,8 +448,7 @@ async function AdminResultsContent({
   if (scope === "centre" && results.totalSubmissions === 0) {
     return (
       <p className="rounded-md border border-warning-border bg-warning-bg px-4 py-3 text-sm leading-6 text-warning-text">
-        Aquest centre no supera el llindar mínim de respostes i no se&apos;n
-        poden mostrar els resultats.
+        <InterfaceText messageKey="aquestCentreNoSuperaElLlindarMinimDeRespostesINo" />
       </p>
     );
   }
@@ -453,14 +464,14 @@ async function AdminResultsContent({
   );
 }
 
-function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
+async function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
+  const t = await getServerInterfaceTranslator();
   return (
     <section className="admin-panel p-5">
-      <h2 className="text-lg font-semibold text-ink">Nova versió</h2>
+      <h2 className="text-lg font-semibold text-ink"><InterfaceText messageKey="novaVersio" /></h2>
       <form action={createQuestionnaireVersionAction} className="mt-5 max-w-xl space-y-4">
         <label className="block text-sm font-medium text-muted">
-          Versió
-          <input
+          <InterfaceText messageKey="versio" />{" "}<input
             className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm"
             name="version"
             placeholder="2026-27 v1"
@@ -468,17 +479,15 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
           />
         </label>
         <label className="block text-sm font-medium text-muted">
-          Títol
-          <input
+          <InterfaceText messageKey="titol" />{" "}<input
             className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm"
             name="title"
-            placeholder="Diagnosi IA - Qüestionari 2026-27 v1"
+            placeholder={t("diagnosiIaQuestionari202627V1")}
             required
           />
         </label>
         <label className="block text-sm font-medium text-muted">
-          Minuts per respondre-la
-          <input
+          <InterfaceText messageKey="minutsPerRespondreLa" />{" "}<input
             className="mt-1 w-28 rounded-md border border-line px-3 py-2 text-sm"
             defaultValue={10}
             max={120}
@@ -489,8 +498,7 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
           />
         </label>
         <label className="block text-sm font-medium text-muted">
-          Idioma del qüestionari i dels informes
-          <select
+          <InterfaceText messageKey="idiomaDelQuestionariIDelsInformes" />{" "}<select
             className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm"
             defaultValue="ca"
             name="languageCode"
@@ -504,16 +512,15 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
           </select>
         </label>
         <label className="block text-sm font-medium text-muted">
-          Punt de partida
-          <select
+          <InterfaceText messageKey="puntDePartida" />{" "}<select
             className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm"
             name="sourceQuestionnaireId"
             required
           >
-            <option value="blank">Qüestionari en blanc</option>
+            <option value="blank"><InterfaceText messageKey="questionariEnBlanc" /></option>
             {versions.map((version) => (
               <option key={version.id} value={version.id}>
-                Copia {version.version} · {version.title}
+                <InterfaceText messageKey="copia" />{" "}{version.version} · {version.title}
               </option>
             ))}
           </select>
@@ -522,9 +529,7 @@ function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] }) {
           <button
             className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover"
             type="submit"
-          >
-            Crea versió
-          </button>
+          ><InterfaceText messageKey="creaVersio" /></button>
         </div>
       </form>
     </section>
@@ -536,18 +541,19 @@ type QuestionnaireEditorFeedback = {
   tone: "error" | "success";
 };
 
-function QuestionnaireEditor({
+async function QuestionnaireEditor({
   detail,
   feedback,
 }: {
   detail: AdminQuestionnaireDetail | null;
   feedback?: QuestionnaireEditorFeedback | null;
 }) {
+  const t = await getServerInterfaceTranslator();
   if (!detail) {
     return (
       <section className="admin-panel p-5">
-        <h2 className="text-lg font-semibold text-ink">Editor</h2>
-        <p className="mt-3 text-sm text-muted">Selecciona o crea una versió.</p>
+        <h2 className="text-lg font-semibold text-ink"><InterfaceText messageKey="editor" /></h2>
+        <p className="mt-3 text-sm text-muted"><InterfaceText messageKey="seleccionaOCreaUnaVersio" /></p>
       </section>
     );
   }
@@ -577,24 +583,23 @@ function QuestionnaireEditor({
             </h2>
             {detail.isActive ? (
               <span className="rounded bg-success-bg px-2 py-0.5 text-xs font-semibold text-success-text">
-                Activa
+                <InterfaceText messageKey="activa" />
               </span>
             ) : null}
             {isAssignedToSpace ? (
               <span className="rounded bg-warning-bg px-2 py-0.5 text-xs font-semibold text-warning-text">
-                Assignada a espais
+                <InterfaceText messageKey="assignadaAEspais" />
               </span>
             ) : (
               <span className="rounded bg-accent-soft px-2 py-0.5 text-xs font-semibold text-muted">
-                Sense espais
+                <InterfaceText messageKey="senseEspais" />
               </span>
             )}
           </div>
           <p className="mt-2 text-sm text-muted">
-            {detail.blockCount} blocs, {detail.questionCount} preguntes,{" "}
-            {detail.diagnosticSpaceCount} espais, {detail.totalSubmissions} respostes,{" "}
-            {detail.estimatedMinutes} minuts.
-            Creada el {formatDate(detail.createdAt)}.
+            {detail.blockCount}{" "}<InterfaceText messageKey="blocs2" />{" "}{detail.questionCount}{" "}<InterfaceText messageKey="preguntes2" />{" "}
+            {detail.diagnosticSpaceCount}{" "}<InterfaceText messageKey="espais2" />{" "}{detail.totalSubmissions}{" "}<InterfaceText messageKey="respostes4" />{" "}
+            {detail.estimatedMinutes}{" "}<InterfaceText messageKey="minutsCreadaEl" />{" "}{formatDate(detail.createdAt)}.
           </p>
         </div>
 
@@ -608,20 +613,15 @@ function QuestionnaireEditor({
                 name="confirmActivation"
                 type="checkbox"
                 value="yes"
-              />
-              Confirmo l&apos;activació
-            </label>
+              /><InterfaceText messageKey="confirmoLActivacio" /></label>
             <ConfirmSubmitButton
               className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover disabled:bg-muted"
               disabled={detail.isActive || !isComplete}
-              message={`Vols activar la versió ${detail.version}? Els espais existents conservaran la seva versió.`}
-            >
-              Activa versió
-            </ConfirmSubmitButton>
+              message={t("volsActivarLaVersioValue0ElsEspaisExistentsConservaranLaSeva", { value0: detail.version })}
+            ><InterfaceText messageKey="activaVersio" /></ConfirmSubmitButton>
             {!isComplete ? (
               <p className="max-w-xs text-xs text-warning-text">
-                Cal almenys 1 bloc i 1 pregunta per bloc. Màxim 10 blocs i 10
-                preguntes per bloc.
+                <InterfaceText messageKey="calAlmenys1BlocI1PreguntaPerBlocMaxim10" />
               </p>
             ) : null}
           </form>
@@ -634,15 +634,11 @@ function QuestionnaireEditor({
                   name="confirmDeletion"
                   type="checkbox"
                   value="yes"
-                />
-                Confirmo l&apos;eliminació total
-              </label>
+                /><InterfaceText messageKey="confirmoLEliminacioTotal" /></label>
               <ConfirmSubmitButton
                 className="rounded-md border border-danger-border px-4 py-2 text-sm font-semibold text-danger-text hover:bg-danger-bg"
-                message={`Vols eliminar definitivament la versió ${detail.version}? S'eliminaran també tots els espais, respostes, blocs i preguntes d'aquest qüestionari. Aquesta acció no es pot desfer.`}
-              >
-                Elimina qüestionari
-              </ConfirmSubmitButton>
+                message={t("volsEliminarDefinitivamentLaVersioValue0SEliminaranTambeTotsEls", { value0: detail.version })}
+              ><InterfaceText messageKey="eliminaQuestionari" /></ConfirmSubmitButton>
             </form>
           ) : null}
         </div>
@@ -658,7 +654,7 @@ function QuestionnaireEditor({
   );
 }
 
-function AdminUsersPanel({
+async function AdminUsersPanel({
   admins,
   currentUserId,
   invitations,
@@ -667,15 +663,15 @@ function AdminUsersPanel({
   currentUserId: string;
   invitations: AdminEmailInvitationSummary[];
 }) {
+  const t = await getServerInterfaceTranslator();
   return (
-    <section aria-label="Administradors">
+    <section aria-label={t("administradors")}>
       <form
         action={addAdminUserAction}
         className="flex flex-col gap-3 border-b border-line pb-8 sm:flex-row sm:items-end"
       >
         <label className="w-full max-w-xs text-sm font-medium text-muted">
-          Afegeix una persona administradora
-          <input
+          <InterfaceText messageKey="afegeixUnaPersonaAdministradora" />{" "}<input
             className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm"
             name="email"
             placeholder="persona@xtec.cat"
@@ -686,22 +682,22 @@ function AdminUsersPanel({
         <button
           className="self-start rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover sm:self-auto"
           type="submit"
-        >
-          Convida
-        </button>
+        ><InterfaceText messageKey="convida" /></button>
       </form>
 
       {invitations.length > 0 ? (
         <section className="border-b border-line py-8">
-          <h3 className="text-sm font-semibold text-ink">Invitacions pendents</h3>
+          <h3 className="text-sm font-semibold text-ink">
+            <InterfaceText messageKey="invitacionsPendents" />
+          </h3>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[620px] text-left text-sm">
               <thead className="border-b border-line text-xs uppercase text-muted">
                 <tr>
-                  <th className="py-2 pr-3 font-semibold">Correu</th>
-                  <th className="py-2 pr-3 font-semibold">Creada</th>
-                  <th className="py-2 pr-3 font-semibold">Estat</th>
-                  <th className="py-2 pr-3 font-semibold">Acció</th>
+                  <th className="py-2 pr-3 font-semibold"><InterfaceText messageKey="correu" /></th>
+                  <th className="py-2 pr-3 font-semibold"><InterfaceText messageKey="creada" /></th>
+                  <th className="py-2 pr-3 font-semibold"><InterfaceText messageKey="estat" /></th>
+                  <th className="py-2 pr-3 font-semibold"><InterfaceText messageKey="accio" /></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -713,7 +709,7 @@ function AdminUsersPanel({
                     </td>
                     <td className="py-3 pr-3">
                       <span className="rounded bg-warning-bg px-2 py-0.5 text-xs font-semibold text-warning-text">
-                        Pendent
+                        <InterfaceText messageKey="pendent" />
                       </span>
                     </td>
                     <td className="py-3 pr-3">
@@ -722,9 +718,7 @@ function AdminUsersPanel({
                         <button
                           className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg"
                           type="submit"
-                        >
-                          Elimina
-                        </button>
+                        ><InterfaceText messageKey="elimina" /></button>
                       </form>
                     </td>
                   </tr>
@@ -735,22 +729,22 @@ function AdminUsersPanel({
         </section>
       ) : (
         <p className="border-b border-line py-8 text-sm text-muted">
-          Encara no hi ha invitacions d&apos;administració pendents.
+          <InterfaceText messageKey="encaraNoHiHaInvitacionsDAdministracioPendents" />
         </p>
       )}
 
       <div className="pt-8">
-        <h2 className="text-lg font-semibold text-ink">Administradors</h2>
+        <h2 className="text-lg font-semibold text-ink"><InterfaceText messageKey="administradors" /></h2>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-[880px] text-left text-sm">
             <thead className="border-b border-line text-xs uppercase text-muted">
               <tr>
-                <th className="py-2 pr-3 font-semibold">Nom</th>
-                <th className="py-2 pr-3 font-semibold">Correu</th>
-                <th className="py-2 pr-3 font-semibold">Creat</th>
-                <th className="py-2 pr-3 font-semibold">Darrer accés</th>
-                <th className="py-2 pr-3 font-semibold">Estat</th>
-                <th className="py-2 pr-3 font-semibold">Acció</th>
+                <th className="py-2 pr-3 font-semibold"><InterfaceText messageKey="nom" /></th>
+                <th className="py-2 pr-3 font-semibold"><InterfaceText messageKey="correu" /></th>
+                <th className="py-2 pr-3 font-semibold"><InterfaceText messageKey="creat" /></th>
+                <th className="py-2 pr-3 font-semibold"><InterfaceText messageKey="darrerAcces" /></th>
+                <th className="py-2 pr-3 font-semibold"><InterfaceText messageKey="estat" /></th>
+                <th className="py-2 pr-3 font-semibold"><InterfaceText messageKey="accio" /></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -760,10 +754,10 @@ function AdminUsersPanel({
                 return (
                   <tr key={admin.userId}>
                     <td className="py-3 pr-3 text-muted">
-                      {admin.displayName ?? "Sense nom"}
+                      {admin.displayName ?? t("senseNom")}
                     </td>
                     <td className="py-3 pr-3 text-muted">
-                      {admin.email ?? "No disponible"}
+                      {admin.email ?? t("noDisponible")}
                     </td>
                     <td className="py-3 pr-3 text-muted">
                       {formatDate(admin.createdAt)}
@@ -771,7 +765,7 @@ function AdminUsersPanel({
                     <td className="py-3 pr-3 text-muted">
                       {admin.lastLoginAt
                         ? formatDate(admin.lastLoginAt)
-                        : "No disponible"}
+                        : t("noDisponible")}
                     </td>
                     <td className="py-3 pr-3">
                       <div className="flex flex-wrap items-center gap-2">
@@ -782,11 +776,11 @@ function AdminUsersPanel({
                               : "bg-accent-soft text-muted"
                           }`}
                         >
-                          {admin.isActive ? "Actiu" : "Inactiu"}
+                          {admin.isActive ? t("actiu") : t("inactiu")}
                         </span>
                         {isCurrentUser ? (
                           <span className="rounded bg-accent-soft px-2 py-0.5 text-xs font-semibold text-muted">
-                            Tu
+                            <InterfaceText messageKey="tu" />
                           </span>
                         ) : null}
                       </div>
@@ -805,7 +799,7 @@ function AdminUsersPanel({
                             disabled={isCurrentUser && admin.isActive}
                             type="submit"
                           >
-                            {admin.isActive ? "Desactiva" : "Reactiva"}
+                            {admin.isActive ? t("desactiva") : t("reactiva")}
                           </button>
                         </form>
                         <form action={deleteAdminUserAction}>
@@ -814,9 +808,7 @@ function AdminUsersPanel({
                             className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg disabled:text-muted"
                             disabled={isCurrentUser}
                             type="submit"
-                          >
-                            Elimina rol
-                          </button>
+                          ><InterfaceText messageKey="eliminaRol" /></button>
                         </form>
                       </div>
                     </td>
@@ -900,7 +892,7 @@ function ResponsibleAccessOption({
   );
 }
 
-function SettingsPanel({
+async function SettingsPanel({
   communicationTemplate,
   languageSettings,
   minimumResponseCount,
@@ -913,27 +905,28 @@ function SettingsPanel({
   responsibleAccessMode: ResponsibleAccessMode;
   responsiblePortalStatus: ResponsiblePortalStatus;
 }) {
+  const t = await getServerInterfaceTranslator();
   return (
-    <section aria-label="Configuració">
+    <section aria-label={t("configuracio")}>
       <div className="mb-10 rounded-2xl border border-line bg-surface p-6">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-action">
-              Disponibilitat del servei
+              <InterfaceText messageKey="disponibilitatDelServei" />
             </p>
             <h2 className="mt-2 text-xl font-semibold text-ink">
               {responsiblePortalStatus === "open"
-                ? "Servei obert"
-                : "Mode de prellançament"}
+                ? t("serveiObert2")
+                : t("modeDePrellancament")}
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted">
               {responsiblePortalStatus === "open"
-                ? "Els centres i el professorat poden accedir al servei."
-                : "Els centres i el professorat no poden iniciar sessió ni utilitzar el servei. L’administració continua disponible."}
+                ? t("elsCentresIElProfessoratPodenAccedirAlServei")
+                : t("elsCentresIElProfessoratNoPodenIniciarSessioNiUtilitzar")}
             </p>
             {responsiblePortalStatus === "closed" ? (
               <Link className="mt-3 inline-flex text-sm font-semibold text-action" href="/crear">
-                Prova l’accés com a administrador
+                <InterfaceText messageKey="provaLAccesComAAdministrador" />
               </Link>
             ) : null}
           </div>
@@ -951,13 +944,13 @@ function SettingsPanel({
               }
               message={
                 responsiblePortalStatus === "open"
-                  ? "Vols tancar ara el servei? Les sessions de centre i docents quedaran bloquejades en la propera petició."
-                  : "Vols obrir ara el servei? Els centres i el professorat hi podran accedir immediatament."
+                  ? t("volsTancarAraElServeiLesSessionsDeCentreIDocents")
+                  : t("volsObrirAraElServeiElsCentresIElProfessoratHi")
               }
             >
               {responsiblePortalStatus === "open"
-                ? "Tanca el servei"
-                : "Obre el servei"}
+                ? t("tancaElServei")
+                : t("obreElServei")}
             </ConfirmSubmitButton>
           </form>
         </div>
@@ -965,53 +958,39 @@ function SettingsPanel({
       <form action={setResponsibleAccessModeAction}>
         <fieldset className="border-b border-line pb-10">
           <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
-            Accés per a responsables
+            <InterfaceText messageKey="accesPerAResponsables" />
           </legend>
           <div className="mt-4 max-w-3xl space-y-0.5 pl-4">
             <ResponsibleAccessOption
               checked={responsibleAccessMode === "all_xtec"}
               description={
-                <>
-                  Qualsevol compte acabat en @xtec.cat pot crear i gestionar el
-                  seu espai.
-                </>
+                <><InterfaceText messageKey="qualsevolCompteAcabatEnXtecCatPotCrearIGestionarEl" /></>
               }
               id="responsible-access-all-xtec"
-              infoLabel="Més informació sobre qualsevol compte XTEC"
+              infoLabel={t("mesInformacioSobreQualsevolCompteXtec")}
               value="all_xtec"
-            >
-              Qualsevol compte XTEC
-            </ResponsibleAccessOption>
+            ><InterfaceText messageKey="qualsevolCompteXtec" /></ResponsibleAccessOption>
             <ResponsibleAccessOption
               checked={responsibleAccessMode === "centre_xtec"}
               description={
-                <>
-                  Només els comptes amb format a0000000@xtec.cat, b0000000@xtec.cat,
-                  c0000000@xtec.cat, d0000000@xtec.cat o e0000000@xtec.cat poden
-                  accedir com a responsables. Els administradors actius també poden
-                  accedir en qualsevol mode.
-                </>
+                <><InterfaceText messageKey="nomesElsComptesAmbFormatA0000000XtecCatB0000000XtecCat" /></>
               }
               id="responsible-access-restricted-xtec"
-              infoLabel="Més informació sobre només comptes de centre XTEC"
+              infoLabel={t("mesInformacioSobreNomesComptesDeCentreXtec")}
               value="centre_xtec"
-            >
-              Només comptes de centre XTEC
-            </ResponsibleAccessOption>
+            ><InterfaceText messageKey="nomesComptesDeCentreXtec" /></ResponsibleAccessOption>
           </div>
         </fieldset>
         <fieldset className="border-b border-line py-10">
           <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
-            Resultats globals
+            <InterfaceText messageKey="resultatsGlobals" />
           </legend>
           <div className="mt-2 pl-4 text-sm text-muted">
             <div className="flex flex-wrap items-center gap-2">
               <label
                 className="font-semibold text-ink"
                 htmlFor="minimum-response-count"
-              >
-                Respostes mínimes per computar
-              </label>
+              ><InterfaceText messageKey="respostesMinimesPerComputar" /></label>
               <input
                 className="w-20 rounded-md border border-line px-3 py-2 text-sm"
                 defaultValue={minimumResponseCount}
@@ -1022,17 +1001,15 @@ function SettingsPanel({
                 required
                 type="number"
               />
-              <InfoDisclosure label="Més informació sobre respostes mínimes per computar">
-                Les enquestes amb un nombre de respostes igual o inferior a
-                aquest valor no es computen als resultats globals
-                d&apos;administració.
+              <InfoDisclosure label={t("mesInformacioSobreRespostesMinimesPerComputar")}>
+                <InterfaceText messageKey="lesEnquestesAmbUnNombreDeRespostesIgualOInferiorA" />
               </InfoDisclosure>
             </div>
           </div>
         </fieldset>
         <fieldset className="border-b border-line py-10">
           <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
-            Idiomes
+            <InterfaceText messageKey="idiomes" />
           </legend>
           <div className="mt-4 max-w-3xl space-y-4 pl-4 text-sm text-muted">
             <label className="flex items-center gap-3 font-semibold text-ink">
@@ -1041,11 +1018,9 @@ function SettingsPanel({
                 defaultChecked={languageSettings.selectorVisible}
                 name="languageSelectorVisible"
                 type="checkbox"
-              />
-              Mostra el selector d’idioma a les capçaleres
-            </label>
+              /><InterfaceText messageKey="mostraElSelectorDIdiomaALesCapcaleres" /></label>
             <div>
-              <p className="font-semibold text-ink">Idiomes visibles</p>
+              <p className="font-semibold text-ink"><InterfaceText messageKey="idiomesVisibles" /></p>
               <div className="mt-2 flex flex-wrap gap-x-6 gap-y-3">
                 {AVAILABLE_LANGUAGES.map((language) => {
                   const isCatalan = language.code === "CA";
@@ -1091,26 +1066,22 @@ function SettingsPanel({
                 })}
               </div>
               <p className="mt-3 text-xs leading-5 text-muted">
-                El català és l’idioma base i de reserva. Les llengües visibles
-                es poden seleccionar a la web i la preferència es conserva al
-                navegador sense detectar-ne l’idioma.
+                <InterfaceText messageKey="elCatalaEsLIdiomaBaseIDeReservaLesLlengues" />
               </p>
             </div>
           </div>
         </fieldset>
         <fieldset className="py-10">
           <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
-            Comunicat
+            <InterfaceText messageKey="comunicat" />
           </legend>
           <div className="mt-4 max-w-4xl space-y-4 pl-4 text-sm text-muted">
             <p className="text-xs leading-5 text-muted">
-              Pots usar <code>{"{NOM_CENTRE}"}</code> al títol o al cos,{" "}
-              <code>{QUESTIONNAIRE_URL_PLACEHOLDER}</code> per a l’enllaç i{" "}
-              <code>{QUESTIONNAIRE_CODE_PLACEHOLDER}</code> per al codi. El nom
-              del centre només apareixerà on hagis escrit la marca corresponent.
-            </p>
+              <InterfaceText messageKey="potsUsar" />{" "}<code>{"{NOM_CENTRE}"}</code>{" "}<InterfaceText messageKey="alTitolOAlCos" />{" "}
+              <code>{QUESTIONNAIRE_URL_PLACEHOLDER}</code>{" "}<InterfaceText messageKey="perALEnllacI" />{" "}
+              <code>{QUESTIONNAIRE_CODE_PLACEHOLDER}</code>{" "}<InterfaceText messageKey="perAlCodiElNomDelCentreNomesApareixeraOnHagis" /></p>
             <label className="block">
-              <span className="font-semibold text-ink">Títol del correu</span>
+              <span className="font-semibold text-ink"><InterfaceText messageKey="titolDelCorreu" /></span>
               <input
                 className="mt-2 w-full rounded-md border border-line px-3 py-2 text-sm"
                 defaultValue={communicationTemplate.subject}
@@ -1121,7 +1092,7 @@ function SettingsPanel({
               />
             </label>
             <label className="block">
-              <span className="font-semibold text-ink">Text del missatge</span>
+              <span className="font-semibold text-ink"><InterfaceText messageKey="textDelMissatge" /></span>
               <textarea
                 className="mt-2 min-h-56 w-full rounded-md border border-line px-3 py-2 text-sm leading-6"
                 defaultValue={communicationTemplate.body}
@@ -1131,26 +1102,21 @@ function SettingsPanel({
               />
             </label>
             <p className="text-xs leading-5 text-muted">
-              La marca <code>{QUESTIONNAIRE_URL_PLACEHOLDER}</code> se substituirà
-              per l&apos;enllaç públic i{" "}
-              <code>{QUESTIONNAIRE_CODE_PLACEHOLDER}</code> pel codi de cada
-              espai. Si falta alguna de les dues marques, l&apos;aplicació afegirà
-              igualment la dada corresponent al final del missatge.
-            </p>
+              <InterfaceText messageKey="laMarca" />{" "}<code>{QUESTIONNAIRE_URL_PLACEHOLDER}</code>{" "}<InterfaceText messageKey="seSubstituiraPerLEnllacPublicI" />{" "}
+              <code>{QUESTIONNAIRE_CODE_PLACEHOLDER}</code>{" "}<InterfaceText messageKey="pelCodiDeCadaEspaiSiFaltaAlgunaDeLesDues" /></p>
           </div>
         </fieldset>
         <button
           className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover"
           type="submit"
-        >
-          Desa configuració
-        </button>
+        ><InterfaceText messageKey="desaConfiguracio" /></button>
       </form>
     </section>
   );
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
+  const t = await getServerInterfaceTranslator();
   const params = await searchParams;
   const session = await getAdminSessionState({ allowBootstrap: true });
 
@@ -1159,13 +1125,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       <AdminEntryShell>
         <div className="admin-panel p-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-action">
-            Accés restringit
+            <InterfaceText messageKey="accesRestringit" />
           </p>
           <h1 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-ink">
-            Administració
+            <InterfaceText messageKey="administracio" />
           </h1>
           <p className="mt-3 text-sm leading-6 text-muted">
-            Accedeix amb un compte XTEC autoritzat per gestionar l’aplicació.
+            <InterfaceText messageKey="accedeixAmbUnCompteXtecAutoritzatPerGestionarLAplicacio" />
           </p>
           <div className="mt-6">
             <LoginButton next="/admin" />
@@ -1265,46 +1231,46 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const questionnaireEditorFeedback =
     activeSection === "questionnaires" && params.status === "saved"
       ? {
-          message: statusMessages.saved,
+          message: t(statusMessages.saved),
           tone: "success" as const,
         }
       : activeSection === "questionnaires" && params.error === "save"
         ? {
-            message: errorMessages.save,
+            message: t(errorMessages.save),
             tone: "error" as const,
           }
         : null;
 
   const sectionTitles: Record<AdminSection, { eyebrow: string; title: string; description: string }> = {
     summary: {
-      eyebrow: "Visió general",
-      title: "Resum",
-      description: "Consulta l’estat general de l’aplicació i del qüestionari actiu.",
+      eyebrow: t("visioGeneral"),
+      title: t("resum"),
+      description: t("consultaLEstatGeneralDeLAplicacioIDelQuestionariActiu"),
     },
     questionnaires: {
-      eyebrow: "Contingut",
-      title: "Gestió de qüestionaris",
-      description: "Crea, revisa i activa les versions del qüestionari de diagnosi.",
+      eyebrow: t("contingut"),
+      title: t("gestioDeQuestionaris"),
+      description: t("creaRevisaIActivaLesVersionsDelQuestionariDeDiagnosi"),
     },
     results: {
-      eyebrow: "Visió global",
-      title: "Resultats agregats",
-      description: "Consulta les dades de conjunt sense exposar respostes individuals.",
+      eyebrow: t("visioGlobal"),
+      title: t("resultatsAgregats"),
+      description: t("consultaLesDadesDeConjuntSenseExposarRespostesIndividuals"),
     },
     centres: {
-      eyebrow: "Gestió institucional",
-      title: "Centres",
-      description: "Consulta els registres dels centres i gestiona’n l’accés i les dades.",
+      eyebrow: t("gestioInstitucional"),
+      title: t("centres"),
+      description: t("consultaElsRegistresDelsCentresIGestionaNLAccesI"),
     },
     admins: {
-      eyebrow: "Accés",
-      title: "Gestió d’usuaris",
-      description: "Administra les persones autoritzades a accedir al tauler.",
+      eyebrow: t("acces"),
+      title: t("gestioDUsuaris"),
+      description: t("administraLesPersonesAutoritzadesAAccedirAlTauler"),
     },
     settings: {
-      eyebrow: "Aplicació",
-      title: "Configuració",
-      description: "Defineix els criteris globals d’accés, resultats i comunicació.",
+      eyebrow: t("aplicacio"),
+      title: t("configuracio"),
+      description: t("defineixElsCriterisGlobalsDAccesResultatsIComunicacio"),
     },
   };
   const sectionHeading = sectionTitles[activeSection];
@@ -1325,8 +1291,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         <section className="admin-content mx-auto w-full max-w-7xl" id="admin-top">
           <header className="mb-8 border-b border-line pb-7">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action">
-              {sectionHeading.eyebrow} · Administració
-            </p>
+              {sectionHeading.eyebrow}{" "}<InterfaceText messageKey="administracio2" /></p>
             <h1 className="mt-3 text-3xl font-bold tracking-[-0.035em] text-ink sm:text-4xl">
               {sectionHeading.title}
             </h1>
@@ -1335,7 +1300,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             </p>
             {session.bootstrapped ? (
               <p className="mt-3 text-xs font-medium text-action">
-                Primer administrador creat
+                <InterfaceText messageKey="primerAdministradorCreat" />
               </p>
             ) : null}
           </header>
@@ -1345,7 +1310,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             className="mb-5 rounded-md border border-success-border bg-success-bg px-4 py-3 text-sm font-medium text-success-text"
             role="status"
           >
-            {statusMessages[params.status]}
+            {t(statusMessages[params.status])}
           </div>
         ) : null}
 
@@ -1354,12 +1319,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             className="mb-5 rounded-md border border-danger-border bg-danger-bg px-4 py-3 text-sm font-medium text-danger-text"
             role="alert"
           >
-            {errorMessages[params.error]}
+            {t(errorMessages[params.error])}
           </div>
         ) : null}
 
         {activeSection === "summary" && adminSummary ? (
           <AdminSummaryPanel
+            t={t}
             minimumResponseCount={minimumResponseCount}
             summary={adminSummary}
           />
@@ -1387,6 +1353,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           />
         ) : activeSection === "centres" ? (
           <AdminCentresPanel
+            t={t}
             centre={managedCentre}
             centres={managedCentres}
             filter={centreFilter}

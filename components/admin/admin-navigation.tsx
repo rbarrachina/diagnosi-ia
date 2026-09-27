@@ -1,4 +1,7 @@
 "use client";
+import type { InterfaceTranslator } from "@/lib/i18n/interface-messages";
+
+import { InterfaceText, useInterfaceTranslator } from "@/components/i18n/interface-text";
 
 import Link from "next/link";
 
@@ -20,6 +23,7 @@ type AdminNavigationItem = {
 
 function getNavigationItems(
   selectedQuestionnaireId: string | null,
+  t: InterfaceTranslator,
 ): AdminNavigationItem[] {
   const questionnaireHref = selectedQuestionnaireId
     ? `/admin?section=questionnaires&questionnaireId=${selectedQuestionnaireId}`
@@ -29,43 +33,43 @@ function getNavigationItems(
     {
       href: "/admin?section=summary",
       icon: "summary",
-      label: "Resum",
-      mobileLabel: "Resum",
+      label: t("resum"),
+      mobileLabel: t("resum"),
       section: "summary",
     },
     {
       href: questionnaireHref,
       icon: "questionnaires",
-      label: "Qüestionaris",
-      mobileLabel: "Qüestionaris",
+      label: t("questionaris"),
+      mobileLabel: t("questionaris"),
       section: "questionnaires",
     },
     {
       href: "/admin?section=centres",
       icon: "centres",
-      label: "Centres",
-      mobileLabel: "Centres",
+      label: t("centres"),
+      mobileLabel: t("centres"),
       section: "centres",
     },
     {
       href: "/admin?section=results",
       icon: "results",
-      label: "Resultats",
-      mobileLabel: "Resultats",
+      label: t("resultats"),
+      mobileLabel: t("resultats"),
       section: "results",
     },
     {
       href: "/admin?section=admins",
       icon: "admins",
-      label: "Usuaris",
-      mobileLabel: "Usuaris",
+      label: t("usuaris"),
+      mobileLabel: t("usuaris"),
       section: "admins",
     },
     {
       href: "/admin?section=settings",
       icon: "settings",
-      label: "Configuració",
-      mobileLabel: "Config.",
+      label: t("configuracio"),
+      mobileLabel: t("config"),
       section: "settings",
     },
   ];
@@ -82,18 +86,19 @@ export function AdminSidebar({
   onToggle: () => void;
   selectedQuestionnaireId: string | null;
 }) {
-  const items = getNavigationItems(selectedQuestionnaireId);
+  const t = useInterfaceTranslator();
+  const items = getNavigationItems(selectedQuestionnaireId, t);
 
   return (
     <aside
-      aria-label="Navegació d’administració"
+      aria-label={t("navegacioDAdministracio")}
       className={`admin-sidebar hidden h-full shrink-0 flex-col overflow-hidden border-r border-line bg-[color-mix(in_srgb,var(--color-paper)_88%,transparent)] px-3 py-5 backdrop-blur-md transition-[width] duration-200 md:flex md:w-[72px] ${
         expanded ? "lg:w-60" : "lg:w-[72px]"
       }`}
     >
       <div className="mb-6 px-2">
         <button
-          aria-label={expanded ? "Plega la barra lateral" : "Expandeix la barra lateral"}
+          aria-label={expanded ? t("plegaLaBarraLateral") : t("expandeixLaBarraLateral")}
           className="group relative mb-4 hidden h-9 w-9 items-center justify-center rounded-xl text-muted transition hover:bg-accent-soft hover:text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus lg:inline-flex"
           onClick={onToggle}
           type="button"
@@ -101,7 +106,7 @@ export function AdminSidebar({
           <SidebarToggleIcon expanded={expanded} />
           <NavigationTooltip
             hideOnExpandedDesktop={false}
-            label={expanded ? "Plega" : "Expandeix"}
+            label={expanded ? t("plega") : t("expandeix")}
           />
         </button>
 
@@ -112,16 +117,16 @@ export function AdminSidebar({
         {expanded ? (
           <div className="admin-sidebar-expanded-content hidden lg:block">
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-action">
-              Administració
+              <InterfaceText messageKey="administracio" />
             </p>
             <p className="mt-2 text-sm font-semibold leading-5 text-ink">
-              Tauler de control
+              <InterfaceText messageKey="taulerDeControl" />
             </p>
           </div>
         ) : null}
       </div>
 
-      <nav aria-label="Seccions d’administració" className="space-y-1.5">
+      <nav aria-label={t("seccionsDAdministracio")} className="space-y-1.5">
         {items.map((item) => (
           <AdminSidebarItem
             active={activeSection === item.section}
@@ -142,12 +147,13 @@ export function AdminMobileNavigation({
   activeSection: AdminSection;
   selectedQuestionnaireId: string | null;
 }) {
+  const t = useInterfaceTranslator();
   return (
     <nav
-      aria-label="Seccions d’administració"
+      aria-label={t("seccionsDAdministracio")}
       className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-line bg-surface px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_36px_var(--app-shadow)] md:hidden"
     >
-      {getNavigationItems(selectedQuestionnaireId).map((item) => {
+      {getNavigationItems(selectedQuestionnaireId, t).map((item) => {
         const active = activeSection === item.section;
 
         return (

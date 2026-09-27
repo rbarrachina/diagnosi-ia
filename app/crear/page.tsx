@@ -1,3 +1,4 @@
+import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -30,6 +31,7 @@ type CreatePageProps = {
 };
 
 export default async function CreatePage({ searchParams }: CreatePageProps) {
+  const t = await getServerInterfaceTranslator();
   const messages = getMessages(await getCurrentLanguage());
   const requestedView = (await searchParams).view;
   const initialView =
@@ -47,7 +49,7 @@ export default async function CreatePage({ searchParams }: CreatePageProps) {
       ? await registerResponsibleCentreAccount(session.user)
       : null;
   if (session.status === "authenticated" && !centre) {
-    throw new Error("No s'ha pogut preparar la fitxa del responsable.");
+    throw new Error(t("noSHaPogutPrepararLaFitxaDelResponsable"));
   }
   const ownerSpaces =
     session.status === "authenticated"

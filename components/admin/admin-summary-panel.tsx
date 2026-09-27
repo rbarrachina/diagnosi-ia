@@ -1,3 +1,6 @@
+import { createInterfaceTranslator, type InterfaceTranslator } from "@/lib/i18n/interface-messages";
+
+import { InterfaceText } from "@/components/i18n/interface-text";
 import Link from "next/link";
 
 import type { AdminSummary } from "@/lib/admin/summary";
@@ -5,42 +8,45 @@ import type { AdminSummary } from "@/lib/admin/summary";
 export function AdminSummaryPanel({
   minimumResponseCount,
   summary,
+  t = createInterfaceTranslator("CA"),
 }: {
+  t?: InterfaceTranslator;
   minimumResponseCount: number;
   summary: AdminSummary;
 }) {
+
   const questionnaireResultsHref = summary.activeQuestionnaire
     ? `/admin?section=results&scope=all&questionnaireId=${summary.activeQuestionnaire.id}`
     : "/admin?section=questionnaires";
   const indicators = [
     {
       href: "/admin?section=centres&filter=active",
-      label: "Centres actius",
+      label: t("centresActius"),
       value: summary.activeCentres,
     },
     {
       href: "/admin?section=centres&filter=suspended",
-      label: "Centres suspesos",
+      label: t("centresSuspesos"),
       value: summary.suspendedCentres,
     },
     {
       href: "/admin?section=centres&filter=pending",
-      label: "Pendents de configuració",
+      label: t("pendentsDeConfiguracio"),
       value: summary.pendingCentres,
     },
     {
       href: "/admin?section=centres&filter=without_questionnaire",
-      label: "Sense qüestionari",
+      label: t("senseQuestionari"),
       value: summary.centresWithoutQuestionnaire,
     },
     {
       href: "/admin?section=centres&filter=without_responses",
-      label: "Sense respostes",
+      label: t("senseRespostes"),
       value: summary.centresWithoutResponses,
     },
     {
       href: questionnaireResultsHref,
-      label: "Respostes computables",
+      label: t("respostesComputables"),
       value: summary.computableResponses,
     },
   ];
@@ -48,32 +54,32 @@ export function AdminSummaryPanel({
     summary.pendingCentres > 0
       ? {
           href: "/admin?section=centres&filter=pending",
-          label: `${summary.pendingCentres} centres pendents de completar la configuració`,
+          label: t("value0CentresPendentsDeCompletarLaConfiguracio", { value0: summary.pendingCentres }),
         }
       : null,
     summary.activeCentresWithoutQuestionnaire > 0
       ? {
           href: "/admin?section=centres&filter=active_without_questionnaire",
-          label: `${summary.activeCentresWithoutQuestionnaire} centres actius sense qüestionari`,
+          label: t("value0CentresActiusSenseQuestionari", { value0: summary.activeCentresWithoutQuestionnaire }),
         }
       : null,
     summary.centresWithQuestionnaireWithoutResponses > 0
       ? {
           href: "/admin?section=centres&filter=with_questionnaire_without_responses",
-          label: `${summary.centresWithQuestionnaireWithoutResponses} centres amb qüestionari però sense respostes`,
+          label: t("value0CentresAmbQuestionariPeroSenseRespostes", { value0: summary.centresWithQuestionnaireWithoutResponses }),
         }
       : null,
     !summary.activeQuestionnaire
       ? {
           href: "/admin?section=questionnaires",
-          label: "No hi ha cap qüestionari actiu",
+          label: t("noHiHaCapQuestionariActiu"),
         }
       : null,
   ].filter((alert): alert is { href: string; label: string } => alert !== null);
 
   return (
     <div className="space-y-12">
-      <section aria-label="Indicadors generals">
+      <section aria-label={t("indicadorsGenerals")}>
         <div className="grid max-w-5xl gap-px border-y border-line bg-line sm:grid-cols-3 xl:grid-cols-6">
           {indicators.map((indicator) => (
             <Link
@@ -90,8 +96,7 @@ export function AdminSummaryPanel({
           ))}
         </div>
         <p className="mt-3 text-xs leading-5 text-muted">
-          Les respostes computables només inclouen centres amb més de{" "}
-          {minimumResponseCount} respostes.
+          <InterfaceText messageKey="lesRespostesComputablesNomesInclouenCentresAmbMesDeMinimumRespostes" values={{ minimum: minimumResponseCount }} />
         </p>
       </section>
 
@@ -100,9 +105,7 @@ export function AdminSummaryPanel({
           <h2
             className="border-l-4 border-warning-text pl-3 text-xl font-semibold text-ink"
             id="admin-alerts-title"
-          >
-            Requereixen atenció
-          </h2>
+          ><InterfaceText messageKey="requereixenAtencio" /></h2>
           <div className="mt-5 divide-y divide-warning-border overflow-hidden rounded-xl border border-warning-border bg-warning-bg">
             {alerts.map((alert) => (
               <Link
@@ -120,7 +123,7 @@ export function AdminSummaryPanel({
 
       <section className="border-t border-line pt-9">
         <h2 className="border-l-4 border-action pl-3 text-xl font-semibold text-ink">
-          Qüestionari actual
+          <InterfaceText messageKey="questionariActual" />
         </h2>
 
         {summary.activeQuestionnaire ? (
@@ -128,35 +131,31 @@ export function AdminSummaryPanel({
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.15em] text-action">
-                  Versió {summary.activeQuestionnaire.version}
+                  <InterfaceText messageKey="versio" />{" "}{summary.activeQuestionnaire.version}
                 </p>
                 <h3 className="mt-2 text-2xl font-semibold tracking-[-0.025em] text-ink">
                   {summary.activeQuestionnaire.title}
                 </h3>
                 <p className="mt-2 text-sm text-muted">
-                  Creada el {formatDate(summary.activeQuestionnaire.createdAt)}
+                  <InterfaceText messageKey="creadaEl" />{" "}{formatDate(summary.activeQuestionnaire.createdAt)}
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
                 <Link
                   className="rounded-md border border-line px-4 py-2 text-sm font-semibold text-action hover:bg-accent-soft"
                   href={`/admin?section=questionnaires&questionnaireId=${summary.activeQuestionnaire.id}`}
-                >
-                  Gestiona qüestionaris
-                </Link>
+                ><InterfaceText messageKey="gestionaQuestionaris" /></Link>
                 <Link
                   className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover"
                   href={`/admin?section=results&scope=all&questionnaireId=${summary.activeQuestionnaire.id}`}
-                >
-                  Consulta els resultats
-                </Link>
+                ><InterfaceText messageKey="consultaElsResultats" /></Link>
               </div>
             </div>
 
             <dl className="mt-7 grid gap-6 border-t border-line pt-6 sm:grid-cols-2">
               <div>
                 <dt className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">
-                  Centres que l’utilitzen
+                  <InterfaceText messageKey="centresQueLUtilitzen" />
                 </dt>
                 <dd className="mt-2 text-2xl font-semibold text-ink">
                   {summary.activeQuestionnaire.centreCount}
@@ -164,7 +163,7 @@ export function AdminSummaryPanel({
               </div>
               <div>
                 <dt className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">
-                  Respostes computables
+                  <InterfaceText messageKey="respostesComputables" />
                 </dt>
                 <dd className="mt-2 text-2xl font-semibold text-ink">
                   {summary.activeQuestionnaire.computableResponses}
@@ -174,7 +173,7 @@ export function AdminSummaryPanel({
           </div>
         ) : (
           <p className="mt-5 pl-4 text-sm text-muted">
-            No hi ha cap qüestionari actiu.
+            <InterfaceText messageKey="noHiHaCapQuestionariActiu2" />
           </p>
         )}
       </section>

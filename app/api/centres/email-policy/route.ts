@@ -1,3 +1,4 @@
+import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import { ZodError } from "zod";
 
 import { getResponsibleSessionState } from "@/lib/auth/session";
@@ -7,9 +8,10 @@ import { readJsonRequestBody } from "@/lib/http/request";
 export const runtime = "nodejs";
 
 export async function PUT(request: Request): Promise<Response> {
+  const t = await getServerInterfaceTranslator();
   const session = await getResponsibleSessionState();
   if (session.status !== "authenticated") {
-    return Response.json({ error: "Accés no autoritzat." }, { status: 403 });
+    return Response.json({ error: t("accesNoAutoritzat2") }, { status: 403 });
   }
 
   try {
@@ -20,7 +22,7 @@ export async function PUT(request: Request): Promise<Response> {
     return policy
       ? Response.json({ policy })
       : Response.json(
-          { error: "Confirma primer la fitxa del centre." },
+          { error: t("confirmaPrimerLaFitxaDelCentre") },
           { status: 409 },
         );
   } catch (error) {
@@ -31,7 +33,7 @@ export async function PUT(request: Request): Promise<Response> {
       );
     }
     return Response.json(
-      { error: "No s'ha pogut desar la configuració." },
+      { error: t("noSHaPogutDesarLaConfiguracio") },
       { status: 500 },
     );
   }

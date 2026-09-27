@@ -1,5 +1,7 @@
 "use client";
 
+import { InterfaceText, useInterfaceTranslator } from "@/components/i18n/interface-text";
+
 import { useState } from "react";
 import { saveQuestionnaireContentAction } from "@/app/admin/actions";
 import type { AdminQuestionnaireDetail } from "@/lib/admin/types";
@@ -75,6 +77,7 @@ export function QuestionnaireEditorForm({
   feedback?: EditorFeedback | null;
   isLocked: boolean;
 }) {
+  const t = useInterfaceTranslator();
   const [title, setTitle] = useState(detail.title);
   const [estimatedMinutes, setEstimatedMinutes] = useState(detail.estimatedMinutes);
   const [languageCode, setLanguageCode] = useState(detail.languageCode);
@@ -85,12 +88,12 @@ export function QuestionnaireEditorForm({
   const hasResponses = detail.totalSubmissions > 0;
   const canChangeStructure = !isFormDisabled && !hasResponses && !detail.isActive;
   const structureLockedMessage = detail.isActive
-    ? " Aquesta versió és activa: només pots corregir títols i textos."
+    ? t("aquestaVersioEsActivaNomesPotsCorregirTitolsITextos")
     : "";
 
   function confirmLockedEdit() {
     const accepted = window.confirm(
-      `Aquest qüestionari ja té ${detail.diagnosticSpaceCount} espais i ${detail.totalSubmissions} respostes. Editar-lo pot canviar el formulari compartit i la interpretació dels resultats. Vols continuar?`,
+      t("aquestQuestionariJaTeValue0EspaisIValue1RespostesEditarLo", { value0: detail.diagnosticSpaceCount, value1: detail.totalSubmissions }),
     );
 
     if (accepted) {
@@ -233,31 +236,25 @@ export function QuestionnaireEditorForm({
         <div className="rounded-md border border-warning-border bg-warning-bg p-4 text-sm text-warning-text">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p>
-              Aquesta versió ja té {detail.diagnosticSpaceCount} espais i{" "}
-              {detail.totalSubmissions} respostes.
-              {hasResponses
-                ? " Pots corregir títols i textos, però no canviar l'estructura amb respostes existents."
-                : `${structureLockedMessage} Accepta l'avís per editar-la.`}
+              <InterfaceText messageKey="aquestaVersioJaTeSpacesEspaisIResponsesRespostes" values={{ spaces: detail.diagnosticSpaceCount, responses: detail.totalSubmissions }} />{" "}{hasResponses
+                ? t("potsCorregirTitolsITextosPeroNoCanviarLEstructuraAmb")
+                : t("value0AcceptaLAvisPerEditarLa", { value0: structureLockedMessage })}
             </p>
             {!hasAcceptedLockedEdit ? (
               <button
                 className="rounded-md border border-warning-border bg-surface px-4 py-2 text-sm font-semibold text-warning-text hover:bg-warning-bg"
                 onClick={confirmLockedEdit}
                 type="button"
-              >
-                Editar
-              </button>
+              ><InterfaceText messageKey="editar" /></button>
             ) : (
               <span className="rounded bg-warning-bg px-2 py-1 text-xs font-semibold text-warning-text">
-                Edició confirmada
+                <InterfaceText messageKey="edicioConfirmada" />
               </span>
             )}
           </div>
         </div>
       ) : null}
-      <label className="block text-sm font-medium text-muted">
-        Títol
-        <input
+      <label className="block text-sm font-medium text-muted"><InterfaceText messageKey="titol" />{" "}<input
           className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
           disabled={isFormDisabled}
           name="title"
@@ -267,8 +264,7 @@ export function QuestionnaireEditorForm({
         />
       </label>
       <label className="block text-sm font-medium text-muted">
-        Idioma del qüestionari i dels informes
-        <select
+        <InterfaceText messageKey="idiomaDelQuestionariIDelsInformes" />{" "}<select
           className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm disabled:bg-accent-soft sm:w-64"
           disabled={isFormDisabled || hasResponses || detail.isActive}
           name="languageCode"
@@ -288,8 +284,7 @@ export function QuestionnaireEditorForm({
         ) : null}
       </label>
       <label className="block text-sm font-medium text-muted">
-        Minuts per respondre-la
-        <input
+        <InterfaceText messageKey="minutsPerRespondreLa" />{" "}<input
           className="mt-1 w-28 rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
           disabled={isFormDisabled}
           max={120}
@@ -315,21 +310,18 @@ export function QuestionnaireEditorForm({
               <input name="blockPosition" type="hidden" value={blockPosition} />
               <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <legend className="px-1 text-sm font-semibold text-ink">
-                  Bloc {blockPosition}
+                  <InterfaceText messageKey="bloc" />{" "}{blockPosition}
                 </legend>
                 {canChangeStructure ? (
                   <button
                     className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg"
                     onClick={() => removeBlock(blockIndex)}
                     type="button"
-                  >
-                    Elimina bloc
-                  </button>
+                  ><InterfaceText messageKey="eliminaBloc" /></button>
                 ) : null}
               </div>
               <label className="block text-sm font-medium text-muted">
-                Títol del bloc
-                <input
+                <InterfaceText messageKey="titolDelBloc" />{" "}<input
                   className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
                   name={`block-${blockPosition}-title`}
                   onChange={(event) => updateBlockTitle(blockIndex, event.target.value)}
@@ -349,7 +341,7 @@ export function QuestionnaireEditorForm({
                         value={questionPosition}
                       />
                       <label className="block text-sm font-medium text-muted">
-                        Pregunta {blockPosition}.{questionPosition}
+                        <InterfaceText messageKey="pregunta" />{" "}{blockPosition}.{questionPosition}
                         <textarea
                           className="mt-1 min-h-20 w-full rounded-md border border-line px-3 py-2 text-sm leading-6 disabled:bg-accent-soft"
                           name={`block-${blockPosition}-question-${questionPosition}`}
@@ -373,8 +365,7 @@ export function QuestionnaireEditorForm({
                               className="block text-xs font-medium text-muted"
                               key={option.score}
                             >
-                              Resposta {option.score + 1} · {option.score} punts
-                              <input
+                              <InterfaceText messageKey="resposta" />{" "}{option.score + 1} · {option.score}{" "}<InterfaceText messageKey="punts" />{" "}<input
                                 className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
                                 maxLength={300}
                                 name={`block-${blockPosition}-question-${questionPosition}-option-${option.score}`}
@@ -408,9 +399,8 @@ export function QuestionnaireEditorForm({
                           type="checkbox"
                           value="yes"
                         />
-                        Mostra les respostes en un ordre aleatori i amb colors neutres
-                        per no revelar-ne la puntuació.
-                      </label>
+                          <InterfaceText messageKey="mostraLesRespostesEnUnOrdreAleatoriIAmbColorsNeutres" />
+                        </label>
                       {question.randomizeOptions && !canChangeStructure ? (
                         <input
                           name={`block-${blockPosition}-question-${questionPosition}-randomize`}
@@ -424,9 +414,7 @@ export function QuestionnaireEditorForm({
                             className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg"
                             onClick={() => removeQuestion(blockIndex, questionIndex)}
                             type="button"
-                          >
-                            Elimina pregunta
-                          </button>
+                          ><InterfaceText messageKey="eliminaPregunta" /></button>
                         </div>
                       ) : null}
                     </div>
@@ -438,9 +426,7 @@ export function QuestionnaireEditorForm({
                   className="mt-4 rounded-md border border-action px-3 py-1.5 text-xs font-semibold text-action hover:bg-accent-soft"
                   onClick={() => addQuestion(blockIndex)}
                   type="button"
-                >
-                  Afegeix pregunta
-                </button>
+                ><InterfaceText messageKey="afegeixPregunta" /></button>
               ) : null}
             </fieldset>
           );
@@ -468,20 +454,16 @@ export function QuestionnaireEditorForm({
             className="rounded-md border border-action px-4 py-2 text-sm font-semibold text-action hover:bg-accent-soft"
             onClick={addBlock}
             type="button"
-          >
-            Afegeix bloc
-          </button>
+          ><InterfaceText messageKey="afegeixBloc" /></button>
         ) : null}
         <button
           className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover disabled:bg-muted"
           disabled={isFormDisabled}
           type="submit"
-        >
-          Desa blocs i preguntes
-        </button>
+        ><InterfaceText messageKey="desaBlocsIPreguntes" /></button>
         {isFormDisabled ? (
           <p className="text-sm text-muted">
-            Prem Editar i accepta l&apos;avís per modificar aquesta versió.
+            <InterfaceText messageKey="premEditarIAcceptaLAvisPerModificarAquestaVersio" />
           </p>
         ) : null}
       </div>
