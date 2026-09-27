@@ -403,7 +403,12 @@ pàgines, correus i informes vinculats al centre.
 
 Abans de crear o gestionar el qüestionari, el responsable confirma la fitxa i
 configura el domini docent. Ha de triar entre `@xtec.cat` o un únic domini propi
-de Google Workspace. `@xtec.cat` és l'opció inicial, recomanada i
+de Google Workspace
+mitjançant dues targetes seleccionables, apilades en pantalles estretes i en
+dues columnes en escriptori. La selecció destaca amb vora i fons, i el camp
+del domini propi queda sempre visible dins de la seva targeta. En enfocar el
+camp o escriure-hi, se selecciona automàticament l'opció de domini propi.
+`@xtec.cat` és l'opció inicial, recomanada i
 activada per defecte. El domini propi es normalitza a minúscules i només
 coincideix exactament: autoritzar `escola.cat` no autoritza
 `subdomini.escola.cat`.
@@ -436,7 +441,8 @@ mateixa navegació incorpora els enllaços `Veure qüestionari` i `Ves als
 resultats`; aquests accessos no es repeteixen a la zona central. La
 preferència expandida o plegada es conserva localment al navegador. La zona
 central mostra inicialment la gestió del qüestionari, sense contenidors de
-targeta superposats. Canviar de vista no reinicialitza l'estat local de la
+targeta superposats. La part superior mostra el codi públic del qüestionari
+amb la seva etiqueta, sota el títol i la versió. Canviar de vista no reinicialitza l'estat local de la
 gestió ni elimina cap funcionalitat. El control de plegat és una única icona a
 la part superior de la barra, abans del nom del centre. La capçalera i la barra
 lateral es mantenen fixes a la pantalla; el desplaçament vertical queda limitat
@@ -520,6 +526,11 @@ l'administrador en l'idioma propi del qüestionari. Les puntuacions són fixes:
 
 No hi ha camps oberts.
 
+La introducció resumeix l'objectiu i el nombre de preguntes obligatòries amb
+una única participació per docent. Dos blocs breus expliquen la privacitat
+(sense nom i correu només durant la sessió) i els resultats (recuperació pròpia
+amb vinculació pseudònima i accés institucional exclusivament de conjunt).
+
 Cada pregunta pot activar un ordre aleatori independent. En aquest cas les
 quatre opcions es barregen en obrir el qüestionari i mantenen aquell ordre
 durant la sessió; es mostren amb colors neutres per no revelar la puntuació.
@@ -530,9 +541,24 @@ resultats i informes ordenen sempre les opcions de `0` a `3`.
 Quan falten respostes, el formulari identifica les preguntes pendents, les
 associa als controls corresponents i porta el focus a la primera. La llista
 d'errors permet saltar directament a qualsevol pregunta pendent. El formulari
-d'accés per codi explica el format requerit i associa l'error de format al camp.
+d'accés per codi mostra el format requerit al placeholder, conserva l'ajuda per
+als lectors de pantalla i associa l'error de format al camp, sota els controls.
 La comprovació pública només valida el format; els errors posteriors que podrien
-revelar si un codi existeix continuen sent genèrics.
+revelar si un codi existeix continuen sent genèrics, tret de l'ajuda de domini
+per a una sessió docent vàlida descrita a continuació.
+L'error d'accés docent demana comprovar que el codi està ben escrit i que
+s'utilitza el compte Google autoritzat pel centre, sense identificar la causa.
+Des de l'àrea docent autenticada, introduir un altre codi reutilitza la sessió
+vigent. La pàgina del qüestionari valida de nou al servidor el codi, l'estat i
+el domini autoritzat; no cal repetir OAuth mentre la sessió sigui vàlida.
+Si aquesta validació falla, es torna a `/docent` amb un avís genèric sobre el
+formulari de codi, mantenint la sessió oberta per permetre un altre intent.
+Quan el codi existeix, el qüestionari està actiu i el compte no compleix la
+política de domini, l'avís indica únicament el domini requerit i demana canviar
+de compte Google. Aquesta excepció confirma l'existència del codi a un docent
+autenticat, està subjecta al límit d'intents i es revalida al servidor. Codis
+inexistents, espais inactius, polítiques no configurades i intents bloquejats
+mantenen el missatge genèric; no es mostra cap nom del centre ni dada docent.
 
 Cada espai de diagnosi admet un màxim de 300 respostes completes. Quan s'arriba
 a aquest límit, el formulari ja no accepta nous enviaments i informa que el

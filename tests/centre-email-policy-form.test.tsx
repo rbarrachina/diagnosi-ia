@@ -64,4 +64,19 @@ describe("centre email policy form", () => {
     expect(screen.getByRole("radio", { name: "Domini propi" })).toBeChecked();
     expect(screen.getByRole("radio", { name: "@xtec.cat" })).not.toBeChecked();
   });
+
+  it("keeps the domain field visible and selects the custom option on focus", () => {
+    render(<CentreEmailPolicyForm initialPolicy={{ allowXtec: true, customDomain: null, configured: true }} />);
+    const input = screen.getByRole("textbox", { name: "Domini propi" });
+    expect(input).toBeVisible();
+    expect(screen.getByRole("radio", { name: "@xtec.cat" })).toBeChecked();
+    fireEvent.focus(input);
+    expect(screen.getByRole("radio", { name: "Domini propi" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "@xtec.cat" })).not.toBeChecked();
+    fireEvent.change(input, { target: { value: "ESCOLA.CAT" } });
+    expect(input).toHaveValue("escola.cat");
+    fireEvent.click(screen.getByRole("radio", { name: "@xtec.cat" }));
+    expect(input).toBeVisible();
+    expect(input).toHaveValue("escola.cat");
+  });
 });

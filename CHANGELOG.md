@@ -6,6 +6,34 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Resumeix la introducció del qüestionari i agrupa la informació essencial
+  en dos blocs de privacitat i resultats, amb la participació destacada.
+
+- Manté sempre visible el camp de domini propi i selecciona aquesta opció
+  automàticament en enfocar-lo o escriure-hi.
+
+- Redissenya la configuració d'accés docent amb dues targetes seleccionables,
+  un estat actiu destacat i el camp de domini integrat en l'opció pròpia.
+
+- Mostra el codi del qüestionari a la part superior de la gestió del centre,
+  sota el títol i la versió, perquè es pugui consultar directament.
+
+- L'avís d'accés mostra el domini requerit quan un docent autenticat introdueix
+  un codi actiu amb un compte no autoritzat. Revalida la política al servidor
+  i manté el límit d'intents; documenta l'excepció de divulgació del domini.
+
+- Els errors de codi o domini amb sessió docent oberta tornen a «Les meves
+  diagnosis», mostren l'avís al costat del formulari i conserven la sessió.
+
+- L'accés a un altre qüestionari des de l'àrea docent reutilitza la sessió
+  oberta i valida el codi i el domini al servidor sense repetir Google OAuth.
+
+- Aclareix l'error d'accés docent: demana comprovar el codi i el compte Google
+  autoritzat pel centre, mantenint un missatge genèric en totes les llengües.
+
+- Corregeix la disposició del camp i el botó d'accés docent: retira l'ajuda
+  visual redundant del format del codi i mostra els errors sota els controls.
+
 - Centralitza i tradueix els textos comuns de la web, l'administració, l'àrea
   docent, els controls del qüestionari i els errors dels endpoints. Cada clau
   absent o buida recupera el text català; les preguntes i opcions del centre

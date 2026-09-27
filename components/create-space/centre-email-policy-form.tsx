@@ -67,55 +67,62 @@ export function CentreEmailPolicyForm({
         </p>
       ) : null}
 
-      <label className={`mt-7 block border-t p-4 ${embedded ? "border-line" : "rounded-md border border-line"}`}>
-        <span className="flex items-center gap-3">
-          <input
-            aria-label="@xtec.cat"
-            checked={domainType === "xtec"}
-            className="h-4 w-4 shrink-0"
-            name="email-domain"
-            onChange={() => setDomainType("xtec")}
-            type="radio"
-          />
-          <strong className="text-sm leading-5 text-ink">@xtec.cat</strong>
-        </span>
-        <span className="mt-1 block pl-7 text-xs text-muted">
-          {copy.recommended}
-        </span>
-      </label>
+      <fieldset className="mt-7 grid max-w-3xl gap-4 lg:grid-cols-2">
+        <legend className="sr-only">{copy.admittedEmails}</legend>
+        <label className={`block cursor-pointer rounded-2xl border p-5 transition focus-within:ring-2 focus-within:ring-focus ${domainType === "xtec" ? "border-action bg-accent-soft" : "border-line bg-surface hover:border-action"}`}>
+          <span className="flex items-center gap-3">
+            <input
+              aria-label="@xtec.cat"
+              checked={domainType === "xtec"}
+              className="h-5 w-5 shrink-0 accent-action"
+              name="email-domain"
+              onChange={() => setDomainType("xtec")}
+              type="radio"
+            />
+            <strong className="text-base leading-6 text-ink">@xtec.cat</strong>
+          </span>
+          <span className="mt-2 block pl-8 text-sm leading-6 text-muted">
+            {copy.recommended}
+          </span>
+        </label>
 
-      <label className={`block border-t p-4 ${embedded ? "border-line" : "mt-3 rounded-md border border-line"}`}>
-        <span className="flex items-center gap-3">
-          <input
-            aria-label={copy.ownDomain}
-            checked={domainType === "custom"}
-            className="h-4 w-4 shrink-0"
-            name="email-domain"
-            onChange={() => setDomainType("custom")}
-            type="radio"
-          />
-          <strong className="text-sm leading-5 text-ink">{copy.ownDomain}</strong>
-        </span>
-        <span className="mt-1 block pl-7 text-xs text-muted">
-          {copy.ownDomainHelp}
-        </span>
-        <span className="block pl-7">
-          {domainType === "custom" ? (
-            <span className={`mt-3 flex max-w-sm items-center rounded-xl border ${embedded ? "border-line bg-surface-soft" : "border-line bg-surface"}`}>
-              <span className="border-r border-line bg-accent-soft px-3 py-2 text-muted">@</span>
+        <div className={`rounded-2xl border p-5 transition focus-within:ring-2 focus-within:ring-focus ${domainType === "custom" ? "border-action bg-accent-soft" : "border-line bg-surface hover:border-action"}`}>
+          <label className="block cursor-pointer">
+            <span className="flex items-center gap-3">
               <input
                 aria-label={copy.ownDomain}
-                className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-ink outline-none"
-                onChange={(event) => setCustomDomain(event.target.value.toLowerCase())}
-                placeholder="escola.cat"
-                spellCheck={false}
-                type="text"
-                value={customDomain}
+                checked={domainType === "custom"}
+                className="h-5 w-5 shrink-0 accent-action"
+                name="email-domain"
+                onChange={() => setDomainType("custom")}
+                type="radio"
               />
+              <strong className="text-base leading-6 text-ink">{copy.ownDomain}</strong>
             </span>
-          ) : null}
-        </span>
-      </label>
+            <span className="mt-2 block pl-8 text-sm leading-6 text-muted">
+              {copy.ownDomainHelp}
+            </span>
+          </label>
+          <div className="ml-8 mt-4 flex min-w-0 items-center overflow-hidden rounded-xl border border-line bg-surface focus-within:border-action focus-within:ring-2 focus-within:ring-focus">
+            <span aria-hidden="true" className="border-r border-line px-3 py-3 text-muted">@</span>
+            <input
+              aria-label={copy.ownDomain}
+              autoComplete="off"
+              autoCapitalize="none"
+              className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-ink outline-none"
+              onFocus={() => setDomainType("custom")}
+              onChange={(event) => {
+                setDomainType("custom");
+                setCustomDomain(event.target.value.toLowerCase());
+              }}
+              placeholder="escola.cat"
+              spellCheck={false}
+              type="text"
+              value={customDomain}
+            />
+          </div>
+        </div>
+      </fieldset>
 
       {message ? <p className="mt-3 text-sm text-muted">{message}</p> : null}
       <button

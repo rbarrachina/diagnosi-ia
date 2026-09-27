@@ -217,7 +217,12 @@ retornar-les abans d'esborrar.
 
 No es registren tokens, payloads complets, respostes, correus de participants,
 IP o informació de dispositiu. Els missatges visibles no revelen si existeix un
-codi, token o compte concret.
+codi, token o compte concret, amb una excepció explícita: amb sessió docent
+vàlida, un codi existent i actiu i intents no bloquejats, es pot mostrar
+únicament el domini institucional requerit quan el compte no és autoritzat.
+Aquesta ajuda confirma l'existència del codi a una persona autenticada, però no
+mostra el nom del centre, comptes, respostes ni dades de participants. El
+domini es torna a consultar al servidor i no es transporta a la URL.
 
 ## Exportacions
 

@@ -3,7 +3,7 @@ import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messag
 import { InterfaceText } from "@/components/i18n/interface-text";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { LoginButton, LogoutButton } from "@/components/auth/auth-actions";
+import { LoginButton } from "@/components/auth/auth-actions";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { AppHeader } from "@/components/layout/app-header";
 import { QuestionnaireForm } from "@/components/questionnaire/questionnaire-form";
@@ -74,7 +74,13 @@ export default async function QuestionnairePage({ params }: QuestionnairePagePro
   );
   if (user) {
     if (isAllowed) clearParticipantCodeFailures(user.id);
-    else recordParticipantCodeFailure(user.id);
+    else {
+      if (questionnaire && policy?.configured) {
+        redirect(`/docent?error=participant-access&code=${encodeURIComponent(publicCode)}`);
+      }
+      recordParticipantCodeFailure(user.id);
+      redirect("/docent?error=participant-access");
+    }
   }
 
   return (
@@ -103,8 +109,6 @@ export default async function QuestionnairePage({ params }: QuestionnairePagePro
           <QuestionnaireLoginNotice
             publicCode={publicCode}
           />
-        ) : !isAllowed ? (
-          <QuestionnaireForbiddenNotice publicCode={publicCode} />
         ) : (
           <QuestionnaireForm
             questionnaire={questionnaire!}
@@ -134,29 +138,6 @@ async function QuestionnaireLoginNotice({
       </p>
       <div className="mt-7">
         <LoginButton label={t("accedeixAmbGoogle")} next={`/q/${publicCode}`} />
-      </div>
-    </div>
-  );
-}
-
-function QuestionnaireForbiddenNotice({
-  publicCode,
-}: {
-  publicCode: string;
-}) {
-  return (
-    <div className="mx-auto max-w-3xl rounded-3xl border border-danger-border bg-danger-bg p-8 text-center text-danger-text shadow-[0_18px_60px_var(--app-shadow)] backdrop-blur-xl sm:p-10">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em]">
-        <InterfaceText messageKey="accesAlQuestionari" />
-      </p>
-      <h1 className="mt-4 text-3xl font-bold tracking-[-0.035em]">
-        <InterfaceText messageKey="accesNoAutoritzat" />
-      </h1>
-      <p className="mx-auto mt-3 max-w-lg text-sm leading-6">
-        <InterfaceText messageKey="noSHaPogutValidarElCodiLEstatDelQuestionari" />
-      </p>
-      <div className="mt-6 flex justify-center">
-        <LogoutButton next={`/q/${publicCode}`} />
       </div>
     </div>
   );

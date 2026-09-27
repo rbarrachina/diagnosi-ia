@@ -378,13 +378,21 @@ function IntroPage({
           <InterfaceText messageKey="aquestaPantallaNomesServeixPerVisualitzarElQuestionariNoEsPot" />
         </p>
       ) : null}
-      <div className="mt-7 grid gap-x-8 gap-y-5 text-sm leading-6 text-muted sm:grid-cols-2 sm:text-base sm:leading-7">
-        <p><InterfaceText messageKey="lObjectiuEsConeixerElGrauDUsEducatiuDeLa" /></p>
-        <p><InterfaceText messageKey="noDemanemElNomElCorreuNomesEsConservaDurantLa" /></p>
-        <p><InterfaceText messageKey="elCentreILAdministracioNomesPodenConsultarResultatsAgregatsNo" /></p>
-        <p>
-          <InterfaceText messageKey="laDiagnosiConstaDeCountPreguntesObligatoriesCadaDocentLHa" values={{ count: questionCount }} />
-        </p>
+      <p className="mt-5 max-w-2xl text-sm leading-6 text-muted sm:text-base">
+        <InterfaceText messageKey="lObjectiuEsConeixerElGrauDUsEducatiuDeLa" />
+      </p>
+      <p className="mt-3 text-sm font-semibold text-ink">
+        <InterfaceText messageKey="laDiagnosiConstaDeCountPreguntesObligatoriesCadaDocentLHa" values={{ count: questionCount }} />
+      </p>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl border border-line bg-surface-soft p-5">
+          <h2 className="text-sm font-semibold text-ink"><InterfaceText messageKey="privacitatQuestionari" /></h2>
+          <p className="mt-2 text-sm leading-6 text-muted"><InterfaceText messageKey="noDemanemElNomElCorreuNomesEsConservaDurantLa" /></p>
+        </div>
+        <div className="rounded-2xl border border-line bg-surface-soft p-5">
+          <h2 className="text-sm font-semibold text-ink"><InterfaceText messageKey="resultats" /></h2>
+          <p className="mt-2 text-sm leading-6 text-muted"><InterfaceText messageKey="elCentreILAdministracioNomesPodenConsultarResultatsAgregatsNo" /></p>
+        </div>
       </div>
       <div className="mt-8 grid gap-5 border-t border-line pt-7 sm:grid-cols-2 sm:items-start">
         <dl className="space-y-2 text-sm leading-6 text-muted">
