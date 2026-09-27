@@ -4,6 +4,8 @@ export const ca = {
     language: "Idioma",
     languages: "Idiomes",
     questionnaireCode: "Codi del qüestionari",
+    questionnaireCodeFormatHelp: "Format del codi: C-XXXX-XXXX.",
+    questionnaireCodeFormatError: "Revisa el format. Ha de ser C-XXXX-XXXX, amb quatre caràcters a cada grup.",
     access: "Accedeix",
     centreDialogClose: "Tanca l’accés del centre",
     centreArea: "Espai del centre",

@@ -7,6 +7,8 @@ export const oc: Messages = {
     "language": "Idiòma",
     "languages": "Idiòmes",
     "questionnaireCode": "Còdi deth qüestionari",
+    "questionnaireCodeFormatHelp": "Format deth còdi: C-XXXX-XXXX.",
+    "questionnaireCodeFormatError": "Verificatz eth format: a d’èster C-XXXX-XXXX, damb quate caractèrs en cada grop.",
     "access": "Accedís",
     "centreDialogClose": "Barre l’accès deth centre",
     "centreArea": "Espaci deth centre",

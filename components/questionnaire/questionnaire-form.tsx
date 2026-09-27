@@ -32,6 +32,7 @@ export function QuestionnaireForm({
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [currentStep, setCurrentStep] = useState(0);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
+  const [missingQuestionIds, setMissingQuestionIds] = useState<string[]>([]);
   const isReadOnly = mode === "readOnly";
   const isWorkspaceAppearance = appearance === "workspace";
 
@@ -79,6 +80,12 @@ export function QuestionnaireForm({
     }
   }, [currentStep, submitState.status]);
 
+  function focusQuestion(questionId: string) {
+    window.requestAnimationFrame(() => {
+      document.getElementById(`question-${questionId}-option`)?.focus();
+    });
+  }
+
   function blockIsComplete(block: QuestionBlock): boolean {
     return block.questions.every((question) => answers[question.id] !== undefined);
   }
@@ -100,13 +107,19 @@ export function QuestionnaireForm({
     }
 
     if (!isReadOnly && currentBlock && !blockIsComplete(currentBlock)) {
+      const missingIds = currentBlock.questions
+        .filter((question) => answers[question.id] === undefined)
+        .map((question) => question.id);
+      setMissingQuestionIds(missingIds);
+      if (missingIds[0]) focusQuestion(missingIds[0]);
       setSubmitState({
         status: "error",
-        message: "Cal respondre totes les preguntes d'aquest bloc abans de continuar.",
+        message: "Falten respostes en aquest bloc. Revisa les preguntes indicades.",
       });
       return;
     }
 
+    setMissingQuestionIds([]);
     setCurrentStep((step) => Math.min(step + 1, questionnaire.blocks.length));
   }
 
@@ -120,9 +133,19 @@ export function QuestionnaireForm({
     }
 
     if (Object.keys(answers).length !== questions.length) {
+      const missingIds = questions
+        .filter((question) => answers[question.id] === undefined)
+        .map((question) => question.id);
+      const firstMissing = missingIds[0];
+      const targetBlockIndex = questionnaire.blocks.findIndex((block) =>
+        block.questions.some((question) => question.id === firstMissing),
+      );
+      setMissingQuestionIds(missingIds);
+      if (targetBlockIndex >= 0) setCurrentStep(targetBlockIndex + 1);
+      if (firstMissing) focusQuestion(firstMissing);
       setSubmitState({
         status: "error",
-        message: "Cal respondre totes les preguntes abans d'enviar.",
+        message: "Falten respostes. Revisa les preguntes indicades abans d'enviar.",
       });
       return;
     }
@@ -214,23 +237,55 @@ export function QuestionnaireForm({
         <BlockPage
           answers={answers}
           block={currentBlock}
+          missingQuestionIds={missingQuestionIds}
           optionOrder={optionOrder}
           isReadOnly={isReadOnly}
-          onAnswer={(questionId, value) =>
+          onAnswer={(questionId, value) => {
             setAnswers((currentAnswers) => ({
               ...currentAnswers,
               [questionId]: value,
-            }))
-          }
+            }));
+            if (missingQuestionIds.includes(questionId)) {
+              const remaining = missingQuestionIds.filter((id) => id !== questionId);
+              setMissingQuestionIds(remaining);
+              if (remaining.length === 0) setSubmitState({ status: "idle" });
+            }
+          }}
         />
       ) : null}
 
       {submitState.status === "error" ? (
-        <p
+        <div
           className="mt-6 rounded-xl border border-danger-border bg-danger-bg px-4 py-3 text-sm text-danger-text"
           role="alert"
         >
           {submitState.message}
+          {missingQuestionIds.length > 0 ? (
+            <ul className="mt-2 list-inside list-disc space-y-1">
+              {missingQuestionIds.map((questionId) => {
+                const question = questions.find((item) => item.id === questionId);
+                const block = questionnaire.blocks.find((item) =>
+                  item.questions.some((itemQuestion) => itemQuestion.id === questionId),
+                );
+                if (!question || !block) return null;
+                const questionCopy = splitQuestionCopy(question.text);
+                return (
+                  <li key={questionId}>
+                    <button
+                      className="text-left font-semibold underline underline-offset-2"
+                      onClick={() => {
+                        setCurrentStep(block.position);
+                        focusQuestion(questionId);
+                      }}
+                      type="button"
+                    >
+                      Pregunta {block.position}.{question.blockPosition}: {questionCopy.prompt}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
           {submitState.message.startsWith("La sessió ha caducat.") ? (
             <a
               className="ml-1 font-semibold underline underline-offset-2"
@@ -241,7 +296,7 @@ export function QuestionnaireForm({
               Torna a autenticar-te
             </a>
           ) : null}
-        </p>
+        </div>
       ) : null}
 
       {currentStep > 0 ? (
@@ -251,6 +306,7 @@ export function QuestionnaireForm({
             disabled={submitState.status === "submitting"}
             onClick={() => {
               setSubmitState({ status: "idle" });
+              setMissingQuestionIds([]);
               setCurrentStep((step) => Math.max(0, step - 1));
             }}
             type="button"
@@ -390,12 +446,14 @@ function IntroPage({
 function BlockPage({
   answers,
   block,
+  missingQuestionIds,
   isReadOnly,
   optionOrder,
   onAnswer,
 }: {
   answers: Record<string, AnswerValue>;
   block: QuestionBlock;
+  missingQuestionIds: string[];
   isReadOnly: boolean;
   optionOrder: Record<string, QuestionOption[]>;
   onAnswer: (questionId: string, value: AnswerValue) => void;
@@ -417,9 +475,16 @@ function BlockPage({
         {block.questions.map((question) => {
           const questionCopy = splitQuestionCopy(question.text);
           const questionNumber = `${block.position}.${question.blockPosition}.`;
+          const questionIsMissing = missingQuestionIds.includes(question.id);
+          const errorId = `question-${question.id}-error`;
 
           return (
-          <fieldset className="questionnaire-question" key={question.id}>
+          <fieldset
+            aria-describedby={questionIsMissing ? errorId : undefined}
+            aria-invalid={questionIsMissing || undefined}
+            className="questionnaire-question"
+            key={question.id}
+          >
             <legend className="w-full text-ink">
               <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-action sm:text-sm">
                 {questionNumber}
@@ -431,8 +496,13 @@ function BlockPage({
                 {questionCopy.prompt}
               </span>
             </legend>
+            {questionIsMissing ? (
+              <p className="mt-2 text-sm font-semibold text-danger-text" id={errorId}>
+                Cal respondre aquesta pregunta.
+              </p>
+            ) : null}
             <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {(optionOrder[question.id] ?? question.options).map((option) => {
+              {(optionOrder[question.id] ?? question.options).map((option, optionIndex) => {
                 const scaleOption = SCALE_OPTIONS.find(
                   (candidate) => candidate.value === option.score,
                 );
@@ -459,6 +529,7 @@ function BlockPage({
                     <input
                       checked={answers[question.id] === option.id}
                       className={`h-4 w-4 ${accentClass}`}
+                      id={optionIndex === 0 ? `question-${question.id}-option` : undefined}
                       name={question.id}
                       onChange={() => onAnswer(question.id, option.id)}
                       type="radio"
