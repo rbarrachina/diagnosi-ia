@@ -8,13 +8,17 @@ aranès. El fitxer conserva els textos originals sense traduir-los.
 ## Generació i abast
 
 `npm run build` neteja l'inventari anterior, compila amb webpack i executa
-`npm run notices:generate`. El plugin de `next.config.ts` registra els recursos
+`npm run notices:generate`. El plugin de `next.config.ts` només s'executa en
+producció i registra els recursos
 dels mòduls presents als chunks de producció, inclosos els mòduls concatenats,
 separant navegador i servidor. El generador incorpora també els paquets de les
 traces `.nft.json` i els components identificats als source maps dels runtimes
 precompilats de Next.js. Les traces són conservadores: poden incorporar codi
 opcional, variants experimentals i biblioteques natives no executades per cap
 ruta actual. No es presenta aquest inventari com una mesura de codi executat.
+
+`npm run dev` selecciona Turbopack explícitament per evitar el conflicte de
+Next.js amb la configuració webpack de producció.
 
 Es conserva cada fitxer LICENSE, COPYING, NOTICE i LEGAL aplicable del paquet,
 incloses atribucions de subcomponents. Els subpaquets amb `package.json` propi

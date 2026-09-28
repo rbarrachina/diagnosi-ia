@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build --webpack && npm run notices:generate",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",

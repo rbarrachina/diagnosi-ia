@@ -11,6 +11,8 @@ Semantic Versioning.
   originals i identificació separada de React i React DOM incorporats a Next.js.
   La comprovació de publicació detecta i bloqueja els textos de servidor
   encara pendents, documentats a `docs/THIRD_PARTY_LICENSES.md`.
+  El servidor de desenvolupament selecciona Turbopack explícitament per
+  conviure amb el hook webpack de producció.
 
 - Resumeix la introducció del qüestionari i agrupa la informació essencial
   en dos blocs de privacitat i resultats, amb la participació destacada.
