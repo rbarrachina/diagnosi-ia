@@ -1,0 +1,46 @@
+[
+  {
+    "nextVersion": "16.3.6",
+    "source": "node_modules/next/dist/build/polyfills/polyfill-nomodule.js",
+    "sha256": "0973c1d64c88adc8e3c950410cb58b288f72118d5965b78049438deb8f2f9683",
+    "provenance": "https://github.com/vercel/next.js/tree/v16.3.6/packages/next-polyfill-nomodule",
+    "components": [
+      {
+        "name": "core-js",
+        "version": "3.38.1",
+        "sources": [
+          {
+            "file": "polyfills/core-js.txt",
+            "url": "https://raw.githubusercontent.com/zloirock/core-js/v3.38.1/LICENSE",
+            "sha256": "51aff0fa92ac49e01ce6ba0fed992b0a34f8afe15203dd5f38c43f9e88b0167b"
+          }
+        ],
+        "attributions": [
+          "© 2014-2024 Denis Pushkarev (zloirock.ru)"
+        ]
+      },
+      {
+        "name": "whatwg-fetch",
+        "version": "3.0.0",
+        "sources": [
+          {
+            "file": "polyfills/whatwg-fetch.txt",
+            "url": "https://raw.githubusercontent.com/JakeChampion/fetch/v3.0.0/LICENSE",
+            "sha256": "05a4adff1d99954f18ed2ef89d47b4567cdba599635ddbe9393a95b9d48b2643"
+          }
+        ]
+      },
+      {
+        "name": "object-assign",
+        "version": "4.1.1",
+        "sources": [
+          {
+            "file": "polyfills/object-assign.txt",
+            "url": "https://raw.githubusercontent.com/sindresorhus/object-assign/v4.1.1/license",
+            "sha256": "6fb9754611c20f6649f68805e8c990e83261f29316e29de9e6cedae607b8634c"
+          }
+        ]
+      }
+    ]
+  }
+]

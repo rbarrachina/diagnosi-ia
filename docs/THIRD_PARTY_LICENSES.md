@@ -31,6 +31,15 @@ dependència incorporada de Scheduler. Per a altres còpies precompilades que no
 publiquen versió upstream, es declara explícitament la versió del contenidor
 Next.js. No s'hi assigna la versió del paquet homònim al lockfile.
 
+El chunk `polyfills-*.js` s'emet com a còpia fora del graf de mòduls. La font
+`@next/polyfill-nomodule` de Next.js 16.3.6 fixa core-js 3.38.1, whatwg-fetch
+3.0.0 i object-assign 4.1.1. `scripts/licenses/bundled.json` conserva aquestes
+versions, la procedència i els hashes dels textos i del bundle revisat. La
+generació exigeix que el chunk emès sigui idèntic al bundle instal·lat i que
+aquest coincideixi amb el hash revisat. Qualsevol canvi de Next.js o d'aquest
+chunk exigeix una revisió dels components, encara que el lockfile no els
+enumeri. Les fonts de la compilació es conserven a `scripts/licenses/polyfills/`.
+
 Els textos omesos al paquet npm però disponibles a la font original es
 conserven a `scripts/licenses/`, amb versió, procedència i SHA-256 a
 `sources.json`. Per als paquets React PDF s'ha utilitzat el commit `gitHead`

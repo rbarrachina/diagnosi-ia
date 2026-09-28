@@ -7,6 +7,14 @@ const readJson = (file) => JSON.parse(readFileSync(file, "utf8"));
 const root = process.cwd();
 const nextVersion = readJson("node_modules/next/package.json").version;
 
+function originalTexts(sources) {
+  return sources.flatMap((source) => {
+    const text = readFileSync(path.join("scripts/licenses", source.file), "utf8");
+    if (createHash("sha256").update(text).digest("hex") !== source.sha256) throw new Error(`Text de llicència modificat: ${source.file}`);
+    return [`\n--- Font original: ${source.url} ---\n`, text];
+  });
+}
+
 function walk(directory, predicate, skipPackages = false) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(directory, entry.name);
@@ -90,11 +98,7 @@ export function generateNotices({ strict = false } = {}) {
     const notices = licenseFiles(directory);
     const supplement = supplements[metadata.name];
     if (supplement && supplement.version !== version) throw new Error(`Cal revisar la llicència complementària de ${metadata.name}: ${version} != ${supplement.version}`);
-    const extra = (supplement?.sources ?? []).flatMap((source) => {
-      const text = readFileSync(path.join("scripts/licenses", source.file), "utf8");
-      if (createHash("sha256").update(text).digest("hex") !== source.sha256) throw new Error(`Text de llicència modificat: ${source.file}`);
-      return [`\n--- Font original: ${source.url} ---\n`, text];
-    });
+    const extra = originalTexts(supplement?.sources ?? []);
     if (!extra.length && !notices.some((file) => /licen[cs]e|copying/i.test(path.basename(file)) && readFileSync(file, "utf8").trim().length > 100)) {
       const description = `${metadata.name} — ${version} (${path.relative(root, directory)})`;
       if (scope.client) throw new Error(`Falta llicència de component del navegador: ${description}`);
@@ -110,6 +114,28 @@ export function generateNotices({ strict = false } = {}) {
       ...notices.flatMap((file) => [`\n--- ${path.relative(directory, file)} ---\n`, readFileSync(file, "utf8")]),
       ...extra,
     ].join("\n"));
+  }
+  // Next emits the nomodule polyfill as a copied asset, outside webpack's
+  // module graph. Pin the exact reviewed bytes and its original source manifest.
+  for (const bundle of readJson("scripts/licenses/bundled.json")) {
+    if (bundle.nextVersion !== nextVersion) throw new Error("Cal revisar els polyfills incorporats a la nova versió de Next.js.");
+    const original = readFileSync(bundle.source);
+    const hash = createHash("sha256").update(original).digest("hex");
+    if (hash !== bundle.sha256) throw new Error(`Bundle de tercers modificat: ${bundle.source}`);
+    const emitted = walk(".next/static", (file) => /^polyfills-.*\.js$/.test(path.basename(file)));
+    if (emitted.length !== 1 || !original.equals(readFileSync(emitted[0]))) throw new Error("El chunk de polyfills emès no coincideix amb el bundle revisat.");
+    for (const component of bundle.components) {
+      if (!component.sources.length) throw new Error(`Falta llicència de component incorporat: ${component.name}`);
+      sections.push([
+        "=".repeat(78),
+        `Component: ${component.name} (polyfills de Next.js)`,
+        `Versió: ${component.version}`,
+        `Origen: ${bundle.source}; ${bundle.provenance}`,
+        "Àmbit: navegador (chunk nomodule emès)",
+        ...(component.attributions ?? []),
+        ...originalTexts(component.sources),
+      ].join("\n"));
+    }
   }
   if (missing.length && strict) throw new Error(`PUBLICACIÓ BLOQUEJADA: falta el text complet de llicència dels components del servidor:\n${missing.join("\n")}`);
   if (missing.length) console.warn(`AVÍS: ${missing.length} llicències del servidor pendents. npm run notices:check bloquejarà la publicació.`);

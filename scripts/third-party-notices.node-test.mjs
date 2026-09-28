@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 
 const script = fileURLToPath(new URL("./third-party-notices.mjs", import.meta.url));
 const temporary = [];
@@ -22,6 +23,7 @@ function fixture() {
   write("node_modules/react/index.js", "");
   write(".next/third-party/client.json", JSON.stringify(["node_modules/react/index.js"]));
   write("scripts/licenses/sources.json", "{}");
+  write("scripts/licenses/bundled.json", "[]");
   const run = (...args) => spawnSync(process.execPath, [script, ...args], { cwd: directory, encoding: "utf8" });
   return { directory, write, run };
 }
@@ -86,4 +88,34 @@ test("requires an actual production inventory", () => {
   const { directory, run } = fixture();
   rmSync(path.join(directory, ".next/third-party/client.json"));
   assert.match(run().stderr, /Cal compilar/);
+});
+
+test("blocks unreviewed precompiled polyfills outside the module graph", () => {
+  const { write, run } = fixture();
+  write("scripts/licenses/bundled.json", JSON.stringify([{ nextVersion: "16.0.0" }]));
+  assert.match(run().stderr, /Cal revisar els polyfills/);
+  write("scripts/licenses/bundled.json", JSON.stringify([{ nextVersion: "16.3.6", source: "node_modules/next/polyfill.js", sha256: "wrong" }]));
+  write("node_modules/next/polyfill.js", "an updated bundle");
+  assert.match(run().stderr, /Bundle de tercers modificat/);
+});
+
+test("includes notices for a copied chunk and requires byte identity with the reviewed source", () => {
+  const { directory, write, run } = fixture();
+  const code = "reviewed fixture bundle";
+  write("node_modules/next/polyfill.js", code);
+  write("scripts/licenses/fixture.txt", license);
+  write("scripts/licenses/bundled.json", JSON.stringify([{
+    nextVersion: "16.3.6", source: "node_modules/next/polyfill.js",
+    sha256: createHash("sha256").update(code).digest("hex"), provenance: "fixture",
+    components: [{ name: "fixture", version: "1.0.0", sources: [{
+      file: "fixture.txt", url: "fixture", sha256: createHash("sha256").update(license).digest("hex"),
+    }] }],
+  }]));
+  write(".next/static/chunks/polyfills-example.js", "unexpected bytes");
+  assert.match(run().stderr, /no coincideix amb el bundle revisat/);
+  write(".next/static/chunks/polyfills-example.js", code);
+  assert.equal(run().status, 0);
+  const text = readFileSync(path.join(directory, "public/THIRD_PARTY_NOTICES.txt"), "utf8");
+  assert.ok(text.includes("Component: fixture (polyfills de Next.js)"));
+  assert.ok(text.includes(license));
 });
