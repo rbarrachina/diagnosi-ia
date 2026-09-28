@@ -28,6 +28,8 @@ describe("participant PDF", () => {
   it("renders a server-side PDF with the participant's selected answers", async () => {
     const buffer = await renderParticipantReportPdf(result);
     expect(buffer.subarray(0, 4).toString()).toBe("%PDF");
+    expect(buffer.toString("latin1")).toMatch(/\/BaseFont\s*\/Helvetica/);
+    expect(buffer.toString("latin1")).not.toMatch(/\/FontFile[23]?\b/);
     expect(buffer.byteLength).toBeGreaterThan(1000);
   });
 

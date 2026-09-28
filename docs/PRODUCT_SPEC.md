@@ -304,6 +304,12 @@ pseudonimitzada del docent mitjançant un codi o l'enllaç rebut. La
 informació de versió, autoria, llicència i repositori es mostra al peu de
 pàgina.
 
+El peu també permet consultar els avisos i textos originals de les llicències
+dels components de tercers a `/THIRD_PARTY_NOTICES.txt`, amb etiqueta traduïda
+a les cinc llengües. Apache 2.0 continua sent la llicència del projecte; cada
+component conserva la pròpia. Els textos pendents es fan explícits i bloquegen
+la comprovació de preparació d'una publicació completa.
+
 La portada presenta primer una capçalera fixa amb accés XTEC, selector de tema
 clar o fosc i selector d'idioma, seguida d'un bloc principal a pantalla
 completa amb una única acció destacada per accedir amb el compte de centre. La

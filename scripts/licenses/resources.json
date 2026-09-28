@@ -1,0 +1,64 @@
+[
+  {
+    "name": "Bootstrap Icons (icona GitHub)",
+    "version": "1.13.1",
+    "file": "components/brand/github-icon.tsx",
+    "sha256": "1d9a4bb1cab00f12cad90634e816f0e7ba15559b994cb4e395089da47bd0a48e",
+    "provenance": "https://github.com/twbs/icons/blob/v1.13.1/icons/github.svg",
+    "sources": [
+      {
+        "file": "bootstrap-icons/LICENSE",
+        "url": "https://github.com/twbs/icons/blob/v1.13.1/LICENSE",
+        "sha256": "0fb3e11bd57e896c5a512afd64864d28a37de45d19835016c87ca1ad19ead969"
+      }
+    ],
+    "scope": "navegador (SVG)"
+  },
+  {
+    "name": "Tailwind CSS (Preflight i estils generats)",
+    "version": "3.4.19",
+    "file": "node_modules/tailwindcss/lib/css/preflight.css",
+    "sha256": "1d85e5cc0262f68a4f1313c4754a61c7ff56da4cc24866e76bcde9d4e467feac",
+    "provenance": "https://github.com/tailwindlabs/tailwindcss/blob/v3.4.19/src/css/preflight.css",
+    "sources": [
+      {
+        "file": "preflight/tailwind.txt",
+        "url": "https://github.com/tailwindlabs/tailwindcss/blob/v3.4.19/LICENSE",
+        "sha256": "60e0b68c0f35c078eef3a5d29419d0b03ff84ec1df9c3f9d6e39a519a5ae7985"
+      }
+    ],
+    "scope": "navegador (CSS)",
+    "package": "node_modules/tailwindcss/package.json",
+    "packageVersion": "3.4.19"
+  },
+  {
+    "name": "modern-normalize (integrat i adaptat a Preflight)",
+    "version": "1.1.0 (font integrada; adaptacions a Tailwind CSS 3.4.19)",
+    "file": "node_modules/tailwindcss/lib/css/preflight.css",
+    "sha256": "1d85e5cc0262f68a4f1313c4754a61c7ff56da4cc24866e76bcde9d4e467feac",
+    "provenance": "https://github.com/tailwindlabs/tailwindcss/commit/154d99054bffdf42473f8873148a7cdc30b5c2a9",
+    "sources": [
+      {
+        "file": "preflight/modern-normalize.txt",
+        "url": "https://github.com/sindresorhus/modern-normalize/blob/v1.1.0/license",
+        "sha256": "ef79c38859f3a442d3beeb5ed25407e61c36299ae8958996cae575cd34e973b4"
+      }
+    ],
+    "scope": "navegador (CSS)"
+  },
+  {
+    "name": "SUIT CSS Base (antecedent adaptat de Preflight)",
+    "version": "incorporat a Tailwind CSS 3.4.19 (revisi\u00f3 upstream exacta no publicada)",
+    "file": "node_modules/tailwindcss/lib/css/preflight.css",
+    "sha256": "1d85e5cc0262f68a4f1313c4754a61c7ff56da4cc24866e76bcde9d4e467feac",
+    "provenance": "https://github.com/tailwindlabs/tailwindcss/commit/154d99054bffdf42473f8873148a7cdc30b5c2a9",
+    "sources": [
+      {
+        "file": "preflight/suitcss-base.txt",
+        "url": "https://github.com/suitcss/base/blob/1.0.0/LICENSE.md",
+        "sha256": "1b2c507e2f54697c5dfef03db90d0a9d408ce92e275a232d13ec9c37168183ad"
+      }
+    ],
+    "scope": "navegador (CSS)"
+  }
+]
