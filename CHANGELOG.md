@@ -9,8 +9,10 @@ Semantic Versioning.
 - Afegeix l'enllaç traduït «Llicències de tercers» al peu compartit i genera
   `THIRD_PARTY_NOTICES.txt` des de la compilació de producció, amb textos
   originals i identificació separada de React i React DOM incorporats a Next.js.
-  La comprovació de publicació detecta i bloqueja els textos de servidor
-  encara pendents, documentats a `docs/THIRD_PARTY_LICENSES.md`.
+  La comprovació de publicació valida els recursos distribuïts pel servei web,
+  inclosos webpack, Tailwind/Preflight, polyfills i la icona GitHub amb origen
+  verificat. Els textos pendents del servidor es comproven separadament abans
+  de distribuir-ne binaris; es documenten a `docs/THIRD_PARTY_LICENSES.md`.
   El servidor de desenvolupament selecciona Turbopack explícitament per
   conviure amb el hook webpack de producció.
 

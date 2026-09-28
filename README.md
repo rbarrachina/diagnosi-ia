@@ -271,5 +271,6 @@ Els components de tercers conserven les seves pròpies llicències. Els avisos
 es generen durant `npm run build` i són accessibles al peu de pàgina i a
 [`public/THIRD_PARTY_NOTICES.txt`](public/THIRD_PARTY_NOTICES.txt). Abans de
 publicar cal superar `npm run notices:check`; la
-[revisió de llicències](docs/THIRD_PARTY_LICENSES.md) documenta les fonts i els
-textos del servidor encara pendents que bloquegen una publicació completa.
+[revisió de llicències](docs/THIRD_PARTY_LICENSES.md) documenta les fonts,
+l'abast del servei web i els textos encara pendents abans de distribuir un paquet
+o una imatge de servidor.

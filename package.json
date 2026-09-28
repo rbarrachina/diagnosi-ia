@@ -17,7 +17,9 @@
     "db:studio": "drizzle-kit studio",
     "notices:generate": "node scripts/third-party-notices.mjs",
     "notices:check": "node scripts/third-party-notices.mjs --check",
-    "prebuild": "node scripts/third-party-notices.mjs --clean"
+    "prebuild": "node scripts/third-party-notices.mjs --clean",
+    "notices:audit:server": "node scripts/third-party-notices.mjs --server",
+    "notices:check:server": "node scripts/third-party-notices.mjs --server --check"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

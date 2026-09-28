@@ -24,6 +24,8 @@ function fixture() {
   write(".next/third-party/client.json", JSON.stringify(["node_modules/react/index.js"]));
   write("scripts/licenses/sources.json", "{}");
   write("scripts/licenses/bundled.json", "[]");
+  write("scripts/licenses/resources.json", "[]");
+  mkdirSync(path.join(directory, ".next/static"), { recursive: true });
   const run = (...args) => spawnSync(process.execPath, [script, ...args], { cwd: directory, encoding: "utf8" });
   return { directory, write, run };
 }
@@ -50,14 +52,17 @@ test("fails explicitly if a browser component has no license", () => {
   assert.match(result.stderr, /Falta llicència de component del navegador: react/);
 });
 
-test("records missing server texts and blocks the publication check", () => {
+test("keeps server-only packages out of web notices but blocks server redistribution", () => {
   const { directory, write, run } = fixture();
   write("node_modules/example/package.json", JSON.stringify({ name: "example", version: "1.2.3", license: "MIT" }));
   write("node_modules/example/index.js", "");
   write(".next/server/route.js.nft.json", JSON.stringify({ files: ["../../node_modules/example/index.js"] }));
   assert.equal(run().status, 0);
-  assert.match(readFileSync(path.join(directory, "public/THIRD_PARTY_NOTICES.txt"), "utf8"), /example — 1\.2\.3/);
-  const check = run("--check");
+  assert.doesNotMatch(readFileSync(path.join(directory, "public/THIRD_PARTY_NOTICES.txt"), "utf8"), /example/);
+  assert.equal(run("--check").status, 0);
+  assert.equal(run("--server").status, 0);
+  assert.match(readFileSync(path.join(directory, ".next/third-party/SERVER_NOTICES.txt"), "utf8"), /example — 1\.2\.3/);
+  const check = run("--server", "--check");
   assert.notEqual(check.status, 0);
   assert.match(check.stderr, /PUBLICACIÓ BLOQUEJADA/);
 });
@@ -118,4 +123,26 @@ test("includes notices for a copied chunk and requires byte identity with the re
   const text = readFileSync(path.join(directory, "public/THIRD_PARTY_NOTICES.txt"), "utf8");
   assert.ok(text.includes("Component: fixture (polyfills de Next.js)"));
   assert.ok(text.includes(license));
+});
+
+test("requires review when a third-party source resource changes", () => {
+  const { write, run } = fixture();
+  write("icon.tsx", "modified SVG");
+  write("scripts/licenses/resources.json", JSON.stringify([{
+    name: "icon", version: "1.0.0", file: "icon.tsx", sha256: "original", sources: [],
+  }]));
+  assert.match(run().stderr, /Recurs de tercers modificat/);
+});
+
+test("includes the synthesized webpack runtime and reads its bundled version", () => {
+  const { directory, write, run } = fixture();
+  write("node_modules/next/dist/compiled/webpack/package.json", JSON.stringify({ name: "webpack", main: "bundle5.js" }));
+  write("node_modules/next/dist/compiled/webpack/bundle5.js", 'module.exports = () => ({ webpack: { version: "5.98.0" } });');
+  write("node_modules/next/dist/compiled/webpack/LICENSE", license);
+  write(".next/static/chunks/webpack-example.js", "generated runtime");
+  assert.equal(run().status, 0);
+  const content = readFileSync(path.join(directory, "public/THIRD_PARTY_NOTICES.txt"), "utf8");
+  assert.match(content, /Component: webpack\nVersió: 5\.98\.0/);
+  rmSync(path.join(directory, "node_modules/next/dist/compiled/webpack/LICENSE"));
+  assert.match(run().stderr, /Falta llicència de component del navegador: webpack/);
 });

@@ -29,7 +29,9 @@ Després d'`1.0.0`:
 4. Executar lint, type check, proves i build. El build regenera
    `public/THIRD_PARTY_NOTICES.txt`; revisar i incorporar el resultat al commit.
    Executar `npm run notices:check` amb la mateixa instal·lació i plataforma
-   de destí. Si falten textos originals, la release queda bloquejada. Vegeu
+   de destí. Si falten textos originals del navegador, la release queda bloquejada.
+   Abans de distribuir binaris del servidor, executar també l'auditoria i la
+   comprovació `notices:check:server`, que mantenen pendents explícits. Vegeu
    `THIRD_PARTY_LICENSES.md` per a l'abast i els pendents actuals.
 5. Revisar privacitat, secrets i migracions.
 6. Fusionar la PR de release.

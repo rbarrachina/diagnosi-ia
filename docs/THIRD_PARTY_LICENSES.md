@@ -11,11 +11,18 @@ aranès. El fitxer conserva els textos originals sense traduir-los.
 `npm run notices:generate`. El plugin de `next.config.ts` només s'executa en
 producció i registra els recursos
 dels mòduls presents als chunks de producció, inclosos els mòduls concatenats,
-separant navegador i servidor. El generador incorpora també els paquets de les
-traces `.nft.json` i els components identificats als source maps dels runtimes
-precompilats de Next.js. Les traces són conservadores: poden incorporar codi
-opcional, variants experimentals i biblioteques natives no executades per cap
-ruta actual. No es presenta aquest inventari com una mesura de codi executat.
+separant navegador i servidor. La distribució prevista és un servei web: els
+usuaris reben JavaScript, CSS i recursos, sense un paquet executable de servidor.
+El fitxer públic inclou els components del navegador, els polyfills copiats per
+Next.js, el runtime generat per webpack, el CSS de Tailwind/Preflight i la icona
+GitHub. No incorpora paquets només perquè apareguin en una traça del servidor.
+
+`npm run notices:audit:server` genera un inventari ampliat separat a
+`.next/third-party/SERVER_NOTICES.txt`, incorporant les traces `.nft.json` i els
+source maps dels runtimes precompilats de Next.js. Aquestes traces són
+conservadores i poden incorporar variants o biblioteques natives no executades.
+`npm run notices:check:server` bloqueja la distribució d'aquest codi si hi falten
+textos. No és la comprovació de publicació del servei web.
 
 `npm run dev` selecciona Turbopack explícitament per evitar el conflicte de
 Next.js amb la configuració webpack de producció.
@@ -54,11 +61,30 @@ instal·lat. `data-uri-to-buffer` inclou el text complet al README instal·lat.
 La generació no requereix xarxa ni cap dependència nova. Un canvi de versió o
 de hash d'un text complementari exigeix revisió explícita.
 
-La revisió dels recursos del repositori no ha trobat fonts web, imatges
-externes, plantilles ni fitxers multimèdia distribuïts a `public/`. La marca i
-les icones existents són SVG/JSX al codi; no s'ha verificat documentalment la
-procedència històrica de totes les icones, inclosa la marca GitHub del peu.
+La revisió dels recursos no ha trobat fonts web, imatges externes, plantilles ni
+fitxers multimèdia a `public/`. La marca i la icona d'accessibilitat són formes
+SVG geomètriques al codi del projecte; la seva procedència històrica externa no
+està documentada. La icona GitHub anterior tampoc tenia procedència acreditada:
+s'ha substituït per l'SVG original de Bootstrap Icons 1.13.1, conservat a
+`scripts/licenses/bootstrap-icons/` amb el copyright i el text MIT original.
+`scripts/licenses/resources.json` fixa els recursos revisats i els seus hashes.
+Cal revisar aquest manifest quan s'afegeixin recursos externs; el generador no
+pot inferir-ne automàticament la procedència.
+
+Tailwind CSS 3.4.19 distribueix Preflight al CSS generat. El commit original
+`154d99054bffdf42473f8873148a7cdc30b5c2a9` documenta la integració de
+modern-normalize 1.1.0 i la derivació anterior de SUIT CSS Base. Es conserven
+separadament els textos originals de Tailwind Labs, Nicolas Gallagher, Jonathan
+Neal i Sindre Sorhus. La revisió exacta original de SUIT CSS Base no consta en
+la font de Tailwind: s'identifica l'artefacte que incorpora aquesta adaptació,
+sense afirmar que s'ha distribuït la versió 1.0.0 consultada per obtenir el text.
+Els hashes de Preflight i la versió de Tailwind exigeixen revisió si canvien.
+El runtime de webpack, generat fora de `module.resource`, conserva també el
+copyright de JS Foundation i el seu text MIT del paquet incorporat a Next.js;
+la versió 5.98.0 s'extreu de l'API del mateix bundle.
+
 Els informes usen Helvetica estàndard de PDF, sense registrar fonts externes.
+La comprovació dels PDF generats verifica que no incorporen fitxers de font.
 Les dades de centres i serveis educatius es consulten des del servidor i
 conserven les atribucions existents a la fitxa i a `docs/ARCHITECTURE.md`; aquest
 inventari de programari no és una auditoria de drets dels datasets externs.
@@ -71,21 +97,20 @@ Després d'una compilació amb totes les dependències de la plataforma de dest�
 npm run notices:check
 ```
 
-Aquesta comprovació compara el fitxer amb l'inventari de la compilació i falla
-si queda algun text complet pendent. Una llicència absent d'un component del
-navegador fa fallar també la generació. Per a un component només de servidor,
-es permet generar la previsualització amb l'avís explícit al principi del
-fitxer, però la comprovació de publicació falla. La CI executa aquesta
-comprovació després del build, de manera que els pendents bloquegen la
-integració. No s'ha d'ometre la comprovació per preparar una release.
+Aquesta comprovació compara el fitxer amb la compilació de producció i falla
+si falta un text del navegador, si el fitxer públic és desactualitzat o si han
+canviat les versions o els recursos fixats per una revisió. La CI l'executa
+després del build. Cal incloure `public/THIRD_PARTY_NOTICES.txt` al desplegament;
+un empaquetat standalone ha de copiar `public/` explícitament.
 
-El resultat depèn de la plataforma: les traces macOS i Linux poden incloure
-binaris diferents. La versió que es publica ha de generar i validar els avisos
-amb la mateixa instal·lació i compilació que es distribueix. Cal incloure
-`public/THIRD_PARTY_NOTICES.txt` al paquet de desplegament; un empaquetat
-standalone ha de copiar `public/` explícitament.
+Abans de distribuir una imatge Docker o un paquet de servidor, cal resoldre els
+pendents següents i executar `npm run notices:audit:server` i
+`npm run notices:check:server` sobre la plataforma de destí. Els binaris de les
+traces difereixen entre macOS i Linux. Aquesta implementació no acredita el
+compliment complet d'aquesta distribució futura ni substitueix una auditoria
+jurídica o la revisió dels recursos nous.
 
-## Pendents que bloquegen una publicació completa
+## Pendents de la distribució de servidor
 
 La revisió actual cobreix els textos dels components empaquetats al navegador,
 però no acredita compliment complet dels components del servidor. La
@@ -107,7 +132,7 @@ compilació local macOS detecta aquests textos pendents:
 - `string-hash` incorporat a Next.js 16.3.6: declara CC0-1.0 però no aporta el
   text complet al paquet precompilat ni publica la versió upstream exacta.
 
-La generació enumera els pendents reals de cada compilació; aquesta llista
+L'auditoria ampliada enumera els pendents reals de cada compilació; aquesta llista
 documentada no substitueix la comprovació. Cal obtenir els textos originals
 verificables dels publicadors o revisar/substituir els components abans de
 donar per acabada una publicació amb tot aquest codi. No s'inventen copyrights

@@ -71,6 +71,8 @@ describe("renderDiagnosticReportPdf", () => {
 
     expect(buffer.byteLength).toBeGreaterThan(1000);
     expect(buffer.subarray(0, 4).toString()).toBe("%PDF");
+    expect(buffer.toString("latin1")).toMatch(/\/BaseFont\s*\/Helvetica/);
+    expect(buffer.toString("latin1")).not.toMatch(/\/FontFile[23]?\b/);
   });
 
   it("renders one general page and one page per block", async () => {

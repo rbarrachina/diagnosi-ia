@@ -2,6 +2,7 @@ import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync, rmSync
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 
 const readJson = (file) => JSON.parse(readFileSync(file, "utf8"));
 const root = process.cwd();
@@ -43,6 +44,12 @@ export function componentVersion(directory, metadata) {
     if (metadata.peerDependencies?.react) return metadata.peerDependencies.react;
     throw new Error(`No es pot determinar la versió de ${directory}`);
   }
+  if (name === "webpack") {
+    const require = createRequire(path.join(directory, "package.json"));
+    const version = require(path.join(directory, metadata.main))().webpack.version;
+    if (typeof version !== "string") throw new Error(`No es pot determinar la versió de ${directory}`);
+    return version;
+  }
   if (name === "scheduler") return readJson(path.join(directory, "../react-dom/package.json")).dependencies.scheduler;
   // Next does not publish upstream versions for many vendored packages.
   // Identify the exact distributing artifact rather than guessing a lockfile version.
@@ -58,12 +65,14 @@ function owner(file) {
   throw new Error(`Paquet no identificat: ${path.relative(root, file)}`);
 }
 
-export function generateNotices({ strict = false } = {}) {
+export function generateNotices({ strict = false, server = false } = {}) {
   const inventory = ".next/third-party";
   if (!existsSync(`${inventory}/client.json`)) throw new Error("Cal compilar amb npm run build abans de generar els avisos.");
-  const files = new Set(readdirSync(inventory).flatMap((file) => readJson(path.join(inventory, file))).map((file) => path.resolve(file)));
+  const files = new Set((server
+    ? ["client.json", "nodejs.json", "edge.json"].filter((file) => existsSync(path.join(inventory, file))).flatMap((file) => readJson(path.join(inventory, file)))
+    : readJson(`${inventory}/client.json`)).map((file) => path.resolve(file)));
   const clientFiles = new Set(readJson(`${inventory}/client.json`).map((file) => path.resolve(file)));
-  for (const trace of walk(".next", (file) => file.endsWith(".nft.json"))) {
+  for (const trace of server ? walk(".next", (file) => file.endsWith(".nft.json")) : []) {
     for (const file of readJson(trace).files) {
       const resolved = path.resolve(path.dirname(trace), file);
       if (resolved.includes(`${path.sep}node_modules${path.sep}`)) files.add(resolved);
@@ -81,6 +90,12 @@ export function generateNotices({ strict = false } = {}) {
         else throw new Error(`Font incorporada no localitzada: ${source}`);
       }
     }
+  }
+  // Webpack synthesizes this runtime rather than recording a module.resource.
+  if (walk(".next/static", (file) => /^webpack-.*\.js$/.test(path.basename(file))).length) {
+    const runtime = path.resolve("node_modules/next/dist/compiled/webpack/bundle5.js");
+    files.add(runtime);
+    clientFiles.add(runtime);
   }
   const components = new Map();
   for (const file of files) {
@@ -110,7 +125,7 @@ export function generateNotices({ strict = false } = {}) {
       `Component: ${metadata.name}`,
       `Versió: ${version}`,
       `Origen: ${path.relative(root, directory)}`,
-      `Àmbit: ${scope.client ? "navegador i/o servidor" : "servidor / traça de producció"}`,
+      `Àmbit: ${scope.client ? "navegador" : "servidor / traça de producció"}`,
       ...notices.flatMap((file) => [`\n--- ${path.relative(directory, file)} ---\n`, readFileSync(file, "utf8")]),
       ...extra,
     ].join("\n"));
@@ -137,17 +152,32 @@ export function generateNotices({ strict = false } = {}) {
       ].join("\n"));
     }
   }
+  // Explicitly reviewed resources copied into application source are outside
+  // node_modules. Changes must trigger a provenance/license review as well.
+  for (const resource of readJson("scripts/licenses/resources.json")) {
+    if (resource.package && readJson(resource.package).version !== resource.packageVersion) throw new Error(`Versió de recurs modificada; cal revisar-la: ${resource.name}`);
+    const bytes = readFileSync(resource.file);
+    if (createHash("sha256").update(bytes).digest("hex") !== resource.sha256) throw new Error(`Recurs de tercers modificat; cal revisar-lo: ${resource.file}`);
+    if (!resource.sources.length) throw new Error(`Falta llicència de recurs: ${resource.name}`);
+    sections.push([
+      "=".repeat(78), `Component: ${resource.name}`, `Versió: ${resource.version}`,
+      `Origen: ${resource.file}; ${resource.provenance}`, `Àmbit: ${resource.scope}`,
+      ...originalTexts(resource.sources),
+    ].join("\n"));
+  }
   if (missing.length && strict) throw new Error(`PUBLICACIÓ BLOQUEJADA: falta el text complet de llicència dels components del servidor:\n${missing.join("\n")}`);
-  if (missing.length) console.warn(`AVÍS: ${missing.length} llicències del servidor pendents. npm run notices:check bloquejarà la publicació.`);
+  if (missing.length) console.warn(`AVÍS: ${missing.length} llicències del servidor pendents. npm run notices:check:server bloquejarà la distribució del servidor.`);
   return [
     "Diagnosi IA — Avisos de tercers",
     "",
     "Diagnosi IA conserva la llicència Apache 2.0 del projecte (LICENSE).",
     "Els components de tercers conserven les seves pròpies llicències, reproduïdes a continuació sense traduir.",
-    "Generat a partir dels mòduls empaquetats per webpack i les traces de producció de Next.js.",
-    "Les traces poden incloure components conservadorament encara que no s'executin en totes les rutes.",
+    server
+      ? "Inventari ampliat de navegador i servidor, incloses les traces conservadores de producció de Next.js."
+      : "Abast: JavaScript i recursos distribuïts als usuaris del servei web, extrets de la compilació de producció.",
+    ...(!server ? ["Els components exclusius del servidor es revisen separadament abans de distribuir-ne binaris (docs/THIRD_PARTY_LICENSES.md)."] : []),
     "Per a paquets incorporats sense versió upstream publicada, s'identifica la versió exacta de Next.js que els distribueix.",
-    ...(missing.length ? ["", "REVISIÓ PENDENT — AQUEST INVENTARI NO ACREDITA COMPLIMENT COMPLET.", "Els següents components del servidor no publiquen aquí un text complet verificat; la comprovació de publicació falla fins a resoldre'ls:", ...missing] : []),
+    ...(missing.length ? ["", "REVISIÓ PENDENT — AQUEST INVENTARI NO ACREDITA COMPLIMENT COMPLET.", "Els següents components del servidor no publiquen aquí un text complet verificat; la comprovació de distribució del servidor falla fins a resoldre'ls:", ...missing] : []),
     "",
     ...sections,
     "",
@@ -159,8 +189,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     rmSync(".next/third-party", { recursive: true, force: true });
     process.exit(0);
   }
-  const content = generateNotices({ strict: process.argv.includes("--check") });
-  const target = "public/THIRD_PARTY_NOTICES.txt";
+  const server = process.argv.includes("--server");
+  const content = generateNotices({ strict: process.argv.includes("--check"), server });
+  const target = server ? ".next/third-party/SERVER_NOTICES.txt" : "public/THIRD_PARTY_NOTICES.txt";
   if (process.argv.includes("--check")) {
     if (!existsSync(target) || readFileSync(target, "utf8") !== content) throw new Error("THIRD_PARTY_NOTICES.txt està desactualitzat; executa npm run notices:generate.");
   } else {
