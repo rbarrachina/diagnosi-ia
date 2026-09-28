@@ -46,6 +46,12 @@ export function SiteFooter() {
             {messages.common.license}
           </a>
           <a
+            className="text-action transition hover:text-action-hover"
+            href="/THIRD_PARTY_NOTICES.txt"
+          >
+            {messages.common.thirdPartyLicenses}
+          </a>
+          <a
             aria-label={messages.common.sourceCodeGithub}
             className="inline-flex items-center gap-2 text-action transition hover:text-action-hover"
             href="https://github.com/rbarrachina/diagnosi-ia"

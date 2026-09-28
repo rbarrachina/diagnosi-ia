@@ -1,0 +1,162 @@
+{
+  "@react-pdf/renderer": {
+    "version": "4.5.1",
+    "sources": [
+      {
+        "file": "@react-pdf__renderer.txt",
+        "url": "https://raw.githubusercontent.com/diegomura/react-pdf/f069bca5bdcb3d31dc233b15302ac4a196681f8e/LICENSE",
+        "sha256": "0c96b643c00775e094e8daf2de5707013d740621b735b0e4ceb9fab7698ca2e4"
+      }
+    ]
+  },
+  "@react-pdf/fns": {
+    "version": "3.1.3",
+    "sources": [
+      {
+        "file": "@react-pdf__fns.txt",
+        "url": "https://raw.githubusercontent.com/diegomura/react-pdf/a8301b239f750ee2a74e851522daadc3718b30e3/LICENSE",
+        "sha256": "686a2bd0f92962db92fea52d4eae2ef55ef75ae69eb9194faccb49bb831f0b58"
+      }
+    ]
+  },
+  "@react-pdf/font": {
+    "version": "4.0.8",
+    "sources": [
+      {
+        "file": "@react-pdf__font.txt",
+        "url": "https://raw.githubusercontent.com/diegomura/react-pdf/f069bca5bdcb3d31dc233b15302ac4a196681f8e/LICENSE",
+        "sha256": "0c96b643c00775e094e8daf2de5707013d740621b735b0e4ceb9fab7698ca2e4"
+      }
+    ]
+  },
+  "@react-pdf/image": {
+    "version": "3.1.0",
+    "sources": [
+      {
+        "file": "@react-pdf__image.txt",
+        "url": "https://raw.githubusercontent.com/diegomura/react-pdf/fa06da6b7bf764ea274503745c0fe34cd216a912/LICENSE",
+        "sha256": "0c96b643c00775e094e8daf2de5707013d740621b735b0e4ceb9fab7698ca2e4"
+      }
+    ]
+  },
+  "@react-pdf/layout": {
+    "version": "4.6.1",
+    "sources": [
+      {
+        "file": "@react-pdf__layout.txt",
+        "url": "https://raw.githubusercontent.com/diegomura/react-pdf/f069bca5bdcb3d31dc233b15302ac4a196681f8e/LICENSE",
+        "sha256": "0c96b643c00775e094e8daf2de5707013d740621b735b0e4ceb9fab7698ca2e4"
+      }
+    ]
+  },
+  "@react-pdf/primitives": {
+    "version": "4.3.0",
+    "sources": [
+      {
+        "file": "@react-pdf__primitives.txt",
+        "url": "https://raw.githubusercontent.com/diegomura/react-pdf/fa06da6b7bf764ea274503745c0fe34cd216a912/LICENSE",
+        "sha256": "0c96b643c00775e094e8daf2de5707013d740621b735b0e4ceb9fab7698ca2e4"
+      }
+    ]
+  },
+  "@react-pdf/reconciler": {
+    "version": "2.0.0",
+    "sources": [
+      {
+        "file": "@react-pdf__reconciler.txt",
+        "url": "https://raw.githubusercontent.com/diegomura/react-pdf/52e97fd0052f4e634d8b39143154e0a09ff98cba/LICENSE",
+        "sha256": "686a2bd0f92962db92fea52d4eae2ef55ef75ae69eb9194faccb49bb831f0b58"
+      }
+    ]
+  },
+  "@react-pdf/render": {
+    "version": "4.5.1",
+    "sources": [
+      {
+        "file": "@react-pdf__render.txt",
+        "url": "https://raw.githubusercontent.com/diegomura/react-pdf/f069bca5bdcb3d31dc233b15302ac4a196681f8e/LICENSE",
+        "sha256": "0c96b643c00775e094e8daf2de5707013d740621b735b0e4ceb9fab7698ca2e4"
+      }
+    ]
+  },
+  "@react-pdf/stylesheet": {
+    "version": "6.2.1",
+    "sources": [
+      {
+        "file": "@react-pdf__stylesheet.txt",
+        "url": "https://raw.githubusercontent.com/diegomura/react-pdf/f069bca5bdcb3d31dc233b15302ac4a196681f8e/LICENSE",
+        "sha256": "0c96b643c00775e094e8daf2de5707013d740621b735b0e4ceb9fab7698ca2e4"
+      }
+    ]
+  },
+  "@react-pdf/svg": {
+    "version": "1.1.0",
+    "sources": [
+      {
+        "file": "@react-pdf__svg.txt",
+        "url": "https://raw.githubusercontent.com/diegomura/react-pdf/fa06da6b7bf764ea274503745c0fe34cd216a912/LICENSE",
+        "sha256": "0c96b643c00775e094e8daf2de5707013d740621b735b0e4ceb9fab7698ca2e4"
+      }
+    ]
+  },
+  "@react-pdf/textkit": {
+    "version": "6.3.0",
+    "sources": [
+      {
+        "file": "@react-pdf__textkit.txt",
+        "url": "https://raw.githubusercontent.com/diegomura/react-pdf/f069bca5bdcb3d31dc233b15302ac4a196681f8e/LICENSE",
+        "sha256": "0c96b643c00775e094e8daf2de5707013d740621b735b0e4ceb9fab7698ca2e4"
+      }
+    ]
+  },
+  "drizzle-orm": {
+    "version": "0.45.2",
+    "sources": [
+      {
+        "file": "drizzle-orm.txt",
+        "url": "https://raw.githubusercontent.com/drizzle-team/drizzle-orm/0.45.2/LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+      }
+    ]
+  },
+  "yoga-layout": {
+    "version": "3.2.1",
+    "sources": [
+      {
+        "file": "yoga-layout.txt",
+        "url": "https://raw.githubusercontent.com/facebook/yoga/v3.2.1/LICENSE",
+        "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85"
+      }
+    ]
+  },
+  "@edge-runtime/cookies": {
+    "version": "6.0.0",
+    "sources": [
+      {
+        "file": "@edge-runtime__cookies.txt",
+        "url": "https://raw.githubusercontent.com/vercel/edge-runtime/@edge-runtime/cookies@6.0.0/LICENSE.md",
+        "sha256": "e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3"
+      }
+    ]
+  },
+  "@next/env": {
+    "version": "16.3.6",
+    "sources": [
+      {
+        "file": "next-env.txt",
+        "url": "node_modules/next/LICENSE.md (mateixa versió 16.3.6 i repositori)",
+        "sha256": "ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224"
+      }
+    ]
+  },
+  "data-uri-to-buffer": {
+    "version": "4.0.1",
+    "sources": [
+      {
+        "file": "data-uri-to-buffer.txt",
+        "url": "node_modules/data-uri-to-buffer/README.md, secció License",
+        "sha256": "452c4ff96c563bfc6be3e690ae1b1dbcbaa11e7cf1468404e171e15de807586b"
+      }
+    ]
+  }
+}

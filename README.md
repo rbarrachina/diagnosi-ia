@@ -266,3 +266,10 @@ per impedir duplicats i autoritzar la recuperació de la participació pròpia.
 ## Llicència
 
 Aquest projecte es distribueix sota la [llicència Apache 2.0](LICENSE).
+
+Els components de tercers conserven les seves pròpies llicències. Els avisos
+es generen durant `npm run build` i són accessibles al peu de pàgina i a
+[`public/THIRD_PARTY_NOTICES.txt`](public/THIRD_PARTY_NOTICES.txt). Abans de
+publicar cal superar `npm run notices:check`; la
+[revisió de llicències](docs/THIRD_PARTY_LICENSES.md) documenta les fonts i els
+textos del servidor encara pendents que bloquegen una publicació completa.

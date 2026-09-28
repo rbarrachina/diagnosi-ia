@@ -6,6 +6,12 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Afegeix l'enllaç traduït «Llicències de tercers» al peu compartit i genera
+  `THIRD_PARTY_NOTICES.txt` des de la compilació de producció, amb textos
+  originals i identificació separada de React i React DOM incorporats a Next.js.
+  La comprovació de publicació detecta i bloqueja els textos de servidor
+  encara pendents, documentats a `docs/THIRD_PARTY_LICENSES.md`.
+
 - Resumeix la introducció del qüestionari i agrupa la informació essencial
   en dos blocs de privacitat i resultats, amb la participació destacada.
 

@@ -51,3 +51,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Check third-party notices (publication gate)
+        run: npm run notices:check

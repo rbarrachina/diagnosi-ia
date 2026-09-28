@@ -11,6 +11,11 @@
 - Recharts per a les gràfiques web.
 - `@react-pdf/renderer` per als informes PDF.
 
+La compilació webpack registra els mòduls de producció i regenera els avisos
+de tercers a `public/THIRD_PARTY_NOTICES.txt`. El peu compartit hi enllaça en
+totes les llengües. L'abast, les fonts originals i els textos pendents que
+bloquegen la publicació es documenten a `docs/THIRD_PARTY_LICENSES.md`.
+
 ### Arquitectura visual
 
 - `app/globals.css` conté exclusivament les directives base de Tailwind.
