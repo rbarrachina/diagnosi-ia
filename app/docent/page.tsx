@@ -3,7 +3,7 @@ import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messag
 import { InterfaceText } from "@/components/i18n/interface-text";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LoginButton, LogoutButton } from "@/components/auth/auth-actions";
+import { IconLogoutButton, LoginButton } from "@/components/auth/auth-actions";
 import { ParticipantCodeAccessForm } from "@/components/participants/code-access-form";
 import { AppHeader } from "@/components/layout/app-header";
 import { ThemeToggle } from "@/components/home/theme-toggle";
@@ -50,7 +50,7 @@ export default async function ParticipantAreaPage({
     <main className="app-shell min-h-screen bg-paper text-ink">
       <AppHeader brandHref="/docent">
         <ThemeToggle />
-        <LogoutButton next="/" />
+        <IconLogoutButton next="/" />
       </AppHeader>
       <section className="mx-auto max-w-5xl px-5 pb-20 pt-32 sm:px-8">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-action">

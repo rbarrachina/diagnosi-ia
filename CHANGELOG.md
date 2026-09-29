@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Unifica la sortida docent amb la icona de centre a l'àrea, el resultat propi
+  i el qüestionari autenticat, sense mostrar identitat docent.
+
 - Situa el nom del responsable com a text no interactiu a l'esquerra de les
   icones de la capçalera i elimina el menú del compte.
 

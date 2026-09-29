@@ -502,8 +502,10 @@ No s'eliminen ni es modifiquen les preguntes del qüestionari versionat.
 Ruta: `/q/[publicCode]`
 
 La ruta pública presenta una capçalera mínima amb la marca `Diagnosi IA` i el
-selector clar o fosc. No mostra navegació lateral ni peu de pàgina, perquè el
-docent només ha de seguir el flux del qüestionari. La paleta, les superfícies,
+selector clar o fosc. Amb sessió docent, mostra també la mateixa icona `Surt`
+que l'espai del centre, sense mostrar la identitat del participant. No mostra
+navegació lateral ni peu de pàgina, perquè el docent només ha de seguir el flux
+del qüestionari. La paleta, les superfícies,
 els botons i les opcions de resposta comparteixen el sistema visual de la resta
 de l'aplicació.
 
@@ -597,6 +599,8 @@ Rutes: `/docent` i `/docent/resultats/[publicCode]`
 
 L'àrea docent exigeix sessió Google i mostra només centre, qüestionari, data i
 puntuació de les participacions vinculades a l'identificador opac de la sessió.
+L'àrea i el resultat propi mostren la mateixa icona `Surt` de la capçalera del
+centre quan la sessió docent és activa.
 Permet veure respostes i puntuacions pròpies o generar el PDF individual, també
 quan l'espai està tancat. No mostra la identitat docent, identificadors interns,
 resultats del centre, comparacions o dades d'altres participants.

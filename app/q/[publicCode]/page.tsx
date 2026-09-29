@@ -3,7 +3,7 @@ import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messag
 import { InterfaceText } from "@/components/i18n/interface-text";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { LoginButton } from "@/components/auth/auth-actions";
+import { IconLogoutButton, LoginButton } from "@/components/auth/auth-actions";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { AppHeader } from "@/components/layout/app-header";
 import { QuestionnaireForm } from "@/components/questionnaire/questionnaire-form";
@@ -91,6 +91,7 @@ export default async function QuestionnairePage({ params }: QuestionnairePagePro
         showBrandLabelOnMobile
       >
         <ThemeToggle />
+        {user ? <IconLogoutButton next="/" /> : null}
       </AppHeader>
 
       <div

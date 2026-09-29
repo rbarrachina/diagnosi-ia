@@ -1,4 +1,5 @@
 import { InterfaceText } from "@/components/i18n/interface-text";
+import { IconLogoutButton } from "@/components/auth/auth-actions";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AppHeader } from "@/components/layout/app-header";
@@ -24,7 +25,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
 
   return (
     <main className="app-shell min-h-screen bg-paper text-ink">
-      <AppHeader brandHref="/docent"><ThemeToggle /></AppHeader>
+      <AppHeader brandHref="/docent"><ThemeToggle /><IconLogoutButton next="/" /></AppHeader>
       <section className="mx-auto max-w-5xl px-5 pb-20 pt-32 sm:px-8">
         <Link className="text-sm font-semibold text-action" href="/docent">
           <InterfaceText messageKey="lesMevesDiagnosis2" />

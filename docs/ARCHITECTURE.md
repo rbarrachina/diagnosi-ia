@@ -406,7 +406,9 @@ de verificació manual i els límits de l’auditoria es documenten a
   resta de l'aplicació sense traslladar cap validació o enviament al layout.
 - `/docent` mostra només les participacions del compte actual i permet iniciar
   un altre accés per codi. `/docent/resultats/[publicCode]` mostra les respostes
-  pròpies sense exposar identificadors interns.
+  pròpies sense exposar identificadors interns. Les dues rutes i el qüestionari
+  autenticat reutilitzen la icona de sortida de la capçalera del centre; no
+  mostren nom ni correu del docent.
 
 ## Decisions pendents
 
