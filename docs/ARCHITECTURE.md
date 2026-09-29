@@ -108,6 +108,16 @@ comparteixen amb el client.
 
 ## Autenticació i autorització
 
+Les destinacions `next` de login, callback i logout només admeten rutes
+internes. `lib/http/redirect.ts` rebutja URL absolutes, referències amb host,
+barres inverses i caràcters de control, normalitza el camí amb el parser URL
+i comprova que no canviï l'origen. El callback torna a validar la destinació
+de l'estat OAuth signat abans d'intercanviar el codi, també per als estats
+creats abans d'una correcció. Una destinació invàlida al login o logout usa
+la ruta de reserva; un estat invàlid al callback torna a l'error d'accés sense
+crear sessió. El logout respon amb `303` perquè el navegador continuï amb GET
+i no reenviï el POST a la destinació.
+
 `AUTH_MODE=google` inicia el flux OAuth i verifica el `id_token` al servidor
 amb `google-auth-library`, que valida la signatura amb les claus públiques de
 Google i en gestiona la rotació. Després es comproven explícitament `iss`, `aud`,

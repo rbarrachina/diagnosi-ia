@@ -6,6 +6,11 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Bloqueja les redireccions externes amb barres inverses o caràcters de control
+  a login, callback i logout. El callback revalida també les destinacions de
+  l'estat OAuth signat i el logout continua amb GET mitjançant una resposta
+  `303`, sense reenviar el POST.
+
 - Afegeix l'enllaç traduït «Llicències de tercers» al peu compartit i genera
   `THIRD_PARTY_NOTICES.txt` des de la compilació de producció, amb textos
   originals i identificació separada de React i React DOM incorporats a Next.js.

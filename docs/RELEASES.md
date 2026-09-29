@@ -51,3 +51,10 @@ No s'etiqueta una branca de treball. La primera etiqueta prevista és
 
 Una correcció urgent també passa per branca, PR i CI. Després de fusionar-la,
 s'incrementa PATCH i es publica una nova etiqueta.
+
+La correcció pendent de redireccions internes s'inclou a `Unreleased`.
+Després de desplegar-la, una petició POST a
+`/auth/logout?next=%2F%5Cexample.invalid` ha de retornar `303` cap a la
+portada del mateix domini. Els fluxos OAuth iniciats abans del desplegament
+amb una destinació insegura tornen a l'error d'accés i s'han de reiniciar.
+La correcció no exigeix migracions ni rotació de claus o sessions existents.
