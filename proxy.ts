@@ -2,8 +2,16 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 import { LEGACY_SESSION_COOKIE_NAME } from "@/lib/auth/cookie-names";
+import { isAllowedRequestOrigin } from "@/lib/http/csrf";
 
 export async function proxy(request: NextRequest) {
+  if (!isAllowedRequestOrigin(request, process.env.NEXT_PUBLIC_APP_URL)) {
+    return NextResponse.json(
+      { error: "Request origin not allowed" },
+      { status: 403, headers: { "Cache-Control": "private, no-store, max-age=0" } },
+    );
+  }
+
   const nonce = randomBytes(32).toString("base64");
   const isDevelopment = process.env.NODE_ENV === "development";
   const policy = [

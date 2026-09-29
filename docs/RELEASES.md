@@ -54,10 +54,32 @@ s'incrementa PATCH i es publica una nova etiqueta.
 
 La correcció pendent de redireccions internes s'inclou a `Unreleased`.
 Després de desplegar-la, una petició POST a
-`/auth/logout?next=%2F%5Cexample.invalid` ha de retornar `303` cap a la
+`/auth/logout?next=%2F%5Cexample.invalid`, amb `Origin` del mateix domini,
+ha de retornar `303` cap a la
 portada del mateix domini. Els fluxos OAuth iniciats abans del desplegament
 amb una destinació insegura tornen a l'error d'accés i s'han de reiniciar.
 La correcció no exigeix migracions ni rotació de claus o sessions existents.
+
+## Desplegament de la validació d'origen
+
+La protecció CSRF s'inclou a `Unreleased`. No exigeix migracions ni dependències.
+L'URL pública de producció `NEXT_PUBLIC_APP_URL` ha de correspondre a l'origen
+HTTPS de Diagnosia perquè la comprovació funcioni també darrere d'Apache.
+No afegir dominis externs ni altres subdominis com a excepció.
+
+Abans de desplegar, provar en local que una petició POST a `/auth/logout` amb
+`Origin` d'una altra web retorna 403 i una amb l'origen local correcte retorna
+303. Usar `http://localhost:3000` per a la prova local i no barrejar noms
+o ports d'accés. La mateixa negativa s'ha de mantenir quan manca `Origin` i no hi ha un
+`Referer` vàlid. Les comprovacions no necessiten cookies ni dades reals.
+Comprovar després login amb Google, logout, idioma, enviaments i PDF, i una
+acció administrativa sobre dades de prova.
+
+Els clients de terminal que facin mutacions han d'incloure `Origin` amb
+l'origen exacte de l'aplicació. Això acredita l'origen, no substitueix la
+sessió, el rol ni els tokens d'autorització. Els navegadors el transmeten en
+les peticions habituals del mateix origen. La protecció no requereix desar
+un token CSRF o dades noves a cookies, logs o MySQL.
 
 ## Desplegament de la CSP
 

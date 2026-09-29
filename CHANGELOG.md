@@ -6,6 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Rebutja peticions de mutació originades en altres webs, incloent altres
+  subdominis, abans d'executar endpoints i accions. Exigeix `Origin` o,
+  si és absent, `Referer` del mateix origen; conserva el callback OAuth.
+
 - Activa la Content Security Policy amb un nonce nou per petició per autoritzar
   els scripts de Next.js i bloquejar scripts inline sense autorització. Manté
   els estils calculats dels gràfics i del qüestionari, sense telemetria nova.
