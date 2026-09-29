@@ -1,3 +1,4 @@
+import { privateJson, PRIVATE_CACHE_CONTROL } from "@/lib/http/private-response";
 import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import { getRequiredAdminUser, AdminAccessError } from "@/lib/admin/auth";
 import { readJsonRequestBody } from "@/lib/http/request";
@@ -32,7 +33,7 @@ export async function POST(request: Request): Promise<Response> {
     const results = await getAggregatedResultsForQuestionnaireVersion(payload);
 
     if (payload.scope === "centre" && results.totalSubmissions === 0) {
-      return Response.json(
+      return privateJson(
         { error: t("aquestCentreNoSuperaElLlindarMinimDeRespostes") },
         { status: 409 },
       );
@@ -42,23 +43,24 @@ export async function POST(request: Request): Promise<Response> {
 
     return new Response(new Uint8Array(pdfBuffer), {
       headers: {
+        "Cache-Control": PRIVATE_CACHE_CONTROL,
         "Content-Disposition": `attachment; filename="${reportFilename(results.questionnaireVersion)}"`,
         "Content-Type": "application/pdf",
       },
     });
   } catch (error) {
     if (error instanceof AdminAccessError) {
-      return Response.json({ error: t("calAccesDAdministracio") }, { status: 403 });
+      return privateJson({ error: t("calAccesDAdministracio") }, { status: 403 });
     }
 
     if (error instanceof ResultsAccessError) {
-      return Response.json(
+      return privateJson(
         { error: t("noSHaPogutTrobarLAmbitDeResultatsSolLicitat") },
         { status: 404 },
       );
     }
 
-    return Response.json(
+    return privateJson(
       { error: t("noSHaPogutGenerarLInformePdf") },
       { status: 400 },
     );

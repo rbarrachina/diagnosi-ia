@@ -1,3 +1,4 @@
+import { privateJson, PRIVATE_CACHE_CONTROL } from "@/lib/http/private-response";
 import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import { readJsonRequestBody } from "@/lib/http/request";
 import { renderDiagnosticReportPdf } from "@/lib/pdf/render-report";
@@ -23,19 +24,20 @@ export async function POST(request: Request): Promise<Response> {
 
     return new Response(new Uint8Array(pdfBuffer), {
       headers: {
+        "Cache-Control": PRIVATE_CACHE_CONTROL,
         "Content-Disposition": `attachment; filename="${reportFilename(results.publicCode)}"`,
         "Content-Type": "application/pdf",
       },
     });
   } catch (error) {
     if (error instanceof ResultsAccessError) {
-      return Response.json(
+      return privateJson(
         { error: t("noSHanPogutValidarLesCredencialsDeResultats") },
         { status: 403 },
       );
     }
 
-    return Response.json(
+    return privateJson(
       { error: t("noSHaPogutGenerarLInformePdf") },
       { status: 400 },
     );

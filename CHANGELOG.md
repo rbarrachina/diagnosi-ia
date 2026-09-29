@@ -6,6 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Afegeix `private, no-store, max-age=0` als resultats, PDF i respostes amb
+  enllaços privats, inclosos els errors, per evitar-ne l'emmagatzematge en
+  memòries cau HTTP. La descàrrega expressa dels PDF continua disponible.
+
 - Rebutja peticions de mutació originades en altres webs, incloent altres
   subdominis, abans d'executar endpoints i accions. Exigeix `Origin` o,
   si és absent, `Referer` del mateix origen; conserva el callback OAuth.

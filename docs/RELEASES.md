@@ -60,6 +60,21 @@ portada del mateix domini. Els fluxos OAuth iniciats abans del desplegament
 amb una destinació insegura tornen a l'error d'accés i s'han de reiniciar.
 La correcció no exigeix migracions ni rotació de claus o sessions existents.
 
+## Desplegament de la protecció de memòria cau
+
+La protecció de resultats, PDF i respostes amb enllaços privats s'inclou a
+`Unreleased`. No exigeix migracions, variables noves ni canvis d'Apache.
+Després de compilar i reiniciar el servei de Diagnosia, comprovar a la pestanya
+Network del navegador que aquestes respostes porten
+`Cache-Control: private, no-store, max-age=0`, tant en cas d'èxit com d'error.
+Comprovar que els PDF continuen descarregant-se i que els permisos entre comptes
+es mantenen. Per a proves POST amb curl, incloure l'`Origin` exacte de l'aplicació.
+No cal enviar dades ni tokens reals per verificar les respostes d'error.
+
+Aquesta política impedeix l'emmagatzematge en memòries cau HTTP conformes,
+però no elimina PDF descarregats expressament ni còpies anteriors, historial
+o estat React de pestanyes obertes.
+
 ## Desplegament de la validació d'origen
 
 La protecció CSRF s'inclou a `Unreleased`. No exigeix migracions ni dependències.

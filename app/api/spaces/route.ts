@@ -1,3 +1,4 @@
+import { privateJson } from "@/lib/http/private-response";
 import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import { getResponsibleSessionState } from "@/lib/auth/session";
 import type { ResponsibleAccessReason } from "@/lib/auth/responsible-access";
@@ -24,11 +25,11 @@ export async function POST(request: Request): Promise<Response> {
     const session = await getResponsibleSessionState();
 
     if (session.status === "unauthenticated") {
-      return Response.json({ error: t("calIniciarSessio") }, { status: 401 });
+      return privateJson({ error: t("calIniciarSessio") }, { status: 401 });
     }
 
     if (session.status === "forbidden") {
-      return Response.json(
+      return privateJson(
         { error: getResponsibleAccessErrorMessage(session.reason) },
         { status: 403 },
       );
@@ -37,14 +38,14 @@ export async function POST(request: Request): Promise<Response> {
     const centre = await registerResponsibleCentreAccount(session.user);
 
     if (!centre) {
-      return Response.json(
+      return privateJson(
         { error: t("noSHaPogutPrepararLaFitxaDelResponsable") },
         { status: 403 },
       );
     }
 
     if (!centre.profileConfirmedAt || !centre.emailPolicyConfiguredAt) {
-      return Response.json(
+      return privateJson(
         { error: t("completaPrimerLaConfiguracioInicialDeLEspai") },
         { status: 409 },
       );
@@ -56,7 +57,7 @@ export async function POST(request: Request): Promise<Response> {
       centre.id,
     );
 
-    return Response.json(
+    return privateJson(
       {
         publicCode: createdSpace.publicCode,
         questionnaireTitle: createdSpace.questionnaireTitle,
@@ -71,7 +72,7 @@ export async function POST(request: Request): Promise<Response> {
     );
   } catch (error) {
     if (error instanceof OwnerSpaceAlreadyExistsError) {
-      return Response.json(
+      return privateJson(
         {
           error:
             t("aquestCentreOCompteResponsableJaTeUnQuestionariElPots"),
@@ -80,7 +81,7 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    return Response.json({ error: t("noSHaPogutCrearLEspai") }, { status: 400 });
+    return privateJson({ error: t("noSHaPogutCrearLEspai") }, { status: 400 });
   }
 }
 
