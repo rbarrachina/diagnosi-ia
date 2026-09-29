@@ -73,6 +73,9 @@ explícit estranger o `null` no pot usar aquest fallback. Sense tots dos
 encapçalaments es rebutja la petició. No es confia en `X-Forwarded-Host` aportat
 pel client ni s'autoritzen altres subdominis. En local es compara l'origen de
 la petició segons les regles existents de resolució de l'URL de l'aplicació.
+La política `Referrer-Policy: same-origin` permet que els formularis del mateix
+origen aportin el `Referer` quan el navegador omet `Origin`, sense enviar el
+camí ni els paràmetres de la pàgina a webs externes.
 La comprovació passa abans d'executar endpoints o Server Actions i complementa
 la sessió i les comprovacions d'origen de Next.js. GET, HEAD i OPTIONS no
 canvien; el callback GET de Google conserva la validació de l'estat OAuth.

@@ -97,6 +97,10 @@ filtrar o relacionar resultats.
 El navegador no té accés directe a MySQL. Tota lectura o escriptura passa per
 codi server-side amb validació de sessió, rol, propietat, token i payload.
 
+La política de referència del navegador és `same-origin`: els enllaços cap a
+altres dominis no transmeten el camí ni els paràmetres de la pàgina, mentre
+que els formularis propis poden acreditar-ne l'origen davant la protecció CSRF.
+
 Els repositoris sensibles no s'importen des de components client. Els endpoints
 de centre i administració no poden retornar files individuals. Les rutes docents
 només poden retornar la participació pròpia, determinada per la sessió al servidor.

@@ -6,6 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Corregeix el rebuig del formulari de sortida en navegadors que no envien
+  `Origin` en un POST propi: el `Referer` només s'envia dins del mateix origen
+  perquè el proxy pugui validar-lo sense divulgar rutes a webs externes.
+
 - Mostra una icona de sortida sempre visible a la gestió del centre i a
   l'administració; el menú del compte conserva només la identitat. La portada
   amb sessió de responsable ofereix `El meu espai` i sortida directa, també en

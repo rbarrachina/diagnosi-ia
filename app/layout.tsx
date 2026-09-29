@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
       template: "%s | Diagnosi IA",
     },
     description: t("diagnosiPseudonimitzadaSobreLUsEducatiuDeLaIa"),
-    referrer: "no-referrer",
+    referrer: "same-origin",
   };
 }
 
