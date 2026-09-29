@@ -109,6 +109,16 @@ describe("MySQL aggregated results repository", () => {
     expect(results.totalSubmissions).toBe(2);
   });
 
+  it("rejects another owner before reading any aggregates", async () => {
+    await expect(getAggregatedResultsForOwner({
+      publicCode: "C-ABCD-EFGH",
+      ownerUserId: "other-owner",
+    })).rejects.toBeInstanceOf(ResultsAccessError);
+    expect(currentPool.calls).toHaveLength(1);
+    expect(currentPool.calls[0].query).toContain("diagnostic_spaces.owner_user_id = ?");
+    expect(currentPool.calls[0].values).toEqual(["C-ABCD-EFGH", "other-owner"]);
+  });
+
   it("returns global admin aggregates for a questionnaire version without space rows", async () => {
     const results = await getAggregatedResultsForQuestionnaireVersion({
       questionnaireId: "002",
@@ -266,6 +276,8 @@ function createPoolMock(): PoolMock {
       }
 
       if (normalizedQuery.includes("from diagnostic_spaces")) {
+        if (normalizedQuery.includes("diagnostic_spaces.owner_user_id = ?") &&
+            values[1] !== "owner-user-id") return [[]];
         return [
           [
             {

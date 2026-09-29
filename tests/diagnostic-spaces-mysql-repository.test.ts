@@ -69,6 +69,7 @@ vi.mock("@/lib/db/client", () => ({
 const {
   createDiagnosticSpace,
   listOwnerSpaces,
+  getOwnerSpace,
   regenerateOwnerResultsToken,
   resetOwnerDiagnosticSpace,
   OwnerSpaceAlreadyExistsError,
@@ -165,6 +166,39 @@ describe("MySQL diagnostic spaces repository", () => {
     expect(state.updatedTokens[0]).not.toContain("clear-token-1");
   });
 
+  it("does not return a space or its private link to another owner", async () => {
+    await expect(getOwnerSpace("owner-2", "C-AAAA-AAAA", "http://localhost:3000"))
+      .resolves.toBeNull();
+    expect(state.calls[0].query).toContain("diagnostic_spaces.owner_user_id = ?");
+    expect(state.calls[0].query).toContain("diagnostic_spaces.public_code = ?");
+    expect(state.calls[0].values).toEqual(["owner-2", "C-AAAA-AAAA"]);
+  });
+
+  it("does not rotate another owner's private token", async () => {
+    await expect(regenerateOwnerResultsToken({
+      ownerUserId: "owner-2", publicCode: "C-AAAA-AAAA", appUrl: "http://localhost:3000",
+    })).rejects.toThrow();
+    expect(state.updatedTokens).toHaveLength(0);
+    expect(state.calls[0].query).toContain("where owner_user_id = ?");
+    expect(state.calls[0].query).toContain("and public_code = ?");
+    expect(state.calls[0].values.slice(-2)).toEqual(["owner-2", "C-AAAA-AAAA"]);
+  });
+
+  it("rolls back a foreign-space reset before deleting any responses", async () => {
+    await expect(resetOwnerDiagnosticSpace({
+      ownerUserId: "owner-2", publicCode: "C-AAAA-AAAA", appUrl: "http://localhost:3000",
+    })).rejects.toThrow();
+    const [connection] = state.connections;
+    expect(connection.calls).toHaveLength(1);
+    expect(connection.calls[0].query).toContain("where owner_user_id = ?");
+    expect(connection.calls[0].query).toContain("and public_code = ?");
+    expect(connection.calls[0].values).toEqual(["owner-2", "C-AAAA-AAAA"]);
+    expect(connection.rollback).toHaveBeenCalledOnce();
+    expect(connection.commit).not.toHaveBeenCalled();
+    expect(connection.release).toHaveBeenCalledOnce();
+    expect(state.resetUpdates).toHaveLength(0);
+  });
+
   it("resets an owner space in a transaction and removes pseudonymous responses", async () => {
     const result = await resetOwnerDiagnosticSpace({
       ownerUserId: "owner-1",
@@ -233,10 +267,12 @@ async function executePoolQuery(query: string, values: unknown[] = []) {
     normalizedQuery.includes("from diagnostic_spaces") &&
     normalizedQuery.includes("inner join questionnaires")
   ) {
+    if (values[0] !== "owner-1") return [[]];
     return [[ownerSpaceRow()]];
   }
 
   if (normalizedQuery.includes("update diagnostic_spaces")) {
+    if (values[3] !== "owner-1") return [{ affectedRows: 0 }];
     state.updatedTokens.push(values);
     return [{ affectedRows: 1 }];
   }
@@ -261,6 +297,7 @@ function createConnectionMock(): ConnectionMock {
         normalizedQuery.includes("from diagnostic_spaces") &&
         normalizedQuery.includes("for update")
       ) {
+        if (values[0] !== "owner-1") return [[]];
         return [[{ id: "space-1", public_code: "C-AAAA-AAAA" }]];
       }
 

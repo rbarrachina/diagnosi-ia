@@ -46,6 +46,10 @@ describe("participant results repository", () => {
     expect(result?.blocks[0].questions[0].label).toContain("Bastant");
     expect(execute.mock.calls[0][1]).toEqual(["opaque-user-1", "C-ABCD-EFGH"]);
     expect(execute.mock.calls[1][1]).toEqual(["opaque-user-1", "C-ABCD-EFGH"]);
+    for (const [query] of execute.mock.calls) {
+      expect(query).toContain("participant_submissions.participant_user_id = ?");
+      expect(query).toContain("diagnostic_spaces.public_code = ?");
+    }
     expect(JSON.stringify(result)).not.toContain("opaque-user-1");
     expect(JSON.stringify(result)).not.toContain("submission_id");
   });
@@ -59,6 +63,7 @@ describe("participant results repository", () => {
       }),
     ).resolves.toBeNull();
     expect(execute).toHaveBeenCalledOnce();
+    expect(execute.mock.calls[0][1]).toEqual(["opaque-user-2", "C-ABCD-EFGH"]);
   });
 
   it("lists all and only the current account's participations", async () => {
@@ -66,5 +71,6 @@ describe("participant results repository", () => {
     const results = await listParticipantResults("opaque-user-1");
     expect(results).toHaveLength(1);
     expect(execute.mock.calls[0][1]).toEqual(["opaque-user-1"]);
+    expect(execute.mock.calls[0][0]).toContain("participant_submissions.participant_user_id = ?");
   });
 });
