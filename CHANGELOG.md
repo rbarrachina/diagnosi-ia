@@ -6,6 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Actualitza `mysql2`, `postcss` i les dependències indirectes `nanoid` i
+  `baseline-browser-mapping` a versions corregides després de l'auditoria de
+  seguretat de les dependències de producció.
+
 - Afegeix `private, no-store, max-age=0` als resultats, PDF i respostes amb
   enllaços privats, inclosos els errors, per evitar-ne l'emmagatzematge en
   memòries cau HTTP. La descàrrega expressa dels PDF continua disponible.

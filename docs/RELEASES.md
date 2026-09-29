@@ -60,6 +60,15 @@ portada del mateix domini. Els fluxos OAuth iniciats abans del desplegament
 amb una destinació insegura tornen a l'error d'accés i s'han de reiniciar.
 La correcció no exigeix migracions ni rotació de claus o sessions existents.
 
+## Desplegament d'actualitzacions de dependències
+
+L'actualització de dependències de seguretat no canvia l'esquema de MySQL ni
+la configuració d'Apache. En desplegar-la, cal executar `npm ci` després de
+`git pull`, després `npm run build` i finalment reiniciar `diagnosia` amb
+systemd. No executar `npm audit fix --force` al servidor: les versions revisades
+queden fixades a `package-lock.json`. Les eines de desenvolupament tenen avisos
+separats de l'auditoria `--omit=dev` i requereixen una revisió pròpia.
+
 ## Desplegament de la protecció de memòria cau
 
 La protecció de resultats, PDF i respostes amb enllaços privats s'inclou a
