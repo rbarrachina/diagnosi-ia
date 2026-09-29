@@ -368,9 +368,10 @@ de verificació manual i els límits de l’auditoria es documenten a
   del selector i aplica `data-theme` i `color-scheme` sense renderitzar scripts
   des del layout.
 - `/crear` és la pantalla autenticada de creació i gestió de l'espai. Reutilitza
-  la capçalera fixa de la portada i substitueix l'accés pel menú del compte,
-  amb la identitat de la sessió; una icona de sortida independent queda visible
-  a la capçalera. La portada amb sessió autoritzada mostra `El meu espai` i la
+  la capçalera fixa de la portada i substitueix l'accés pel nom del compte com
+  a text no interactiu, situat abans dels controls d'idioma, tema i sortida;
+  una icona de sortida independent queda visible a la capçalera. La portada
+  amb sessió autoritzada mostra `El meu espai` i la
   mateixa sortida. Les pantalles de responsable amb accés denegat mantenen una
   sortida visible per poder canviar de compte. Un contenidor client manté
   muntades les vistes centrals de qüestionari, fitxa i configuració de correus per preservar-ne

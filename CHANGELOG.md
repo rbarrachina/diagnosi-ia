@@ -6,12 +6,15 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Situa el nom del responsable com a text no interactiu a l'esquerra de les
+  icones de la capçalera i elimina el menú del compte.
+
 - Corregeix el rebuig del formulari de sortida en navegadors que no envien
   `Origin` en un POST propi: el `Referer` només s'envia dins del mateix origen
   perquè el proxy pugui validar-lo sense divulgar rutes a webs externes.
 
 - Mostra una icona de sortida sempre visible a la gestió del centre i a
-  l'administració; el menú del compte conserva només la identitat. La portada
+  l'administració. La portada
   amb sessió de responsable ofereix `El meu espai` i sortida directa, també en
   mòbil, i les pantalles d'accés denegat mantenen la sortida a la capçalera.
   En mode local, sortir desactiva la sessió de prova fins a la següent entrada.

@@ -444,9 +444,10 @@ Si l'usuari ja té un espai creat, no pot crear-ne un segon. La mateixa pantalla
 
 Després de confirmar la fitxa i configurar els correus, `/crear` conserva la
 capçalera visual de la portada. El botó d'accés se substitueix pel nom visible
-del compte i obre un menú amb la identificació de la sessió. Una icona `Surt`
-amb etiqueta accessible és visible al costat del compte en tot moment, també
-en mòbil, a les pantalles de gestió i administració. Quan l'accés del responsable
+del compte com a text no interactiu, a l'esquerra del selector d'idioma, del
+selector de tema i de la icona `Surt`. La icona té etiqueta accessible i és
+visible en tot moment, també en mòbil, a les pantalles de gestió i administració.
+Quan l'accés del responsable
 és denegat o el centre està suspès, la sortida també és visible a la capçalera.
 En pantalles d'escriptori, la navegació de `Qüestionari`, `Fitxa` i `Configuració`
 es presenta en una barra lateral que es pot plegar fins a un rail d'icones. En

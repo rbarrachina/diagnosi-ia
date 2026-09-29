@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { CentreManagementHeader } from "@/components/create-space/centre-management-header";
@@ -34,23 +34,24 @@ const centre: CentreProfile = {
 };
 
 describe("centre management header", () => {
-  it("shows the signed-in account where the access button was", () => {
+  it("shows the signed-in name as plain text before the icon controls", () => {
     render(
-      <CentreManagementHeader accountName="Centre de prova" email={centre.email} />,
+      <CentreManagementHeader accountName="Centre de prova" />,
     );
-    expect(screen.getByRole("button", { name: "Menú del compte de Centre de prova" })).toBeInTheDocument();
+    const name = screen.getByText("Centre de prova");
+    const language = screen.getByRole("button", { name: "Idioma: Català" });
+    expect(name.tagName).toBe("SPAN");
+    expect(name.compareDocumentPosition(language) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Menú del compte/ })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Surt" })).toBeVisible();
     expect(screen.queryByText("Accés XTEC")).not.toBeInTheDocument();
   });
 
-  it("opens the account menu for identity without duplicating logout", () => {
+  it("keeps one visible logout action without an account menu", () => {
     render(
-      <CentreManagementHeader accountName="Centre de prova" email={centre.email} />,
+      <CentreManagementHeader accountName="Centre de prova" />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Menú del compte de Centre de prova" }));
-    expect(screen.getByRole("region", { name: "Opcions del compte" })).toBeInTheDocument();
-    expect(screen.getByText(centre.email)).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "Surt" })).toHaveLength(1);
-    expect(screen.queryByRole("menuitem", { name: "Fitxa" })).not.toBeInTheDocument();
+    expect(screen.queryByText(centre.email)).not.toBeInTheDocument();
   });
 });

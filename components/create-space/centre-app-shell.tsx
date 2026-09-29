@@ -26,7 +26,6 @@ export function CentreAppShell({
       {account ? (
         <CentreManagementHeader
           accountName={account.name}
-          email={account.email}
           logoutNext={logoutNext}
         />
       ) : showLogout ? (
