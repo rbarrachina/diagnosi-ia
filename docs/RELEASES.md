@@ -58,3 +58,26 @@ Després de desplegar-la, una petició POST a
 portada del mateix domini. Els fluxos OAuth iniciats abans del desplegament
 amb una destinació insegura tornen a l'error d'accés i s'han de reiniciar.
 La correcció no exigeix migracions ni rotació de claus o sessions existents.
+
+## Desplegament de la CSP
+
+La CSP amb nonce s'inclou a `Unreleased` i substitueix el mode d'observació.
+No exigeix migracions, variables noves ni canvis d'Apache. Només afecta aquesta
+aplicació. Cal compilar i reiniciar el servei habitual de Diagnosia.
+
+Abans d'integrar-la, provar la compilació amb `npm run build` i `npm start`:
+
+- La resposta HTML ha de portar `Content-Security-Policy`, sense la variant
+  `Report-Only`, i un nonce diferent en dues recàrregues.
+- Els scripts de l'HTML han de portar el nonce de la mateixa resposta. En
+  producció `script-src` no ha de contenir `unsafe-inline` ni `unsafe-eval`.
+- Comprovar portada, diàleg d'accés, canvi d'idioma i tema, OAuth de responsable
+  i docent, qüestionari, enviament, navegació entre pantalles, resultats i PDF.
+  Incloure el resultat compartit per fragment i els resultats d'administració.
+- Revisar la consola del navegador: cap recurs necessari ha de quedar
+  bloquejat per CSP. Una prova local amb un script inline sense nonce ha de
+  confirmar que el navegador el bloqueja.
+
+Les pàgines continuen sent dinàmiques. No habilitar memòria cau compartida
+d'HTML, generació estàtica ni Partial Prerendering sense redissenyar la CSP.
+Conservar l'HSTS del VirtualHost HTTPS, que té una funció independent.

@@ -53,10 +53,27 @@ distribuir-ne binaris. L'abast, les fonts originals i els pendents es documenten
 
 ### Defensa HTTP
 
-`next.config.ts` envia CSP en mode `Content-Security-Policy-Report-Only` com a
-fase d'observació. Abans de passar-la a mode d'aplicació cal revisar les
-violacions representatives en tots els fluxos i evitar permetre scripts
-arbitraris. El cos JSON de les peticions es consumeix en streaming i es
+`proxy.ts` aplica `Content-Security-Policy` a les rutes dinàmiques, inclosos
+els errors i les peticions de prefetch. Genera un nonce criptogràfic nou de
+32 bytes per petició, substitueix qualsevol CSP o nonce aportat pel client i
+transmet la mateixa política al renderitzador i a la resposta. Next.js aplica
+el nonce als seus scripts; `script-src` usa `strict-dynamic` i no permet
+`unsafe-inline` ni `unsafe-eval` en producció. El layout arrel manté
+`force-dynamic`: no es pot servir HTML amb un nonce des d'una memòria cau
+compartida ni convertir aquestes pàgines en estàtiques.
+
+Les connexions del navegador es limiten al mateix origen. Els estils inline
+continuen permesos per als valors calculats del qüestionari i de Recharts;
+aquesta excepció no autoritza scripts inline. Només en desenvolupament es
+permet `unsafe-eval` i WebSocket per a la depuració i el hot reload. Els
+recursos estàtics de Next.js i les icones conegudes no passen pel proxy;
+una extensió d'imatge en una URL desconeguda no evita la CSP de l'error HTML.
+No s'afegeixen
+serveis de telemetria ni endpoints que recullin informes CSP, dades de
+participants o tokens. Abans del desplegament cal comprovar els fluxos
+representatius amb la compilació de producció segons `docs/RELEASES.md`.
+
+El cos JSON de les peticions es consumeix en streaming i es
 cancel·la quan supera el límit de cada endpoint; `Content-Length` és només una
 comprovació anticipada. El proxy o proveïdor d'allotjament també ha d'aplicar
 un límit de mida de petició. Aquest repositori no fixa el proveïdor ni en pot
