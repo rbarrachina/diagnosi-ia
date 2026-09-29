@@ -53,6 +53,19 @@ distribuir-ne binaris. L'abast, les fonts originals i els pendents es documenten
 
 ### Defensa HTTP
 
+El proxy rebutja amb 403 les peticions de mutació (POST, PUT, PATCH i DELETE)
+que no acrediten el mateix origen exacte, incloent esquema, host i port.
+Compara `Origin` amb l'origen públic resolt mitjançant `NEXT_PUBLIC_APP_URL`;
+si no hi ha `Origin`, només admet un `Referer` del mateix origen. Un `Origin`
+explícit estranger o `null` no pot usar aquest fallback. Sense tots dos
+encapçalaments es rebutja la petició. No es confia en `X-Forwarded-Host` aportat
+pel client ni s'autoritzen altres subdominis. En local es compara l'origen de
+la petició segons les regles existents de resolució de l'URL de l'aplicació.
+La comprovació passa abans d'executar endpoints o Server Actions i complementa
+la sessió i les comprovacions d'origen de Next.js. GET, HEAD i OPTIONS no
+canvien; el callback GET de Google conserva la validació de l'estat OAuth.
+No es registren els encapçalaments ni es creen dades de participants.
+
 `proxy.ts` aplica `Content-Security-Policy` a les rutes dinàmiques, inclosos
 els errors i les peticions de prefetch. Genera un nonce criptogràfic nou de
 32 bytes per petició, substitueix qualsevol CSP o nonce aportat pel client i
