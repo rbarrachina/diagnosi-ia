@@ -17,10 +17,10 @@ export async function POST(request: Request) {
   const redirectUrl = new URL(next, appUrl);
 
   if (isLocalAuthEnabled()) {
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(redirectUrl, 303);
   }
 
-  const response = NextResponse.redirect(redirectUrl);
+  const response = NextResponse.redirect(redirectUrl, 303);
   response.cookies.delete(RESPONSIBLE_SESSION_COOKIE_NAME);
   response.cookies.delete(PARTICIPANT_SESSION_COOKIE_NAME);
   response.cookies.delete(LEGACY_SESSION_COOKIE_NAME);

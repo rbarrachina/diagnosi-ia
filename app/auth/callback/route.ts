@@ -66,12 +66,14 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get("code");
   const error = requestUrl.searchParams.get("error");
   const errorRedirect = new URL("/auth/error", appUrl);
+  const callbackNext = safeRelativePath(statePayload?.next ?? null, "");
 
   if (
     error ||
     !code ||
     !state ||
     !statePayload ||
+    !callbackNext ||
     statePayload.expiresAt <= Date.now() ||
     statePayload.state !== state
   ) {
@@ -152,7 +154,7 @@ export async function GET(request: NextRequest) {
 
     if (
       statePayload.purpose !== "participant" &&
-      isResponsiblePortalDestination(statePayload.next)
+      isResponsiblePortalDestination(callbackNext)
     ) {
       const decision = await getResponsibleAccessDecision(user);
 
@@ -178,14 +180,14 @@ export async function GET(request: NextRequest) {
 
     if (
       statePayload.purpose !== "participant" &&
-      (statePayload.next === "/crear" || statePayload.next.startsWith("/espais/"))
+      (callbackNext === "/crear" || callbackNext.startsWith("/espais/"))
     ) {
       await registerResponsibleCentreAccount(user, {
         refresh: true,
       });
     }
 
-    const response = NextResponse.redirect(new URL(statePayload.next, appUrl));
+    const response = NextResponse.redirect(new URL(callbackNext, appUrl));
     response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
     response.cookies.delete(LEGACY_SESSION_COOKIE_NAME);
     const sessionCookieName = getSessionCookieName(statePayload.purpose);
