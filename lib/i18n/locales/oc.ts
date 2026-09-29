@@ -133,6 +133,7 @@ export const oc: Messages = {
   },
   "home": {
     "centreAccess": "Accès XTEC",
+    "mySpace": "Eth mèn espaci",
     "centreAccessSoon": "Accès des centres lèu",
     "teacherAccessSoon": "Accès docent lèu",
     "eyebrow": "Estrument entà centres educatius",

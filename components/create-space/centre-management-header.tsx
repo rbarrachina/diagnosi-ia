@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { LogoutButton } from "@/components/auth/auth-actions";
+import { IconLogoutButton } from "@/components/auth/auth-actions";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { AppHeader } from "@/components/layout/app-header";
 import { useTranslations } from "@/components/i18n/language-settings-provider";
@@ -86,21 +86,17 @@ export function CentreManagementHeader({
             id={accountMenuId}
             role="region"
           >
-            <div className="border-b border-line px-3 pb-3 pt-2">
+            <div className="px-3 py-2">
               <p className="truncate font-semibold text-ink">
                 {accountName}
               </p>
               <p className="mt-0.5 truncate text-xs text-muted">{email}</p>
             </div>
 
-            <LogoutButton
-              className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-accent-soft hover:text-action"
-              label={copy.logout}
-              next={logoutNext}
-            />
           </div>
         ) : null}
       </div>
+      <IconLogoutButton next={logoutNext} />
     </AppHeader>
   );
 }

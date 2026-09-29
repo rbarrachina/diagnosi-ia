@@ -352,6 +352,12 @@ l'aplicació i la pàgina desenfocada. El diàleg informa que només s'hi admet 
 compte institucional `@xtec.cat` assignat al centre; no substitueix la
 validació de servidor ni modifica el flux d'autenticació.
 
+Amb una sessió de responsable autoritzada, la portada substitueix els accessos
+de centre pel vincle `El meu espai` cap a `/crear` i mostra una icona de sortida
+sempre visible a la capçalera. Si la sessió de responsable és denegada, la
+portada conserva l'accés inicial i mostra una sortida visible per canviar de
+compte. El professorat continua tenint un flux d'accés separat.
+
 ### Creacio d'espai
 
 Ruta: `/crear`
@@ -438,8 +444,11 @@ Si l'usuari ja té un espai creat, no pot crear-ne un segon. La mateixa pantalla
 
 Després de confirmar la fitxa i configurar els correus, `/crear` conserva la
 capçalera visual de la portada. El botó d'accés se substitueix pel nom visible
-del compte i obre un menú amb la identificació de la sessió i `Surt`. En
-pantalles d'escriptori, la navegació de `Qüestionari`, `Fitxa` i `Configuració`
+del compte i obre un menú amb la identificació de la sessió. Una icona `Surt`
+amb etiqueta accessible és visible al costat del compte en tot moment, també
+en mòbil, a les pantalles de gestió i administració. Quan l'accés del responsable
+és denegat o el centre està suspès, la sortida també és visible a la capçalera.
+En pantalles d'escriptori, la navegació de `Qüestionari`, `Fitxa` i `Configuració`
 es presenta en una barra lateral que es pot plegar fins a un rail d'icones. En
 tauleta el rail és la presentació predeterminada i en mòbil se substitueix per
 una navegació inferior fixa amb respecte per la zona segura del dispositiu. La

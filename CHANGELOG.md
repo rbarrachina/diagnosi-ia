@@ -6,6 +6,12 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Mostra una icona de sortida sempre visible a la gestió del centre i a
+  l'administració; el menú del compte conserva només la identitat. La portada
+  amb sessió de responsable ofereix `El meu espai` i sortida directa, també en
+  mòbil, i les pantalles d'accés denegat mantenen la sortida a la capçalera.
+  En mode local, sortir desactiva la sessió de prova fins a la següent entrada.
+
 - Actualitza `mysql2`, `postcss` i les dependències indirectes `nanoid` i
   `baseline-browser-mapping` a versions corregides després de l'auditoria de
   seguretat de les dependències de producció.

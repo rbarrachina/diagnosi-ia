@@ -57,6 +57,7 @@ export const ca = {
   },
   home: {
     centreAccess: "Accés XTEC",
+    mySpace: "El meu espai",
     centreAccessSoon: "Accés de centres properament",
     teacherAccessSoon: "Accés docent properament",
     eyebrow: "Eina per a centres educatius",

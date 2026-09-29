@@ -9,8 +9,8 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/components/auth/auth-actions", () => ({
-  LogoutButton: ({ label = "Tanca sessió" }: { label?: string }) => (
-    <button type="button">{label}</button>
+  IconLogoutButton: () => (
+    <button aria-label="Surt" type="button" />
   ),
 }));
 
@@ -39,17 +39,18 @@ describe("centre management header", () => {
       <CentreManagementHeader accountName="Centre de prova" email={centre.email} />,
     );
     expect(screen.getByRole("button", { name: "Menú del compte de Centre de prova" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Surt" })).toBeVisible();
     expect(screen.queryByText("Accés XTEC")).not.toBeInTheDocument();
   });
 
-  it("opens the account menu and keeps the logout action", () => {
+  it("opens the account menu for identity without duplicating logout", () => {
     render(
       <CentreManagementHeader accountName="Centre de prova" email={centre.email} />,
     );
     fireEvent.click(screen.getByRole("button", { name: "Menú del compte de Centre de prova" }));
     expect(screen.getByRole("region", { name: "Opcions del compte" })).toBeInTheDocument();
     expect(screen.getByText(centre.email)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Surt" })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Surt" })).toHaveLength(1);
     expect(screen.queryByRole("menuitem", { name: "Fitxa" })).not.toBeInTheDocument();
   });
 });

@@ -8,6 +8,8 @@
 - MySQL 8.4.
 - Drizzle ORM amb `mysql2`.
 - Google OAuth amb sessió server-side pròpia.
+- En mode local, `Surt` posa una cookie funcional `HttpOnly` sense identitat que
+  desactiva l'usuari local fins al següent `/auth/login`; no afecta Google OAuth.
 - Recharts per a les gràfiques web.
 - `@react-pdf/renderer` per als informes PDF.
 
@@ -364,8 +366,11 @@ de verificació manual i els límits de l’auditoria es documenten a
   des del layout.
 - `/crear` és la pantalla autenticada de creació i gestió de l'espai. Reutilitza
   la capçalera fixa de la portada i substitueix l'accés pel menú del compte,
-  amb el tancament de sessió. Un contenidor client manté muntades les vistes
-  centrals de qüestionari, fitxa i configuració de correus per preservar-ne
+  amb la identitat de la sessió; una icona de sortida independent queda visible
+  a la capçalera. La portada amb sessió autoritzada mostra `El meu espai` i la
+  mateixa sortida. Les pantalles de responsable amb accés denegat mantenen una
+  sortida visible per poder canviar de compte. Un contenidor client manté
+  muntades les vistes centrals de qüestionari, fitxa i configuració de correus per preservar-ne
   l'estat local mentre s'alterna entre totes tres. El mateix estat governa una
   sidebar plegable a escriptori, un rail a tauleta i la navegació inferior en
   mòbil. La previsualització del qüestionari i els resultats del propietari són

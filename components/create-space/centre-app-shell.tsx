@@ -1,6 +1,9 @@
 import type { ReactNode } from "react";
 
 import { CentreManagementHeader } from "@/components/create-space/centre-management-header";
+import { IconLogoutButton } from "@/components/auth/auth-actions";
+import { ThemeToggle } from "@/components/home/theme-toggle";
+import { AppHeader } from "@/components/layout/app-header";
 
 type CentreAppShellProps = {
   account?: {
@@ -9,12 +12,14 @@ type CentreAppShellProps = {
   };
   children: ReactNode;
   logoutNext?: string;
+  showLogout?: boolean;
 };
 
 export function CentreAppShell({
   account,
   children,
   logoutNext,
+  showLogout = false,
 }: CentreAppShellProps) {
   return (
     <main className="app-shell min-h-screen overflow-hidden text-ink">
@@ -24,6 +29,11 @@ export function CentreAppShell({
           email={account.email}
           logoutNext={logoutNext}
         />
+      ) : showLogout ? (
+        <AppHeader brandHref="/">
+          <ThemeToggle />
+          <IconLogoutButton next={logoutNext} />
+        </AppHeader>
       ) : null}
 
       <div

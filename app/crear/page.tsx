@@ -66,6 +66,7 @@ export default async function CreatePage({ searchParams }: CreatePageProps) {
 
   return (
     <CentreAppShell
+      showLogout={session.status === "forbidden"}
       account={
         session.status === "authenticated"
           ? { email: session.user.email, name: accountName }

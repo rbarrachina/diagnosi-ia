@@ -1,6 +1,7 @@
 import "server-only";
 
-import { getLocalAuthUser, type AppAuthenticatedUser } from "@/lib/auth/local";
+import { cookies } from "next/headers";
+import { getLocalAuthUser, LOCAL_SIGNED_OUT_COOKIE_NAME, type AppAuthenticatedUser } from "@/lib/auth/local";
 import {
   getParticipantSessionCookieUser,
   getResponsibleSessionCookieUser,
@@ -68,9 +69,17 @@ export async function getRequiredXtecUser(): Promise<AppAuthenticatedUser> {
 }
 
 export async function getCurrentResponsibleUser(): Promise<AppAuthenticatedUser | null> {
-  return getLocalAuthUser() ?? (await getResponsibleSessionCookieUser());
+  const localUser = getLocalAuthUser();
+  if (localUser) {
+    return (await cookies()).get(LOCAL_SIGNED_OUT_COOKIE_NAME) ? null : localUser;
+  }
+  return getResponsibleSessionCookieUser();
 }
 
 export async function getCurrentParticipantUser(): Promise<AppAuthenticatedUser | null> {
-  return getLocalAuthUser() ?? (await getParticipantSessionCookieUser());
+  const localUser = getLocalAuthUser();
+  if (localUser) {
+    return (await cookies()).get(LOCAL_SIGNED_OUT_COOKIE_NAME) ? null : localUser;
+  }
+  return getParticipantSessionCookieUser();
 }

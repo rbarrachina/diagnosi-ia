@@ -133,6 +133,7 @@ export const eu: Messages = {
   },
   "home": {
     "centreAccess": "XTEC sarbidea",
+    "mySpace": "Nire gunea",
     "centreAccessSoon": "Zentrorako sarbidea laster izango da",
     "teacherAccessSoon": "Irakaskuntzarako sarbidea laster",
     "eyebrow": "Hezkuntza-zentroetarako tresna",

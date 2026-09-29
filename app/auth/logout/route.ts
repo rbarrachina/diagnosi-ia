@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isLocalAuthEnabled } from "@/lib/auth/local";
+import { isLocalAuthEnabled, LOCAL_SIGNED_OUT_COOKIE_NAME } from "@/lib/auth/local";
 import {
   LEGACY_SESSION_COOKIE_NAME,
   PARTICIPANT_SESSION_COOKIE_NAME,
@@ -17,7 +17,14 @@ export async function POST(request: Request) {
   const redirectUrl = new URL(next, appUrl);
 
   if (isLocalAuthEnabled()) {
-    return NextResponse.redirect(redirectUrl, 303);
+    const response = NextResponse.redirect(redirectUrl, 303);
+    response.cookies.set(LOCAL_SIGNED_OUT_COOKIE_NAME, "1", {
+      httpOnly: true,
+      path: "/",
+      sameSite: "lax",
+      secure: request.url.startsWith("https://"),
+    });
+    return response;
   }
 
   const response = NextResponse.redirect(redirectUrl, 303);

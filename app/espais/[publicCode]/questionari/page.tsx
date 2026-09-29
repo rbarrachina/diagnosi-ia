@@ -44,11 +44,11 @@ export default async function OwnerQuestionnairePreviewPage({
 
   if (session.status === "forbidden") {
     return (
-      <main className="min-h-screen bg-paper">
-        <section className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-6">
+      <CentreAppShell showLogout>
+        <section className="relative mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-6 pt-20">
           <ResponsibleForbiddenNotice reason={session.reason} />
         </section>
-      </main>
+      </CentreAppShell>
     );
   }
 

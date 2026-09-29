@@ -1,34 +1,47 @@
 import { CentreLoginDialog } from "@/components/home/centre-login-dialog";
+import { IconLogoutButton } from "@/components/auth/auth-actions";
 import { QuestionPreview } from "@/components/home/question-preview";
 import { SiteFooter } from "@/components/home/site-footer";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { AppHeader } from "@/components/layout/app-header";
 import { ParticipantCodeAccessForm } from "@/components/participants/code-access-form";
 import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
+import { getResponsibleSessionState } from "@/lib/auth/session";
 import { getCurrentLanguage } from "@/lib/i18n/locale";
 import { getMessages } from "@/lib/i18n/messages";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [portalStatus, language] = await Promise.all([
+  const [portalStatus, language, session] = await Promise.all([
     getResponsiblePortalStatus(),
     getCurrentLanguage(),
+    getResponsibleSessionState(),
   ]);
   const responsiblePortalOpen = portalStatus === "open";
+  const centreSignedIn = session.status === "authenticated";
   const copy = getMessages(language).home;
 
   return (
     <main className="app-shell min-h-screen overflow-hidden bg-paper text-ink">
       <AppHeader brandHref="#inici">
         <ThemeToggle />
-        <CentreLoginDialog
+        {centreSignedIn ? (
+          <Link
+            className="ml-1 inline-flex h-10 items-center rounded-full bg-action px-3 text-xs font-semibold text-action-contrast transition hover:bg-action-hover sm:px-4 sm:text-sm"
+            href="/crear"
+          >
+            {copy.mySpace}
+          </Link>
+        ) : <CentreLoginDialog
           ariaLabel={responsiblePortalOpen ? copy.centreAccess : copy.centreAccessSoon}
           className="ml-1 inline-flex h-10 w-10 items-center justify-center rounded-full bg-action text-action-contrast shadow-[0_8px_24px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
           disabled={!responsiblePortalOpen}
         >
           <AccessIcon />
-        </CentreLoginDialog>
+        </CentreLoginDialog>}
+        {session.status !== "unauthenticated" ? <IconLogoutButton /> : null}
       </AppHeader>
 
       <section
@@ -59,7 +72,15 @@ export default async function Home() {
           </p>
 
           <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <CentreLoginDialog
+            {centreSignedIn ? (
+              <Link
+                className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover sm:w-auto sm:min-w-72 sm:text-lg"
+                href="/crear"
+              >
+                {copy.mySpace}
+                <ArrowIcon />
+              </Link>
+            ) : <CentreLoginDialog
               ariaLabel={responsiblePortalOpen ? undefined : copy.centreAccessSoon}
               className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:w-auto sm:min-w-72 sm:text-lg"
               disabled={!responsiblePortalOpen}
@@ -68,7 +89,7 @@ export default async function Home() {
                 ? copy.centreButton
                 : copy.centreAccessSoon}
               {responsiblePortalOpen ? <ArrowIcon /> : null}
-            </CentreLoginDialog>
+            </CentreLoginDialog>}
             <a className="inline-flex min-h-14 w-full items-center justify-center rounded-2xl border border-line bg-surface px-7 text-base font-semibold text-ink sm:w-auto" href="#acces-docent">
               {copy.teacherButton}
             </a>

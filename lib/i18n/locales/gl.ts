@@ -133,6 +133,7 @@ export const gl: Messages = {
   },
   "home": {
     "centreAccess": "Acceso XTEC",
+    "mySpace": "O meu espazo",
     "centreAccessSoon": "Acceso ao centro en breve",
     "teacherAccessSoon": "Próximamente o acceso á docencia",
     "eyebrow": "Ferramenta para centros educativos",

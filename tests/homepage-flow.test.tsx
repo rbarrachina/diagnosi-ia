@@ -7,6 +7,11 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/lib/i18n/locale", () => ({ getCurrentLanguage: vi.fn(async () => "CA") }));
 
 let responsiblePortalStatus: "closed" | "open" = "open";
+let responsibleSessionStatus: "authenticated" | "forbidden" | "unauthenticated" = "unauthenticated";
+
+vi.mock("@/lib/auth/session", () => ({
+  getResponsibleSessionState: vi.fn(async () => ({ status: responsibleSessionStatus })),
+}));
 
 vi.mock("@/lib/auth/responsible-access", () => ({
   getResponsibleAccessMode: vi.fn(async () => "centre_xtec"),
@@ -17,6 +22,7 @@ const { default: Home } = await import("@/app/page");
 
 beforeEach(() => {
   responsiblePortalStatus = "open";
+  responsibleSessionStatus = "unauthenticated";
   const values = new Map<string, string>();
 
   Object.defineProperty(window, "localStorage", {
@@ -163,6 +169,24 @@ describe("initial page", () => {
       within(dialog).getByRole("button", { name: "Tanca l’accés del centre" }),
     );
     expect(dialog).not.toHaveAttribute("open");
+  });
+
+  it("shows the centre workspace and a visible exit with an active session", async () => {
+    responsibleSessionStatus = "authenticated";
+    render(await Home());
+
+    expect(screen.getAllByRole("link", { name: "El meu espai" })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "El meu espai" }).every((link) => link.getAttribute("href") === "/crear")).toBe(true);
+    expect(screen.getByRole("button", { name: "Surt" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Accés XTEC" })).not.toBeInTheDocument();
+  });
+
+  it("keeps exit visible when the responsible session is denied", async () => {
+    responsibleSessionStatus = "forbidden";
+    render(await Home());
+
+    expect(screen.getByRole("button", { name: "Surt" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Accés XTEC" })).toBeVisible();
   });
 
   it("shows prelaunch mode without exposing a centre login link", async () => {

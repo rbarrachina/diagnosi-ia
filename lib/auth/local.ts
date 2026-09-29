@@ -2,6 +2,8 @@ import "server-only";
 
 import { isXtecEmail } from "@/lib/auth/xtec";
 
+export const LOCAL_SIGNED_OUT_COOKIE_NAME = "diagnosi_ia_local_signed_out";
+
 export type AppAuthenticatedUser = {
   id: string;
   email: string;
