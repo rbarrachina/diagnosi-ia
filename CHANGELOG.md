@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Destaca l'enllaç `Les meves diagnosis` del resultat docent en una caixa
+  arrodonida amb els colors d'acció de l'aplicació.
+
 - Unifica la sortida docent amb la icona de centre a l'àrea, el resultat propi
   i el qüestionari autenticat, sense mostrar identitat docent.
 

@@ -27,7 +27,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
     <main className="app-shell min-h-screen bg-paper text-ink">
       <AppHeader brandHref="/docent"><ThemeToggle /><IconLogoutButton next="/" /></AppHeader>
       <section className="mx-auto max-w-5xl px-5 pb-20 pt-32 sm:px-8">
-        <Link className="text-sm font-semibold text-action" href="/docent">
+        <Link className="inline-flex min-h-10 items-center justify-center rounded-full border border-action bg-accent-soft px-5 py-2 text-sm font-semibold text-action shadow-sm transition hover:bg-action hover:text-action-contrast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper" href="/docent">
           <InterfaceText messageKey="lesMevesDiagnosis2" />
         </Link>
         <p className="mt-7 text-sm font-semibold uppercase tracking-[0.16em] text-action">{result.centreName}</p>

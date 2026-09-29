@@ -601,6 +601,8 @@ L'àrea docent exigeix sessió Google i mostra només centre, qüestionari, data
 puntuació de les participacions vinculades a l'identificador opac de la sessió.
 L'àrea i el resultat propi mostren la mateixa icona `Surt` de la capçalera del
 centre quan la sessió docent és activa.
+El resultat propi ofereix un enllaç de retorn a l'àrea docent dins d'una caixa
+arrodonida amb els colors d'acció de l'aplicació.
 Permet veure respostes i puntuacions pròpies o generar el PDF individual, també
 quan l'espai està tancat. No mostra la identitat docent, identificadors interns,
 resultats del centre, comparacions o dades d'altres participants.
