@@ -53,6 +53,16 @@ distribuir-ne binaris. L'abast, les fonts originals i els pendents es documenten
 
 ### Defensa HTTP
 
+Els endpoints de resultats JSON i PDF de centre, compartits, docents i
+administració envien `Cache-Control: private, no-store, max-age=0`. També
+s'aplica a les respostes de creació i reinici d'espais i regeneració del token,
+que poden incloure enllaços privats, i als errors retornats per aquests
+handlers. La política s'estableix a la resposta del handler, sense dependre
+d'Apache ni de la configuració de memòria cau de pàgines de Next.js.
+No retira fitxers PDF descarregats expressament ni purga còpies anteriors,
+historial o estat React de pestanyes obertes. La sessió, el rol i la propietat
+es continuen validant a cada petició segons les regles existents.
+
 El proxy rebutja amb 403 les peticions de mutació (POST, PUT, PATCH i DELETE)
 que no acrediten el mateix origen exacte, incloent esquema, host i port.
 Compara `Origin` amb l'origen públic resolt mitjançant `NEXT_PUBLIC_APP_URL`;

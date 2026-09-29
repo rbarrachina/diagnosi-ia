@@ -77,6 +77,7 @@ describe("PDF authorization using real signed session cookies and fictitious acc
     const response = await ownerPdf(ownerRequest());
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("application/pdf");
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store, max-age=0");
     expect(mocks.ownerResults).toHaveBeenCalledWith({ publicCode: code, ownerUserId: userA.id });
     expect(mocks.ownerPdf).toHaveBeenCalledOnce();
   });
@@ -85,6 +86,7 @@ describe("PDF authorization using real signed session cookies and fictitious acc
     mocks.cookies.set(RESPONSIBLE_SESSION_COOKIE_NAME, createResponsibleSessionCookieValue(userB));
     const response = await ownerPdf(ownerRequest());
     expect(response.status).toBe(403);
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store, max-age=0");
     expect(mocks.ownerResults).toHaveBeenCalledWith({ publicCode: code, ownerUserId: userB.id });
     expect(mocks.ownerPdf).not.toHaveBeenCalled();
     expect(await response.text()).not.toContain("test-only-owner-pdf");
@@ -102,7 +104,9 @@ describe("PDF authorization using real signed session cookies and fictitious acc
   it("allows A's individual PDF using only the participant session identity", async () => {
     mocks.cookies.set(PARTICIPANT_SESSION_COOKIE_NAME, createParticipantSessionCookieValue(userA));
     mocks.cookies.set(RESPONSIBLE_SESSION_COOKIE_NAME, createResponsibleSessionCookieValue(userB));
-    expect((await participantPdf(participantRequest())).status).toBe(200);
+    const response = await participantPdf(participantRequest());
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store, max-age=0");
     expect(mocks.participantResult).toHaveBeenCalledWith({ publicCode: code, participantUserId: userA.id });
     expect(mocks.participantPdf).toHaveBeenCalledOnce();
   });
@@ -110,7 +114,9 @@ describe("PDF authorization using real signed session cookies and fictitious acc
   it("does not substitute a responsible identity for the participant requesting a PDF", async () => {
     mocks.cookies.set(PARTICIPANT_SESSION_COOKIE_NAME, createParticipantSessionCookieValue(userB));
     mocks.cookies.set(RESPONSIBLE_SESSION_COOKIE_NAME, createResponsibleSessionCookieValue(userA));
-    expect((await participantPdf(participantRequest())).status).toBe(404);
+    const response = await participantPdf(participantRequest());
+    expect(response.status).toBe(404);
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store, max-age=0");
     expect(mocks.participantResult).toHaveBeenCalledWith({ publicCode: code, participantUserId: userB.id });
     expect(mocks.participantPdf).not.toHaveBeenCalled();
   });

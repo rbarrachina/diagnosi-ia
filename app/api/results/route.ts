@@ -1,3 +1,4 @@
+import { privateJson } from "@/lib/http/private-response";
 import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import { readJsonRequestBody } from "@/lib/http/request";
 import { getAggregatedResults, ResultsAccessError } from "@/lib/results/get-results";
@@ -15,16 +16,16 @@ export async function POST(request: Request): Promise<Response> {
     );
     const results = await getAggregatedResults(payload);
 
-    return Response.json(results);
+    return privateJson(results);
   } catch (error) {
     if (error instanceof ResultsAccessError) {
-      return Response.json(
+      return privateJson(
         { error: t("noSHanPogutValidarLesCredencialsDeResultats") },
         { status: 403 },
       );
     }
 
-    return Response.json(
+    return privateJson(
       { error: t("noSHanPogutCarregarElsResultats") },
       { status: 400 },
     );

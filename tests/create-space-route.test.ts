@@ -34,14 +34,18 @@ beforeEach(() => {
 
 describe("create space API", () => {
   it("creates a space linked to the authorized XTEC responsible's profile", async () => {
-    expect((await POST(request())).status).toBe(201);
+    const response = await POST(request());
+    expect(response.status).toBe(201);
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store, max-age=0");
     expect(mocks.register).toHaveBeenCalledWith(user);
     expect(mocks.create).toHaveBeenCalledWith(expect.any(String), user.id, centre.id);
   });
 
   it("does not create an orphan when profile registration is denied", async () => {
     mocks.register.mockResolvedValue(null);
-    expect((await POST(request())).status).toBe(403);
+    const response = await POST(request());
+    expect(response.status).toBe(403);
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store, max-age=0");
     expect(mocks.create).not.toHaveBeenCalled();
   });
 

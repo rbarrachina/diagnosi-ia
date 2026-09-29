@@ -1,3 +1,4 @@
+import { privateJson } from "@/lib/http/private-response";
 import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import { getResponsibleSessionState } from "@/lib/auth/session";
 import type { ResponsibleAccessReason } from "@/lib/auth/responsible-access";
@@ -22,17 +23,17 @@ export async function POST(
     const { publicCode } = await params;
 
     if (!isPublicCode(publicCode)) {
-      return Response.json({ error: t("codiPublicInvalid") }, { status: 400 });
+      return privateJson({ error: t("codiPublicInvalid") }, { status: 400 });
     }
 
     const session = await getResponsibleSessionState();
 
     if (session.status === "unauthenticated") {
-      return Response.json({ error: t("calIniciarSessio") }, { status: 401 });
+      return privateJson({ error: t("calIniciarSessio") }, { status: 401 });
     }
 
     if (session.status === "forbidden") {
-      return Response.json(
+      return privateJson(
         { error: getResponsibleAccessErrorMessage(session.reason) },
         { status: 403 },
       );
@@ -44,9 +45,9 @@ export async function POST(
       appUrl: resolveAppUrl(request.url, process.env.NEXT_PUBLIC_APP_URL),
     });
 
-    return Response.json(result);
+    return privateJson(result);
   } catch {
-    return Response.json(
+    return privateJson(
       { error: t("noSHaPogutReiniciarElQuestionari") },
       { status: 400 },
     );
