@@ -6,6 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Activa la Content Security Policy amb un nonce nou per petició per autoritzar
+  els scripts de Next.js i bloquejar scripts inline sense autorització. Manté
+  els estils calculats dels gràfics i del qüestionari, sense telemetria nova.
+
 - Bloqueja les redireccions externes amb barres inverses o caràcters de control
   a login, callback i logout. El callback revalida també les destinacions de
   l'estat OAuth signat i el logout continua amb GET mitjançant una resposta
