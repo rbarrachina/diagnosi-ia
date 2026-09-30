@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Evita que l'última lletra del títol amb degradat de la portada sembli
+  retallada per l'espaiat ajustat entre lletres.
+
 - L'enllaç de la portada per consultar participacions obre un diàleg d'accés
   docent amb el mateix estil que el del centre. Una sessió docent vigent entra
   directament a les participacions.
