@@ -6,7 +6,7 @@ import {
   getGoogleRedirectUri,
   isGoogleAuthEnabled,
 } from "@/lib/auth/google";
-import { isLocalAuthEnabled } from "@/lib/auth/local";
+import { isLocalAuthEnabled, LOCAL_SIGNED_OUT_COOKIE_NAME } from "@/lib/auth/local";
 import {
   OAUTH_STATE_COOKIE_NAME,
   OAUTH_STATE_MAX_AGE_SECONDS,
@@ -40,7 +40,9 @@ export async function GET(request: NextRequest) {
   }
 
   if (isLocalAuthEnabled()) {
-    return NextResponse.redirect(new URL(next, appUrl));
+    const response = NextResponse.redirect(new URL(next, appUrl));
+    response.cookies.delete(LOCAL_SIGNED_OUT_COOKIE_NAME);
+    return response;
   }
 
   if (!isGoogleAuthEnabled() || !getGoogleOAuthConfig() || !getAuthSessionSecret()) {

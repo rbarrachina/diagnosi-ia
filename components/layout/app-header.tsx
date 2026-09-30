@@ -12,6 +12,7 @@ type AppHeaderProps = {
   brandHref: string;
   children: ReactNode;
   controlsRef?: React.RefObject<HTMLDivElement | null>;
+  leadingControls?: ReactNode;
   showBrandLabelOnMobile?: boolean;
 };
 
@@ -20,6 +21,7 @@ export function AppHeader({
   brandHref,
   children,
   controlsRef,
+  leadingControls,
   showBrandLabelOnMobile = false,
 }: AppHeaderProps) {
   const messages = useTranslations();
@@ -41,6 +43,7 @@ export function AppHeader({
             showLabelOnMobile={showBrandLabelOnMobile}
           />
           <div className="flex items-center gap-2" ref={controlsRef}>
+            {leadingControls}
             <LanguageSelector />
             {children}
           </div>

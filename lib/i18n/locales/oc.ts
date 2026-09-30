@@ -11,6 +11,7 @@ export const oc: Messages = {
     "questionnaireCodeFormatError": "Verificatz eth format: a d’èster C-XXXX-XXXX, damb quate caractèrs en cada grop.",
     "access": "Accedís",
     "centreDialogClose": "Barre l’accès deth centre",
+    "participantDialogClose": "Barre er accès docent",
     "centreArea": "Espaci deth centre",
     "centreLoginHelp": "Auetz d’accedir damb eth compde institucionau deth centre, damb domeni @xtec.cat.",
     "centreLogin": "Accedís damb XTEC",
@@ -133,6 +134,7 @@ export const oc: Messages = {
   },
   "home": {
     "centreAccess": "Accès XTEC",
+    "mySpace": "Eth mèn espaci",
     "centreAccessSoon": "Accès des centres lèu",
     "teacherAccessSoon": "Accès docent lèu",
     "eyebrow": "Estrument entà centres educatius",

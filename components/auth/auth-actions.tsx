@@ -49,6 +49,26 @@ export function LogoutButton({
   );
 }
 
+export function IconLogoutButton({ next = "/" }: { next?: string }) {
+  const messages = useTranslations();
+  const label = messages.centre.logout;
+
+  return (
+    <form action={`/auth/logout?next=${encodeURIComponent(next)}`} method="post">
+      <button
+        aria-label={label}
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line bg-surface-soft text-ink shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-action hover:text-action focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper"
+        title={label}
+        type="submit"
+      >
+        <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24">
+          <path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M14 16l4-4-4-4M8 12h10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+        </svg>
+      </button>
+    </form>
+  );
+}
+
 type XtecAccessNoticeProps = {
   responsibleAccessMode?: ResponsibleAccessMode;
   next?: string;

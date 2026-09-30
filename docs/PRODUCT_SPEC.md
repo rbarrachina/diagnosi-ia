@@ -351,6 +351,16 @@ qualsevol accés de responsable de la portada obre un diàleg amb el logotip de
 l'aplicació i la pàgina desenfocada. El diàleg informa que només s'hi admet el
 compte institucional `@xtec.cat` assignat al centre; no substitueix la
 validació de servidor ni modifica el flux d'autenticació.
+L'enllaç de la portada per consultar participacions obre un diàleg equivalent
+quan no hi ha sessió docent. Indica que cal fer servir el mateix compte Google
+amb què es va participar i continua cap a l'OAuth docent. Amb una sessió docent
+vigent, l'enllaç obre directament `/docent`.
+
+Amb una sessió de responsable autoritzada, la portada substitueix els accessos
+de centre pel vincle `El meu espai` cap a `/crear` i mostra una icona de sortida
+sempre visible a la capçalera. Si la sessió de responsable és denegada, la
+portada conserva l'accés inicial i mostra una sortida visible per canviar de
+compte. El professorat continua tenint un flux d'accés separat.
 
 ### Creacio d'espai
 
@@ -438,8 +448,12 @@ Si l'usuari ja té un espai creat, no pot crear-ne un segon. La mateixa pantalla
 
 Després de confirmar la fitxa i configurar els correus, `/crear` conserva la
 capçalera visual de la portada. El botó d'accés se substitueix pel nom visible
-del compte i obre un menú amb la identificació de la sessió i `Surt`. En
-pantalles d'escriptori, la navegació de `Qüestionari`, `Fitxa` i `Configuració`
+del compte com a text no interactiu, a l'esquerra del selector d'idioma, del
+selector de tema i de la icona `Surt`. La icona té etiqueta accessible i és
+visible en tot moment, també en mòbil, a les pantalles de gestió i administració.
+Quan l'accés del responsable
+és denegat o el centre està suspès, la sortida també és visible a la capçalera.
+En pantalles d'escriptori, la navegació de `Qüestionari`, `Fitxa` i `Configuració`
 es presenta en una barra lateral que es pot plegar fins a un rail d'icones. En
 tauleta el rail és la presentació predeterminada i en mòbil se substitueix per
 una navegació inferior fixa amb respecte per la zona segura del dispositiu. La
@@ -492,8 +506,10 @@ No s'eliminen ni es modifiquen les preguntes del qüestionari versionat.
 Ruta: `/q/[publicCode]`
 
 La ruta pública presenta una capçalera mínima amb la marca `Diagnosi IA` i el
-selector clar o fosc. No mostra navegació lateral ni peu de pàgina, perquè el
-docent només ha de seguir el flux del qüestionari. La paleta, les superfícies,
+selector clar o fosc. Amb sessió docent, mostra també la mateixa icona `Surt`
+que l'espai del centre, sense mostrar la identitat del participant. No mostra
+navegació lateral ni peu de pàgina, perquè el docent només ha de seguir el flux
+del qüestionari. La paleta, les superfícies,
 els botons i les opcions de resposta comparteixen el sistema visual de la resta
 de l'aplicació.
 
@@ -587,6 +603,10 @@ Rutes: `/docent` i `/docent/resultats/[publicCode]`
 
 L'àrea docent exigeix sessió Google i mostra només centre, qüestionari, data i
 puntuació de les participacions vinculades a l'identificador opac de la sessió.
+L'àrea i el resultat propi mostren la mateixa icona `Surt` de la capçalera del
+centre quan la sessió docent és activa.
+El resultat propi ofereix un enllaç de retorn a l'àrea docent dins d'una caixa
+arrodonida amb els colors d'acció de l'aplicació.
 Permet veure respostes i puntuacions pròpies o generar el PDF individual, també
 quan l'espai està tancat. No mostra la identitat docent, identificadors interns,
 resultats del centre, comparacions o dades d'altres participants.

@@ -8,6 +8,7 @@ html:has(.home-hero) {
 }
 
 .home-title-gradient {
+  padding-inline-end: 0.06em;
   background: linear-gradient(105deg, #246fc3 4%, #5fa9f4 58%, #317dce 96%);
   background-clip: text;
   -webkit-background-clip: text;

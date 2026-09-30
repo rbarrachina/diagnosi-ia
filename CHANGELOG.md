@@ -6,6 +6,32 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Evita que l'última lletra del títol amb degradat de la portada sembli
+  retallada per l'espaiat ajustat entre lletres.
+
+- L'enllaç de la portada per consultar participacions obre un diàleg d'accés
+  docent amb el mateix estil que el del centre. Una sessió docent vigent entra
+  directament a les participacions.
+
+- Destaca l'enllaç `Les meves diagnosis` del resultat docent en una caixa
+  arrodonida amb els colors d'acció de l'aplicació.
+
+- Unifica la sortida docent amb la icona de centre a l'àrea, el resultat propi
+  i el qüestionari autenticat, sense mostrar identitat docent.
+
+- Situa el nom del responsable com a text no interactiu a l'esquerra de les
+  icones de la capçalera i elimina el menú del compte.
+
+- Corregeix el rebuig del formulari de sortida en navegadors que no envien
+  `Origin` en un POST propi: el `Referer` només s'envia dins del mateix origen
+  perquè el proxy pugui validar-lo sense divulgar rutes a webs externes.
+
+- Mostra una icona de sortida sempre visible a la gestió del centre i a
+  l'administració. La portada
+  amb sessió de responsable ofereix `El meu espai` i sortida directa, també en
+  mòbil, i les pantalles d'accés denegat mantenen la sortida a la capçalera.
+  En mode local, sortir desactiva la sessió de prova fins a la següent entrada.
+
 - Actualitza `mysql2`, `postcss` i les dependències indirectes `nanoid` i
   `baseline-browser-mapping` a versions corregides després de l'auditoria de
   seguretat de les dependències de producció.

@@ -2,18 +2,31 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getLocalAuthUser, isLocalAuthEnabled } from "@/lib/auth/local";
-import { getXtecSessionState } from "@/lib/auth/session";
+const localCookies = vi.hoisted(() => new Map<string, string>());
+vi.mock("next/headers", () => ({
+  cookies: async () => ({ get: (name: string) => localCookies.has(name) ? { value: localCookies.get(name) } : undefined }),
+}));
+
+import { getLocalAuthUser, isLocalAuthEnabled, LOCAL_SIGNED_OUT_COOKIE_NAME } from "@/lib/auth/local";
+import { getCurrentParticipantUser, getXtecSessionState } from "@/lib/auth/session";
 import { isXtecCentreEmail } from "@/lib/auth/xtec";
 
 const originalEnv = { ...process.env };
 
 describe("local provisional auth", () => {
   beforeEach(() => {
+    localCookies.clear();
     process.env = { ...originalEnv };
     process.env.AUTH_MODE = "local";
     process.env.LOCAL_AUTH_USER_ID = "00000000-0000-4000-8000-000000000001";
     process.env.LOCAL_AUTH_EMAIL = "usuari.prova@xtec.cat";
+  });
+
+  it("hides the local user from both roles after logout", async () => {
+    localCookies.set(LOCAL_SIGNED_OUT_COOKIE_NAME, "1");
+
+    await expect(getXtecSessionState()).resolves.toEqual({ status: "unauthenticated" });
+    await expect(getCurrentParticipantUser()).resolves.toBeNull();
   });
 
   it("authenticates a local XTEC development user", async () => {

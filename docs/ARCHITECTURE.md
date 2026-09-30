@@ -8,6 +8,8 @@
 - MySQL 8.4.
 - Drizzle ORM amb `mysql2`.
 - Google OAuth amb sessió server-side pròpia.
+- En mode local, `Surt` posa una cookie funcional `HttpOnly` sense identitat que
+  desactiva l'usuari local fins al següent `/auth/login`; no afecta Google OAuth.
 - Recharts per a les gràfiques web.
 - `@react-pdf/renderer` per als informes PDF.
 
@@ -71,6 +73,9 @@ explícit estranger o `null` no pot usar aquest fallback. Sense tots dos
 encapçalaments es rebutja la petició. No es confia en `X-Forwarded-Host` aportat
 pel client ni s'autoritzen altres subdominis. En local es compara l'origen de
 la petició segons les regles existents de resolució de l'URL de l'aplicació.
+La política `Referrer-Policy: same-origin` permet que els formularis del mateix
+origen aportin el `Referer` quan el navegador omet `Origin`, sense enviar el
+camí ni els paràmetres de la pàgina a webs externes.
 La comprovació passa abans d'executar endpoints o Server Actions i complementa
 la sessió i les comprovacions d'origen de Next.js. GET, HEAD i OPTIONS no
 canvien; el callback GET de Google conserva la validació de l'estat OAuth.
@@ -358,14 +363,21 @@ de verificació manual i els límits de l’auditoria es documenten a
   client nadiu que explica el requisit de compte institucional de centre abans
   de continuar cap a la mateixa ruta de Google OAuth. El diàleg no valida ni
   desa dades: la validació efectiva es manté exclusivament al servidor.
+  L'accés a les participacions docents de la portada reutilitza el mateix
+  diàleg amb el missatge docent i continua cap a `/auth/login?next=%2Fdocent`;
+  una sessió docent vigent obre `/docent` directament.
 - `VisualPreferencesInitializer` executa un inicialitzador client mínim de tema després de
   la hidratació i fora de l'arbre React. Llegeix la mateixa preferència local
   del selector i aplica `data-theme` i `color-scheme` sense renderitzar scripts
   des del layout.
 - `/crear` és la pantalla autenticada de creació i gestió de l'espai. Reutilitza
-  la capçalera fixa de la portada i substitueix l'accés pel menú del compte,
-  amb el tancament de sessió. Un contenidor client manté muntades les vistes
-  centrals de qüestionari, fitxa i configuració de correus per preservar-ne
+  la capçalera fixa de la portada i substitueix l'accés pel nom del compte com
+  a text no interactiu, situat abans dels controls d'idioma, tema i sortida;
+  una icona de sortida independent queda visible a la capçalera. La portada
+  amb sessió autoritzada mostra `El meu espai` i la
+  mateixa sortida. Les pantalles de responsable amb accés denegat mantenen una
+  sortida visible per poder canviar de compte. Un contenidor client manté
+  muntades les vistes centrals de qüestionari, fitxa i configuració de correus per preservar-ne
   l'estat local mentre s'alterna entre totes tres. El mateix estat governa una
   sidebar plegable a escriptori, un rail a tauleta i la navegació inferior en
   mòbil. La previsualització del qüestionari i els resultats del propietari són
@@ -397,7 +409,9 @@ de verificació manual i els límits de l’auditoria es documenten a
   resta de l'aplicació sense traslladar cap validació o enviament al layout.
 - `/docent` mostra només les participacions del compte actual i permet iniciar
   un altre accés per codi. `/docent/resultats/[publicCode]` mostra les respostes
-  pròpies sense exposar identificadors interns.
+  pròpies sense exposar identificadors interns. Les dues rutes i el qüestionari
+  autenticat reutilitzen la icona de sortida de la capçalera del centre; no
+  mostren nom ni correu del docent.
 
 ## Decisions pendents
 

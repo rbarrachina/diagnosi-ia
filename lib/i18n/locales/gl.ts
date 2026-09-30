@@ -11,6 +11,7 @@ export const gl: Messages = {
     "questionnaireCodeFormatError": "Revisa o formato: debe ser C-XXXX-XXXX, con catro caracteres en cada grupo.",
     "access": "Acceso",
     "centreDialogClose": "Pechar o acceso do centro",
+    "participantDialogClose": "Pechar o acceso docente",
     "centreArea": "Espazo do centro",
     "centreLoginHelp": "Debes acceder coa conta institucional do centro, co dominio @xtec.cat.",
     "centreLogin": "Acceso con XTEC",
@@ -133,6 +134,7 @@ export const gl: Messages = {
   },
   "home": {
     "centreAccess": "Acceso XTEC",
+    "mySpace": "O meu espazo",
     "centreAccessSoon": "Acceso ao centro en breve",
     "teacherAccessSoon": "Próximamente o acceso á docencia",
     "eyebrow": "Ferramenta para centros educativos",

@@ -7,6 +7,13 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/lib/i18n/locale", () => ({ getCurrentLanguage: vi.fn(async () => "CA") }));
 
 let responsiblePortalStatus: "closed" | "open" = "open";
+let responsibleSessionStatus: "authenticated" | "forbidden" | "unauthenticated" = "unauthenticated";
+let participantSignedIn = false;
+
+vi.mock("@/lib/auth/session", () => ({
+  getResponsibleSessionState: vi.fn(async () => ({ status: responsibleSessionStatus })),
+  getCurrentParticipantUser: vi.fn(async () => participantSignedIn ? { id: "participant-test" } : null),
+}));
 
 vi.mock("@/lib/auth/responsible-access", () => ({
   getResponsibleAccessMode: vi.fn(async () => "centre_xtec"),
@@ -17,6 +24,8 @@ const { default: Home } = await import("@/app/page");
 
 beforeEach(() => {
   responsiblePortalStatus = "open";
+  responsibleSessionStatus = "unauthenticated";
+  participantSignedIn = false;
   const values = new Map<string, string>();
 
   Object.defineProperty(window, "localStorage", {
@@ -115,7 +124,7 @@ describe("initial page", () => {
       ),
     ).toBe(true);
     expect(
-      screen.getByRole("link", { name: "Consulta les meves participacions" }),
+      screen.getByRole("button", { name: "Consulta les meves participacions" }),
     ).toHaveClass("border-action", "rounded-2xl");
     expect(
       screen.getByRole("heading", { level: 2, name: "Ja hi has participat?" }),
@@ -165,6 +174,47 @@ describe("initial page", () => {
     expect(dialog).not.toHaveAttribute("open");
   });
 
+  it("opens a participant login dialog and keeps the participant OAuth route", async () => {
+    render(await Home());
+
+    fireEvent.click(screen.getByRole("button", { name: "Consulta les meves participacions" }));
+
+    const dialog = screen.getByRole("dialog", { name: "Àrea docent" });
+    expect(within(dialog).getByText(/mateix compte Google/)).toBeInTheDocument();
+    expect(within(dialog).getByRole("link", { name: "Accedeix amb Google" }))
+      .toHaveAttribute("href", "/auth/login?next=%2Fdocent");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Tanca l’accés docent" }));
+    expect(dialog).not.toHaveAttribute("open");
+  });
+
+  it("goes straight to participations when the participant session is active", async () => {
+    participantSignedIn = true;
+    render(await Home());
+
+    expect(screen.getByRole("link", { name: "Consulta les meves participacions" }))
+      .toHaveAttribute("href", "/docent");
+    expect(screen.queryByRole("button", { name: "Consulta les meves participacions" }))
+      .not.toBeInTheDocument();
+  });
+
+  it("shows the centre workspace and a visible exit with an active session", async () => {
+    responsibleSessionStatus = "authenticated";
+    render(await Home());
+
+    expect(screen.getAllByRole("link", { name: "El meu espai" })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "El meu espai" }).every((link) => link.getAttribute("href") === "/crear")).toBe(true);
+    expect(screen.getByRole("button", { name: "Surt" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Accés XTEC" })).not.toBeInTheDocument();
+  });
+
+  it("keeps exit visible when the responsible session is denied", async () => {
+    responsibleSessionStatus = "forbidden";
+    render(await Home());
+
+    expect(screen.getByRole("button", { name: "Surt" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Accés XTEC" })).toBeVisible();
+  });
+
   it("shows prelaunch mode without exposing a centre login link", async () => {
     responsiblePortalStatus = "closed";
     render(await Home());
@@ -179,7 +229,7 @@ describe("initial page", () => {
     expect(screen.getByLabelText("Codi del qüestionari")).toBeDisabled();
     expect(screen.getByText("Accés docent properament")).toBeVisible();
     expect(
-      screen.queryByRole("link", { name: "Consulta les meves participacions" }),
+      screen.queryByRole("button", { name: "Consulta les meves participacions" }),
     ).not.toBeInTheDocument();
   });
 

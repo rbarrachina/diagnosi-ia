@@ -11,6 +11,7 @@ export const eu: Messages = {
     "questionnaireCodeFormatError": "Egiaztatu formatua: C-XXXX-XXXX izan behar du, talde bakoitzean lau karaktererekin.",
     "access": "Sartu",
     "centreDialogClose": "Itxi ikastetxeko sarbidea",
+    "participantDialogClose": "Itxi irakasleen sarbidea",
     "centreArea": "Ikastetxearen gunea",
     "centreLoginHelp": "Zentroko erakunde-kontuarekin sartu behar duzu, @xtec.cat domeinuarekin.",
     "centreLogin": "Sarbidea XTEC-rekin",
@@ -133,6 +134,7 @@ export const eu: Messages = {
   },
   "home": {
     "centreAccess": "XTEC sarbidea",
+    "mySpace": "Nire gunea",
     "centreAccessSoon": "Zentrorako sarbidea laster izango da",
     "teacherAccessSoon": "Irakaskuntzarako sarbidea laster",
     "eyebrow": "Hezkuntza-zentroetarako tresna",

@@ -36,6 +36,7 @@ import { GET as login } from "@/app/auth/login/route";
 import { GET as callback } from "@/app/auth/callback/route";
 import { POST as logout } from "@/app/auth/logout/route";
 import { exchangeGoogleAuthorizationCode } from "@/lib/auth/google";
+import { LOCAL_SIGNED_OUT_COOKIE_NAME } from "@/lib/auth/local";
 import { OAUTH_STATE_COOKIE_NAME } from "@/lib/auth/oauth-state";
 import { createSignedCookieValue, parseSignedCookieValue } from "@/lib/auth/session-cookie";
 import type { OAuthStateCookiePayload } from "@/lib/auth/oauth-state";
@@ -68,6 +69,7 @@ describe("auth redirects", () => {
       "https://example.trycloudflare.com/crear",
     );
     expect(response.status).toBe(307);
+    expect(response.cookies.get(LOCAL_SIGNED_OUT_COOKIE_NAME)?.value).toBe("");
   });
 
   it("uses the public app URL for local logout redirects when configured", async () => {
@@ -81,6 +83,7 @@ describe("auth redirects", () => {
       "https://example.trycloudflare.com/crear",
     );
     expect(response.status).toBe(303);
+    expect(response.cookies.get(LOCAL_SIGNED_OUT_COOKIE_NAME)?.value).toBe("1");
   });
 
   it("uses the public app URL for public tunnel logout redirects", async () => {
