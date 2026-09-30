@@ -363,6 +363,9 @@ de verificació manual i els límits de l’auditoria es documenten a
   client nadiu que explica el requisit de compte institucional de centre abans
   de continuar cap a la mateixa ruta de Google OAuth. El diàleg no valida ni
   desa dades: la validació efectiva es manté exclusivament al servidor.
+  L'accés a les participacions docents de la portada reutilitza el mateix
+  diàleg amb el missatge docent i continua cap a `/auth/login?next=%2Fdocent`;
+  una sessió docent vigent obre `/docent` directament.
 - `VisualPreferencesInitializer` executa un inicialitzador client mínim de tema després de
   la hidratació i fora de l'arbre React. Llegeix la mateixa preferència local
   del selector i aplica `data-theme` i `color-scheme` sense renderitzar scripts

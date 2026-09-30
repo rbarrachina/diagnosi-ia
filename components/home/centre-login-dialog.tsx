@@ -4,24 +4,34 @@ import type { MouseEvent, ReactNode } from "react";
 import { useId, useRef } from "react";
 
 import { AppLogoMark } from "@/components/brand/app-logo";
+import { useInterfaceTranslator } from "@/components/i18n/interface-text";
 import { useTranslations } from "@/components/i18n/language-settings-provider";
 
-const LOGIN_URL = "/auth/login?next=%2Fcrear";
-
-type CentreLoginDialogProps = {
+type LoginDialogProps = {
   ariaLabel?: string;
   children: ReactNode;
   className: string;
   disabled?: boolean;
 };
 
-export function CentreLoginDialog({
+export function CentreLoginDialog(props: LoginDialogProps) {
+  return <LoginDialog {...props} kind="centre" />;
+}
+
+export function ParticipantLoginDialog(props: LoginDialogProps) {
+  return <LoginDialog {...props} kind="participant" />;
+}
+
+function LoginDialog({
   ariaLabel,
   children,
   className,
   disabled = false,
-}: CentreLoginDialogProps) {
+  kind,
+}: LoginDialogProps & { kind: "centre" | "participant" }) {
   const messages = useTranslations();
+  const t = useInterfaceTranslator();
+  const isParticipant = kind === "participant";
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -86,7 +96,7 @@ export function CentreLoginDialog({
       >
         <div className="relative px-6 pb-7 pt-14 sm:px-8 sm:pb-8">
           <button
-            aria-label={messages.common.centreDialogClose}
+            aria-label={isParticipant ? messages.common.participantDialogClose : messages.common.centreDialogClose}
             className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted transition hover:bg-accent-soft hover:text-ink focus:outline-none focus:ring-2 focus:ring-focus"
             onClick={closeDialog}
             type="button"
@@ -106,22 +116,24 @@ export function CentreLoginDialog({
               className="mt-5 text-balance text-3xl font-semibold tracking-[-0.035em]"
               id={titleId}
             >
-              {messages.common.centreArea}
+              {isParticipant ? t("areaDocent") : messages.common.centreArea}
             </h2>
             <p
               className="mx-auto mt-3 max-w-sm text-pretty text-sm leading-6 text-muted"
               id={descriptionId}
             >
-              {messages.common.centreLoginHelp}
+              {isParticipant
+                ? t("iniciaSessioAmbElMateixCompteGoogleQueVasUtilitzarPer")
+                : messages.common.centreLoginHelp}
             </p>
           </div>
 
           <a
             className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-xl bg-action px-6 font-semibold text-action-contrast shadow-[0_14px_34px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-surface"
-            href={LOGIN_URL}
+            href={isParticipant ? "/auth/login?next=%2Fdocent" : "/auth/login?next=%2Fcrear"}
           >
             <GoogleIcon />
-            {messages.common.centreLogin}
+            {isParticipant ? t("accedeixAmbGoogle") : messages.common.centreLogin}
           </a>
         </div>
       </dialog>

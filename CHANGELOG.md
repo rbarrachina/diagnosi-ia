@@ -6,6 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- L'enllaç de la portada per consultar participacions obre un diàleg d'accés
+  docent amb el mateix estil que el del centre. Una sessió docent vigent entra
+  directament a les participacions.
+
 - Destaca l'enllaç `Les meves diagnosis` del resultat docent en una caixa
   arrodonida amb els colors d'acció de l'aplicació.
 

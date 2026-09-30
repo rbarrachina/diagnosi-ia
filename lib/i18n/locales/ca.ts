@@ -8,6 +8,7 @@ export const ca = {
     questionnaireCodeFormatError: "Revisa el format. Ha de ser C-XXXX-XXXX, amb quatre caràcters a cada grup.",
     access: "Accedeix",
     centreDialogClose: "Tanca l’accés del centre",
+    participantDialogClose: "Tanca l’accés docent",
     centreArea: "Espai del centre",
     centreLoginHelp: "Heu d’accedir amb el compte institucional del centre, amb domini @xtec.cat.",
     centreLogin: "Accedeix amb XTEC",

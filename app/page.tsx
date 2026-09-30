@@ -1,4 +1,4 @@
-import { CentreLoginDialog } from "@/components/home/centre-login-dialog";
+import { CentreLoginDialog, ParticipantLoginDialog } from "@/components/home/centre-login-dialog";
 import { IconLogoutButton } from "@/components/auth/auth-actions";
 import { QuestionPreview } from "@/components/home/question-preview";
 import { SiteFooter } from "@/components/home/site-footer";
@@ -6,7 +6,7 @@ import { ThemeToggle } from "@/components/home/theme-toggle";
 import { AppHeader } from "@/components/layout/app-header";
 import { ParticipantCodeAccessForm } from "@/components/participants/code-access-form";
 import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
-import { getResponsibleSessionState } from "@/lib/auth/session";
+import { getCurrentParticipantUser, getResponsibleSessionState } from "@/lib/auth/session";
 import { getCurrentLanguage } from "@/lib/i18n/locale";
 import { getMessages } from "@/lib/i18n/messages";
 import Link from "next/link";
@@ -14,10 +14,11 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [portalStatus, language, session] = await Promise.all([
+  const [portalStatus, language, session, participant] = await Promise.all([
     getResponsiblePortalStatus(),
     getCurrentLanguage(),
     getResponsibleSessionState(),
+    getCurrentParticipantUser(),
   ]);
   const responsiblePortalOpen = portalStatus === "open";
   const centreSignedIn = session.status === "authenticated";
@@ -220,14 +221,19 @@ export default async function Home() {
                 <p className="mt-4 flex-1 leading-7 text-muted">
                   {copy.teacherHistoryHelp}
                 </p>
-                {responsiblePortalOpen ? (
-                  <a
+                {responsiblePortalOpen ? participant ? (
+                  <Link
                     className="group mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-action bg-surface px-5 text-sm font-semibold text-action transition hover:bg-accent-soft focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper sm:w-auto sm:self-start"
                     href="/docent"
                   >
                     {copy.teacherHistory}
                     <ArrowIcon />
-                  </a>
+                  </Link>
+                ) : (
+                  <ParticipantLoginDialog className="group mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-action bg-surface px-5 text-sm font-semibold text-action transition hover:bg-accent-soft focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper sm:w-auto sm:self-start">
+                    {copy.teacherHistory}
+                    <ArrowIcon />
+                  </ParticipantLoginDialog>
                 ) : (
                   <span className="mt-6 inline-flex cursor-not-allowed text-sm font-semibold text-muted opacity-60">
                     {copy.teacherAccessSoon}

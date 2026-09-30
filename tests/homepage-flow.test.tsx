@@ -8,9 +8,11 @@ vi.mock("@/lib/i18n/locale", () => ({ getCurrentLanguage: vi.fn(async () => "CA"
 
 let responsiblePortalStatus: "closed" | "open" = "open";
 let responsibleSessionStatus: "authenticated" | "forbidden" | "unauthenticated" = "unauthenticated";
+let participantSignedIn = false;
 
 vi.mock("@/lib/auth/session", () => ({
   getResponsibleSessionState: vi.fn(async () => ({ status: responsibleSessionStatus })),
+  getCurrentParticipantUser: vi.fn(async () => participantSignedIn ? { id: "participant-test" } : null),
 }));
 
 vi.mock("@/lib/auth/responsible-access", () => ({
@@ -23,6 +25,7 @@ const { default: Home } = await import("@/app/page");
 beforeEach(() => {
   responsiblePortalStatus = "open";
   responsibleSessionStatus = "unauthenticated";
+  participantSignedIn = false;
   const values = new Map<string, string>();
 
   Object.defineProperty(window, "localStorage", {
@@ -121,7 +124,7 @@ describe("initial page", () => {
       ),
     ).toBe(true);
     expect(
-      screen.getByRole("link", { name: "Consulta les meves participacions" }),
+      screen.getByRole("button", { name: "Consulta les meves participacions" }),
     ).toHaveClass("border-action", "rounded-2xl");
     expect(
       screen.getByRole("heading", { level: 2, name: "Ja hi has participat?" }),
@@ -171,6 +174,29 @@ describe("initial page", () => {
     expect(dialog).not.toHaveAttribute("open");
   });
 
+  it("opens a participant login dialog and keeps the participant OAuth route", async () => {
+    render(await Home());
+
+    fireEvent.click(screen.getByRole("button", { name: "Consulta les meves participacions" }));
+
+    const dialog = screen.getByRole("dialog", { name: "Àrea docent" });
+    expect(within(dialog).getByText(/mateix compte Google/)).toBeInTheDocument();
+    expect(within(dialog).getByRole("link", { name: "Accedeix amb Google" }))
+      .toHaveAttribute("href", "/auth/login?next=%2Fdocent");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Tanca l’accés docent" }));
+    expect(dialog).not.toHaveAttribute("open");
+  });
+
+  it("goes straight to participations when the participant session is active", async () => {
+    participantSignedIn = true;
+    render(await Home());
+
+    expect(screen.getByRole("link", { name: "Consulta les meves participacions" }))
+      .toHaveAttribute("href", "/docent");
+    expect(screen.queryByRole("button", { name: "Consulta les meves participacions" }))
+      .not.toBeInTheDocument();
+  });
+
   it("shows the centre workspace and a visible exit with an active session", async () => {
     responsibleSessionStatus = "authenticated";
     render(await Home());
@@ -203,7 +229,7 @@ describe("initial page", () => {
     expect(screen.getByLabelText("Codi del qüestionari")).toBeDisabled();
     expect(screen.getByText("Accés docent properament")).toBeVisible();
     expect(
-      screen.queryByRole("link", { name: "Consulta les meves participacions" }),
+      screen.queryByRole("button", { name: "Consulta les meves participacions" }),
     ).not.toBeInTheDocument();
   });
 

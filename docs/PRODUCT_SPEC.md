@@ -351,6 +351,10 @@ qualsevol accés de responsable de la portada obre un diàleg amb el logotip de
 l'aplicació i la pàgina desenfocada. El diàleg informa que només s'hi admet el
 compte institucional `@xtec.cat` assignat al centre; no substitueix la
 validació de servidor ni modifica el flux d'autenticació.
+L'enllaç de la portada per consultar participacions obre un diàleg equivalent
+quan no hi ha sessió docent. Indica que cal fer servir el mateix compte Google
+amb què es va participar i continua cap a l'OAuth docent. Amb una sessió docent
+vigent, l'enllaç obre directament `/docent`.
 
 Amb una sessió de responsable autoritzada, la portada substitueix els accessos
 de centre pel vincle `El meu espai` cap a `/crear` i mostra una icona de sortida
