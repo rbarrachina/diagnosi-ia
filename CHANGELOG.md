@@ -6,8 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
-- Afegeix un menú lateral plegable al resultat docent per navegar entre el
-  resum i les respostes de cada bloc, amb selector compacte al mòbil.
+- Comparteix el menú lateral plegable entre l'àrea docent i els resultats:
+  permet accedir al qüestionari per codi, a totes les diagnosis pròpies i al
+  resum i les respostes del resultat obert. Inclou selector compacte al mòbil.
 
 - Destaca el nom i la versió del qüestionari al resultat docent i deixa la data
   en un estil més discret.

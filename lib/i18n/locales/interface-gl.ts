@@ -78,7 +78,7 @@ export const interfaceGl = {
   "progres": "Progreso",
   "progresDelQuestionari": "Progreso do cuestionario",
   "lesMevesDiagnosis2": "← As miñas diagnoses",
-  "seccionsDelResultat": "Seccións do resultado",
+  "menuDocent": "Menú docente",
   "resultatIndividual": "Resultado individual",
   "detallPerBlocs": "As miñas respostas por bloques",
   "posicioOrientativa": "Posición orientativa",

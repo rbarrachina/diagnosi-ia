@@ -30,6 +30,18 @@
   html[data-admin-sidebar="expanded"] .admin-sidebar {
     width: 15rem;
   }
+
+  html[data-participant-sidebar="collapsed"] .participant-sidebar {
+    width: 72px;
+  }
+
+  html[data-participant-sidebar="collapsed"] .participant-sidebar-expanded-content {
+    display: none;
+  }
+
+  html[data-participant-sidebar="expanded"] .participant-sidebar {
+    width: 15rem;
+  }
 }
 
 .workspace-results .recharts-cartesian-grid line,

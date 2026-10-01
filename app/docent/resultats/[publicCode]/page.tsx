@@ -6,10 +6,10 @@ import { AppHeader } from "@/components/layout/app-header";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { getCurrentParticipantUser } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
-import { getParticipantResult } from "@/lib/repositories/participant-results";
+import { getParticipantResult, listParticipantResults } from "@/lib/repositories/participant-results";
 import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
 import { BlockStageBar } from "@/components/participants/block-stage-bar";
-import { ParticipantResultsFrame } from "@/components/participants/participant-results-frame";
+import { ParticipantWorkspaceFrame } from "@/components/participants/participant-workspace-frame";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +24,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
   if (!user) redirect(`/auth/login?next=${encodeURIComponent(`/docent/resultats/${publicCode}`)}`);
   const result = await getParticipantResult({ participantUserId: user.id, publicCode });
   if (!result) notFound();
+  const participations = await listParticipantResults(user.id);
 
   return (
     <main className="app-shell min-h-screen bg-paper text-ink">
@@ -38,7 +39,11 @@ export default async function ParticipantResultPage({ params }: { params: Promis
         <ThemeToggle />
         <IconLogoutButton next="/" />
       </AppHeader>
-      <ParticipantResultsFrame blocks={result.blocks.map(({ position, title }) => ({ position, title }))}>
+      <ParticipantWorkspaceFrame
+        activePublicCode={publicCode}
+        blocks={result.blocks.map(({ position, title }) => ({ position, title }))}
+        participations={participations.map(({ publicCode: code, centreName, questionnaireTitle }) => ({ publicCode: code, centreName, questionnaireTitle }))}
+      >
         <section className="mx-auto max-w-5xl px-5 pb-24 pt-12 sm:px-8 md:pb-20">
           <h1 className="sr-only"><InterfaceText messageKey="resultatIndividual" /></h1>
           <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
@@ -80,7 +85,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
             ))}
           </div>
         </section>
-      </ParticipantResultsFrame>
+      </ParticipantWorkspaceFrame>
     </main>
   );
 }

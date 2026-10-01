@@ -78,7 +78,7 @@ export const interfaceOc = {
   "progres": "Progrès",
   "progresDelQuestionari": "Progrès deth qüestionari",
   "lesMevesDiagnosis2": "← Es mies diagnosis",
-  "seccionsDelResultat": "Seccions deth resultat",
+  "menuDocent": "Menú docent",
   "resultatIndividual": "Resultat individuau",
   "detallPerBlocs": "Es mies responses per blòcs",
   "posicioOrientativa": "Posicion orientativa",

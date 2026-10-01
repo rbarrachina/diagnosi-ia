@@ -78,7 +78,7 @@ export const interfaceEu = {
   "progres": "Aurrerapena",
   "progresDelQuestionari": "Galdetegiaren aurrerapena",
   "lesMevesDiagnosis2": "← Nire diagnostikoak",
-  "seccionsDelResultat": "Emaitzaren atalak",
+  "menuDocent": "Irakaslearen menua",
   "resultatIndividual": "Banakako emaitza",
   "detallPerBlocs": "Nire erantzunak blokeka",
   "posicioOrientativa": "Gutxi gorabeherako kokapena",

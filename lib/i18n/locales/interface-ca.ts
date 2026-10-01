@@ -76,7 +76,7 @@ export const interfaceCa = {
   "progres": "Progrés",
   "progresDelQuestionari": "Progrés del qüestionari",
   "lesMevesDiagnosis2": "← Les meves diagnosis",
-  "seccionsDelResultat": "Seccions del resultat",
+  "menuDocent": "Menú docent",
   "resultatIndividual": "Resultat individual",
   "detallPerBlocs": "Les meves respostes per blocs",
   "posicioOrientativa": "Posició orientativa",

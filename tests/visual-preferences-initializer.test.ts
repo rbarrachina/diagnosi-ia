@@ -6,6 +6,7 @@ describe("visual preferences initializer", () => {
     document.documentElement.removeAttribute("data-theme");
     document.documentElement.removeAttribute("data-centre-sidebar");
     document.documentElement.removeAttribute("data-admin-sidebar");
+    document.documentElement.removeAttribute("data-participant-sidebar");
     document.documentElement.style.colorScheme = "";
   });
 
@@ -14,6 +15,7 @@ describe("visual preferences initializer", () => {
       "diagnosi-theme": "dark",
       "diagnosi-ia:centre-sidebar-expanded": "false",
       "diagnosi-ia:admin-sidebar-expanded": "true",
+      "diagnosi-ia:participant-sidebar-expanded": "true",
     };
     Object.defineProperty(window, "localStorage", {
       configurable: true,
@@ -26,6 +28,7 @@ describe("visual preferences initializer", () => {
     expect(document.documentElement.style.colorScheme).toBe("dark");
     expect(document.documentElement.dataset.centreSidebar).toBe("collapsed");
     expect(document.documentElement.dataset.adminSidebar).toBe("expanded");
+    expect(document.documentElement.dataset.participantSidebar).toBe("expanded");
   });
 
   it("uses safe defaults when browser storage is unavailable", () => {
@@ -40,5 +43,6 @@ describe("visual preferences initializer", () => {
     expect(document.documentElement.style.colorScheme).toBe("light");
     expect(document.documentElement.dataset.centreSidebar).toBe("expanded");
     expect(document.documentElement.dataset.adminSidebar).toBe("expanded");
+    expect(document.documentElement.dataset.participantSidebar).toBe("collapsed");
   });
 });

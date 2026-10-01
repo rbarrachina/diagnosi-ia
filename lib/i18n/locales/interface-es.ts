@@ -77,7 +77,7 @@ export const interfaceEs = {
   "progres": "Progreso",
   "progresDelQuestionari": "Progreso del cuestionario",
   "lesMevesDiagnosis2": "← Mis diagnósticos",
-  "seccionsDelResultat": "Secciones del resultado",
+  "menuDocent": "Menú docente",
   "resultatIndividual": "Resultado individual",
   "detallPerBlocs": "Mis respuestas por bloques",
   "posicioOrientativa": "Posición orientativa",
