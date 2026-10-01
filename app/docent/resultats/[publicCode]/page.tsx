@@ -28,23 +28,25 @@ export default async function ParticipantResultPage({ params }: { params: Promis
     <main className="app-shell min-h-screen bg-paper text-ink">
       <AppHeader brandHref="/docent"><ThemeToggle /><IconLogoutButton next="/" /></AppHeader>
       <section className="mx-auto max-w-5xl px-5 pb-20 pt-32 sm:px-8">
-        <Link className="inline-flex min-h-10 items-center justify-center rounded-full border border-action bg-accent-soft px-5 py-2 text-sm font-semibold text-action shadow-sm transition hover:bg-action hover:text-action-contrast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper" href="/docent">
-          <InterfaceText messageKey="lesMevesDiagnosis2" />
-        </Link>
-        <p className="mt-7 text-sm font-semibold uppercase tracking-[0.16em] text-action">{result.centreName}</p>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
-          <h1 className="text-4xl font-semibold tracking-tight">
-            <InterfaceText messageKey="resultatIndividual" />
-          </h1>
+        <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+            <Link className="inline-flex min-h-10 items-center text-sm font-semibold text-action underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus" href="/docent">
+              <InterfaceText messageKey="lesMevesDiagnosis2" />
+            </Link>
+            <span aria-hidden="true" className="hidden h-8 w-px bg-line sm:block" />
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+              <InterfaceText messageKey="resultatIndividual" />
+            </h1>
+          </div>
           <form action="/api/docent/results/pdf" method="post">
             <input name="publicCode" type="hidden" value={result.publicCode} />
-            <button className="rounded-xl bg-action px-5 py-3 font-semibold text-action-contrast" type="submit">
+            <button className="min-h-10 rounded-xl bg-action px-4 py-2 text-sm font-semibold text-action-contrast" type="submit">
               <InterfaceText messageKey="descarregaElPdf" />
             </button>
           </form>
         </div>
-        <p className="mt-3 text-muted">{result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion} · {formatDate(result.completedAt)}</p>
-        <div className="mt-7 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <p className="mt-3 text-sm leading-6 text-muted"><span className="font-semibold text-action">{result.centreName}</span>{" · "}{result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion} · {formatDate(result.completedAt)}</p>
+        <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {result.blocks.map((block) => <BlockStageBar block={block} key={block.position} />)}
         </div>
         <h2 className="mt-12 text-2xl font-semibold"><InterfaceText messageKey="detallPerBlocs" /></h2>
