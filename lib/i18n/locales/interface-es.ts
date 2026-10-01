@@ -81,6 +81,7 @@ export const interfaceEs = {
   "perfilPerBlocs": "Mi perfil por bloques",
   "perfilPerBlocsAjuda": "Cada barra muestra tu posición orientativa de 0 a 100. Selecciona un bloque para ver tus respuestas.",
   "detallPerBlocs": "Mis respuestas por bloques",
+  "posicioOrientativa": "Posición orientativa",
   "etapaBasica": "Básica",
   "etapaIntermedia": "Intermedia",
   "etapaAvancada": "Avanzada",

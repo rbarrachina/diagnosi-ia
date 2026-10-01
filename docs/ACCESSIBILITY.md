@@ -35,8 +35,9 @@ incloent almenys:
   missatges d’estat.
 - Els gràfics de resultats tenen una alternativa textual en taules amb títol i
   capçaleres de columna; els SVG redundants s'oculten a tecnologies d'assistència.
-- Les barres del perfil docent indiquen l'etapa i el valor amb text; el color i
-  el marcador són redundants. Cada barra és un enllaç de teclat al detall del bloc.
+- Les barres del perfil docent destaquen l'etapa amb text i exposen l'etapa i
+  la posició numèrica als lectors de pantalla; el color i el marcador són
+  redundants. Cada barra és un enllaç de teclat al detall del bloc.
 - Els desplegables informatius no utilitzen rols de menú interactiu incorrectes.
 - Les animacions i el desplaçament suau es redueixen quan el sistema indica
   `prefers-reduced-motion`.

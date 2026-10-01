@@ -82,6 +82,7 @@ export const interfaceGl = {
   "perfilPerBlocs": "O meu perfil por bloques",
   "perfilPerBlocsAjuda": "Cada barra mostra a túa posición orientativa de 0 a 100. Selecciona un bloque para ver as túas respostas.",
   "detallPerBlocs": "As miñas respostas por bloques",
+  "posicioOrientativa": "Posición orientativa",
   "etapaBasica": "Básica",
   "etapaIntermedia": "Intermedia",
   "etapaAvancada": "Avanzada",

@@ -80,6 +80,7 @@ export const interfaceCa = {
   "perfilPerBlocs": "El meu perfil per blocs",
   "perfilPerBlocsAjuda": "Cada barra mostra la teva posició orientativa de 0 a 100. Selecciona un bloc per veure les teves respostes.",
   "detallPerBlocs": "Les meves respostes per blocs",
+  "posicioOrientativa": "Posició orientativa",
   "etapaBasica": "Bàsica",
   "etapaIntermedia": "Intermèdia",
   "etapaAvancada": "Avançada",

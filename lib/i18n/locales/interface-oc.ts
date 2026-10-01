@@ -82,6 +82,7 @@ export const interfaceOc = {
   "perfilPerBlocs": "Eth mèn perfil per blòcs",
   "perfilPerBlocsAjuda": "Cada barra mòstre era tua posicion orientativa de 0 a 100. Selecciona un blòc entà veir es tues responses.",
   "detallPerBlocs": "Es mies responses per blòcs",
+  "posicioOrientativa": "Posicion orientativa",
   "etapaBasica": "Basica",
   "etapaIntermedia": "Intermediària",
   "etapaAvancada": "Avançada",

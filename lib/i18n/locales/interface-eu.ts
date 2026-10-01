@@ -82,6 +82,7 @@ export const interfaceEu = {
   "perfilPerBlocs": "Nire profila blokeka",
   "perfilPerBlocsAjuda": "Barra bakoitzak 0tik 100era bitarteko gutxi gorabeherako kokapena erakusten du. Hautatu bloke bat zure erantzunak ikusteko.",
   "detallPerBlocs": "Nire erantzunak blokeka",
+  "posicioOrientativa": "Gutxi gorabeherako kokapena",
   "etapaBasica": "Oinarrizkoa",
   "etapaIntermedia": "Tartekoa",
   "etapaAvancada": "Aurreratua",

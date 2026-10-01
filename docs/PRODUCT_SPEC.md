@@ -614,11 +614,12 @@ mitjanes i tres en pantalles amples; dins de cada fila, les barres queden
 alineades encara que els títols tinguin longituds diferents. El valor és la
 suma de les respostes del bloc dividida pel màxim possible, reescalada a 0–100.
 Els límits són exactament un terç i dos terços, sense arrodonir abans de
-classificar. Un valor 0 queda a l'extrem esquerre de l'etapa bàsica. La vista
-mostra també el valor numèric i
-l'etapa en text, sense repetir els extrems 0 i 100 sota les barres. Cada barra
-porta al detall de les preguntes i respostes del bloc. No es presenta cap etapa
-ni percentatge global del docent.
+classificar. Un valor 0 queda a l'extrem esquerre de l'etapa bàsica. L'etiqueta
+del terç corresponent queda destacada; el lector de pantalla també rep la
+posició numèrica. No es repeteixen el nivell ni la puntuació al costat del
+títol, ni els extrems 0 i 100 sota les barres. Cada barra porta al detall de les
+preguntes i respostes del bloc. No es presenta cap etapa ni percentatge global
+del docent.
 
 El PDF individual segueix la mateixa estructura de resum per blocs i detall de
 respostes. Es pot consultar també quan l'espai està tancat. No mostra la
