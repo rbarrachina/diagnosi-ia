@@ -43,3 +43,13 @@
 .workspace-results .recharts-polar-radius-axis-tick text {
   fill: var(--color-muted);
 }
+
+.participant-stage-gradient {
+  background: linear-gradient(
+    to right,
+    #ef4444 0%,
+    #facc15 42%,
+    #facc15 58%,
+    #22c55e 100%
+  );
+}

@@ -9,7 +9,7 @@ Semantic Versioning.
 - Presenta el resultat docent com un perfil de barres per blocs amb etapes
   bàsica, intermèdia i avançada, amb accés al detall de les respostes. El PDF
   individual segueix la mateixa estructura i deixa de destacar un percentatge
-  global.
+  global. El degradat reserva una franja més ampla al groc central.
 
 - Evita que l'última lletra del títol amb degradat de la portada sembli
   retallada per l'espaiat ajustat entre lletres.

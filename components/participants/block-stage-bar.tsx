@@ -24,7 +24,7 @@ export function BlockStageBar({ block }: { block: ParticipantBlockResult }) {
         ))}
       </div>
       <div className="relative mx-2 mt-3 pb-3" aria-hidden="true">
-        <div className="h-4 rounded-full bg-gradient-to-r from-red-500 via-amber-400 to-green-500" />
+        <div className="participant-stage-gradient h-4 rounded-full" />
         <span className="absolute top-3 h-0 w-0 -translate-x-1/2 border-x-[9px] border-b-[13px] border-x-transparent border-b-ink" style={{ left: `${position}%` }} />
       </div>
     </a>
