@@ -49,7 +49,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
             </button>
           </form>
         </div>
-        <div className="mt-6 grid gap-4">
+        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {result.blocks.map((block) => <BlockStageBar block={block} key={block.position} />)}
         </div>
         <h2 className="mt-12 text-2xl font-semibold"><InterfaceText messageKey="detallPerBlocs" /></h2>

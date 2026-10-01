@@ -608,9 +608,10 @@ centre quan la sessió docent és activa.
 El resultat propi ofereix un enllaç de retorn a l'àrea docent dins d'una caixa
 arrodonida amb els colors d'acció de l'aplicació.
 El resultat propi presenta primer una barra de 0 a 100 per cada bloc, amb un
-indicador de la posició obtinguda i els tres terços `Etapa bàsica`, `Etapa
-intermèdia` i `Etapa avançada`. El valor és la suma de les respostes del bloc
-dividida pel màxim possible, reescalada a 0–100. Els límits són exactament
+indicador de la posició obtinguda i els tres terços `Bàsica`, `Intermèdia` i
+`Avançada`. Les barres es disposen en una columna al mòbil, dues en amplades
+mitjanes i tres en pantalles amples. El valor és la suma de les respostes del
+bloc dividida pel màxim possible, reescalada a 0–100. Els límits són exactament
 un terç i dos terços, sense arrodonir abans de classificar. Un valor 0 queda a
 l'extrem esquerre de l'etapa bàsica. La vista mostra també el valor numèric i
 l'etapa en text, i cada barra porta al detall de les preguntes i respostes del
