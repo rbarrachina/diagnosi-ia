@@ -610,12 +610,15 @@ arrodonida amb els colors d'acció de l'aplicació.
 El resultat propi presenta primer una barra de 0 a 100 per cada bloc, amb un
 indicador de la posició obtinguda i els tres terços `Bàsica`, `Intermèdia` i
 `Avançada`. Les barres es disposen en una columna al mòbil, dues en amplades
-mitjanes i tres en pantalles amples. El valor és la suma de les respostes del
-bloc dividida pel màxim possible, reescalada a 0–100. Els límits són exactament
-un terç i dos terços, sense arrodonir abans de classificar. Un valor 0 queda a
-l'extrem esquerre de l'etapa bàsica. La vista mostra també el valor numèric i
-l'etapa en text, i cada barra porta al detall de les preguntes i respostes del
-bloc. No es presenta cap etapa ni percentatge global del docent.
+mitjanes i tres en pantalles amples; dins de cada fila, les barres queden
+alineades encara que els títols tinguin longituds diferents. El valor és la
+suma de les respostes del bloc dividida pel màxim possible, reescalada a 0–100.
+Els límits són exactament un terç i dos terços, sense arrodonir abans de
+classificar. Un valor 0 queda a l'extrem esquerre de l'etapa bàsica. La vista
+mostra també el valor numèric i
+l'etapa en text, sense repetir els extrems 0 i 100 sota les barres. Cada barra
+porta al detall de les preguntes i respostes del bloc. No es presenta cap etapa
+ni percentatge global del docent.
 
 El PDF individual segueix la mateixa estructura de resum per blocs i detall de
 respostes. Es pot consultar també quan l'espai està tancat. No mostra la

@@ -18,7 +18,6 @@ const styles = StyleSheet.create({
   bar: { flexDirection: "row", height: 9, borderRadius: 4, position: "relative" },
   barSegment: { width: "33.33%", height: 9 },
   barMarker: { position: "absolute", top: -3, width: 2, height: 15, backgroundColor: "#172033" },
-  axis: { flexDirection: "row", justifyContent: "space-between", marginTop: 2, fontSize: 7, color: "#526075" },
   detailsTitle: { fontSize: 14, fontWeight: 700, marginTop: 12 },
   block: { marginTop: 14 },
   blockHeading: { fontSize: 14, fontWeight: 700, marginBottom: 8 },
@@ -67,7 +66,6 @@ export function ParticipantReportDocument({ result }: { result: ParticipantResul
                   <View style={[styles.barSegment, { backgroundColor: "#4baa70" }]} />
                   <View style={[styles.barMarker, { left: `${position}%` }]} />
                 </View>
-                <View style={styles.axis}><Text>0</Text><Text>100</Text></View>
               </View>
             );
           })}
