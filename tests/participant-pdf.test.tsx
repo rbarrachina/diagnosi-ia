@@ -33,6 +33,17 @@ describe("participant PDF", () => {
     expect(buffer.byteLength).toBeGreaterThan(1000);
   });
 
+  it("renders the full five-block stage overview", async () => {
+    const blocks = Array.from({ length: 5 }, (_, index) => ({
+      ...result.blocks[0],
+      position: index + 1,
+      questions: result.blocks[0].questions.map((question) => ({ ...question, value: index % 4 as 0 | 1 | 2 | 3 })),
+    }));
+    const buffer = await renderParticipantReportPdf({ ...result, blocks });
+    expect(buffer.subarray(0, 4).toString()).toBe("%PDF");
+    expect(buffer.byteLength).toBeGreaterThan(1000);
+  });
+
   it("does not include identity or internal identifier fields", () => {
     const source = readFileSync(
       join(process.cwd(), "lib/pdf/participant-report-document.tsx"),

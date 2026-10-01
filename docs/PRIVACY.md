@@ -134,11 +134,12 @@ de veritat per impedir duplicats i recuperar la participació.
 
 ## Resultats individuals del docent
 
-El docent autenticat pot veure les seves respostes, puntuació global i per
+El docent autenticat pot veure les seves respostes, la posició i etapa per
 blocs, data, centre i versió, i generar un PDF propi. La consulta sempre filtra
 per l'identificador de la sessió; el navegador no decideix el propietari ni rep
-`participant_user_id` o `submission_id`. No hi ha comparacions, interpretacions
-noves ni dades alienes. El centre, el responsable, l'administració i l'enllaç
+`participant_user_id` o `submission_id`. L'etapa de cada bloc es calcula només
+a partir de les respostes pròpies, per terços de l'escala 0–100. No hi ha
+comparacions ni dades alienes. El centre, el responsable, l'administració i l'enllaç
 privat continuen rebent només agregats.
 
 En aquesta fase no hi ha eliminació directa pel docent. Les sol·licituds de

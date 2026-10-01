@@ -601,15 +601,26 @@ original. Recarregar-la o tancar-la encara esborra les respostes pendents.
 
 Rutes: `/docent` i `/docent/resultats/[publicCode]`
 
-L'àrea docent exigeix sessió Google i mostra només centre, qüestionari, data i
-puntuació de les participacions vinculades a l'identificador opac de la sessió.
+L'àrea docent exigeix sessió Google i mostra només centre, qüestionari i data
+de les participacions vinculades a l'identificador opac de la sessió.
 L'àrea i el resultat propi mostren la mateixa icona `Surt` de la capçalera del
 centre quan la sessió docent és activa.
 El resultat propi ofereix un enllaç de retorn a l'àrea docent dins d'una caixa
 arrodonida amb els colors d'acció de l'aplicació.
-Permet veure respostes i puntuacions pròpies o generar el PDF individual, també
-quan l'espai està tancat. No mostra la identitat docent, identificadors interns,
-resultats del centre, comparacions o dades d'altres participants.
+El resultat propi presenta primer una barra de 0 a 100 per cada bloc, amb un
+indicador de la posició obtinguda i els tres terços `Etapa bàsica`, `Etapa
+intermèdia` i `Etapa avançada`. El valor és la suma de les respostes del bloc
+dividida pel màxim possible, reescalada a 0–100. Els límits són exactament
+un terç i dos terços, sense arrodonir abans de classificar. Un valor 0 queda a
+l'extrem esquerre de l'etapa bàsica. La vista mostra també el valor numèric i
+l'etapa en text, i cada barra porta al detall de les preguntes i respostes del
+bloc. No es presenta cap etapa ni percentatge global del docent.
+
+El PDF individual segueix la mateixa estructura de resum per blocs i detall de
+respostes. Es pot consultar també quan l'espai està tancat. No mostra la
+identitat docent, identificadors interns, resultats del centre, comparacions o
+dades d'altres participants. La correspondència futura amb quatre dimensions
+i onze criteris queda fora d'aquesta visualització inicial.
 
 ### Consulta de resultats
 

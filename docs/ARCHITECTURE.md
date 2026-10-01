@@ -48,6 +48,8 @@ distribuir-ne binaris. L'abast, les fonts originals i els pendents es documenten
 - Els resultats de centre, administració i enllaç privat es construeixen exclusivament amb dades agregades.
 - Les dades individuals només es carreguen per a l'àrea docent després de validar
   al servidor que `participant_user_id` coincideix amb l'identificador de sessió.
+- La pàgina i el PDF docents deriven la posició i l'etapa de cada bloc de les
+  respostes pròpies amb un càlcul compartit; no consulten agregats de centre.
 - Cap endpoint de centre o administració retorna files individuals.
 - Els tokens privats es desen com HMAC per validar-los i xifrats per
   recuperar-los; mai en text pla.

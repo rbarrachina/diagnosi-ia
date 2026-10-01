@@ -8,6 +8,8 @@ import { getCurrentParticipantUser } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
 import { getParticipantResult } from "@/lib/repositories/participant-results";
 import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
+import { BlockStageBar } from "@/components/participants/block-stage-bar";
+import { getBlockStage } from "@/lib/participants/block-stage";
 
 export const dynamic = "force-dynamic";
 
@@ -35,21 +37,27 @@ export default async function ParticipantResultPage({ params }: { params: Promis
           <InterfaceText messageKey="resultatIndividual" />
         </h1>
         <p className="mt-3 text-muted">{result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion} · {formatDate(result.completedAt)}</p>
-        <div className="mt-7 flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-surface p-6">
-          <div><p className="text-sm text-muted">
-            <InterfaceText messageKey="puntuacioGlobal" /></p><p className="text-3xl font-bold">{result.globalScore.toFixed(1)}%</p>
+        <div className="mt-7 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold"><InterfaceText messageKey="perfilPerBlocs" /></h2>
+            <p className="mt-1 text-sm text-muted"><InterfaceText messageKey="perfilPerBlocsAjuda" /></p>
           </div>
-          <form action="/api/docent/results/pdf" className="sm:ml-auto" method="post">
+          <form action="/api/docent/results/pdf" method="post">
             <input name="publicCode" type="hidden" value={result.publicCode} />
             <button className="rounded-xl bg-action px-5 py-3 font-semibold text-action-contrast" type="submit">
               <InterfaceText messageKey="descarregaElPdf" />
             </button>
           </form>
         </div>
+        <div className="mt-6 grid gap-4">
+          {result.blocks.map((block) => <BlockStageBar block={block} key={block.position} />)}
+        </div>
+        <h2 className="mt-12 text-2xl font-semibold"><InterfaceText messageKey="detallPerBlocs" /></h2>
         <div className="mt-8 space-y-6">
-          {result.blocks.map((block) => (
-            <section className="rounded-2xl border border-line bg-surface p-6" key={block.position}>
-              <div className="flex items-baseline justify-between gap-4"><h2 className="text-xl font-semibold">{block.position}. {block.title}</h2><strong>{block.score.toFixed(1)}%</strong></div>
+          {result.blocks.map((block) => {
+            const { stage, position } = getBlockStage(block);
+            return <section className="scroll-mt-28 rounded-2xl border border-line bg-surface p-6" id={`bloc-${block.position}`} key={block.position} tabIndex={-1}>
+              <div className="flex flex-wrap items-baseline justify-between gap-4"><h3 className="text-xl font-semibold">{block.position}. {block.title}</h3><strong className="text-sm text-action"><InterfaceText messageKey={stageLabel(stage)} /> · {Math.round(position)}/100</strong></div>
               <ol className="mt-5 space-y-4">
                 {block.questions.map((question) => (
                   <li className="border-t border-line pt-4" key={question.position}>
@@ -60,12 +68,16 @@ export default async function ParticipantResultPage({ params }: { params: Promis
                   </li>
                 ))}
               </ol>
-            </section>
-          ))}
+            </section>;
+          })}
         </div>
       </section>
     </main>
   );
+}
+
+function stageLabel(stage: "basic" | "intermediate" | "advanced") {
+  return stage === "basic" ? "etapaBasica" : stage === "intermediate" ? "etapaIntermedia" : "etapaAvancada";
 }
 
 function formatDate(value: string): string {

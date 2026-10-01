@@ -90,7 +90,7 @@ export default async function ParticipantAreaPage({
                   <p className="text-sm font-semibold text-action">{item.centreName}</p>
                   <h2 className="mt-1 text-xl font-semibold">{item.questionnaireTitle}</h2>
                   <p className="mt-2 text-sm text-muted">
-                    <InterfaceText messageKey="versio" />{" "}{item.questionnaireVersion} · {formatDate(item.completedAt)}{" "}<InterfaceText messageKey="puntuacio" />{" "}{item.globalScore.toFixed(1)}%
+                    <InterfaceText messageKey="versio" />{" "}{item.questionnaireVersion} · {formatDate(item.completedAt)}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
