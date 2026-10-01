@@ -9,8 +9,8 @@ Semantic Versioning.
 - Presenta el resultat docent com un perfil de barres per blocs amb etapes
   bàsica, intermèdia i avançada, amb accés al detall de les respostes. El PDF
   individual segueix la mateixa estructura i deixa de destacar un percentatge
-  global. El degradat reserva una franja més ampla al groc central. La capçalera
-  compacta situa les gràfiques més amunt.
+  global. El degradat reserva una franja més ampla al groc central. El nom
+  institucional passa a la capçalera i les gràfiques queden més amunt.
 
 - Evita que l'última lletra del títol amb degradat de la portada sembli
   retallada per l'espaiat ajustat entre lletres.
@@ -19,7 +19,8 @@ Semantic Versioning.
   docent amb el mateix estil que el del centre. Una sessió docent vigent entra
   directament a les participacions.
 
-- Integra l'enllaç `Les meves diagnosis` a la capçalera del resultat docent.
+- Recupera el botó arrodonit `Les meves diagnosis` al resultat docent i situa
+  la descàrrega del PDF a la seva dreta.
 
 - Unifica la sortida docent amb la icona de centre a l'àrea, el resultat propi
   i el qüestionari autenticat, sense mostrar identitat docent.

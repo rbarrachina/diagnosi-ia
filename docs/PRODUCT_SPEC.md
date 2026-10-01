@@ -605,11 +605,11 @@ L'àrea docent exigeix sessió Google i mostra només centre, qüestionari i dat
 de les participacions vinculades a l'identificador opac de la sessió.
 L'àrea i el resultat propi mostren la mateixa icona `Surt` de la capçalera del
 centre quan la sessió docent és activa.
-El resultat propi agrupa el retorn a l'àrea docent, el títol `Resultat
-individual` i la descàrrega del PDF en una capçalera compacta. El centre,
-qüestionari, versió i data apareixen en una línia de metadades que es pot
-reajustar en pantalles estretes. El resum gràfic segueix immediatament la
-capçalera compacta amb una barra de 0 a
+El resultat propi mostra el nom institucional a la capçalera de l'aplicació,
+just abans de les icones. El retorn a l'àrea docent recupera el botó arrodonit
+i comparteix fila amb la descàrrega del PDF. El títol `Resultat individual`
+només és accessible als lectors de pantalla. El qüestionari, la versió i la
+data apareixen sota els botons, seguits del resum gràfic amb una barra de 0 a
 100 per cada bloc, sense títol ni text introductori addicionals, amb un
 indicador de la posició obtinguda i els tres terços `Bàsica`, `Intermèdia` i
 `Avançada`. Les barres es disposen en una columna al mòbil, dues en amplades
