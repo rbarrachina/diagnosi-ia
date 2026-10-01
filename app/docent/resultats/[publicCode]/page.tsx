@@ -9,6 +9,7 @@ import { isPublicCode } from "@/lib/crypto/public-code";
 import { getParticipantResult } from "@/lib/repositories/participant-results";
 import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
 import { BlockStageBar } from "@/components/participants/block-stage-bar";
+import { ParticipantResultsFrame } from "@/components/participants/participant-results-frame";
 
 export const dynamic = "force-dynamic";
 
@@ -37,47 +38,49 @@ export default async function ParticipantResultPage({ params }: { params: Promis
         <ThemeToggle />
         <IconLogoutButton next="/" />
       </AppHeader>
-      <section className="mx-auto max-w-5xl px-5 pb-20 pt-32 sm:px-8">
-        <h1 className="sr-only"><InterfaceText messageKey="resultatIndividual" /></h1>
-        <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
-          <Link className="inline-flex min-h-10 items-center justify-center rounded-full border border-action bg-accent-soft px-5 py-2 text-sm font-semibold text-action shadow-sm transition hover:bg-action hover:text-action-contrast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper" href="/docent">
-            <InterfaceText messageKey="lesMevesDiagnosis2" />
-          </Link>
-          <form action="/api/docent/results/pdf" method="post">
-            <input name="publicCode" type="hidden" value={result.publicCode} />
-            <button className="min-h-10 rounded-xl bg-action px-4 py-2 text-sm font-semibold text-action-contrast" type="submit">
-              <InterfaceText messageKey="descarregaElPdf" />
-            </button>
-          </form>
-        </div>
-        <p className="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <span className="text-base font-semibold leading-7 text-ink sm:text-lg">
-            {result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion}
-          </span>
-          <span className="text-sm leading-6 text-muted">· {formatDate(result.completedAt)}</span>
-        </p>
-        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {result.blocks.map((block) => <BlockStageBar block={block} key={block.position} />)}
-        </div>
-        <h2 className="mt-12 text-2xl font-semibold"><InterfaceText messageKey="detallPerBlocs" /></h2>
-        <div className="mt-8 space-y-6">
-          {result.blocks.map((block) => (
-            <section className="scroll-mt-28 rounded-2xl border border-line bg-surface p-6" id={`bloc-${block.position}`} key={block.position} tabIndex={-1}>
-              <h3 className="text-xl font-semibold">{block.position}. {block.title}</h3>
-              <ol className="mt-5 space-y-4">
-                {block.questions.map((question) => (
-                  <li className="border-t border-line pt-4" key={question.position}>
-                    <p className="font-medium">{block.position}.{question.blockPosition}. {question.text}</p>
-                    <p className="mt-2 text-sm text-muted">
-                      <InterfaceText messageKey="respostaSeleccionada" />{" "}<strong className="text-ink">{question.value} · {question.label}</strong>
-                    </p>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          ))}
-        </div>
-      </section>
+      <ParticipantResultsFrame blocks={result.blocks.map(({ position, title }) => ({ position, title }))}>
+        <section className="mx-auto max-w-5xl px-5 pb-24 pt-12 sm:px-8 md:pb-20">
+          <h1 className="sr-only"><InterfaceText messageKey="resultatIndividual" /></h1>
+          <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
+            <Link className="inline-flex min-h-10 items-center justify-center rounded-full border border-action bg-accent-soft px-5 py-2 text-sm font-semibold text-action shadow-sm transition hover:bg-action hover:text-action-contrast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper" href="/docent">
+              <InterfaceText messageKey="lesMevesDiagnosis2" />
+            </Link>
+            <form action="/api/docent/results/pdf" method="post">
+              <input name="publicCode" type="hidden" value={result.publicCode} />
+              <button className="min-h-10 rounded-xl bg-action px-4 py-2 text-sm font-semibold text-action-contrast" type="submit">
+                <InterfaceText messageKey="descarregaElPdf" />
+              </button>
+            </form>
+          </div>
+          <p className="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <span className="text-base font-semibold leading-7 text-ink sm:text-lg">
+              {result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion}
+            </span>
+            <span className="text-sm leading-6 text-muted">· {formatDate(result.completedAt)}</span>
+          </p>
+          <div className="mt-6 grid scroll-mt-8 gap-4 md:grid-cols-2 lg:grid-cols-3" id="resum-per-blocs">
+            {result.blocks.map((block) => <BlockStageBar block={block} key={block.position} />)}
+          </div>
+          <h2 className="mt-12 scroll-mt-8 text-2xl font-semibold" id="detall-per-blocs"><InterfaceText messageKey="detallPerBlocs" /></h2>
+          <div className="mt-8 space-y-6">
+            {result.blocks.map((block) => (
+              <section className="scroll-mt-8 rounded-2xl border border-line bg-surface p-6" id={`bloc-${block.position}`} key={block.position} tabIndex={-1}>
+                <h3 className="text-xl font-semibold">{block.position}. {block.title}</h3>
+                <ol className="mt-5 space-y-4">
+                  {block.questions.map((question) => (
+                    <li className="border-t border-line pt-4" key={question.position}>
+                      <p className="font-medium">{block.position}.{question.blockPosition}. {question.text}</p>
+                      <p className="mt-2 text-sm text-muted">
+                        <InterfaceText messageKey="respostaSeleccionada" />{" "}<strong className="text-ink">{question.value} · {question.label}</strong>
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ))}
+          </div>
+        </section>
+      </ParticipantResultsFrame>
     </main>
   );
 }

@@ -605,6 +605,11 @@ L'àrea docent exigeix sessió Google i mostra només centre, qüestionari i dat
 de les participacions vinculades a l'identificador opac de la sessió.
 L'àrea i el resultat propi mostren la mateixa icona `Surt` de la capçalera del
 centre quan la sessió docent és activa.
+El resultat docent té una barra lateral plegable, inicialment reduïda a icones,
+amb accessos a les diagnosis pròpies, el resum gràfic i el detall de respostes.
+Quan es desplega, també mostra enllaços directes a cada bloc. Al mòbil, aquests
+accessos apareixen en un selector flotant compacte. La barra lateral no
+redueix el nombre de gràfiques per fila en pantalles amples.
 El resultat propi mostra el nom institucional a la capçalera de l'aplicació,
 just abans de les icones. El retorn a l'àrea docent recupera el botó arrodonit
 i comparteix fila amb la descàrrega del PDF. El títol `Resultat individual`
