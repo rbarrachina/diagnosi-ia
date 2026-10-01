@@ -607,7 +607,9 @@ L'àrea i el resultat propi mostren la mateixa icona `Surt` de la capçalera del
 centre quan la sessió docent és activa.
 El resultat propi ofereix un enllaç de retorn a l'àrea docent dins d'una caixa
 arrodonida amb els colors d'acció de l'aplicació.
-El resultat propi presenta primer una barra de 0 a 100 per cada bloc, amb un
+El botó per descarregar el PDF se situa a la dreta del títol `Resultat individual`
+en pantalles amples. El resum gràfic comença directament amb una barra de 0 a
+100 per cada bloc, sense títol ni text introductori addicionals, amb un
 indicador de la posició obtinguda i els tres terços `Bàsica`, `Intermèdia` i
 `Avançada`. Les barres es disposen en una columna al mòbil, dues en amplades
 mitjanes i tres en pantalles amples; dins de cada fila, les barres queden

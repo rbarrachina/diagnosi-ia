@@ -32,15 +32,10 @@ export default async function ParticipantResultPage({ params }: { params: Promis
           <InterfaceText messageKey="lesMevesDiagnosis2" />
         </Link>
         <p className="mt-7 text-sm font-semibold uppercase tracking-[0.16em] text-action">{result.centreName}</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">
-          <InterfaceText messageKey="resultatIndividual" />
-        </h1>
-        <p className="mt-3 text-muted">{result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion} · {formatDate(result.completedAt)}</p>
-        <div className="mt-7 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-semibold"><InterfaceText messageKey="perfilPerBlocs" /></h2>
-            <p className="mt-1 text-sm text-muted"><InterfaceText messageKey="perfilPerBlocsAjuda" /></p>
-          </div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
+          <h1 className="text-4xl font-semibold tracking-tight">
+            <InterfaceText messageKey="resultatIndividual" />
+          </h1>
           <form action="/api/docent/results/pdf" method="post">
             <input name="publicCode" type="hidden" value={result.publicCode} />
             <button className="rounded-xl bg-action px-5 py-3 font-semibold text-action-contrast" type="submit">
@@ -48,7 +43,8 @@ export default async function ParticipantResultPage({ params }: { params: Promis
             </button>
           </form>
         </div>
-        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <p className="mt-3 text-muted">{result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion} · {formatDate(result.completedAt)}</p>
+        <div className="mt-7 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {result.blocks.map((block) => <BlockStageBar block={block} key={block.position} />)}
         </div>
         <h2 className="mt-12 text-2xl font-semibold"><InterfaceText messageKey="detallPerBlocs" /></h2>

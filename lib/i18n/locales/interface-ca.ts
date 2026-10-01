@@ -77,8 +77,6 @@ export const interfaceCa = {
   "progresDelQuestionari": "Progrés del qüestionari",
   "lesMevesDiagnosis2": "← Les meves diagnosis",
   "resultatIndividual": "Resultat individual",
-  "perfilPerBlocs": "El meu perfil per blocs",
-  "perfilPerBlocsAjuda": "Cada barra mostra la teva posició orientativa de 0 a 100. Selecciona un bloc per veure les teves respostes.",
   "detallPerBlocs": "Les meves respostes per blocs",
   "posicioOrientativa": "Posició orientativa",
   "etapaBasica": "Bàsica",

@@ -79,8 +79,6 @@ export const interfaceEu = {
   "progresDelQuestionari": "Galdetegiaren aurrerapena",
   "lesMevesDiagnosis2": "← Nire diagnostikoak",
   "resultatIndividual": "Banakako emaitza",
-  "perfilPerBlocs": "Nire profila blokeka",
-  "perfilPerBlocsAjuda": "Barra bakoitzak 0tik 100era bitarteko gutxi gorabeherako kokapena erakusten du. Hautatu bloke bat zure erantzunak ikusteko.",
   "detallPerBlocs": "Nire erantzunak blokeka",
   "posicioOrientativa": "Gutxi gorabeherako kokapena",
   "etapaBasica": "Oinarrizkoa",
