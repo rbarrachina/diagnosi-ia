@@ -608,8 +608,9 @@ centre quan la sessió docent és activa.
 El resultat propi mostra el nom institucional a la capçalera de l'aplicació,
 just abans de les icones. El retorn a l'àrea docent recupera el botó arrodonit
 i comparteix fila amb la descàrrega del PDF. El títol `Resultat individual`
-només és accessible als lectors de pantalla. El qüestionari, la versió i la
-data apareixen sota els botons, seguits del resum gràfic amb una barra de 0 a
+només és accessible als lectors de pantalla. El qüestionari i la versió
+apareixen destacats sota els botons, amb la data en un estil més discret,
+seguits del resum gràfic amb una barra de 0 a
 100 per cada bloc, sense títol ni text introductori addicionals, amb un
 indicador de la posició obtinguda i els tres terços `Bàsica`, `Intermèdia` i
 `Avançada`. Les barres es disposen en una columna al mòbil, dues en amplades

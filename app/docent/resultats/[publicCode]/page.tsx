@@ -50,7 +50,12 @@ export default async function ParticipantResultPage({ params }: { params: Promis
             </button>
           </form>
         </div>
-        <p className="mt-5 text-sm leading-6 text-muted">{result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion} · {formatDate(result.completedAt)}</p>
+        <p className="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <span className="text-base font-semibold leading-7 text-ink sm:text-lg">
+            {result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion}
+          </span>
+          <span className="text-sm leading-6 text-muted">· {formatDate(result.completedAt)}</span>
+        </p>
         <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {result.blocks.map((block) => <BlockStageBar block={block} key={block.position} />)}
         </div>

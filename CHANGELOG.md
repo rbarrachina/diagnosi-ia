@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Destaca el nom i la versió del qüestionari al resultat docent i deixa la data
+  en un estil més discret.
+
 - Presenta el resultat docent com un perfil de barres per blocs amb etapes
   bàsica, intermèdia i avançada, amb accés al detall de les respostes. El PDF
   individual segueix la mateixa estructura i deixa de destacar un percentatge
