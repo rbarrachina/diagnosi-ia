@@ -1,15 +1,24 @@
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { ParticipantResult } from "@/lib/participants/types";
 import { getReportCopy } from "@/lib/pdf/report-copy";
+import { getBlockStage, type BlockStage } from "@/lib/participants/block-stage";
 
 const styles = StyleSheet.create({
   page: { padding: 34, fontFamily: "Helvetica", fontSize: 10, color: "#172033" },
   title: { fontSize: 22, fontWeight: 700, marginBottom: 6 },
   subtitle: { color: "#526075", marginBottom: 18, lineHeight: 1.4 },
-  metrics: { flexDirection: "row", gap: 8, marginBottom: 18 },
-  metric: { flexGrow: 1, border: "1 solid #d5dde8", borderRadius: 5, padding: 9 },
-  label: { color: "#526075", fontSize: 8, marginBottom: 3 },
-  value: { fontSize: 13, fontWeight: 700 },
+  overviewTitle: { fontSize: 14, fontWeight: 700, marginBottom: 10 },
+  overviewRow: { marginBottom: 10 },
+  overviewHeading: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4, gap: 10 },
+  overviewLabel: { fontSize: 10, fontWeight: 700, flexGrow: 1 },
+  overviewValue: { fontSize: 9, color: "#334155" },
+  stageLabels: { flexDirection: "row", marginBottom: 3 },
+  stageLabel: { width: "33.33%", textAlign: "center", fontSize: 7, color: "#526075" },
+  stageLabelActive: { fontWeight: 700, color: "#172033" },
+  bar: { flexDirection: "row", height: 9, borderRadius: 4, position: "relative" },
+  barSegment: { width: "33.33%", height: 9 },
+  barMarker: { position: "absolute", top: -3, width: 2, height: 15, backgroundColor: "#172033" },
+  detailsTitle: { fontSize: 14, fontWeight: 700, marginTop: 12 },
   block: { marginTop: 14 },
   blockHeading: { fontSize: 14, fontWeight: 700, marginBottom: 8 },
   question: { borderTop: "1 solid #d5dde8", paddingTop: 8, marginTop: 8 },
@@ -33,15 +42,38 @@ export function ParticipantReportDocument({ result }: { result: ParticipantResul
           {result.centreName} · {result.questionnaireTitle} · {copy.version} {result.questionnaireVersion}{"\n"}
           {copy.completedOn} {formatDate(result.completedAt, copy.locale)}
         </Text>
-        <View style={styles.metrics}>
-          <View style={styles.metric}><Text style={styles.label}>{copy.globalScore}</Text><Text style={styles.value}>{formatScore(result.globalScore)}</Text></View>
-          {result.blocks.map((block) => (
-            <View key={block.position} style={styles.metric}><Text style={styles.label}>{copy.block} {block.position}</Text><Text style={styles.value}>{formatScore(block.score)}</Text></View>
-          ))}
+        <Text style={styles.overviewTitle}>{copy.participantBlockProfile}</Text>
+        <View>
+          {result.blocks.map((block) => {
+            const { position, stage } = getBlockStage(block);
+            const labels: { id: BlockStage; text: string }[] = [
+              { id: "basic", text: copy.basicStage },
+              { id: "intermediate", text: copy.intermediateStage },
+              { id: "advanced", text: copy.advancedStage },
+            ];
+            return (
+              <View key={block.position} style={styles.overviewRow} wrap={false}>
+                <View style={styles.overviewHeading}>
+                  <Text style={styles.overviewLabel}>{block.position}. {block.title}</Text>
+                  <Text style={styles.overviewValue}>{labels.find((label) => label.id === stage)?.text} · {Math.round(position)}/100</Text>
+                </View>
+                <View style={styles.stageLabels}>
+                  {labels.map((label) => <Text key={label.id} style={[styles.stageLabel, label.id === stage ? styles.stageLabelActive : {}]}>{label.text}</Text>)}
+                </View>
+                <View style={styles.bar}>
+                  <View style={[styles.barSegment, { backgroundColor: "#dc5555" }]} />
+                  <View style={[styles.barSegment, { backgroundColor: "#e9ad3f" }]} />
+                  <View style={[styles.barSegment, { backgroundColor: "#4baa70" }]} />
+                  <View style={[styles.barMarker, { left: `${position}%` }]} />
+                </View>
+              </View>
+            );
+          })}
         </View>
+        <Text style={styles.detailsTitle}>{copy.participantBlockDetails}</Text>
         {result.blocks.map((block) => (
           <View key={block.position} style={styles.block} wrap={false}>
-            <Text style={styles.blockHeading}>{block.position}. {block.title} · {formatScore(block.score)}</Text>
+            <Text style={styles.blockHeading}>{block.position}. {block.title}</Text>
             {block.questions.map((question) => (
               <View key={question.position} style={styles.question}>
                 <Text style={styles.questionText}>{block.position}.{question.blockPosition}. {question.text}</Text>
@@ -60,8 +92,4 @@ export function ParticipantReportDocument({ result }: { result: ParticipantResul
 
 function formatDate(value: string, locale: string): string {
   return new Intl.DateTimeFormat(locale, { dateStyle: "long", timeStyle: "short" }).format(new Date(value));
-}
-
-function formatScore(value: number): string {
-  return `${value.toFixed(1)}%`;
 }

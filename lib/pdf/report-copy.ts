@@ -29,6 +29,11 @@ export type ReportCopy = {
   participantTitle: string;
   completedOn: string;
   globalScore: string;
+  participantBlockProfile: string;
+  participantBlockDetails: string;
+  basicStage: string;
+  intermediateStage: string;
+  advancedStage: string;
   block: string;
   selectedAnswer: string;
   participantPrivacy: string;
@@ -49,6 +54,7 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
     percentage: "Percentatge", blockPrivacy: "Les dades d’aquest bloc es presenten en conjunt. L’informe no inclou respostes individuals ni permet avaluar cap docent.",
     participantSubject: "Resultat individual pseudonimitzat", participantTitle: "Resultat individual",
     completedOn: "Realitzat el", globalScore: "Puntuació global", block: "Bloc", selectedAnswer: "Resposta seleccionada",
+    participantBlockProfile: "Perfil per blocs (0–100)", participantBlockDetails: "Respostes per blocs", basicStage: "Bàsica", intermediateStage: "Intermèdia", advancedStage: "Avançada",
     participantPrivacy: "Aquest document només conté la participació recuperada amb el compte autenticat. No inclou el nom, el correu, l’identificador pseudònim, identificadors interns, comparacions ni dades d’altres participants.",
   },
   es: {
@@ -63,6 +69,7 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
     blockPrivacy: "Los datos de este bloque se presentan de forma agregada. El informe no incluye respuestas individuales ni permite evaluar a ningún docente.",
     participantSubject: "Resultado individual seudonimizado", participantTitle: "Resultado individual", completedOn: "Realizado el",
     globalScore: "Puntuación global", block: "Bloque", selectedAnswer: "Respuesta seleccionada",
+    participantBlockProfile: "Perfil por bloques (0–100)", participantBlockDetails: "Respuestas por bloques", basicStage: "Básica", intermediateStage: "Intermedia", advancedStage: "Avanzada",
     participantPrivacy: "Este documento solo contiene la participación recuperada con la cuenta autenticada. No incluye el nombre, el correo, el identificador seudónimo, identificadores internos, comparaciones ni datos de otros participantes.",
   },
   eu: {
@@ -77,6 +84,7 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
     blockPrivacy: "Bloke honetako datuak modu agregatuan aurkezten dira. Txostenak ez du banakako erantzunik jasotzen eta ez du irakaslerik ebaluatzeko balio.",
     participantSubject: "Banakako emaitza pseudonimizatua", participantTitle: "Banakako emaitza", completedOn: "Egindako data:",
     globalScore: "Puntuazio globala", block: "Blokea", selectedAnswer: "Hautatutako erantzuna",
+    participantBlockProfile: "Profila blokeka (0–100)", participantBlockDetails: "Erantzunak blokeka", basicStage: "Oinarrizkoa", intermediateStage: "Tartekoa", advancedStage: "Aurreratua",
     participantPrivacy: "Dokumentu honek autentifikatutako kontuarekin berreskuratutako parte-hartzea baino ez du jasotzen. Ez du izenik, helbide elektronikorik, identifikatzaile pseudonimorik, barne-identifikatzailerik, konparaziorik edo beste parte-hartzaileen daturik jasotzen.",
   },
   gl: {
@@ -91,6 +99,7 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
     blockPrivacy: "Os datos deste bloque preséntanse de forma agregada. O informe non inclúe respostas individuais nin permite avaliar ningún docente.",
     participantSubject: "Resultado individual pseudonimizado", participantTitle: "Resultado individual", completedOn: "Realizado o",
     globalScore: "Puntuación global", block: "Bloque", selectedAnswer: "Resposta seleccionada",
+    participantBlockProfile: "Perfil por bloques (0–100)", participantBlockDetails: "Respostas por bloques", basicStage: "Básica", intermediateStage: "Intermedia", advancedStage: "Avanzada",
     participantPrivacy: "Este documento só contén a participación recuperada coa conta autenticada. Non inclúe o nome, o correo, o identificador pseudónimo, identificadores internos, comparacións nin datos doutras persoas participantes.",
   },
   oc: {
@@ -105,6 +114,7 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
     blockPrivacy: "Es donades d’aguest blòc se presenten de manèra agregada. Eth rapòrt non includís responses individuaus ne permet avalorar cap docent.",
     participantSubject: "Resultat individuau pseudonimizat", participantTitle: "Resultat individuau", completedOn: "Realizat eth",
     globalScore: "Puntuacion globau", block: "Blòc", selectedAnswer: "Response seleccionada",
+    participantBlockProfile: "Perfil per blòcs (0–100)", participantBlockDetails: "Responses per blòcs", basicStage: "Basica", intermediateStage: "Intermediària", advancedStage: "Avançada",
     participantPrivacy: "Aguest document sonque conten era participacion recuperada damb eth compde autentificat. Non includís eth nòm, eth corrèu, er identificador pseudonim, identificadors intèrns, comparacions ne donades d’auti participants.",
   },
 };

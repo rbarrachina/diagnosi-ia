@@ -601,15 +601,49 @@ original. Recarregar-la o tancar-la encara esborra les respostes pendents.
 
 Rutes: `/docent` i `/docent/resultats/[publicCode]`
 
-L'àrea docent exigeix sessió Google i mostra només centre, qüestionari, data i
-puntuació de les participacions vinculades a l'identificador opac de la sessió.
+L'àrea docent exigeix sessió Google i mostra només centre, qüestionari i data
+de les participacions vinculades a l'identificador opac de la sessió.
 L'àrea i el resultat propi mostren la mateixa icona `Surt` de la capçalera del
 centre quan la sessió docent és activa.
-El resultat propi ofereix un enllaç de retorn a l'àrea docent dins d'una caixa
-arrodonida amb els colors d'acció de l'aplicació.
-Permet veure respostes i puntuacions pròpies o generar el PDF individual, també
-quan l'espai està tancat. No mostra la identitat docent, identificadors interns,
-resultats del centre, comparacions o dades d'altres participants.
+L'àrea docent i els resultats propis comparteixen una barra lateral plegable,
+inicialment reduïda a icones. Té tres opcions: `Inici`, amb un recompte dels
+qüestionaris fets i l'últim qüestionari; `Nou qüestionari`, que indica que el
+centre facilita el codi i mostra l'accés per codi; i `Qüestionaris`, que mostra
+al centre tots els qüestionaris fets. Aquesta darrera opció desplega un submenú
+amb només els títols dels qüestionaris propis, cadascun amb accés al seu
+resultat. La llista central també permet obrir cadascun dels resultats. Dins
+d'un resultat, el menú conserva aquestes tres opcions i el submenú, sense
+enllaços addicionals al resum ni a les respostes per blocs.
+La targeta per introduir el codi de `Nou qüestionari` té una amplada moderada
+en pantalles grans i ocupa l'espai disponible en pantalles petites.
+L'estat plegat es conserva entre les pàgines docents. Al mòbil, els mateixos
+accessos apareixen en un selector flotant compacte. La barra lateral no redueix
+el nombre de gràfiques per fila en pantalles amples.
+El resultat propi mostra el nom institucional a la capçalera de l'aplicació,
+just abans de les icones. El retorn a la llista de qüestionaris manté el botó arrodonit
+i comparteix fila amb la descàrrega del PDF. El títol `Resultat individual`
+només és accessible als lectors de pantalla. El qüestionari i la versió
+apareixen destacats sota els botons, amb la data en un estil més discret,
+seguits del resum gràfic amb una barra de 0 a
+100 per cada bloc, sense títol ni text introductori addicionals, amb un
+indicador de la posició obtinguda i els tres terços `Bàsica`, `Intermèdia` i
+`Avançada`. Les barres es disposen en una columna al mòbil, dues en amplades
+mitjanes i tres en pantalles amples; dins de cada fila, les barres queden
+alineades encara que els títols tinguin longituds diferents. El valor és la
+suma de les respostes del bloc dividida pel màxim possible, reescalada a 0–100.
+Els límits són exactament un terç i dos terços, sense arrodonir abans de
+classificar. Un valor 0 queda a l'extrem esquerre de l'etapa bàsica. L'etiqueta
+del terç corresponent queda destacada; el lector de pantalla també rep la
+posició numèrica. No es repeteixen el nivell ni la puntuació al costat del
+títol, ni els extrems 0 i 100 sota les barres. Cada barra porta al detall de les
+preguntes i respostes del bloc. No es presenta cap etapa ni percentatge global
+del docent.
+
+El PDF individual segueix la mateixa estructura de resum per blocs i detall de
+respostes. Es pot consultar també quan l'espai està tancat. No mostra la
+identitat docent, identificadors interns, resultats del centre, comparacions o
+dades d'altres participants. La correspondència futura amb quatre dimensions
+i onze criteris queda fora d'aquesta visualització inicial.
 
 ### Consulta de resultats
 

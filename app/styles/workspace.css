@@ -30,6 +30,18 @@
   html[data-admin-sidebar="expanded"] .admin-sidebar {
     width: 15rem;
   }
+
+  html[data-participant-sidebar="collapsed"] .participant-sidebar {
+    width: 72px;
+  }
+
+  html[data-participant-sidebar="collapsed"] .participant-sidebar-expanded-content {
+    display: none;
+  }
+
+  html[data-participant-sidebar="expanded"] .participant-sidebar {
+    width: 15rem;
+  }
 }
 
 .workspace-results .recharts-cartesian-grid line,
@@ -42,4 +54,14 @@
 .workspace-results .recharts-polar-angle-axis-tick text,
 .workspace-results .recharts-polar-radius-axis-tick text {
   fill: var(--color-muted);
+}
+
+.participant-stage-gradient {
+  background: linear-gradient(
+    to right,
+    #ef4444 0%,
+    #facc15 42%,
+    #facc15 58%,
+    #22c55e 100%
+  );
 }

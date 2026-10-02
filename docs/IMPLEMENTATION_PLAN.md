@@ -22,6 +22,10 @@ nom ni persistir-ne el correu a MySQL. El correu queda temporalment a la sessió
 docent mínima per revalidar el domini, i els accessos institucionals continuen
 sent exclusivament agregats.
 
+La presentació individual mostra el perfil per blocs en barres de 0 a 100 amb
+etapes bàsica, intermèdia i avançada per terços; el detall inferior conserva
+les respostes pròpies. El PDF individual manté aquesta mateixa lectura.
+
 La infraestructura d'internacionalització usa catàlegs tipats, selecció
 explícita i una cookie funcional. No fa detecció automàtica del navegador i
 manté separades les traduccions de la interfície dels qüestionaris versionats.

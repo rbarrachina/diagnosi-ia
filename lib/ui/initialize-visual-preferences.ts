@@ -22,10 +22,17 @@ export function initializeVisualPreferences(): void {
     );
     document.documentElement.dataset.adminSidebar =
       storedAdminSidebar === "false" ? "collapsed" : "expanded";
+
+    const storedParticipantSidebar = window.localStorage.getItem(
+      "diagnosi-ia:participant-sidebar-expanded",
+    );
+    document.documentElement.dataset.participantSidebar =
+      storedParticipantSidebar === "true" ? "expanded" : "collapsed";
   } catch {
     document.documentElement.dataset.theme = "light";
     document.documentElement.style.colorScheme = "light";
     document.documentElement.dataset.centreSidebar = "expanded";
     document.documentElement.dataset.adminSidebar = "expanded";
+    document.documentElement.dataset.participantSidebar = "collapsed";
   }
 }
