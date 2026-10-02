@@ -86,6 +86,7 @@ export default async function ParticipantAreaPage({
           ) : view === "new" ? (
             <>
               <h1 className="text-4xl font-semibold tracking-tight"><InterfaceText messageKey="nouQuestionari" /></h1>
+              <p className="mt-4 text-muted"><InterfaceText messageKey="elCentreEtFacilitaraElCodiPerAccedirAlQuestionari" /></p>
               <div className="mt-8 rounded-2xl border border-line bg-surface p-5">
                 {error === "participant-access" && (
                   <div className="mb-4 rounded-xl border border-danger-border bg-danger-bg p-4 text-danger-text" role="alert">

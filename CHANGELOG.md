@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Afegeix a «Nou qüestionari» una indicació breu que el centre facilita el codi
+  d'accés.
+
 - Organitza l'àrea docent en Inici, Nou qüestionari i Qüestionaris. La llista
   central i el submenú permeten obrir els resultats propis; el submenú només
   mostra els títols, sense detalls dels blocs.

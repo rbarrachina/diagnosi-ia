@@ -43,6 +43,7 @@ export const interfaceEs = {
   "lesMevesDiagnosis": "Mis diagnósticos",
   "iniciDocent": "Inicio",
   "nouQuestionari": "Nuevo cuestionario",
+  "elCentreEtFacilitaraElCodiPerAccedirAlQuestionari": "Tu centro te facilitará el código para acceder al cuestionario.",
   "questionarisFets": "Cuestionarios realizados",
   "darrerQuestionari": "Último cuestionario",
   "nomesEsMostrenLesParticipacionsVinculadesDeManeraPseudonimaAlCompte": "Solo se muestran las participaciones vinculadas de forma seudónima a la cuenta actual. No pedimos tu nombre; el correo solo se conserva durante la sesión para validar el dominio y no se guarda en la base de datos.",

@@ -44,6 +44,7 @@ export const interfaceEu = {
   "lesMevesDiagnosis": "Nire diagnostikoak",
   "iniciDocent": "Hasiera",
   "nouQuestionari": "Galdetegi berria",
+  "elCentreEtFacilitaraElCodiPerAccedirAlQuestionari": "Zure ikastetxeak galdetegira sartzeko kodea emango dizu.",
   "questionarisFets": "Egindako galdetegiak",
   "darrerQuestionari": "Azken galdetegia",
   "nomesEsMostrenLesParticipacionsVinculadesDeManeraPseudonimaAlCompte": "Uneko kontuari pseudonimoki lotutako parte-hartzeak bakarrik erakusten dira. Ez dugu zure izena eskatzen; posta saioan bakarrik gordetzen da domeinua balioztatzeko, eta ez da datu-basean gordetzen.",

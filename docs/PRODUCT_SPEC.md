@@ -607,13 +607,13 @@ L'àrea i el resultat propi mostren la mateixa icona `Surt` de la capçalera del
 centre quan la sessió docent és activa.
 L'àrea docent i els resultats propis comparteixen una barra lateral plegable,
 inicialment reduïda a icones. Té tres opcions: `Inici`, amb un recompte dels
-qüestionaris fets i l'últim qüestionari; `Nou qüestionari`, que mostra només
-l'accés per codi; i `Qüestionaris`, que mostra al centre tots els qüestionaris
-fets. Aquesta darrera opció desplega un submenú amb només els títols dels
-qüestionaris propis, cadascun amb accés al seu resultat. La llista central
-també permet obrir cadascun dels resultats. Dins d'un resultat, el menú conserva
-aquestes tres opcions i el submenú, sense enllaços addicionals al resum ni a les
-respostes per blocs.
+qüestionaris fets i l'últim qüestionari; `Nou qüestionari`, que indica que el
+centre facilita el codi i mostra l'accés per codi; i `Qüestionaris`, que mostra
+al centre tots els qüestionaris fets. Aquesta darrera opció desplega un submenú
+amb només els títols dels qüestionaris propis, cadascun amb accés al seu
+resultat. La llista central també permet obrir cadascun dels resultats. Dins
+d'un resultat, el menú conserva aquestes tres opcions i el submenú, sense
+enllaços addicionals al resum ni a les respostes per blocs.
 L'estat plegat es conserva entre les pàgines docents. Al mòbil, els mateixos
 accessos apareixen en un selector flotant compacte. La barra lateral no redueix
 el nombre de gràfiques per fila en pantalles amples.

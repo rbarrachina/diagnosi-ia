@@ -44,6 +44,7 @@ export const interfaceGl = {
   "lesMevesDiagnosis": "As miñas diagnoses",
   "iniciDocent": "Inicio",
   "nouQuestionari": "Novo cuestionario",
+  "elCentreEtFacilitaraElCodiPerAccedirAlQuestionari": "O teu centro facilitarache o código para acceder ao cuestionario.",
   "questionarisFets": "Cuestionarios realizados",
   "darrerQuestionari": "Último cuestionario",
   "nomesEsMostrenLesParticipacionsVinculadesDeManeraPseudonimaAlCompte": "Só se mostran as participacións vinculadas de xeito pseudónimo á conta actual. Non pedimos o teu nome; o correo só se conserva durante a sesión para validar o dominio e non se garda na base de datos.",

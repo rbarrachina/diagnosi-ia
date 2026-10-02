@@ -42,6 +42,7 @@ export const interfaceCa = {
   "lesMevesDiagnosis": "Les meves diagnosis",
   "iniciDocent": "Inici",
   "nouQuestionari": "Nou qüestionari",
+  "elCentreEtFacilitaraElCodiPerAccedirAlQuestionari": "El teu centre et facilitarà el codi per accedir al qüestionari.",
   "questionarisFets": "Qüestionaris fets",
   "darrerQuestionari": "Darrer qüestionari",
   "nomesEsMostrenLesParticipacionsVinculadesDeManeraPseudonimaAlCompte": "Només es mostren les participacions vinculades de manera pseudònima al compte actual. No demanem el teu nom; el correu només es conserva durant la sessió per validar el domini i no es desa a la base de dades.",

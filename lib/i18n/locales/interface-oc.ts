@@ -44,6 +44,7 @@ export const interfaceOc = {
   "lesMevesDiagnosis": "Es mies diagnosis",
   "iniciDocent": "Inici",
   "nouQuestionari": "Qüestionari nau",
+  "elCentreEtFacilitaraElCodiPerAccedirAlQuestionari": "Eth tòn centre te facilitarà eth còdi entà accedir ath qüestionari.",
   "questionarisFets": "Qüestionaris hèts",
   "darrerQuestionari": "Darrèr qüestionari",
   "nomesEsMostrenLesParticipacionsVinculadesDeManeraPseudonimaAlCompte": "Sonque se mòstren es participacions restacades de manèra pseudonima ath compde actuau. Non demanam eth tòn nòm; eth corrèu sonque se consèrve pendent era session entà validar eth domeni e non se sauve ena basa de dades.",
