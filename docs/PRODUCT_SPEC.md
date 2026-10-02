@@ -606,14 +606,19 @@ de les participacions vinculades a l'identificador opac de la sessió.
 L'àrea i el resultat propi mostren la mateixa icona `Surt` de la capçalera del
 centre quan la sessió docent és activa.
 L'àrea docent i els resultats propis comparteixen una barra lateral plegable,
-inicialment reduïda a icones. Permet anar a la llista de diagnosis, a l'accés
-per codi i a cadascuna de les participacions pròpies. Dins d'un resultat,
-també permet saltar al resum gràfic, al detall de respostes i a cada bloc.
+inicialment reduïda a icones. Té tres opcions: `Inici`, amb un recompte dels
+qüestionaris fets i l'últim qüestionari; `Nou qüestionari`, que mostra només
+l'accés per codi; i `Qüestionaris`, que mostra al centre tots els qüestionaris
+fets. Aquesta darrera opció desplega un submenú amb només els títols dels
+qüestionaris propis, cadascun amb accés al seu resultat. La llista central
+també permet obrir cadascun dels resultats. Dins d'un resultat, el menú conserva
+aquestes tres opcions i el submenú, sense enllaços addicionals al resum ni a les
+respostes per blocs.
 L'estat plegat es conserva entre les pàgines docents. Al mòbil, els mateixos
 accessos apareixen en un selector flotant compacte. La barra lateral no redueix
 el nombre de gràfiques per fila en pantalles amples.
 El resultat propi mostra el nom institucional a la capçalera de l'aplicació,
-just abans de les icones. El retorn a l'àrea docent recupera el botó arrodonit
+just abans de les icones. El retorn a la llista de qüestionaris manté el botó arrodonit
 i comparteix fila amb la descàrrega del PDF. El títol `Resultat individual`
 només és accessible als lectors de pantalla. El qüestionari i la versió
 apareixen destacats sota els botons, amb la data en un estil més discret,

@@ -1,61 +1,34 @@
 "use client";
 
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 
 import { useInterfaceTranslator } from "@/components/i18n/interface-text";
 import { useParticipantSidebarState } from "@/components/participants/use-participant-sidebar-state";
 
-type BlockLink = { position: number; title: string };
-type ParticipationLink = { publicCode: string; centreName: string; questionnaireTitle: string };
-
-function subscribeToHash(onChange: () => void) {
-  window.addEventListener("hashchange", onChange);
-  return () => window.removeEventListener("hashchange", onChange);
-}
-
-function getHash() {
-  return window.location.hash;
-}
+type ParticipationLink = { publicCode: string; questionnaireTitle: string };
+type ParticipantView = "home" | "new" | "questionnaires" | "result";
 
 export function ParticipantWorkspaceFrame({
   activePublicCode,
-  blocks = [],
   children,
   participations,
+  view,
 }: {
   activePublicCode?: string;
-  blocks?: BlockLink[];
   children: ReactNode;
   participations: ParticipationLink[];
+  view: ParticipantView;
 }) {
   const t = useInterfaceTranslator();
   const { expanded, toggle } = useParticipantSidebarState();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const activeHash = useSyncExternalStore(subscribeToHash, getHash, () => "");
   const sections = [
-    { href: "/docent#les-meves-diagnosis", label: t("lesMevesDiagnosis"), icon: "home" as const },
-    { href: "/docent#acces-questionari", label: t("accedeixAUnAltreQuestionari"), icon: "code" as const },
-    ...participations.map((item) => ({
-      href: `/docent/resultats/${item.publicCode}`,
-      label: item.centreName,
-      title: `${item.centreName} · ${item.questionnaireTitle}`,
-      icon: "result" as const,
-    })),
-    ...(activePublicCode ? [
-      { href: "#resum-per-blocs", label: t("resum"), icon: "summary" as const },
-      { href: "#detall-per-blocs", label: t("detallPerBlocs"), icon: "detail" as const },
-    ] : []),
+    { href: "/docent", label: t("iniciDocent"), icon: "home" as const, active: view === "home" },
+    { href: "/docent?view=new", label: t("nouQuestionari"), icon: "code" as const, active: view === "new" },
+    { href: "/docent?view=questionnaires", label: t("questionaris"), icon: "result" as const, active: view === "questionnaires" || view === "result" },
   ];
-
-  function isActive(href: string) {
-    if (href === "/docent#les-meves-diagnosis") return !activePublicCode && activeHash !== "#acces-questionari";
-    if (href === "/docent#acces-questionari") return !activePublicCode && activeHash === "#acces-questionari";
-    if (href.startsWith("/docent/resultats/")) return href.endsWith(`/${activePublicCode}`);
-    if (href === "#resum-per-blocs") return activePublicCode && (activeHash === "" || activeHash === href);
-    if (href === "#detall-per-blocs") return activeHash === href || activeHash.startsWith("#bloc-");
-    return false;
-  }
+  const showQuestionnaires = view === "questionnaires" || view === "result";
 
   return (
     <div className="relative mx-auto flex h-[100svh] w-full max-w-7xl overflow-hidden pt-20">
@@ -76,28 +49,28 @@ export function ParticipantWorkspaceFrame({
           {sections.map((section) => (
             <Link
               aria-label={section.label}
-              aria-current={isActive(section.href) ? "location" : undefined}
-              className={`flex h-11 items-center rounded-xl px-3 text-sm font-medium transition hover:bg-accent-soft hover:text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${isActive(section.href) ? "bg-accent-soft text-action" : "text-muted"} ${expanded ? "lg:justify-start" : "lg:justify-center"}`}
+              aria-current={view !== "result" && section.active ? "page" : undefined}
+              className={`flex h-11 items-center rounded-xl px-3 text-sm font-medium transition hover:bg-accent-soft hover:text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${section.active ? "bg-accent-soft text-action" : "text-muted"} ${expanded ? "lg:justify-start" : "lg:justify-center"}`}
               href={section.href}
               key={section.href}
-              title={"title" in section ? section.title : section.label}
+              title={section.label}
             >
               <SectionIcon name={section.icon} />
               {expanded ? <span className="participant-sidebar-expanded-content ml-3 hidden truncate lg:inline">{section.label}</span> : null}
             </Link>
           ))}
-          {activePublicCode && expanded ? (
+          {showQuestionnaires && expanded ? (
             <div className="participant-sidebar-expanded-content hidden border-t border-line pt-3 lg:block">
-              {blocks.map((block) => (
-                <a
-                  aria-current={activeHash === `#bloc-${block.position}` ? "location" : undefined}
-                  className={`block truncate rounded-lg px-3 py-2 text-sm transition hover:bg-accent-soft hover:text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${activeHash === `#bloc-${block.position}` ? "bg-accent-soft text-action" : "text-muted"}`}
-                  href={`#bloc-${block.position}`}
-                  key={block.position}
-                  title={`${block.position}. ${block.title}`}
+              {participations.map((item) => (
+                <Link
+                  aria-current={activePublicCode === item.publicCode ? "page" : undefined}
+                  className={`block truncate rounded-lg px-3 py-2 text-sm transition hover:bg-accent-soft hover:text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${activePublicCode === item.publicCode ? "bg-accent-soft text-action" : "text-muted"}`}
+                  href={`/docent/resultats/${item.publicCode}`}
+                  key={item.publicCode}
+                  title={item.questionnaireTitle}
                 >
-                  {block.position}. {block.title}
-                </a>
+                  {item.questionnaireTitle}
+                </Link>
               ))}
             </div>
           ) : null}
@@ -113,8 +86,8 @@ export function ParticipantWorkspaceFrame({
           <nav aria-label={t("menuDocent")} className="absolute bottom-14 left-0 max-h-[70svh] w-[min(20rem,calc(100vw-2.5rem))] overflow-y-auto rounded-2xl border border-line bg-surface p-2 shadow-xl">
             {sections.map((section) => (
               <Link
-                aria-current={isActive(section.href) ? "location" : undefined}
-                className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium hover:bg-accent-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${isActive(section.href) ? "bg-accent-soft text-action" : "text-ink"}`}
+                aria-current={view !== "result" && section.active ? "page" : undefined}
+                className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium hover:bg-accent-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${section.active ? "bg-accent-soft text-action" : "text-ink"}`}
                 href={section.href}
                 key={section.href}
                 onClick={() => setMobileOpen(false)}
@@ -123,17 +96,17 @@ export function ParticipantWorkspaceFrame({
                 {section.label}
               </Link>
             ))}
-            {activePublicCode ? <div className="border-t border-line pt-2">
-              {blocks.map((block) => (
-                <a
-                  aria-current={activeHash === `#bloc-${block.position}` ? "location" : undefined}
-                  className={`block truncate rounded-xl px-3 py-2 text-sm hover:bg-accent-soft hover:text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${activeHash === `#bloc-${block.position}` ? "bg-accent-soft text-action" : "text-muted"}`}
-                  href={`#bloc-${block.position}`}
-                  key={block.position}
+            {showQuestionnaires ? <div className="border-t border-line pt-2">
+              {participations.map((item) => (
+                <Link
+                  aria-current={activePublicCode === item.publicCode ? "page" : undefined}
+                  className={`block truncate rounded-xl px-3 py-2 text-sm hover:bg-accent-soft hover:text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${activePublicCode === item.publicCode ? "bg-accent-soft text-action" : "text-muted"}`}
+                  href={`/docent/resultats/${item.publicCode}`}
+                  key={item.publicCode}
                   onClick={() => setMobileOpen(false)}
                 >
-                  {block.position}. {block.title}
-                </a>
+                  {item.questionnaireTitle}
+                </Link>
               ))}
             </div> : null}
           </nav>
@@ -171,16 +144,12 @@ function SidebarToggleIcon({ expanded }: { expanded: boolean }) {
   );
 }
 
-function SectionIcon({ name }: { name: "home" | "code" | "result" | "summary" | "detail" }) {
+function SectionIcon({ name }: { name: "home" | "code" | "result" }) {
   const path = name === "home"
     ? "m4 10 8-6 8 6v10H4V10Zm5 10v-6h6v6"
     : name === "code"
       ? "M12 5v14M5 12h14"
-      : name === "result"
-        ? "M6 3h9l3 3v15H6V3Zm3 8h6m-6 4h6"
-        : name === "summary"
-          ? "M4 17V9m5 8V5m5 12v-6m5 6V7"
-          : "M5 6h14M5 12h14M5 18h14";
+      : "M6 3h9l3 3v15H6V3Zm3 8h6m-6 4h6";
   return (
     <svg aria-hidden="true" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24">
       <path d={path} />

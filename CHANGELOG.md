@@ -6,9 +6,12 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Organitza l'àrea docent en Inici, Nou qüestionari i Qüestionaris. La llista
+  central i el submenú permeten obrir els resultats propis; el submenú només
+  mostra els títols, sense detalls dels blocs.
+
 - Comparteix el menú lateral plegable entre l'àrea docent i els resultats:
-  permet accedir al qüestionari per codi, a totes les diagnosis pròpies i al
-  resum i les respostes del resultat obert. Inclou selector compacte al mòbil.
+  conserva l'accés a totes les diagnosis pròpies. Inclou selector compacte al mòbil.
 
 - Destaca el nom i la versió del qüestionari al resultat docent i deixa la data
   en un estil més discret.
