@@ -6,6 +6,8 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Redueix l'amplada de la targeta per introduir el codi a «Nou qüestionari».
+
 - Afegeix a «Nou qüestionari» una indicació breu que el centre facilita el codi
   d'accés.
 

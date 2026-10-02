@@ -614,6 +614,8 @@ amb només els títols dels qüestionaris propis, cadascun amb accés al seu
 resultat. La llista central també permet obrir cadascun dels resultats. Dins
 d'un resultat, el menú conserva aquestes tres opcions i el submenú, sense
 enllaços addicionals al resum ni a les respostes per blocs.
+La targeta per introduir el codi de `Nou qüestionari` té una amplada moderada
+en pantalles grans i ocupa l'espai disponible en pantalles petites.
 L'estat plegat es conserva entre les pàgines docents. Al mòbil, els mateixos
 accessos apareixen en un selector flotant compacte. La barra lateral no redueix
 el nombre de gràfiques per fila en pantalles amples.
