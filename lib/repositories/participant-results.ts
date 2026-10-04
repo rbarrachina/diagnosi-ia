@@ -26,7 +26,11 @@ type AnswerRow = RowDataPacket & {
   question_position: number;
   question_block_position: number;
   question_text: string;
+  randomize_options: number | boolean;
   value: ScaleValue;
+  selected_option_id: string;
+  option_id: string;
+  option_value: ScaleValue;
   option_text: string;
 };
 
@@ -92,7 +96,11 @@ export async function getParticipantResult(params: {
         questions.position as question_position,
         questions.block_position as question_block_position,
         questions.text as question_text,
+        questions.randomize_options,
         answers.value,
+        answers.option_id as selected_option_id,
+        question_options.id as option_id,
+        question_options.score as option_value,
         question_options.text as option_text
       from participant_submissions
       inner join diagnostic_spaces
@@ -104,15 +112,14 @@ export async function getParticipantResult(params: {
         on questions.id = answers.question_id
         and questions.questionnaire_id = answers.questionnaire_id
       inner join question_options
-        on question_options.id = answers.option_id
-        and question_options.question_id = answers.question_id
-        and question_options.questionnaire_id = answers.questionnaire_id
+        on question_options.question_id = questions.id
+        and question_options.questionnaire_id = questions.questionnaire_id
       inner join question_blocks
         on question_blocks.id = questions.block_id
         and question_blocks.questionnaire_id = questions.questionnaire_id
       where participant_submissions.participant_user_id = ?
         and diagnostic_spaces.public_code = ?
-      order by question_blocks.position, questions.block_position
+      order by question_blocks.position, questions.block_position, question_options.score
     `,
     [params.participantUserId, params.publicCode],
   );
@@ -145,13 +152,21 @@ function groupAnswers(rows: AnswerRow[]): ParticipantBlockResult[] {
       score: 0,
       questions: [],
     };
-    block.questions.push({
-      position: row.question_position,
-      blockPosition: row.question_block_position,
-      text: row.question_text,
-      value: row.value,
-      label: row.option_text,
-    });
+    let question = block.questions.find((item) => item.position === row.question_position);
+    if (!question) {
+      question = {
+        position: row.question_position,
+        blockPosition: row.question_block_position,
+        text: row.question_text,
+        value: row.value,
+        label: "",
+        randomizeOptions: Boolean(row.randomize_options),
+        options: [],
+      };
+      block.questions.push(question);
+    }
+    question.options.push({ value: row.option_value, label: row.option_text });
+    if (row.option_id === row.selected_option_id) question.label = row.option_text;
     blocks.set(row.block_position, block);
   }
 

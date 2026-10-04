@@ -206,9 +206,12 @@ transaccions server-side.
 ## Resultats agregats
 
 Les consultes agrupen per `question_id` i `value` i retornen només el recompte.
-No seleccionen `submission_id`, timestamps individuals ni combinacions de
-respostes. El model final inclou totals, percentatges globals, per bloc i per
-pregunta, i distribucions agregades.
+Per a la distribució de puntuacions per bloc, una subconsulta SQL agrupa
+temporalment per enviament i bloc per calcular-ne la puntuació normalitzada; la
+consulta exterior retorna només els recomptes en nou trams percentuals. Cap
+`submission_id`, puntuació individual o combinació de respostes surt de MySQL.
+El model final inclou totals, percentatges globals, per bloc i per pregunta, i
+distribucions agregades.
 
 Els resultats d'administracio poden limitar l'agregacio a un `centre_id`
 identificat. La subconsulta d'espais elegibles aplica abans el llindar mínim de

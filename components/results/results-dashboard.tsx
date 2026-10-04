@@ -8,12 +8,15 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Legend,
   PolarAngleAxis,
   PolarGrid,
   PolarRadiusAxis,
   Radar,
   RadarChart,
+  ReferenceArea,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   type TooltipContentProps,
@@ -68,6 +71,25 @@ function blockChartData(blocks: BlockResult[], t: InterfaceTranslator) {
   }));
 }
 
+function blockStageLabel(value: number, t: InterfaceTranslator): string {
+  if (value < 100 / 3) return t("etapaBasica");
+  if (value < 200 / 3) return t("etapaIntermedia");
+  return t("etapaAvancada");
+}
+
+function blockStageFill(value: number): string {
+  if (value < 100 / 3) return "#fca5a5";
+  if (value < 200 / 3) return "#fde68a";
+  return "#86efac";
+}
+
+function blockStageTextClass(value: number | null): string {
+  if (value === null) return "text-muted";
+  if (value < 100 / 3) return "text-red-700 dark:text-red-300";
+  if (value < 200 / 3) return "text-amber-700 dark:text-amber-300";
+  return "text-green-700 dark:text-green-300";
+}
+
 function questionDistributionData(block: BlockResult) {
   return block.questions.map((question) => ({
     name: `${block.position}.${question.blockPosition}`,
@@ -81,6 +103,14 @@ function questionDistributionData(block: BlockResult) {
         question.distribution.find((bucket) => bucket.value === option.value)?.percentage ?? 0,
       ]),
     ),
+  }));
+}
+
+function blockScoreDistributionData(block: BlockResult) {
+  return block.scoreDistribution.map((bucket) => ({
+    position: bucket.startPercentage + 100 / 18,
+    range: `${bucket.startPercentage.toFixed(1)}–${(bucket.startPercentage + 100 / 9).toFixed(1)}%`,
+    count: bucket.count,
   }));
 }
 
@@ -166,8 +196,6 @@ export function ResultsDashboard({
   title = "Diagnosi IA",
 }: ResultsDashboardProps) {
   const t = useInterfaceTranslator();
-  const chartAccent = "var(--color-action)";
-
   return (
     <section
       className={`mx-auto w-full max-w-6xl ${
@@ -247,10 +275,12 @@ export function ResultsDashboard({
         </div>
         <div className="rounded-md border border-line bg-surface p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-            <InterfaceText messageKey="percentatgeGlobal" />
+            <InterfaceText messageKey="cdDocentEnIa" />
           </p>
-          <p className="mt-2 text-3xl font-semibold text-ink">
-            {formatPercentage(results.globalAverage, t)}
+          <p className={`mt-2 text-3xl font-bold ${blockStageTextClass(results.globalAverage)}`}>
+            {results.globalAverage === null
+              ? t("senseDades")
+              : blockStageLabel(results.globalAverage, t)}
           </p>
         </div>
         <div className="rounded-md border border-line bg-surface p-4 shadow-sm">
@@ -283,12 +313,53 @@ export function ResultsDashboard({
               minWidth={0}
               width="100%"
             >
-              <BarChart data={blockChartData(results.blocks, t)}>
-                <CartesianGrid stroke="#d8dee6" strokeDasharray="3 3" />
+              <BarChart
+                accessibilityLayer={false}
+                data={blockChartData(results.blocks, t)}
+              >
+                <defs>
+                  <linearGradient id="blockBarGradient" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stopColor="#ef4444" />
+                    <stop offset="42%" stopColor="#facc15" />
+                    <stop offset="58%" stopColor="#facc15" />
+                    <stop offset="100%" stopColor="#22c55e" />
+                  </linearGradient>
+                </defs>
+                <ReferenceArea
+                  y1={0}
+                  y2={100}
+                  fill="url(#blockBarGradient)"
+                  fillOpacity={0.42}
+                  stroke="none"
+                />
+                <CartesianGrid vertical={false} stroke="#d8dee6" strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis domain={[0, 100]} unit="%" />
-                <Tooltip />
-                <Bar dataKey="percentatge" fill={chartAccent} radius={[4, 4, 0, 0]} />
+                <YAxis
+                  domain={[0, 100]}
+                  ticks={[100 / 6, 50, 250 / 3]}
+                  tickFormatter={(value: number) => blockStageLabel(value, t)}
+                  tickLine={false}
+                  width={110}
+                />
+                <ReferenceLine y={100 / 3} stroke="#94a3b8" strokeDasharray="2 4" strokeWidth={1} />
+                <ReferenceLine y={200 / 3} stroke="#94a3b8" strokeDasharray="2 4" strokeWidth={1} />
+                <Bar
+                  activeBar={false}
+                  barSize={44}
+                  dataKey="percentatge"
+                  fill="transparent"
+                  radius={[4, 4, 0, 0]}
+                >
+                  {results.blocks.map((block) => (
+                    <Cell
+                      key={block.position}
+                      fill={blockStageFill(block.average ?? 0)}
+                      fillOpacity={0.3}
+                      stroke="#111827"
+                      strokeWidth={2}
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -300,17 +371,28 @@ export function ResultsDashboard({
               width="100%"
             >
               <RadarChart data={blockChartData(results.blocks, t)}>
-                <PolarGrid stroke="#d8dee6" />
+                <defs>
+                  <radialGradient id="blockRadarGradient" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#ef4444" />
+                    <stop offset="48%" stopColor="#facc15" />
+                    <stop offset="100%" stopColor="#22c55e" />
+                  </radialGradient>
+                </defs>
+                <PolarGrid
+                  fill="url(#blockRadarGradient)"
+                  fillOpacity={0.68}
+                  stroke="#d8dee6"
+                />
                 <PolarAngleAxis dataKey="name" tick={{ fill: "#334155", fontSize: 12 }} />
-                <PolarRadiusAxis angle={90} domain={[0, 100]} tickCount={5} />
-                <Tooltip />
+                <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} tickLine={false} axisLine={false} />
                 <Radar
+                  activeDot={false}
                   dataKey="percentatge"
-                  fill={chartAccent}
-                  fillOpacity={0.24}
+                  fill="transparent"
+                  fillOpacity={0}
                   name={t("percentatge")}
-                  stroke={chartAccent}
-                  strokeWidth={2}
+                  stroke="#111827"
+                  strokeWidth={3}
                 />
               </RadarChart>
             </ResponsiveContainer>
@@ -365,6 +447,79 @@ export function ResultsDashboard({
               <p className="text-sm font-semibold text-muted">
                 <InterfaceText messageKey="percentatge" />{" "}{formatPercentage(block.average, t)}
               </p>
+            </div>
+
+            <h3 className="mt-4 text-sm font-semibold text-ink">
+              <InterfaceText messageKey="distribucioPuntuacionsPerBloc" />
+            </h3>
+            <div aria-hidden="true" className="mt-2 h-48 min-w-0">
+              <ResponsiveContainer
+                height="100%"
+                initialDimension={CHART_INITIAL_DIMENSION}
+                minWidth={0}
+                width="100%"
+              >
+                <BarChart data={blockScoreDistributionData(block)} margin={{ bottom: 8 }}>
+                  <defs>
+                    <linearGradient
+                      id={`blockScoreGradient-${block.position}`}
+                      x1="0"
+                      y1="0"
+                      x2="1"
+                      y2="0"
+                    >
+                      <stop offset="0%" stopColor="#ef4444" />
+                      <stop offset="42%" stopColor="#facc15" />
+                      <stop offset="58%" stopColor="#facc15" />
+                      <stop offset="100%" stopColor="#22c55e" />
+                    </linearGradient>
+                  </defs>
+                  <ReferenceArea
+                    x1={0}
+                    x2={100}
+                    fill={`url(#blockScoreGradient-${block.position})`}
+                    fillOpacity={0.68}
+                    stroke="none"
+                    zIndex={-100}
+                  />
+                  <CartesianGrid vertical={false} stroke="#d8dee6" strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="position"
+                    domain={[0, 100]}
+                    interval={0}
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(value: number) => {
+                      const start = Math.floor(value / (100 / 9)) * (100 / 9);
+                      return `${start.toFixed(0)}–${(start + 100 / 9).toFixed(0)}`;
+                    }}
+                    ticks={Array.from({ length: 9 }, (_, index) => (index + 0.5) * (100 / 9))}
+                    type="number"
+                  />
+                  <YAxis allowDecimals={false} tickLine={false} width={28} />
+                  <Tooltip
+                    cursor={false}
+                    formatter={(value) => [value, t("docents")]}
+                    labelFormatter={(_, payload) => String(payload[0]?.payload.range ?? "")}
+                  />
+                  <ReferenceLine x={100 / 3} stroke="#64748b" strokeDasharray="2 4" />
+                  <ReferenceLine x={200 / 3} stroke="#64748b" strokeDasharray="2 4" />
+                  <Bar
+                    activeBar={false}
+                    barSize={24}
+                    dataKey="count"
+                    fill="transparent"
+                  >
+                    {block.scoreDistribution.map((bucket) => (
+                      <Cell
+                        key={bucket.startPercentage}
+                        fill="transparent"
+                        stroke="#111827"
+                        strokeWidth={2}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
 
             <div aria-hidden="true" className="mt-4 h-56 min-w-0">
@@ -434,9 +589,6 @@ export function ResultsDashboard({
 
                         return (
                           <td className="whitespace-nowrap py-3 pr-4 text-muted" key={option.value}>
-                            <span className="block font-medium text-ink">
-                              {bucket.label}
-                            </span>
                             {bucket.count} ({bucket.percentage.toFixed(1)}%)
                           </td>
                         );

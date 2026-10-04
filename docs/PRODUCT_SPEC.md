@@ -548,10 +548,18 @@ l'administrador en l'idioma propi del qüestionari. Les puntuacions són fixes:
 
 No hi ha camps oberts.
 
+Les opcions de resposta ocupen tota l'amplada de la targeta; els controls de
+selecció no es mostren visualment, però es mantenen accessibles amb teclat i
+lectors de pantalla. L'opció triada destaca amb més contrast de vora i fons en
+tema clar i fosc, tant amb colors graduats com amb un sol color.
+
 La introducció resumeix l'objectiu i el nombre de preguntes obligatòries amb
 una única participació per docent. Dos blocs breus expliquen la privacitat
 (sense nom i correu només durant la sessió) i els resultats (recuperació pròpia
 amb vinculació pseudònima i accés institucional exclusivament de conjunt).
+En pantalles amples, el formulari públic comparteix l'amplada màxima i els
+marges horitzontals de la capçalera, perquè les opcions llargues ocupin menys
+línies.
 
 Cada pregunta pot activar un ordre aleatori independent. En aquest cas les
 quatre opcions es barregen en obrir el qüestionari i mantenen aquell ordre
@@ -561,8 +569,11 @@ només l'identificador de l'opció i el servidor n'obté la puntuació. Els
 resultats i informes ordenen sempre les opcions de `0` a `3`.
 
 Quan falten respostes, el formulari identifica les preguntes pendents, les
-associa als controls corresponents i porta el focus a la primera. La llista
-d'errors permet saltar directament a qualsevol pregunta pendent. El formulari
+associa als controls corresponents i porta el focus a la primera sense moure
+la pàgina. La llista d'errors permet saltar directament a qualsevol pregunta
+pendent. El formulari conserva la posició de lectura quan es completa
+l'última resposta pendent; el desplaçament automàtic a l'inici només es fa en
+canviar de bloc. El formulari
 d'accés per codi mostra el format requerit al placeholder, conserva l'ajuda per
 als lectors de pantalla i associa l'error de format al camp, sota els controls.
 La comprovació pública només valida el format; els errors posteriors que podrien
@@ -639,8 +650,16 @@ títol, ni els extrems 0 i 100 sota les barres. Cada barra porta al detall de le
 preguntes i respostes del bloc. No es presenta cap etapa ni percentatge global
 del docent.
 
-El PDF individual segueix la mateixa estructura de resum per blocs i detall de
-respostes. Es pot consultar també quan l'espai està tancat. No mostra la
+El resultat propi presenta cada bloc en un desplegable. En obrir-lo, mostra les
+preguntes i les quatre opcions de resposta amb el mateix disseny del qüestionari;
+la resposta triada queda destacada. Les preguntes amb ordre aleatori conserven
+els colors neutres i mostren les opcions en ordre de puntuació, perquè l'ordre
+aleatori de la sessió no es desa. El PDF individual mostra igualment les
+quatre opcions de cada pregunta i destaca la resposta triada, sense etiqueta ni
+puntuació numèrica; les preguntes s'agrupen sota el títol del bloc. Manté
+l'estructura de resum per blocs i detall de respostes. La data i l'hora de realització es
+mostren en la zona horària `Europe/Madrid`, independentment de la zona del
+servidor. Es pot consultar també quan l'espai està tancat. No mostra la
 identitat docent, identificadors interns, resultats del centre, comparacions o
 dades d'altres participants. La correspondència futura amb quatre dimensions
 i onze criteris queda fora d'aquesta visualització inicial.
@@ -663,10 +682,22 @@ El servidor valida el token i retorna només dades de conjunt:
 - Versio del qüestionari.
 - Nombre total de respostes.
 - Percentatge global normalitzat a partir de l'escala 0-3.
+- A la targeta resum, el percentatge global es representa com l'etapa agregada
+  `Bàsica`, `Intermèdia` o `Avançada`, sota el títol `CD docent en IA` i amb
+  el color corresponent; si no hi ha dades, es mostra `Sense dades`.
 - Percentatge per bloc.
-- Grafica d'aranya i grafica de barres per bloc.
+- Distribució agregada de les puntuacions docents de cada bloc en nou trams
+  percentuals; només es retornen recomptes, sense puntuacions ni identificadors
+  individuals.
+- Gràfica de barres per bloc amb l'eix vertical etiquetat com a nivell bàsic,
+  intermedi i avançat. Dues línies fines marquen els límits dels rangs; el fons
+  té un degradat de vermell a verd. Les barres són estretes, amb farcit semitransparent
+  pastel segons l'etapa i contorn negre.
+- Gràfica d'aranya per bloc sense etiquetes numèriques de percentatge i amb un
+  degradat de color de valors baixos a alts.
 - Percentatge per pregunta.
-- Distribucio per pregunta.
+- Distribució per pregunta amb recomptes i percentatges per puntuació, sense
+  repetir el text de cada opció a la taula.
 - Grafiques apilades amb les quatre opcions.
 - Text breu d'interpretació.
 

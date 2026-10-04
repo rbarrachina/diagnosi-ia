@@ -108,6 +108,8 @@ Estat: completada.
 
 - Validació de propietat o token al servidor.
 - Consultes MySQL agregades.
+- Distribució agregada de les puntuacions per bloc en nou trams, tres per
+  etapa, calculada a MySQL sense retornar puntuacions individuals ni identificadors.
 - Tauler i PDF sense files individuals.
 - Token privat només al fragment de l'enllaç i al cos POST.
 - Avís metodològic amb poques respostes.

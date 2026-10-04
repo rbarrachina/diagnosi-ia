@@ -78,6 +78,11 @@ describe("MySQL aggregated results repository", () => {
       { value: 2, label: "Bastant / Habitualment", count: 0, percentage: 0 },
       { value: 3, label: "Molt / Soc un referent al centre", count: 1, percentage: 50 },
     ]);
+    expect(results.blocks[0].scoreDistribution).toHaveLength(9);
+    expect(results.blocks[0].scoreDistribution[4]).toEqual({
+      startPercentage: (100 / 9) * 4,
+      count: 1,
+    });
 
     const serialized = JSON.stringify(results);
     expect(serialized).not.toContain("submission-");
@@ -132,7 +137,7 @@ describe("MySQL aggregated results repository", () => {
     expect(results.totalSubmissions).toBe(2);
 
     const answerCountCall = currentPool.calls.find((call) =>
-      call.query.includes("from answers"),
+      call.query.includes("group by answers.question_id"),
     );
 
     expect(answerCountCall?.query).toContain("group by answers.question_id");
@@ -141,6 +146,16 @@ describe("MySQL aggregated results repository", () => {
     expect(answerCountCall?.query).toContain("eligible_spaces");
     expect(answerCountCall?.query).toContain("having count(space_submissions.id) > ?");
     expect(answerCountCall?.values).toEqual(["002", 3, "002"]);
+
+    const blockScoreCall = currentPool.calls.find((call) =>
+      call.query.includes("score_bucket"),
+    );
+    expect(blockScoreCall?.query).toContain("group by submissions.id, questions.block_id");
+    expect(blockScoreCall?.query).toContain("least(8, floor(sum(answers.value) * 9 / (count(*) * 3)))");
+    expect(blockScoreCall?.query).toContain("eligible_spaces");
+    expect(blockScoreCall?.query).toContain("having count(space_submissions.id) > ?");
+    expect(blockScoreCall?.query).not.toContain("select submissions.id,");
+    expect(blockScoreCall?.values).toEqual(["002", 3, "002"]);
   });
 
   it("counts only diagnostic spaces above the configured admin threshold", async () => {
@@ -178,11 +193,18 @@ describe("MySQL aggregated results repository", () => {
     expect(results.diagnosticSpaceCount).toBeUndefined();
 
     const answerCountCall = currentPool.calls.find((call) =>
-      call.query.includes("from answers"),
+      call.query.includes("group by answers.question_id"),
     );
     expect(answerCountCall?.query).toContain("diagnostic_spaces.centre_id = ?");
     expect(answerCountCall?.query).toContain("having count(space_submissions.id) > ?");
     expect(answerCountCall?.values).toEqual(["002", centreId, 3, "002"]);
+
+    const blockScoreCall = currentPool.calls.find((call) =>
+      call.query.includes("score_bucket"),
+    );
+    expect(blockScoreCall?.query).toContain("diagnostic_spaces.centre_id = ?");
+    expect(blockScoreCall?.query).toContain("having count(space_submissions.id) > ?");
+    expect(blockScoreCall?.values).toEqual(["002", centreId, 3, "002"]);
   });
 
   it("uses only aggregated answer counts from MySQL", () => {
@@ -247,6 +269,14 @@ function createPoolMock(): PoolMock {
 
       if (normalizedQuery.includes("count(*) as diagnostic_space_count")) {
         return [[{ diagnostic_space_count: 4 }]];
+      }
+
+      if (normalizedQuery.includes("score_bucket")) {
+        return [[
+          { block_id: "01", score_bucket: 4, submission_count: 1 },
+          { block_id: "01", score_bucket: 6, submission_count: 1 },
+          { block_id: "02", score_bucket: 1, submission_count: 2 },
+        ]];
       }
 
       if (normalizedQuery.includes("from answers")) {

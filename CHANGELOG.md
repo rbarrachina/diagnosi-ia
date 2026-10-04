@@ -6,6 +6,58 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Substitueix el percentatge global de la targeta de resum per l'etapa de CD
+  docent en IA, destacada en gran i amb el color corresponent.
+
+- Afegeix al principi de cada bloc una distribució de les puntuacions docents
+  en nou trams percentuals, tres per etapa, calculada i retornada exclusivament
+  com a recomptes agregats.
+
+- Actualitza els gràfics de resultats per mostrar els nivells bàsic, intermedi i
+  avançat a l'eix vertical, amb línies fines que marquen els límits dels rangs i
+  degradat de fons; el gràfic d'aranya conserva el degradat i amaga percentatges.
+
+- Fa més estretes les barres del resum per blocs i les omple amb colors pastel
+  semitransparents segons l'etapa, mantenint el contorn negre.
+
+- Treu el text de les opcions de la taula de distribució per pregunta; conserva
+  els recomptes i percentatges sota cada puntuació.
+
+- Amaga els cercles dels controls de resposta i amplia l'espai disponible per
+  al text, mantenint la selecció accessible amb teclat i lectors de pantalla.
+  Reforça el contrast de l'opció triada en els temes clar i fosc.
+
+- Amplia el formulari públic fins a l'amplada de la capçalera en pantalles
+  grans, perquè les opcions de resposta llargues ocupin menys línies.
+
+- Manté la posició de lectura en completar les respostes pendents d'un bloc,
+  en lloc de saltar automàticament a l'inici de la pàgina.
+
+- Evita que el focus automàtic a una pregunta pendent desplaci la pàgina.
+
+- Simplifica la llista d'errors del qüestionari per mostrar només el número de
+  cada pregunta pendent.
+
+- Mostra només el text de la resposta triada al resultat i al PDF individuals,
+  sense etiqueta ni puntuació.
+
+- Mostra al resultat docent les quatre opcions de cada pregunta i destaca la
+  resposta triada; agrupa les preguntes en blocs plegables.
+
+- Adapta el PDF individual perquè també mostri les quatre opcions i ressalti la
+  resposta triada, sense etiqueta ni puntuació numèrica.
+
+- Apropa les opcions a cada pregunta del PDF individual i separa més les
+  preguntes entre si.
+
+- Redueix l'interlineat del text de les preguntes al PDF individual.
+
+- Treu l'escala numèrica del títol «Perfil per blocs» al PDF individual.
+
+- Mou la nota de privacitat del PDF individual del peu repetit al final del
+  document.
+
+
 - Redueix l'amplada de la targeta per introduir el codi a «Nou qüestionari».
 
 - Afegeix a «Nou qüestionari» una indicació breu que el centre facilita el codi

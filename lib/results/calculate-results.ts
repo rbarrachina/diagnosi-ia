@@ -2,6 +2,7 @@ import type {
   AggregatedResults,
   AnswerCountRecord,
   AnswerRecord,
+  BlockScoreCountRecord,
   BlockDefinition,
   DistributionBucket,
   QuestionDefinition,
@@ -19,6 +20,7 @@ export const SCALE_OPTIONS: ScaleOption[] = [
 
 const LOW_RESPONSE_THRESHOLD = 5;
 const MAX_SCALE_VALUE = 3;
+const BLOCK_SCORE_BUCKET_COUNT = 9;
 
 function roundToTwoDecimals(value: number): number {
   return Math.round(value * 100) / 100;
@@ -247,6 +249,10 @@ export function calculateAggregatedResults(params: {
             (answersByQuestion.get(question.id) ?? []).map((answer) => answer.value),
           ),
         ),
+        scoreDistribution: Array.from({ length: BLOCK_SCORE_BUCKET_COUNT }, (_, bucket) => ({
+          startPercentage: bucket * (100 / BLOCK_SCORE_BUCKET_COUNT),
+          count: 0,
+        })),
         questions: questionResults,
       };
     });
@@ -283,10 +289,14 @@ export function calculateAggregatedResultsFromCounts(params: {
   blocks: BlockDefinition[];
   questions: QuestionDefinition[];
   answerCounts: AnswerCountRecord[];
+  blockScoreCounts?: BlockScoreCountRecord[];
 }): AggregatedResults {
   const languageCode = params.languageCode ?? "ca";
   const questionsByBlock = new Map<string, QuestionDefinition[]>();
   const countsByQuestion = new Map<string, Record<ScaleValue, number>>();
+  const scoreCountsByBlock = new Map<string, number[]>(
+    params.blocks.map((block) => [block.id, Array(BLOCK_SCORE_BUCKET_COUNT).fill(0)]),
+  );
 
   for (const question of params.questions) {
     const blockQuestions = questionsByBlock.get(question.blockId) ?? [];
@@ -300,6 +310,13 @@ export function calculateAggregatedResultsFromCounts(params: {
       countsByQuestion.get(answerCount.questionId) ?? createEmptyDistribution();
     questionCounts[answerCount.value] += answerCount.count;
     countsByQuestion.set(answerCount.questionId, questionCounts);
+  }
+
+  for (const scoreCount of params.blockScoreCounts ?? []) {
+    const scoreCounts = scoreCountsByBlock.get(scoreCount.blockId);
+    if (scoreCounts && scoreCount.bucket >= 0 && scoreCount.bucket < BLOCK_SCORE_BUCKET_COUNT) {
+      scoreCounts[scoreCount.bucket] += scoreCount.count;
+    }
   }
 
   const blockResults = params.blocks
@@ -335,6 +352,11 @@ export function calculateAggregatedResultsFromCounts(params: {
         position: block.position,
         title: block.title,
         average: weightedAveragePercentage(blockCounts),
+        scoreDistribution: (scoreCountsByBlock.get(block.id) ??
+          Array(BLOCK_SCORE_BUCKET_COUNT).fill(0)).map((count, bucket) => ({
+          startPercentage: bucket * (100 / BLOCK_SCORE_BUCKET_COUNT),
+          count,
+        })),
         questions: questionResults,
       };
     });
