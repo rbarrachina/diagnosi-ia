@@ -24,6 +24,10 @@ const results: AggregatedResults = {
       position: 1,
       title: "Bloc 1",
       average: 50,
+      scoreDistribution: Array.from({ length: 9 }, (_, bucket) => ({
+        startPercentage: bucket * (100 / 9),
+        count: 0,
+      })),
       questions: [
         {
           position: 1,
@@ -43,6 +47,10 @@ const results: AggregatedResults = {
       position: 2,
       title: "Bloc 2",
       average: 33.33,
+      scoreDistribution: Array.from({ length: 9 }, (_, bucket) => ({
+        startPercentage: bucket * (100 / 9),
+        count: 0,
+      })),
       questions: [
         {
           position: 2,

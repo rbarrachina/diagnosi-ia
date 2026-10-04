@@ -48,6 +48,7 @@ export function QuestionnaireForm({
   );
   const hasPreparedOptionOrder = useRef(false);
   const submissionSaved = useRef(false);
+  const lastScrolledStep = useRef(currentStep);
 
   const totalPages = questionnaire.blocks.length + 1;
   const progressPercentage =
@@ -76,16 +77,20 @@ export function QuestionnaireForm({
   }, [hasPendingAnswers]);
 
   useEffect(() => {
+    if (lastScrolledStep.current === currentStep) return;
+    lastScrolledStep.current = currentStep;
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 
-    if (currentStep > 0 || submitState.status === "submitted") {
+    if (currentStep > 0) {
       document.getElementById("questionnaire-step-heading")?.focus();
     }
   }, [currentStep, submitState.status]);
 
   function focusQuestion(questionId: string) {
     window.requestAnimationFrame(() => {
-      document.getElementById(`question-${questionId}-option`)?.focus();
+      document
+        .getElementById(`question-${questionId}-option`)
+        ?.focus({ preventScroll: true });
     });
   }
 
@@ -272,18 +277,17 @@ export function QuestionnaireForm({
                   item.questions.some((itemQuestion) => itemQuestion.id === questionId),
                 );
                 if (!question || !block) return null;
-                const questionCopy = splitQuestionCopy(question.text);
                 return (
                   <li key={questionId}>
                     <button
-                      className="text-left font-semibold underline underline-offset-2"
+                      className="text-left font-semibold"
                       onClick={() => {
                         setCurrentStep(block.position);
                         focusQuestion(questionId);
                       }}
                       type="button"
                     >
-                      <InterfaceText messageKey="pregunta" />{" "}{block.position}.{question.blockPosition}: {questionCopy.prompt}
+                      <InterfaceText messageKey="pregunta" />{" "}{block.position}.{question.blockPosition}
                     </button>
                   </li>
                 );
@@ -495,10 +499,6 @@ function BlockPage({
                 const visualClasses = question.randomizeOptions
                   ? "questionnaire-random-option"
                   : scaleOption?.formClasses ?? "border-line bg-surface";
-                const accentClass = question.randomizeOptions
-                  ? "accent-[var(--app-action)]"
-                  : scaleOption?.accentClass ?? "accent-[var(--app-action)]";
-
                 return (
                 isReadOnly ? (
                   <div
@@ -509,19 +509,19 @@ function BlockPage({
                   </div>
                 ) : (
                   <label
-                    className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm text-ink transition ${visualClasses}`}
+                    className={`questionnaire-answer-option flex min-h-14 cursor-pointer items-center rounded-xl border px-4 py-3 text-sm text-ink transition ${visualClasses}`}
                     key={option.id}
                   >
                     <input
                       checked={answers[question.id] === option.id}
-                      className={`h-4 w-4 ${accentClass}`}
+                      className="peer sr-only"
                       id={optionIndex === 0 ? `question-${question.id}-option` : undefined}
                       name={question.id}
                       onChange={() => onAnswer(question.id, option.id)}
                       type="radio"
                       value={option.id}
                     />
-                    <span>{option.text}</span>
+                    <span className="block w-full">{option.text}</span>
                   </label>
                 )
                 );

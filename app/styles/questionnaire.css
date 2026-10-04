@@ -16,6 +16,16 @@
   padding-bottom: 0;
 }
 
+.questionnaire-answer-option:has(input:focus-visible) {
+  outline: 2px solid var(--app-action);
+  outline-offset: 3px;
+}
+
+.questionnaire-answer-option:has(input:checked),
+.questionnaire-answer-option-selected {
+  border-width: 2px;
+}
+
 .questionnaire-scale-option {
   border-color: color-mix(in srgb, var(--questionnaire-scale-color) 34%, var(--color-line));
   background: color-mix(in srgb, var(--questionnaire-scale-color) 11%, var(--color-surface));
@@ -26,10 +36,13 @@
   transform: translateY(-1px);
 }
 
-.questionnaire-scale-option:has(input:checked) {
-  border-color: color-mix(in srgb, var(--questionnaire-scale-color) 76%, var(--color-line));
-  background: color-mix(in srgb, var(--questionnaire-scale-color) 19%, var(--color-surface));
-  box-shadow: 0 10px 28px color-mix(in srgb, var(--questionnaire-scale-color) 16%, transparent);
+.questionnaire-scale-option:has(input:checked),
+.questionnaire-scale-option.questionnaire-answer-option-selected {
+  border-color: var(--questionnaire-scale-color);
+  background: color-mix(in srgb, var(--questionnaire-scale-color) 32%, var(--color-surface));
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--questionnaire-scale-color) 48%, transparent),
+    0 10px 28px color-mix(in srgb, var(--questionnaire-scale-color) 24%, transparent);
 }
 
 .questionnaire-scale-text {
@@ -79,31 +92,38 @@
   transform: translateY(-1px);
 }
 
-.questionnaire-random-option:has(input:checked) {
-  border-color: color-mix(
-    in srgb,
-    var(--questionnaire-random-selected) 78%,
-    var(--color-line)
-  );
+.questionnaire-random-option:has(input:checked),
+.questionnaire-random-option.questionnaire-answer-option-selected {
+  border-color: var(--questionnaire-random-selected);
   background: color-mix(
     in srgb,
-    var(--questionnaire-random-selected) 24%,
+    var(--questionnaire-random-selected) 30%,
     var(--color-surface)
   );
-  box-shadow: 0 10px 28px color-mix(
-    in srgb,
-    var(--questionnaire-random-selected) 13%,
-    transparent
-  );
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--questionnaire-random-selected) 52%, transparent),
+    0 10px 28px color-mix(in srgb, var(--questionnaire-random-selected) 22%, transparent);
 }
 
 html[data-theme="dark"] .questionnaire-random-option {
-  border-color: var(--color-line);
-  background: var(--color-surface);
+  border-color: color-mix(in srgb, var(--questionnaire-random-selected) 50%, var(--color-line));
+  background: color-mix(in srgb, var(--questionnaire-random-selected) 12%, var(--color-surface));
 }
 
-html[data-theme="dark"] .questionnaire-random-option:has(input:checked) {
-  border-color: var(--color-line);
-  background: var(--color-surface);
-  box-shadow: none;
+html[data-theme="dark"] .questionnaire-random-option:has(input:checked),
+html[data-theme="dark"] .questionnaire-random-option.questionnaire-answer-option-selected {
+  border-color: color-mix(in srgb, var(--questionnaire-random-selected) 78%, white);
+  background: color-mix(in srgb, var(--questionnaire-random-selected) 38%, var(--color-surface));
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--questionnaire-random-selected) 66%, transparent),
+    0 10px 28px color-mix(in srgb, var(--questionnaire-random-selected) 32%, transparent);
+}
+
+html[data-theme="dark"] .questionnaire-scale-option:has(input:checked),
+html[data-theme="dark"] .questionnaire-scale-option.questionnaire-answer-option-selected {
+  border-color: color-mix(in srgb, var(--questionnaire-scale-color) 82%, white);
+  background: color-mix(in srgb, var(--questionnaire-scale-color) 36%, var(--color-surface));
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--questionnaire-scale-color) 60%, transparent),
+    0 10px 28px color-mix(in srgb, var(--questionnaire-scale-color) 28%, transparent);
 }

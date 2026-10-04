@@ -14,6 +14,8 @@ function block(values: ScaleValue[]): ParticipantBlockResult {
       text: `Pregunta ${index + 1}`,
       value,
       label: "Resposta",
+      randomizeOptions: false,
+      options: [],
     })),
   };
 }

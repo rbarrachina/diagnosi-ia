@@ -314,7 +314,10 @@ a combinacions que superen el llindar. Aquesta relacio alimenta al client dos
 selectors dependents, sense enviar recomptes ni respostes. La consulta de
 resultats filtra els espais elegibles per `questionnaire_id`, `centre_id`
 opcional i llindar, i retorna únicament recomptes agrupats per pregunta i valor.
-El PDF rep l'àmbit al cos POST i repeteix la mateixa validacio i agregacio.
+Una consulta addicional calcula dins de MySQL la puntuació per enviament i bloc,
+i retorna només recomptes agrupats en nou trams percentuals; no retorna cap
+identificador d'enviament ni puntuació individual. El PDF rep l'àmbit al cos
+POST i repeteix la mateixa validacio i agregacio.
 
 La gestió de centres llegeix `centres`, `centre_accounts`, l'espai i un
 recompte correlacionat de `submissions`; no selecciona files ni camps de

@@ -21,11 +21,37 @@ const styles = StyleSheet.create({
   detailsTitle: { fontSize: 14, fontWeight: 700, marginTop: 12 },
   block: { marginTop: 14 },
   blockHeading: { fontSize: 14, fontWeight: 700, marginBottom: 8 },
-  question: { borderTop: "1 solid #d5dde8", paddingTop: 8, marginTop: 8 },
-  questionText: { fontWeight: 700, lineHeight: 1.35, marginBottom: 3 },
-  answer: { color: "#334155", lineHeight: 1.35 },
+  question: { borderTop: "1 solid #d5dde8", paddingTop: 8, paddingBottom: 14, marginTop: 8 },
+  questionText: { fontWeight: 700, lineHeight: 1.12, marginBottom: 3 },
+  options: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginTop: 2 },
+  option: {
+    width: "24%",
+    minHeight: 30,
+    justifyContent: "center",
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 5,
+    marginBottom: 4,
+    fontSize: 8,
+    lineHeight: 1.25,
+    color: "#172033",
+  },
   footer: { marginTop: 20, borderTop: "1 solid #d5dde8", paddingTop: 8, color: "#526075", fontSize: 8, lineHeight: 1.4 },
 });
+
+const scaleOptionStyles = [
+  { borderColor: "#e99a9a", backgroundColor: "#fff2f2", selectedBorder: "#ef7777", selectedBackground: "#f6c5c5" },
+  { borderColor: "#e6bd7d", backgroundColor: "#fff8ec", selectedBorder: "#e7a64b", selectedBackground: "#f4dfb9" },
+  { borderColor: "#c7d895", backgroundColor: "#f5f8ec", selectedBorder: "#9fba55", selectedBackground: "#e3edc6" },
+  { borderColor: "#9ad5b5", backgroundColor: "#eef9f2", selectedBorder: "#42b873", selectedBackground: "#cdeedb" },
+] as const;
+const neutralOptionStyle = {
+  borderColor: "#9dbde2",
+  backgroundColor: "#f1f6fd",
+  selectedBorder: "#2467aa",
+  selectedBackground: "#c8def7",
+} as const;
 
 export function ParticipantReportDocument({ result }: { result: ParticipantResult }) {
   const copy = getReportCopy(result.languageCode);
@@ -72,17 +98,38 @@ export function ParticipantReportDocument({ result }: { result: ParticipantResul
         </View>
         <Text style={styles.detailsTitle}>{copy.participantBlockDetails}</Text>
         {result.blocks.map((block) => (
-          <View key={block.position} style={styles.block} wrap={false}>
+          <View key={block.position} style={styles.block}>
             <Text style={styles.blockHeading}>{block.position}. {block.title}</Text>
             {block.questions.map((question) => (
-              <View key={question.position} style={styles.question}>
+              <View key={question.position} style={styles.question} wrap={false}>
                 <Text style={styles.questionText}>{block.position}.{question.blockPosition}. {question.text}</Text>
-                <Text style={styles.answer}>{copy.selectedAnswer}: {question.value} · {question.label}</Text>
+                <View style={styles.options}>
+                  {question.options.map((option) => {
+                    const selected = option.value === question.value;
+                    const colors = question.randomizeOptions
+                      ? neutralOptionStyle
+                      : scaleOptionStyles[option.value];
+                    return (
+                      <Text
+                        key={option.value}
+                        style={[
+                          styles.option,
+                          { borderColor: colors.borderColor, backgroundColor: colors.backgroundColor },
+                          selected
+                            ? { borderWidth: 2, borderColor: colors.selectedBorder, backgroundColor: colors.selectedBackground, fontWeight: 700 }
+                            : {},
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                    );
+                  })}
+                </View>
               </View>
             ))}
           </View>
         ))}
-        <View style={styles.footer} fixed>
+        <View style={styles.footer}>
           <Text>{copy.participantPrivacy}</Text>
         </View>
       </Page>
@@ -91,5 +138,9 @@ export function ParticipantReportDocument({ result }: { result: ParticipantResul
 }
 
 function formatDate(value: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { dateStyle: "long", timeStyle: "short" }).format(new Date(value));
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: "Europe/Madrid",
+  }).format(new Date(value));
 }

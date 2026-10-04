@@ -12,6 +12,17 @@ export type DistributionBucket = {
   percentage: number;
 };
 
+export type BlockScoreCountRecord = {
+  blockId: string;
+  bucket: number;
+  count: number;
+};
+
+export type BlockScoreBucket = {
+  startPercentage: number;
+  count: number;
+};
+
 export type QuestionResult = {
   position: number;
   blockPosition: number;
@@ -24,6 +35,7 @@ export type BlockResult = {
   position: number;
   title: string;
   average: number | null;
+  scoreDistribution: BlockScoreBucket[];
   questions: QuestionResult[];
 };
 

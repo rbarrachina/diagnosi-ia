@@ -20,6 +20,13 @@ const result: ParticipantResult = {
       text: "Pregunta de prova",
       value: 2,
       label: "Bastant / Habitualment",
+      randomizeOptions: false,
+      options: [
+        { value: 0, label: "Gens / No ho faig" },
+        { value: 1, label: "Una mica / Ocasionalment" },
+        { value: 2, label: "Bastant / Habitualment" },
+        { value: 3, label: "Molt / Soc un referent" },
+      ],
     }],
   }],
 };

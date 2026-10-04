@@ -7,6 +7,8 @@ export type ParticipantQuestionResult = {
   text: string;
   value: ScaleValue;
   label: string;
+  randomizeOptions: boolean;
+  options: { value: ScaleValue; label: string }[];
 };
 
 export type ParticipantBlockResult = {

@@ -109,10 +109,23 @@ describe("calculateAggregatedResultsFromCounts", () => {
       blocks,
       questions,
       answerCounts,
+      blockScoreCounts: [
+        { blockId: "block-1", bucket: 0, count: 1 },
+        { blockId: "block-1", bucket: 8, count: 1 },
+      ],
     });
 
     expect(results.globalAverage).toBe(50);
     expect(results.blocks[0].average).toBe(66.67);
+    expect(results.blocks[0].scoreDistribution).toHaveLength(9);
+    expect(results.blocks[0].scoreDistribution[0]).toEqual({
+      startPercentage: 0,
+      count: 1,
+    });
+    expect(results.blocks[0].scoreDistribution[8]).toEqual({
+      startPercentage: (100 / 9) * 8,
+      count: 1,
+    });
     expect(results.blocks[1].average).toBe(16.67);
     expect(results.blocks[0].questions[0].average).toBe(83.33);
     expect(results.blocks[0].questions[1].distribution).toEqual([

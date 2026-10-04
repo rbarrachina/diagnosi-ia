@@ -156,10 +156,15 @@ El tauler i el PDF poden mostrar:
 - percentatge global;
 - percentatges per bloc i pregunta;
 - distribucions agregades;
+- recompte agregat de puntuacions normalitzades per bloc en nou trams del 0% al 100%;
 - resultats globals agregats per versió;
 - resultats agregats d'un centre identificat concret quan supera el llindar
   administratiu;
 - nombre agregat d'espais inclosos.
+
+La distribució per bloc calcula temporalment la puntuació de cada enviament dins
+de MySQL i retorna només el recompte de cada tram. No es desa ni s'envia cap
+puntuació individual, identificador de submission o vector de respostes.
 
 No poden mostrar:
 
@@ -170,8 +175,11 @@ No poden mostrar:
 - participants o comptes;
 - token privat.
 
-Les consultes agrupen directament a MySQL per pregunta i valor. El servidor no
-carrega conjunts de respostes individuals per construir el tauler o el PDF.
+Les consultes de preguntes agrupen directament a MySQL per pregunta i valor. La
+consulta de distribució calcula la puntuació per bloc dins d'una subconsulta SQL
+i n'agrupa immediatament el resultat en nou trams; només retorna l'identificador
+del bloc, el tram i el recompte. El servidor no carrega respostes individuals
+ni conserva puntuacions per docent per construir el tauler o el PDF.
 
 ## Poques respostes
 

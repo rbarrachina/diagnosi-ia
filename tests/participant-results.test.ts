@@ -25,15 +25,22 @@ describe("participant results repository", () => {
     execute
       .mockResolvedValueOnce([[summary]])
       .mockResolvedValueOnce([[
-        {
+        ...[
+          { option_id: "option-0", option_value: 0, option_text: "Gens / No ho faig" },
+          { option_id: "option-1", option_value: 1, option_text: "Una mica / Ocasionalment" },
+          { option_id: "option-2", option_value: 2, option_text: "Bastant / Habitualment" },
+          { option_id: "option-3", option_value: 3, option_text: "Molt / Soc un referent" },
+        ].map((option) => ({
           block_position: 1,
           block_title: "Bloc",
           question_position: 1,
           question_block_position: 1,
           question_text: "Pregunta",
+          randomize_options: 0,
           value: 2,
-          option_text: "Bastant / Habitualment",
-        },
+          selected_option_id: "option-2",
+          ...option,
+        })),
       ]]);
 
     const result = await getParticipantResult({
@@ -44,6 +51,13 @@ describe("participant results repository", () => {
     expect(result?.globalScore).toBe(50);
     expect(result?.blocks[0].score).toBe(66.67);
     expect(result?.blocks[0].questions[0].label).toContain("Bastant");
+    expect(result?.blocks[0].questions[0].randomizeOptions).toBe(false);
+    expect(result?.blocks[0].questions[0].options).toEqual([
+      { value: 0, label: "Gens / No ho faig" },
+      { value: 1, label: "Una mica / Ocasionalment" },
+      { value: 2, label: "Bastant / Habitualment" },
+      { value: 3, label: "Molt / Soc un referent" },
+    ]);
     expect(execute.mock.calls[0][1]).toEqual(["opaque-user-1", "C-ABCD-EFGH"]);
     expect(execute.mock.calls[1][1]).toEqual(["opaque-user-1", "C-ABCD-EFGH"]);
     for (const [query] of execute.mock.calls) {

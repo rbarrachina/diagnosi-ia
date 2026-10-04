@@ -56,6 +56,15 @@
   fill: var(--color-muted);
 }
 
+/* Results charts are decorative; clicking their SVG layers must not leave
+   the global focus ring around a bar group or the chart plot area. */
+.workspace-results .recharts-wrapper:focus,
+.workspace-results .recharts-wrapper :focus {
+  outline: none !important;
+  outline-offset: 0;
+  box-shadow: none !important;
+}
+
 .participant-stage-gradient {
   background: linear-gradient(
     to right,

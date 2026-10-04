@@ -102,7 +102,7 @@ export default async function QuestionnairePage({ params }: QuestionnairePagePro
       <div aria-hidden="true" className="app-orb app-orb-right fixed" />
 
       <section
-        className="relative mx-auto w-full max-w-5xl px-5 pb-16 pt-28 sm:px-8 sm:pb-24 sm:pt-32"
+        className="relative mx-auto w-full max-w-7xl px-5 pb-16 pt-28 sm:px-8 sm:pb-24 sm:pt-32 lg:px-10"
         id="inici"
         tabIndex={-1}
       >

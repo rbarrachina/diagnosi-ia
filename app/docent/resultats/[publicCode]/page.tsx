@@ -10,6 +10,7 @@ import { getParticipantResult, listParticipantResults } from "@/lib/repositories
 import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
 import { BlockStageBar } from "@/components/participants/block-stage-bar";
 import { ParticipantWorkspaceFrame } from "@/components/participants/participant-workspace-frame";
+import { SCALE_OPTIONS } from "@/lib/questionnaire/scale";
 
 export const dynamic = "force-dynamic";
 
@@ -69,19 +70,38 @@ export default async function ParticipantResultPage({ params }: { params: Promis
           <h2 className="mt-12 scroll-mt-8 text-2xl font-semibold" id="detall-per-blocs"><InterfaceText messageKey="detallPerBlocs" /></h2>
           <div className="mt-8 space-y-6">
             {result.blocks.map((block) => (
-              <section className="scroll-mt-8 rounded-2xl border border-line bg-surface p-6" id={`bloc-${block.position}`} key={block.position} tabIndex={-1}>
-                <h3 className="text-xl font-semibold">{block.position}. {block.title}</h3>
-                <ol className="mt-5 space-y-4">
+              <details className="group scroll-mt-8 rounded-2xl border border-line bg-surface" id={`bloc-${block.position}`} key={block.position}>
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-6 text-xl font-semibold">
+                  <span>{block.position}. {block.title}</span>
+                  <span aria-hidden="true" className="text-muted transition-transform group-open:rotate-180">⌄</span>
+                </summary>
+                <ol className="space-y-6 border-t border-line p-6">
                   {block.questions.map((question) => (
-                    <li className="border-t border-line pt-4" key={question.position}>
+                    <li className="border-t border-line pt-4 first:border-t-0 first:pt-0" key={question.position}>
                       <p className="font-medium">{block.position}.{question.blockPosition}. {question.text}</p>
-                      <p className="mt-2 text-sm text-muted">
-                        <InterfaceText messageKey="respostaSeleccionada" />{" "}<strong className="text-ink">{question.value} · {question.label}</strong>
-                      </p>
+                      <ul className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        {question.options.map((option) => {
+                          const selected = option.value === question.value;
+                          const colorClasses = question.randomizeOptions
+                            ? "questionnaire-random-option"
+                            : SCALE_OPTIONS.find((item) => item.value === option.value)?.formClasses ?? "border-line bg-surface";
+                          return (
+                            <li key={option.value}>
+                              <div
+                                aria-current={selected ? "true" : undefined}
+                                className={`questionnaire-answer-option flex min-h-14 items-center rounded-xl border px-4 py-3 text-sm text-ink ${colorClasses}${selected ? " questionnaire-answer-option-selected" : ""}`}
+                              >
+                                <span>{option.label}</span>
+                                {selected ? <span className="sr-only"><InterfaceText messageKey="respostaSeleccionada" /></span> : null}
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </li>
                   ))}
                 </ol>
-              </section>
+              </details>
             ))}
           </div>
         </section>

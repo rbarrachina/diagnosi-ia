@@ -8,6 +8,7 @@ import { calculateAggregatedResultsFromCounts } from "@/lib/results/calculate-re
 import { verifyResultsToken } from "@/lib/results/results-token";
 import type {
   AnswerCountRecord,
+  BlockScoreCountRecord,
   BlockDefinition,
   QuestionDefinition,
   ScaleValue,
@@ -82,6 +83,12 @@ type AnswerCountRow = RowDataPacket & {
   question_id: string;
   value: number;
   answer_count: number | string;
+};
+
+type BlockScoreCountRow = RowDataPacket & {
+  block_id: string;
+  score_bucket: number;
+  submission_count: number | string;
 };
 
 export async function getAggregatedResults(payload: PrivateResultsRequestInput) {
@@ -279,6 +286,7 @@ async function getAggregatedResultsForSpace(space: SpaceRow) {
     [options],
     [submissionCounts],
     [answerCounts],
+    [blockScoreCounts],
   ] = await Promise.all([
     mysqlPool.execute<BlockRow[]>(
       `
@@ -332,6 +340,28 @@ async function getAggregatedResultsForSpace(space: SpaceRow) {
       `,
       [space.id, space.questionnaire_id],
     ),
+    mysqlPool.execute<BlockScoreCountRow[]>(
+      `
+        select block_scores.block_id, block_scores.score_bucket,
+          count(*) as submission_count
+        from (
+          select questions.block_id,
+            least(8, floor(sum(answers.value) * 9 / (count(*) * 3))) as score_bucket
+          from answers
+          inner join submissions
+            on submissions.id = answers.submission_id
+            and submissions.questionnaire_id = answers.questionnaire_id
+          inner join questions
+            on questions.id = answers.question_id
+            and questions.questionnaire_id = answers.questionnaire_id
+          where submissions.diagnostic_space_id = ?
+            and submissions.questionnaire_id = ?
+          group by submissions.id, questions.block_id
+        ) block_scores
+        group by block_scores.block_id, block_scores.score_bucket
+      `,
+      [space.id, space.questionnaire_id],
+    ),
   ]);
 
   return calculateAggregatedResultsFromCounts({
@@ -345,6 +375,7 @@ async function getAggregatedResultsForSpace(space: SpaceRow) {
     blocks: mapBlocks(blocks),
     questions: mapQuestions(questions, options),
     answerCounts: mapAnswerCounts(answerCounts),
+    blockScoreCounts: mapBlockScoreCounts(blockScoreCounts),
   });
 }
 
@@ -364,6 +395,7 @@ async function getAggregatedResultsForQuestionnaire(
     [diagnosticSpaceCounts],
     [submissionCounts],
     [answerCounts],
+    [blockScoreCounts],
   ] = await Promise.all([
     mysqlPool.execute<BlockRow[]>(
       `
@@ -456,6 +488,39 @@ async function getAggregatedResultsForQuestionnaire(
       `,
       [...eligibilityValues, questionnaire.id],
     ),
+    mysqlPool.execute<BlockScoreCountRow[]>(
+      `
+        select block_scores.block_id, block_scores.score_bucket,
+          count(*) as submission_count
+        from (
+          select questions.block_id,
+            least(8, floor(sum(answers.value) * 9 / (count(*) * 3))) as score_bucket
+          from answers
+          inner join submissions
+            on submissions.id = answers.submission_id
+            and submissions.questionnaire_id = answers.questionnaire_id
+          inner join questions
+            on questions.id = answers.question_id
+            and questions.questionnaire_id = answers.questionnaire_id
+          inner join (
+            select diagnostic_spaces.id
+            from diagnostic_spaces
+            left join submissions as space_submissions
+              on space_submissions.diagnostic_space_id = diagnostic_spaces.id
+              and space_submissions.questionnaire_id = diagnostic_spaces.questionnaire_id
+            where diagnostic_spaces.questionnaire_id = ?
+              ${centreFilter}
+            group by diagnostic_spaces.id
+            having count(space_submissions.id) > ?
+          ) eligible_spaces
+            on eligible_spaces.id = submissions.diagnostic_space_id
+          where submissions.questionnaire_id = ?
+          group by submissions.id, questions.block_id
+        ) block_scores
+        group by block_scores.block_id, block_scores.score_bucket
+      `,
+      [...eligibilityValues, questionnaire.id],
+    ),
   ]);
 
   return calculateAggregatedResultsFromCounts({
@@ -472,6 +537,7 @@ async function getAggregatedResultsForQuestionnaire(
     blocks: mapBlocks(blocks),
     questions: mapQuestions(questions, options),
     answerCounts: mapAnswerCounts(answerCounts),
+    blockScoreCounts: mapBlockScoreCounts(blockScoreCounts),
   });
 }
 
@@ -508,6 +574,14 @@ function mapAnswerCounts(answerCounts: AnswerCountRow[]): AnswerCountRecord[] {
     questionId: answerCount.question_id,
     value: toScaleValue(answerCount.value),
     count: Number(answerCount.answer_count),
+  }));
+}
+
+function mapBlockScoreCounts(rows: BlockScoreCountRow[]): BlockScoreCountRecord[] {
+  return rows.map((row) => ({
+    blockId: row.block_id,
+    bucket: Number(row.score_bucket),
+    count: Number(row.submission_count),
   }));
 }
 
