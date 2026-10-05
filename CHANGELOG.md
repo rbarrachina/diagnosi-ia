@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Reforça el color del fons degradat a la gràfica de percentatges per dimensió
+  perquè s'aproximi a la intensitat de les distribucions docents.
+
 - Oculta la versió al resultat web docent i conserva la data sota el títol.
 
 - Afegeix al resultat web docent una caixa de CD docent en IA entre el títol

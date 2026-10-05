@@ -724,7 +724,8 @@ El servidor valida el token i retorna només dades de conjunt:
   individuals.
 - Gràfica de barres per dimensió amb l'eix vertical etiquetat com a nivell bàsic,
   intermedi i avançat. Dues línies fines marquen els límits dels rangs; el fons
-  té un degradat de vermell a verd. Les barres són estretes, amb farcit semitransparent
+  té un degradat de vermell a verd amb opacitat reforçada per igualar les
+  gràfiques de distribució docent. Les barres són estretes, amb farcit semitransparent
   pastel segons l'etapa i contorn negre.
 - Gràfica d'aranya per dimensió sense etiquetes numèriques de percentatge i amb un
   degradat de color de valors baixos a alts.

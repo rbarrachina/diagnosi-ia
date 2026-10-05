@@ -353,7 +353,7 @@ export function ResultsDashboard({
                   y1={0}
                   y2={100}
                   fill="url(#blockBarGradient)"
-                  fillOpacity={0.42}
+                  fillOpacity={0.65}
                   stroke="none"
                 />
                 <CartesianGrid vertical={false} stroke="#d8dee6" strokeDasharray="3 3" />

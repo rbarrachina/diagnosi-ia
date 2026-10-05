@@ -30,6 +30,7 @@ del menú docent.
 La caixa global de CD docent en IA usa la mitjana de dimensions amb pes igual,
 només per al docent propietari, sense migracions ni noves dades persistides.
 La caixa arrodonida queda centrada respecte del títol i subtítol, amb el PDF a dalt.
+El fons de la gràfica per dimensió guanya intensitat per igualar la distribució docent.
 El títol ampliat encapçala el resultat, amb el PDF després de la caixa CD i només
 la data a sota; la versió s'oculta al resultat web docent.
 
