@@ -38,7 +38,7 @@ export function AppHeader({
         data-scrolled="false"
       >
         <AppHeaderEffects />
-        <div className={`mx-auto flex h-20 w-full items-center justify-between gap-2 px-5 sm:gap-3 sm:px-8 lg:px-10 ${contentWidth === "wide" ? "max-w-screen-2xl" : "max-w-7xl"}`}>
+        <div className={`mx-auto flex h-20 w-full items-center justify-between gap-2 px-5 sm:gap-3 sm:px-8 ${contentWidth === "wide" ? "max-w-screen-2xl lg:px-12" : "max-w-7xl lg:px-10"}`}>
           <AppLogoLink
             href={brandHref}
             openInNewTab={brandOpensInNewTab}

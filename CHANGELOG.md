@@ -9,6 +9,7 @@ Semantic Versioning.
 - Amplia el resultat docent i mostra quatre dimensions per fila en pantalles
   amples, dues en amplades mitjanes i una al mòbil, amb les barres alineades.
   La capçalera s'adapta a la mateixa amplada que la vista de resultats.
+  Manté marges laterals a l'escriptori i situa el menú sota el logotip.
 
 - Unifica la col·lació de `questions.criterion_id` amb la de la resta
   d'identificadors relacionats perquè les consultes de criteris funcionin a

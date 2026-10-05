@@ -641,7 +641,8 @@ L'estat plegat es conserva entre les pàgines docents. Al mòbil, els mateixos
 accessos apareixen en un selector flotant compacte. La barra lateral no redueix
 el nombre de gràfiques per fila en pantalles amples.
 La capçalera del resultat propi comparteix l'amplada adaptable de la vista,
-fins a 1536 px, amb marges laterals en pantalles petites.
+fins a 1536 px, amb marges laterals també a l'escriptori i el menú lateral
+situat sota el logotip.
 El resultat propi mostra el nom institucional a la capçalera de l'aplicació,
 just abans de les icones. El retorn a la llista de qüestionaris manté el botó arrodonit
 i comparteix fila amb la descàrrega del PDF. El títol `Resultat individual`
