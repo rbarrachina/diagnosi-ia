@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Unifica la col·lació de `questions.criterion_id` amb la de la resta
+  d'identificadors relacionats perquè les consultes de criteris funcionin a
+  MySQL quan el valor per defecte de la base de dades és diferent.
 - Organitza les noves versions del qüestionari per dimensions, criteris i
   preguntes, i permet començar en blanc o copiar una estructura existent.
 - Accepta qualsevol text no buit com a títol i versió del qüestionari, amb un

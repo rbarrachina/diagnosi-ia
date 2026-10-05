@@ -134,6 +134,13 @@
       "when": 1791111284870,
       "tag": "0018_next_hitman",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1791201066855,
+      "tag": "0019_fix_question_criterion_collation",
+      "breakpoints": true
     }
   ]
 }

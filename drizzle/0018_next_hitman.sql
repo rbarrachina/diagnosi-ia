@@ -11,14 +11,14 @@ CREATE TABLE `question_criteria` (
 	CONSTRAINT `question_criteria_title_not_blank_check` CHECK(trim(`question_criteria`.`title`) <> '')
 );
 --> statement-breakpoint
-ALTER TABLE `questions` ADD `criterion_id` char(2);--> statement-breakpoint
+ALTER TABLE `questions` ADD `criterion_id` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;--> statement-breakpoint
 ALTER TABLE `questions` ADD `criterion_position` int;--> statement-breakpoint
 INSERT INTO `question_criteria` (`id`, `questionnaire_id`, `dimension_id`, `position`, `title`)
 SELECT '01', `questionnaire_id`, `id`, 1, 'Criteri general'
 FROM `question_blocks`;--> statement-breakpoint
 UPDATE `questions`
 SET `criterion_id` = '01', `criterion_position` = `block_position`;--> statement-breakpoint
-ALTER TABLE `questions` MODIFY `criterion_id` char(2) NOT NULL;--> statement-breakpoint
+ALTER TABLE `questions` MODIFY `criterion_id` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;--> statement-breakpoint
 ALTER TABLE `questions` MODIFY `criterion_position` int NOT NULL;--> statement-breakpoint
 ALTER TABLE `questions` ADD CONSTRAINT `questions_criterion_position_key` UNIQUE(`questionnaire_id`,`block_id`,`criterion_id`,`criterion_position`);--> statement-breakpoint
 ALTER TABLE `question_criteria` ADD CONSTRAINT `question_criteria_dimension_fk` FOREIGN KEY (`dimension_id`,`questionnaire_id`) REFERENCES `question_blocks`(`id`,`questionnaire_id`) ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
