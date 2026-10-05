@@ -27,7 +27,7 @@ La disposició adaptable de quatre dimensions per fila i la capçalera ampla al 
 s'inclou a `Unreleased`; és un canvi visual sense migracions ni configuració nova.
 També s'elimina el botó de retorn duplicat: la llista de diagnosis s'obre des
 del menú docent.
-El títol i la versió encapçalen el resultat, amb la data a sota i el PDF a la dreta.
+El títol i la versió encapçalen el resultat, amb el PDF just després i la data a sota.
 
 1. Confirmar que `main` està neta i actualitzada.
 2. Moure els canvis d'`Unreleased` a una secció amb versió i data.
