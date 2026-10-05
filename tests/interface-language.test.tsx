@@ -58,7 +58,7 @@ describe("interface language", () => {
     const { container } = render(<Spanish><QuestionnaireForm questionnaire={questionnaire} /></Spanish>);
     fireEvent.click(screen.getByRole("button", { name: "Comienza el cuestionario" }));
     expect(screen.getByRole("heading", { name: /Dimensión 1.*Bloc redactat pel centre/ })).toBeVisible();
-    expect(screen.getByText("Pregunta original en català")).toBeVisible();
+    expect(screen.getByRole("group", { name: /1\.1\.1\. Pregunta original en català/ })).toBeVisible();
     expect(container.querySelector("[lang]")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Envía las respuestas" }));
     expect(screen.getByText("Debes responder esta pregunta.")).toBeVisible();
