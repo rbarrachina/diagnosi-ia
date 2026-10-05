@@ -16,11 +16,11 @@ function Spanish({ children }: { children: ReactNode }) {
 const questionnaire: PublicQuestionnaire = {
   centreName: "Centre de prova", publicCode: "C-ABCD-EFGH", languageCode: "ca",
   questionnaireVersion: "2026.2", estimatedMinutes: 10,
-  blocks: [{ id: "01", position: 1, title: "Bloc redactat pel centre", questions: [{
-    id: "q1", position: 1, blockPosition: 1, text: "Pregunta original en català",
+  blocks: [{ id: "01", position: 1, title: "Bloc redactat pel centre", criteria: [{ id: "01", position: 1, title: "Criteri de prova", questions: [{
+    id: "q1", criterionId: "01", position: 1, blockPosition: 1, criterionPosition: 1, text: "Pregunta original en català",
     randomizeOptions: false,
     options: [0, 1, 2, 3].map((score) => ({ id: `option${score}`, score: score as 0 | 1 | 2 | 3, text: `Resposta original ${score}` })),
-  }] }],
+  }] }], questions: [] }],
 };
 
 afterEach(() => vi.unstubAllGlobals());

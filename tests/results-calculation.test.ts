@@ -20,6 +20,9 @@ const questions: QuestionDefinition[] = [
     blockId: "block-1",
     position: 1,
     blockPosition: 1,
+    criterionPosition: 1,
+    criterionQuestionPosition: 1,
+    criterionTitle: "Criteri 1",
     text: "Pregunta 1",
   },
   {
@@ -27,6 +30,9 @@ const questions: QuestionDefinition[] = [
     blockId: "block-1",
     position: 2,
     blockPosition: 2,
+    criterionPosition: 1,
+    criterionQuestionPosition: 2,
+    criterionTitle: "Criteri 1",
     text: "Pregunta 2",
   },
   {
@@ -34,6 +40,9 @@ const questions: QuestionDefinition[] = [
     blockId: "block-2",
     position: 3,
     blockPosition: 1,
+    criterionPosition: 1,
+    criterionQuestionPosition: 1,
+    criterionTitle: "Criteri 1",
     text: "Pregunta 3",
   },
 ];

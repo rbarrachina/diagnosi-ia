@@ -11,7 +11,9 @@ import {
 } from "@/lib/questionnaire/languages";
 import type { ScaleValue } from "@/lib/questionnaire/scale";
 import {
+  MAX_CRITERIA_PER_DIMENSION,
   MAX_QUESTION_BLOCKS,
+  MAX_QUESTIONNAIRE_QUESTIONS,
   MAX_QUESTIONS_PER_BLOCK,
 } from "@/lib/validation/schemas";
 
@@ -22,11 +24,13 @@ type EditableQuestion = {
   options: { score: ScaleValue; text: string }[];
 };
 
-type EditableBlock = {
+type EditableCriterion = {
   id: string;
   title: string;
   questions: EditableQuestion[];
 };
+
+type EditableBlock = { id: string; title: string; criteria: EditableCriterion[] };
 
 type EditorFeedback = {
   message: string;
@@ -53,18 +57,16 @@ function initialBlocks(detail: AdminQuestionnaireDetail): EditableBlock[] {
     .map((block) => ({
       id: block.id,
       title: block.title,
-      questions: block.questions
-        .slice()
-        .sort((a, b) => a.blockPosition - b.blockPosition)
-        .map((question) => ({
+      criteria: block.criteria.map((criterion) => ({
+        id: criterion.id,
+        title: criterion.title,
+        questions: criterion.questions.slice().sort((a, b) => a.criterionPosition - b.criterionPosition).map((question) => ({
           id: question.id,
           text: question.text,
           randomizeOptions: question.randomizeOptions,
-          options: question.options.map((option) => ({
-            score: option.score,
-            text: option.text,
-          })),
+          options: question.options.map((option) => ({ score: option.score, text: option.text })),
         })),
+      })),
     }));
 }
 
@@ -90,6 +92,13 @@ export function QuestionnaireEditorForm({
   const structureLockedMessage = detail.isActive
     ? t("aquestaVersioEsActivaNomesPotsCorregirTitolsITextos")
     : "";
+  const questionCount = blocks.reduce(
+    (total, dimension) => total + dimension.criteria.reduce(
+      (criteriaTotal, criterion) => criteriaTotal + criterion.questions.length,
+      0,
+    ),
+    0,
+  );
 
   function confirmLockedEdit() {
     const accepted = window.confirm(
@@ -107,9 +116,17 @@ export function QuestionnaireEditorForm({
       {
         id: newId("block"),
         title: "",
-        questions: [defaultQuestion()],
+        criteria: [{ id: newId("criterion"), title: "", questions: [defaultQuestion()] }],
       },
     ]);
+  }
+
+  function addCriterion(blockIndex: number) {
+    setBlocks((current) => current.map((block, index) =>
+      index === blockIndex && block.criteria.length < MAX_CRITERIA_PER_DIMENSION
+        ? { ...block, criteria: [...block.criteria, { id: newId("criterion"), title: "", questions: [defaultQuestion()] }] }
+        : block,
+    ));
   }
 
   function removeBlock(blockIndex: number) {
@@ -124,31 +141,46 @@ export function QuestionnaireEditorForm({
     );
   }
 
-  function addQuestion(blockIndex: number) {
+  function removeCriterion(blockIndex: number, criterionIndex: number) {
+    setBlocks((current) => current.map((block, index) => index === blockIndex
+      ? { ...block, criteria: block.criteria.filter((_, itemIndex) => itemIndex !== criterionIndex) }
+      : block,
+    ));
+  }
+
+  function updateCriterionTitle(blockIndex: number, criterionIndex: number, title: string) {
+    setBlocks((current) => current.map((block, index) => index === blockIndex
+      ? { ...block, criteria: block.criteria.map((criterion, itemIndex) => itemIndex === criterionIndex ? { ...criterion, title } : criterion) }
+      : block,
+    ));
+  }
+
+  function addQuestion(blockIndex: number, criterionIndex: number) {
     setBlocks((current) =>
       current.map((block, index) =>
-        index === blockIndex && block.questions.length < MAX_QUESTIONS_PER_BLOCK
+        index === blockIndex && questionCount < MAX_QUESTIONNAIRE_QUESTIONS
           ? {
               ...block,
-              questions: [
-                ...block.questions,
-                defaultQuestion(),
-              ],
+              criteria: block.criteria.map((criterion, currentCriterionIndex) =>
+                currentCriterionIndex === criterionIndex && criterion.questions.length < MAX_QUESTIONS_PER_BLOCK
+                  ? { ...criterion, questions: [...criterion.questions, defaultQuestion()] }
+                  : criterion,
+              ),
             }
           : block,
       ),
     );
   }
 
-  function removeQuestion(blockIndex: number, questionIndex: number) {
+  function removeQuestion(blockIndex: number, criterionIndex: number, questionIndex: number) {
     setBlocks((current) =>
       current.map((block, index) =>
         index === blockIndex
           ? {
               ...block,
-              questions: block.questions.filter((_, currentQuestionIndex) =>
-                currentQuestionIndex !== questionIndex
-              ),
+              criteria: block.criteria.map((criterion, currentCriterionIndex) => currentCriterionIndex === criterionIndex
+                ? { ...criterion, questions: criterion.questions.filter((_, currentQuestionIndex) => currentQuestionIndex !== questionIndex) }
+                : criterion),
             }
           : block,
       ),
@@ -157,6 +189,7 @@ export function QuestionnaireEditorForm({
 
   function updateQuestionText(
     blockIndex: number,
+    criterionIndex: number,
     questionIndex: number,
     nextText: string,
   ) {
@@ -165,11 +198,9 @@ export function QuestionnaireEditorForm({
         index === blockIndex
           ? {
               ...block,
-              questions: block.questions.map((question, currentQuestionIndex) =>
-                currentQuestionIndex === questionIndex
-                  ? { ...question, text: nextText }
-                  : question,
-              ),
+              criteria: block.criteria.map((criterion, currentCriterionIndex) => currentCriterionIndex === criterionIndex
+                ? { ...criterion, questions: criterion.questions.map((question, currentQuestionIndex) => currentQuestionIndex === questionIndex ? { ...question, text: nextText } : question) }
+                : criterion),
             }
           : block,
       ),
@@ -178,6 +209,7 @@ export function QuestionnaireEditorForm({
 
   function updateQuestionRandomization(
     blockIndex: number,
+    criterionIndex: number,
     questionIndex: number,
     randomizeOptions: boolean,
   ) {
@@ -186,11 +218,9 @@ export function QuestionnaireEditorForm({
         index === blockIndex
           ? {
               ...block,
-              questions: block.questions.map((question, currentQuestionIndex) =>
-                currentQuestionIndex === questionIndex
-                  ? { ...question, randomizeOptions }
-                  : question,
-              ),
+              criteria: block.criteria.map((criterion, currentCriterionIndex) => currentCriterionIndex === criterionIndex
+                ? { ...criterion, questions: criterion.questions.map((question, currentQuestionIndex) => currentQuestionIndex === questionIndex ? { ...question, randomizeOptions } : question) }
+                : criterion),
             }
           : block,
       ),
@@ -199,6 +229,7 @@ export function QuestionnaireEditorForm({
 
   function updateOptionText(
     blockIndex: number,
+    criterionIndex: number,
     questionIndex: number,
     score: ScaleValue,
     text: string,
@@ -208,16 +239,11 @@ export function QuestionnaireEditorForm({
         index === blockIndex
           ? {
               ...block,
-              questions: block.questions.map((question, currentQuestionIndex) =>
-                currentQuestionIndex === questionIndex
-                  ? {
-                      ...question,
-                      options: question.options.map((option) =>
-                        option.score === score ? { ...option, text } : option,
-                      ),
-                    }
-                  : question,
-              ),
+              criteria: block.criteria.map((criterion, currentCriterionIndex) => currentCriterionIndex === criterionIndex
+                ? { ...criterion, questions: criterion.questions.map((question, currentQuestionIndex) => currentQuestionIndex === questionIndex
+                  ? { ...question, options: question.options.map((option) => option.score === score ? { ...option, text } : option) }
+                  : question) }
+                : criterion),
             }
           : block,
       ),
@@ -310,18 +336,18 @@ export function QuestionnaireEditorForm({
               <input name="blockPosition" type="hidden" value={blockPosition} />
               <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <legend className="px-1 text-sm font-semibold text-ink">
-                  <InterfaceText messageKey="bloc" />{" "}{blockPosition}
+                  <InterfaceText messageKey="dimensio" />{" "}{blockPosition}
                 </legend>
                 {canChangeStructure ? (
                   <button
                     className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg"
                     onClick={() => removeBlock(blockIndex)}
                     type="button"
-                  ><InterfaceText messageKey="eliminaBloc" /></button>
+                  ><InterfaceText messageKey="eliminaDimensio" /></button>
                 ) : null}
               </div>
               <label className="block text-sm font-medium text-muted">
-                <InterfaceText messageKey="titolDelBloc" />{" "}<input
+                <InterfaceText messageKey="titolDeLaDimensio" />{" "}<input
                   className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
                   name={`block-${blockPosition}-title`}
                   onChange={(event) => updateBlockTitle(blockIndex, event.target.value)}
@@ -329,105 +355,35 @@ export function QuestionnaireEditorForm({
                   value={block.title}
                 />
               </label>
-              <div className="mt-4 grid gap-3">
-                {block.questions.map((question, questionIndex) => {
-                  const questionPosition = questionIndex + 1;
-
-                  return (
-                    <div className="grid gap-2" key={question.id}>
-                      <input
-                        name={`block-${blockPosition}-questionPosition`}
-                        type="hidden"
-                        value={questionPosition}
-                      />
-                      <label className="block text-sm font-medium text-muted">
-                        <InterfaceText messageKey="pregunta" />{" "}{blockPosition}.{questionPosition}
-                        <textarea
-                          className="mt-1 min-h-20 w-full rounded-md border border-line px-3 py-2 text-sm leading-6 disabled:bg-accent-soft"
-                          name={`block-${blockPosition}-question-${questionPosition}`}
-                          onChange={(event) =>
-                            updateQuestionText(
-                              blockIndex,
-                              questionIndex,
-                              event.target.value,
-                            )
-                          }
-                          required
-                          value={question.text}
-                        />
-                      </label>
-                      <div className="grid gap-2 rounded-md border border-line bg-canvas/40 p-3 sm:grid-cols-2">
-                        {question.options
-                          .slice()
-                          .sort((a, b) => a.score - b.score)
-                          .map((option) => (
-                            <label
-                              className="block text-xs font-medium text-muted"
-                              key={option.score}
-                            >
-                              <InterfaceText messageKey="resposta" />{" "}{option.score + 1} · {option.score}{" "}<InterfaceText messageKey="punts" />{" "}<input
-                                className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
-                                maxLength={300}
-                                name={`block-${blockPosition}-question-${questionPosition}-option-${option.score}`}
-                                onChange={(event) =>
-                                  updateOptionText(
-                                    blockIndex,
-                                    questionIndex,
-                                    option.score,
-                                    event.target.value,
-                                  )
-                                }
-                                required
-                                value={option.text}
-                              />
-                            </label>
-                          ))}
-                      </div>
-                      <label className="flex items-start gap-2 text-sm text-muted">
-                        <input
-                          checked={question.randomizeOptions}
-                          className="mt-0.5 h-4 w-4"
-                          disabled={!canChangeStructure}
-                          name={`block-${blockPosition}-question-${questionPosition}-randomize`}
-                          onChange={(event) =>
-                            updateQuestionRandomization(
-                              blockIndex,
-                              questionIndex,
-                              event.target.checked,
-                            )
-                          }
-                          type="checkbox"
-                          value="yes"
-                        />
-                          <InterfaceText messageKey="mostraLesRespostesEnUnOrdreAleatoriIAmbColorsNeutres" />
-                        </label>
-                      {question.randomizeOptions && !canChangeStructure ? (
-                        <input
-                          name={`block-${blockPosition}-question-${questionPosition}-randomize`}
-                          type="hidden"
-                          value="yes"
-                        />
-                      ) : null}
-                      {canChangeStructure ? (
-                        <div>
-                          <button
-                            className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg"
-                            onClick={() => removeQuestion(blockIndex, questionIndex)}
-                            type="button"
-                          ><InterfaceText messageKey="eliminaPregunta" /></button>
-                        </div>
-                      ) : null}
+              <div className="mt-4 space-y-4">
+                {block.criteria.map((criterion, criterionIndex) => {
+                  const criterionPosition = criterionIndex + 1;
+                  return <fieldset className="rounded-md border border-line p-4" disabled={isFormDisabled} key={criterion.id}>
+                    <input name={`dimension-${blockPosition}-criterionPosition`} type="hidden" value={criterionPosition} />
+                    <div className="flex items-center justify-between gap-3">
+                      <legend className="text-sm font-semibold text-ink"><InterfaceText messageKey="criteri" /> {blockPosition}.{criterionPosition}</legend>
+                      {canChangeStructure ? <button className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text" onClick={() => removeCriterion(blockIndex, criterionIndex)} type="button"><InterfaceText messageKey="eliminaCriteri" /></button> : null}
                     </div>
-                  );
+                    <label className="mt-2 block text-sm font-medium text-muted"><InterfaceText messageKey="titolDelCriteri" /><input className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft" name={`dimension-${blockPosition}-criterion-${criterionPosition}-title`} onChange={(event) => updateCriterionTitle(blockIndex, criterionIndex, event.target.value)} required value={criterion.title} /></label>
+                    <div className="mt-4 grid gap-4">
+                      {criterion.questions.map((question, questionIndex) => {
+                        const questionPosition = questionIndex + 1;
+                        const questionKey = `dimension-${blockPosition}-criterion-${criterionPosition}-question-${questionPosition}`;
+                        return <div className="grid gap-2" key={question.id}>
+                          <input name={`dimension-${blockPosition}-criterion-${criterionPosition}-questionPosition`} type="hidden" value={questionPosition} />
+                          <label className="block text-sm font-medium text-muted"><InterfaceText messageKey="pregunta" /> {blockPosition}.{criterionPosition}.{questionPosition}<textarea className="mt-1 min-h-20 w-full rounded-md border border-line px-3 py-2 text-sm leading-6 disabled:bg-accent-soft" name={questionKey} onChange={(event) => updateQuestionText(blockIndex, criterionIndex, questionIndex, event.target.value)} required value={question.text} /></label>
+                          <div className="grid gap-2 rounded-md border border-line bg-canvas/40 p-3 sm:grid-cols-2">{question.options.slice().sort((a, b) => a.score - b.score).map((option) => <label className="block text-xs font-medium text-muted" key={option.score}><InterfaceText messageKey="resposta" /> {option.score + 1} · {option.score} <InterfaceText messageKey="punts" /><input className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft" maxLength={300} name={`${questionKey}-option-${option.score}`} onChange={(event) => updateOptionText(blockIndex, criterionIndex, questionIndex, option.score, event.target.value)} required value={option.text} /></label>)}</div>
+                          <label className="flex items-start gap-2 text-sm text-muted"><input checked={question.randomizeOptions} className="mt-0.5 h-4 w-4" disabled={!canChangeStructure} name={`${questionKey}-randomize`} onChange={(event) => updateQuestionRandomization(blockIndex, criterionIndex, questionIndex, event.target.checked)} type="checkbox" value="yes" /><InterfaceText messageKey="mostraLesRespostesEnUnOrdreAleatoriIAmbColorsNeutres" /></label>
+                          {question.randomizeOptions && !canChangeStructure ? <input name={`${questionKey}-randomize`} type="hidden" value="yes" /> : null}
+                          {canChangeStructure ? <button className="w-fit rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text" onClick={() => removeQuestion(blockIndex, criterionIndex, questionIndex)} type="button"><InterfaceText messageKey="eliminaPregunta" /></button> : null}
+                        </div>;
+                      })}
+                    </div>
+                    {canChangeStructure && criterion.questions.length < MAX_QUESTIONS_PER_BLOCK && questionCount < MAX_QUESTIONNAIRE_QUESTIONS ? <button className="mt-4 rounded-md border border-action px-3 py-1.5 text-xs font-semibold text-action" onClick={() => addQuestion(blockIndex, criterionIndex)} type="button"><InterfaceText messageKey="afegeixPregunta" /></button> : null}
+                  </fieldset>;
                 })}
               </div>
-              {canChangeStructure && block.questions.length < MAX_QUESTIONS_PER_BLOCK ? (
-                <button
-                  className="mt-4 rounded-md border border-action px-3 py-1.5 text-xs font-semibold text-action hover:bg-accent-soft"
-                  onClick={() => addQuestion(blockIndex)}
-                  type="button"
-                ><InterfaceText messageKey="afegeixPregunta" /></button>
-              ) : null}
+              {canChangeStructure && block.criteria.length < MAX_CRITERIA_PER_DIMENSION && questionCount < MAX_QUESTIONNAIRE_QUESTIONS ? <button className="mt-4 rounded-md border border-action px-3 py-1.5 text-xs font-semibold text-action" onClick={() => addCriterion(blockIndex)} type="button"><InterfaceText messageKey="afegeixCriteri" /></button> : null}
             </fieldset>
           );
         })}
@@ -449,18 +405,18 @@ export function QuestionnaireEditorForm({
       )}
 
       <div className="flex flex-wrap items-center gap-3">
-        {canChangeStructure && blocks.length < MAX_QUESTION_BLOCKS ? (
+        {canChangeStructure && blocks.length < MAX_QUESTION_BLOCKS && questionCount < MAX_QUESTIONNAIRE_QUESTIONS ? (
           <button
             className="rounded-md border border-action px-4 py-2 text-sm font-semibold text-action hover:bg-accent-soft"
             onClick={addBlock}
             type="button"
-          ><InterfaceText messageKey="afegeixBloc" /></button>
+          ><InterfaceText messageKey="afegeixDimensio" /></button>
         ) : null}
         <button
           className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover disabled:bg-muted"
           disabled={isFormDisabled}
           type="submit"
-        ><InterfaceText messageKey="desaBlocsIPreguntes" /></button>
+        ><InterfaceText messageKey="desaDimensionsCriterisIPreguntes" /></button>
         {isFormDisabled ? (
           <p className="text-sm text-muted">
             <InterfaceText messageKey="premEditarIAcceptaLAvisPerModificarAquestaVersio" />

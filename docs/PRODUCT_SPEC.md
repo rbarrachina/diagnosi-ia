@@ -48,8 +48,7 @@ filtres o exportacions que facilitin la reidentificacio de persones.
 Funcionalitats previstes:
 
 - consultar un resum inicial amb l'estat dels centres i del qüestionari actiu;
-- gestionar blocs de preguntes;
-- gestionar preguntes tancades;
+- gestionar dimensions, criteris i preguntes tancades;
 - crear noves versions del qüestionari;
 - configurar els minuts estimats per respondre cada versio;
 - activar una versio concreta;
@@ -84,15 +83,19 @@ Eliminar un administrador només elimina el rol d'administracio de `admin_users`
 no elimina ni modifica el compte Google de la persona.
 
 Les versions noves es creen des d'un únic formulari on l'administrador tria si
-vol començar amb un qüestionari en blanc o copiar una versio existent. El títol
-sempre és obligatori i ha de ser diferent dels títols existents. Cada versio
+vol començar amb un qüestionari en blanc o copiar una versió existent. Un
+qüestionari en blanc comença sense dimensions, criteris ni preguntes; copiar-ne
+un altre copia tota la jerarquia. L'administrador pot crear dimensions,
+criteris dins de cada dimensió i preguntes dins de cada criteri. El títol
+sempre és obligatori i ha de ser diferent dels títols existents. Cada versió
 inclou els minuts estimats per respondre-la, configurables entre 1 i 120 minuts.
-Les versions sense espais de diagnosi assignats poden desar-se com a esborrany parcial durant
-l'edició: l'administrador pot afegir o eliminar blocs i pot afegir o eliminar
-preguntes dins de cada bloc. En afegir un bloc nou, l'editor crea també una
-pregunta inicial. Cada versio pot tenir entre 1 i 10 blocs, i cada bloc pot
-tenir entre 1 i 10 preguntes. L'activació exigeix que tots els blocs tinguin
-almenys una pregunta.
+Les versions sense espais de diagnosi assignats poden desar-se com a esborrany
+parcial durant l'edició. En afegir una dimensió es crea un criteri i una
+pregunta inicial; en afegir un criteri es crea una pregunta inicial. Cada versió
+pot tenir entre 1 i 10 dimensions, cada dimensió entre 1 i 10 criteris, cada
+criteri entre 1 i 10 preguntes i cada versió fins a 100 preguntes totals.
+L'activació exigeix almenys una dimensió, un criteri per dimensió i una pregunta
+per criteri.
 
 ### Acces inicial d'administracio
 
@@ -218,7 +221,7 @@ Quan una versio ja està assignada a un espai, l'editor la mostra bloquejada per
 defecte. Un administrador pot prémer `Editar` i acceptar un avís explícit abans
 de modificar-la. Si la versio està activa o ja té respostes, només es poden
 corregir títols, preguntes i textos de resposta existents; no es poden eliminar
-ni afegir blocs, preguntes o opcions, canviar l'idioma ni activar o desactivar
+ni afegir dimensions, criteris, preguntes o opcions, canviar l'idioma ni activar o desactivar
 l'ordre aleatori. Les versions inactives sense respostes poden modificar
 estructura.
 
@@ -227,7 +230,7 @@ respostes a preguntes noves i no altera els resultats dels espais anteriors.
 
 Eliminar una versio no activa és una accio destructiva d'administracio. Després
 de confirmar l'avís, s'elimina la versio i totes les seves instàncies d'espai,
-respostes, blocs i preguntes. Les versions actives no mostren el botó
+respostes, dimensions, criteris i preguntes. Les versions actives no mostren el botó
 d'eliminacio i la base de dades també rebutja eliminar-les. Aquesta accio no ha
 de retornar ni exportar files individuals abans d'eliminar-les.
 
@@ -246,7 +249,7 @@ anònims davant l'administracio.
 
 La vista només mostra dades de conjunt: nombre agregat de centres/espais quan
 l'àmbit és global, nombre total de respostes computades, percentatges globals,
-percentatges per bloc, percentatges per pregunta i distribucions agregades. El
+percentatges per dimensió, percentatges per pregunta i distribucions agregades. El
 llindar administratiu s'aplica sempre. En l'àmbit global només s'inclouen els
 centres que el superen; en l'àmbit d'un centre concret no es mostra cap dada de
 resultats si aquell centre no el supera.
@@ -341,7 +344,7 @@ base de dades, no conté controls de formulari i no pot enviar ni desar cap
 resposta. En monitors, l'espaiat i la mida de la mostra s'adapten perquè tota
 la tercera pantalla quedi visible sota la capçalera; en dispositius estrets es
 manté el recorregut vertical llegible. També resumeix que el qüestionari consta
-de 20 preguntes repartides en cinc blocs.
+de 20 preguntes repartides en cinc dimensions i cinc criteris generals de compatibilitat.
 
 El responsable inicia l'accés XTEC des de la portada i, un cop autenticat,
 arriba a `/crear` per crear o gestionar el seu espai. El professorat accedeix
@@ -568,12 +571,19 @@ Quan l'ordre és fix es poden conservar els colors graduats. El navegador envia
 només l'identificador de l'opció i el servidor n'obté la puntuació. Els
 resultats i informes ordenen sempre les opcions de `0` a `3`.
 
+El formulari docent presenta cada criteri en una pàgina independent. La part
+superior de cada pàgina mostra `Dimensió N` i el títol de la dimensió en una
+mateixa línia i mida, amb un blau més intens per destacar-ne la importància. A
+sota apareix el criteri en blau i una mica més gran que el text de les preguntes;
+cada pregunta mostra el número i el text junts, amb la mateixa mida i color. La
+navegació exigeix respondre totes les preguntes del criteri abans de continuar.
+
 Quan falten respostes, el formulari identifica les preguntes pendents, les
 associa als controls corresponents i porta el focus a la primera sense moure
 la pàgina. La llista d'errors permet saltar directament a qualsevol pregunta
 pendent. El formulari conserva la posició de lectura quan es completa
 l'última resposta pendent; el desplaçament automàtic a l'inici només es fa en
-canviar de bloc. El formulari
+canviar de criteri. El formulari
 d'accés per codi mostra el format requerit al placeholder, conserva l'ajuda per
 als lectors de pantalla i associa l'error de format al camp, sota els controls.
 La comprovació pública només valida el format; els errors posteriors que podrien
@@ -624,7 +634,7 @@ al centre tots els qüestionaris fets. Aquesta darrera opció desplega un submen
 amb només els títols dels qüestionaris propis, cadascun amb accés al seu
 resultat. La llista central també permet obrir cadascun dels resultats. Dins
 d'un resultat, el menú conserva aquestes tres opcions i el submenú, sense
-enllaços addicionals al resum ni a les respostes per blocs.
+enllaços addicionals al resum ni a les respostes per dimensions.
 La targeta per introduir el codi de `Nou qüestionari` té una amplada moderada
 en pantalles grans i ocupa l'espai disponible en pantalles petites.
 L'estat plegat es conserva entre les pàgines docents. Al mòbil, els mateixos
@@ -636,33 +646,40 @@ i comparteix fila amb la descàrrega del PDF. El títol `Resultat individual`
 només és accessible als lectors de pantalla. El qüestionari i la versió
 apareixen destacats sota els botons, amb la data en un estil més discret,
 seguits del resum gràfic amb una barra de 0 a
-100 per cada bloc, sense títol ni text introductori addicionals, amb un
+100 per cada dimensió, sense títol ni text introductori addicionals, amb un
 indicador de la posició obtinguda i els tres terços `Bàsica`, `Intermèdia` i
 `Avançada`. Les barres es disposen en una columna al mòbil, dues en amplades
 mitjanes i tres en pantalles amples; dins de cada fila, les barres queden
 alineades encara que els títols tinguin longituds diferents. El valor és la
-suma de les respostes del bloc dividida pel màxim possible, reescalada a 0–100.
+suma de les respostes de la dimensió dividida pel màxim possible, reescalada a 0–100.
 Els límits són exactament un terç i dos terços, sense arrodonir abans de
 classificar. Un valor 0 queda a l'extrem esquerre de l'etapa bàsica. L'etiqueta
 del terç corresponent queda destacada; el lector de pantalla també rep la
 posició numèrica. No es repeteixen el nivell ni la puntuació al costat del
 títol, ni els extrems 0 i 100 sota les barres. Cada barra porta al detall de les
-preguntes i respostes del bloc. No es presenta cap etapa ni percentatge global
+preguntes i respostes de la dimensió. No es presenta cap etapa ni percentatge global
 del docent.
 
-El resultat propi presenta cada bloc en un desplegable. En obrir-lo, mostra les
-preguntes i les quatre opcions de resposta amb el mateix disseny del qüestionari;
+Les targetes de dimensió són seleccionables. En seleccionar-ne una, queda
+ressaltada amb un fons blau i, a sota, es mostren en una fila els gràfics de
+les puntuacions dels criteris d'aquella dimensió, amb la mateixa escala visual.
+La puntuació de cada criteri es calcula només a partir de les respostes de la
+participació pròpia.
+
+El resultat propi presenta cada dimensió en un desplegable i agrupa les
+preguntes sota el criteri corresponent. En obrir-lo, mostra les preguntes i les
+quatre opcions de resposta amb el mateix disseny del qüestionari;
 la resposta triada queda destacada. Les preguntes amb ordre aleatori conserven
 els colors neutres i mostren les opcions en ordre de puntuació, perquè l'ordre
 aleatori de la sessió no es desa. El PDF individual mostra igualment les
 quatre opcions de cada pregunta i destaca la resposta triada, sense etiqueta ni
-puntuació numèrica; les preguntes s'agrupen sota el títol del bloc. Manté
-l'estructura de resum per blocs i detall de respostes. La data i l'hora de realització es
+puntuació numèrica; les preguntes s'agrupen sota els títols de dimensió i
+criteri. Manté l'estructura de resum per dimensions i detall de respostes. La data i l'hora de realització es
 mostren en la zona horària `Europe/Madrid`, independentment de la zona del
 servidor. Es pot consultar també quan l'espai està tancat. No mostra la
 identitat docent, identificadors interns, resultats del centre, comparacions o
-dades d'altres participants. La correspondència futura amb quatre dimensions
-i onze criteris queda fora d'aquesta visualització inicial.
+dades d'altres participants. Les dimensions i els criteris definits a cada
+versió formen part de la visualització del qüestionari i del resultat propi.
 
 ### Consulta de resultats
 
@@ -685,16 +702,20 @@ El servidor valida el token i retorna només dades de conjunt:
 - A la targeta resum, el percentatge global es representa com l'etapa agregada
   `Bàsica`, `Intermèdia` o `Avançada`, sota el títol `CD docent en IA` i amb
   el color corresponent; si no hi ha dades, es mostra `Sense dades`.
-- Percentatge per bloc.
-- Distribució agregada de les puntuacions docents de cada bloc en nou trams
+- Percentatge per dimensió.
+- Distribució agregada de les puntuacions docents de cada dimensió en nou trams
   percentuals; només es retornen recomptes, sense puntuacions ni identificadors
   individuals.
-- Gràfica de barres per bloc amb l'eix vertical etiquetat com a nivell bàsic,
+- Gràfica de barres per dimensió amb l'eix vertical etiquetat com a nivell bàsic,
   intermedi i avançat. Dues línies fines marquen els límits dels rangs; el fons
   té un degradat de vermell a verd. Les barres són estretes, amb farcit semitransparent
   pastel segons l'etapa i contorn negre.
-- Gràfica d'aranya per bloc sense etiquetes numèriques de percentatge i amb un
+- Gràfica d'aranya per dimensió sense etiquetes numèriques de percentatge i amb un
   degradat de color de valors baixos a alts.
+- En seleccionar una dimensió al gràfic de barres, la dimensió queda ressaltada
+  amb fons blau i apareixen a sota, en una fila desplaçable, els gràfics de
+  percentatge dels seus criteris. Els percentatges de criteri es calculen només
+  a partir de recomptes de respostes agregats.
 - Percentatge per pregunta.
 - Distribució per pregunta amb recomptes i percentatges per puntuació, sense
   repetir el text de cada opció a la taula.
@@ -717,7 +738,7 @@ El servidor valida novament el token i genera un PDF de conjunt amb:
 - Data de generació.
 - Nombre de respostes.
 - Explicacio de l'escala.
-- Grafica general dels blocs.
+- Gràfica general de les dimensions.
 - Grafiques i resultats de cada pregunta.
 - Resum de fortaleses.
 - Àmbits amb marge de millora.
@@ -737,8 +758,9 @@ Versió activa corregida: `2026.2`
 
 Estructura inicial:
 
-- 5 blocs.
-- 4 preguntes per bloc.
+- 5 dimensions històriques.
+- 1 criteri general per dimensió a la migració de compatibilitat.
+- 4 preguntes per criteri.
 - 20 preguntes totals.
 - Totes obligatories.
 - Totes amb quatre respostes pròpies i puntuacions fixes `0`, `1`, `2`, `3`.

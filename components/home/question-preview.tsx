@@ -59,8 +59,9 @@ export function QuestionPreview() {
               <p className="text-xs font-semibold uppercase tracking-[0.15em] text-action">
                 {copy.block}
               </p>
+              <p className="mt-2 text-sm font-medium text-muted">{copy.criterion}</p>
               <h3 className="mt-4 max-w-4xl text-balance text-2xl font-semibold leading-tight tracking-[-0.025em] sm:text-3xl lg:mt-2 lg:text-2xl">
-                <span className="mr-2 text-action">1.1.</span>
+                <span className="mr-2 text-action">1.1.1.</span>
                 {copy.question}
               </h3>
             </div>

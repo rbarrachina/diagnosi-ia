@@ -8,6 +8,7 @@ import {
   centres,
   diagnosticSpaces,
   questionBlocks,
+  questionCriteria,
   questionOptions,
   questionnaires,
   questions,
@@ -43,8 +44,10 @@ type BlockRow = {
 type QuestionRow = {
   id: string;
   blockId: string;
+  criterionId: string;
   position: number;
   blockPosition: number;
+  criterionPosition: number;
   text: string;
   randomizeOptions: boolean;
 };
@@ -67,6 +70,7 @@ function mapQuestionnaireContent(params: {
   };
   blocks: BlockRow[];
   questions: QuestionRow[];
+  criteria: { id: string; dimensionId: string; position: number; title: string }[];
   options: OptionRow[];
 }): QuestionnaireWithContent {
   const questionsByBlock = new Map<string, Question[]>();
@@ -86,8 +90,10 @@ function mapQuestionnaireContent(params: {
   for (const question of params.questions) {
     const mappedQuestion: Question = {
       id: question.id,
+      criterionId: question.criterionId,
       position: question.position,
       blockPosition: question.blockPosition,
+      criterionPosition: question.criterionPosition,
       text: question.text,
       randomizeOptions: question.randomizeOptions,
       options: (optionsByQuestion.get(question.id) ?? []).sort(
@@ -104,6 +110,17 @@ function mapQuestionnaireContent(params: {
     id: block.id,
     position: block.position,
     title: block.title,
+    criteria: params.criteria
+      .filter((criterion) => criterion.dimensionId === block.id)
+      .sort((a, b) => a.position - b.position)
+      .map((criterion) => ({
+        id: criterion.id,
+        position: criterion.position,
+        title: criterion.title,
+        questions: (questionsByBlock.get(block.id) ?? [])
+          .filter((question) => question.criterionId === criterion.id)
+          .sort((a, b) => a.criterionPosition - b.criterionPosition),
+      })),
     questions: (questionsByBlock.get(block.id) ?? []).sort(
       (a, b) => a.blockPosition - b.blockPosition,
     ),
@@ -137,7 +154,7 @@ export async function getQuestionnaireById(
     return null;
   }
 
-  const [blockRows, questionRows, optionRows] = await Promise.all([
+  const [blockRows, criterionRows, questionRows, optionRows] = await Promise.all([
     db
       .select({
         id: questionBlocks.id,
@@ -149,10 +166,22 @@ export async function getQuestionnaireById(
       .orderBy(asc(questionBlocks.position)),
     db
       .select({
+        id: questionCriteria.id,
+        dimensionId: questionCriteria.dimensionId,
+        position: questionCriteria.position,
+        title: questionCriteria.title,
+      })
+      .from(questionCriteria)
+      .where(eq(questionCriteria.questionnaireId, questionnaire.id))
+      .orderBy(asc(questionCriteria.dimensionId), asc(questionCriteria.position)),
+    db
+      .select({
         id: questions.id,
         blockId: questions.blockId,
+        criterionId: questions.criterionId,
         position: questions.position,
         blockPosition: questions.blockPosition,
+        criterionPosition: questions.criterionPosition,
         text: questions.text,
         randomizeOptions: questions.randomizeOptions,
       })
@@ -177,6 +206,7 @@ export async function getQuestionnaireById(
       languageCode: questionnaire.languageCode as QuestionnaireLanguageCode,
     },
     blocks: blockRows,
+    criteria: criterionRows,
     questions: questionRows,
     options: optionRows,
   });

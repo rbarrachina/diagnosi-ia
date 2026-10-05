@@ -171,10 +171,10 @@ describe("MySQL admin questionnaire mutations", () => {
         {
           position: 1,
           title: "Bloc nou",
-          questions: [
-            { blockPosition: 1, text: "Pregunta nova 1" },
-            { blockPosition: 2, text: "Pregunta nova 2" },
-          ],
+          criteria: [{ position: 1, title: "Criteri nou", questions: [
+            { blockPosition: 1, criterionPosition: 1, text: "Pregunta nova 1" },
+            { blockPosition: 2, criterionPosition: 2, text: "Pregunta nova 2" },
+          ] }],
         },
       ],
     });
@@ -200,12 +200,12 @@ describe("MySQL admin questionnaire mutations", () => {
         {
           position: 1,
           title: "Bloc 1 corregit",
-          questions: [{ blockPosition: 1, text: "Pregunta 1 corregida" }],
+          criteria: [{ position: 1, title: "Criteri general", questions: [{ blockPosition: 1, criterionPosition: 1, text: "Pregunta 1 corregida" }] }],
         },
         {
           position: 2,
           title: "Bloc 2",
-          questions: [{ blockPosition: 1, text: "Pregunta 2" }],
+          criteria: [{ position: 1, title: "Criteri general", questions: [{ blockPosition: 1, criterionPosition: 1, text: "Pregunta 2" }] }],
         },
       ],
     });
@@ -230,7 +230,7 @@ describe("MySQL admin questionnaire mutations", () => {
           {
             position: 1,
             title: "Bloc 1",
-            questions: [{ blockPosition: 1, text: "Pregunta 1" }],
+            criteria: [{ position: 1, title: "Criteri general", questions: [{ blockPosition: 1, criterionPosition: 1, text: "Pregunta 1" }] }],
           },
         ],
       }),

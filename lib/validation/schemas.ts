@@ -4,19 +4,17 @@ import { PUBLIC_CODE_PATTERN } from "@/lib/validation/public-code";
 export const QUESTIONNAIRE_VERSION = "2026.2";
 export const EXPECTED_ANSWER_COUNT = 20;
 export const MAX_QUESTION_BLOCKS = 10;
-export const MAX_QUESTIONS_PER_BLOCK = 10;
-export const MAX_QUESTIONNAIRE_QUESTIONS = MAX_QUESTION_BLOCKS * MAX_QUESTIONS_PER_BLOCK;
+export const MAX_CRITERIA_PER_DIMENSION = 10;
+export const MAX_QUESTIONS_PER_CRITERION = 10;
+export const MAX_QUESTIONS_PER_BLOCK = MAX_QUESTIONS_PER_CRITERION;
+export const MAX_QUESTIONNAIRE_QUESTIONS = 100;
 export const MAX_SUBMISSIONS_PER_SPACE = 300;
 
 export const questionnaireVersionSchema = z
   .string()
   .trim()
-  .min(2)
-  .max(24)
-  .regex(
-    /^[0-9]{4}[A-Za-zÀ-ÿ0-9 ._-]*$/,
-    "La versió del qüestionari no és vàlida",
-  );
+  .min(1)
+  .max(20);
 
 export const publicCodeSchema = z
   .string()
@@ -148,7 +146,8 @@ export const adminQuestionOptionInputSchema = z
 
 export const adminQuestionInputSchema = z
   .object({
-    blockPosition: z.number().int().min(1).max(MAX_QUESTIONS_PER_BLOCK),
+    blockPosition: z.number().int().min(1).max(MAX_QUESTIONNAIRE_QUESTIONS),
+    criterionPosition: z.number().int().min(1).max(MAX_QUESTIONS_PER_CRITERION),
     text: questionnaireQuestionTextSchema,
     randomizeOptions: z.boolean().default(false),
     options: z.array(adminQuestionOptionInputSchema).length(4).default(defaultQuestionOptions),
@@ -174,27 +173,49 @@ export const adminQuestionInputSchema = z
     }
   });
 
-export const adminQuestionBlockInputSchema = z
+export const adminQuestionCriterionInputSchema = z
   .object({
     position: z.number().int().min(1).max(MAX_QUESTION_BLOCKS),
     title: questionnaireBlockTitleSchema,
     questions: z.array(adminQuestionInputSchema).max(MAX_QUESTIONS_PER_BLOCK),
   })
   .strict()
-  .superRefine((block, context) => {
+  .superRefine((criterion, context) => {
     const questionPositions = new Set<number>();
 
-    for (const question of block.questions) {
-      if (questionPositions.has(question.blockPosition)) {
+    for (const question of criterion.questions) {
+      if (questionPositions.has(question.criterionPosition)) {
         context.addIssue({
           code: "custom",
-          message: "Duplicate question position inside block",
+          message: "Duplicate question position inside criterion",
           path: ["questions"],
         });
         return;
       }
 
-      questionPositions.add(question.blockPosition);
+      questionPositions.add(question.criterionPosition);
+    }
+  });
+
+export const adminQuestionBlockInputSchema = z
+  .object({
+    position: z.number().int().min(1).max(MAX_QUESTION_BLOCKS),
+    title: questionnaireBlockTitleSchema,
+    criteria: z.array(adminQuestionCriterionInputSchema).max(MAX_CRITERIA_PER_DIMENSION),
+  })
+  .strict()
+  .superRefine((dimension, context) => {
+    const positions = new Set<number>();
+    for (const criterion of dimension.criteria) {
+      if (positions.has(criterion.position)) {
+        context.addIssue({
+          code: "custom",
+          message: "Duplicate criterion position inside dimension",
+          path: ["criteria"],
+        });
+        return;
+      }
+      positions.add(criterion.position);
     }
   });
 
@@ -215,6 +236,21 @@ export const adminQuestionnaireBlocksSchema = z
       }
 
       blockPositions.add(block.position);
+    }
+
+    const questionCount = blocks.reduce(
+      (total, dimension) => total + dimension.criteria.reduce(
+        (criteriaTotal, criterion) => criteriaTotal + criterion.questions.length,
+        0,
+      ),
+      0,
+    );
+    if (questionCount > MAX_QUESTIONNAIRE_QUESTIONS) {
+      context.addIssue({
+        code: "custom",
+        message: "Questionnaire contains too many questions",
+        path: ["blocks"],
+      });
     }
   });
 
@@ -328,6 +364,7 @@ export type OwnerResultsRequestInput = z.infer<typeof ownerResultsRequestSchema>
 export type AdminResultsRequestInput = z.infer<typeof adminResultsRequestSchema>;
 export type AdminResultsScopeInput = z.infer<typeof adminResultsScopeSchema>;
 export type AdminQuestionInput = z.infer<typeof adminQuestionInputSchema>;
+export type AdminQuestionCriterionInput = z.infer<typeof adminQuestionCriterionInputSchema>;
 export type AdminQuestionBlockInput = z.infer<typeof adminQuestionBlockInputSchema>;
 export type CreateQuestionnaireDraftInput = z.input<
   typeof createQuestionnaireDraftInputSchema

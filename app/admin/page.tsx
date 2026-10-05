@@ -73,7 +73,9 @@ import {
 } from "@/lib/admin/questionnaires";
 import { getAggregatedResultsForQuestionnaireVersion } from "@/lib/results/get-results";
 import {
+  MAX_CRITERIA_PER_DIMENSION,
   MAX_QUESTION_BLOCKS,
+  MAX_QUESTIONNAIRE_QUESTIONS,
   MAX_QUESTIONS_PER_BLOCK,
   centreIdSchema,
   questionnaireIdSchema,
@@ -474,7 +476,6 @@ async function DraftForms({ versions }: { versions: AdminQuestionnaireSummary[] 
           <InterfaceText messageKey="versio" />{" "}<input
             className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm"
             name="version"
-            placeholder="2026-27 v1"
             required
           />
         </label>
@@ -562,14 +563,18 @@ async function QuestionnaireEditor({
   const isComplete =
     detail.blocks.length >= 1 &&
     detail.blocks.length <= MAX_QUESTION_BLOCKS &&
+    detail.questionCount <= MAX_QUESTIONNAIRE_QUESTIONS &&
     detail.blocks.every(
       (block) =>
-        block.questions.length >= 1 &&
-        block.questions.length <= MAX_QUESTIONS_PER_BLOCK &&
-        block.questions.every(
-          (question) =>
-            question.options.length === 4 &&
+        block.criteria.length >= 1 &&
+        block.criteria.length <= MAX_CRITERIA_PER_DIMENSION &&
+        block.criteria.every((criterion) =>
+          criterion.questions.length >= 1 &&
+          criterion.questions.length <= MAX_QUESTIONS_PER_BLOCK &&
+          criterion.questions.every((question) =>
+            question.text.trim().length > 0 && question.options.length === 4 &&
             question.options.every((option) => option.text.trim().length > 0),
+          ),
         ),
     );
 

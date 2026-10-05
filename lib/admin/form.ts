@@ -14,7 +14,7 @@ export function getRequiredFormString(formData: FormData, name: string): string 
 export function parseQuestionnaireContentFormData(
   formData: FormData,
 ): ReplaceQuestionnaireContentInput {
-  const blockPositions = formData
+  const dimensionPositions = formData
     .getAll("blockPosition")
     .map((value) => Number(value))
     .filter((value) => Number.isInteger(value));
@@ -25,33 +25,42 @@ export function parseQuestionnaireContentFormData(
     estimatedMinutes: getRequiredFormString(formData, "estimatedMinutes"),
     languageCode: getRequiredFormString(formData, "languageCode"),
     confirmAssignedEdit: formData.get("confirmAssignedEdit") === "yes",
-    blocks: blockPositions.map((blockPosition) => {
-      const questionPositions = formData
-        .getAll(`block-${blockPosition}-questionPosition`)
-        .map((value) => Number(value))
-        .filter((value) => Number.isInteger(value));
-
+    blocks: dimensionPositions.map((blockPosition) => {
+      let dimensionQuestionPosition = 0;
+      const criterionPositions = formData
+        .getAll(`dimension-${blockPosition}-criterionPosition`)
+        .map(Number)
+        .filter(Number.isInteger);
       return {
         position: blockPosition,
         title: getRequiredFormString(formData, `block-${blockPosition}-title`),
-        questions: questionPositions.map((questionPosition) => ({
-          blockPosition: questionPosition,
-          text: getRequiredFormString(
-            formData,
-            `block-${blockPosition}-question-${questionPosition}`,
-          ),
-          randomizeOptions:
-            formData.get(
-              `block-${blockPosition}-question-${questionPosition}-randomize`,
-            ) === "yes",
-          options: ([0, 1, 2, 3] as const).map((score) => ({
-            score,
-            text: getRequiredFormString(
+        criteria: criterionPositions.map((criterionPosition) => {
+          const questionPositions = formData
+            .getAll(`dimension-${blockPosition}-criterion-${criterionPosition}-questionPosition`)
+            .map(Number)
+            .filter(Number.isInteger);
+          return {
+            position: criterionPosition,
+            title: getRequiredFormString(
               formData,
-              `block-${blockPosition}-question-${questionPosition}-option-${score}`,
+              `dimension-${blockPosition}-criterion-${criterionPosition}-title`,
             ),
-          })),
-        })),
+            questions: questionPositions.map((questionPosition) => {
+              dimensionQuestionPosition += 1;
+              const questionKey = `dimension-${blockPosition}-criterion-${criterionPosition}-question-${questionPosition}`;
+              return {
+                blockPosition: dimensionQuestionPosition,
+                criterionPosition: questionPosition,
+                text: getRequiredFormString(formData, questionKey),
+                randomizeOptions: formData.get(`${questionKey}-randomize`) === "yes",
+                options: ([0, 1, 2, 3] as const).map((score) => ({
+                  score,
+                  text: getRequiredFormString(formData, `${questionKey}-option-${score}`),
+                })),
+              };
+            }),
+          };
+        }),
       };
     }),
   };

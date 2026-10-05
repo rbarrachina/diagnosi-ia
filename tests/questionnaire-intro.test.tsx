@@ -14,11 +14,28 @@ const questionnaire: PublicQuestionnaire = {
       id: "01",
       position: 1,
       title: "Bloc de prova",
+      criteria: [{ id: "01", position: 1, title: "Criteri de prova", questions: [{
+          id: "00000000-0000-4000-8000-000000000001",
+          criterionId: "01",
+          position: 1,
+          blockPosition: 1,
+          criterionPosition: 1,
+          text: "Descripció breu: Pregunta de prova",
+          randomizeOptions: false,
+          options: [
+            { id: "10000000-0000-4000-8000-000000000001", score: 0, text: "Gens / No ho faig" },
+            { id: "10000000-0000-4000-8100-000000000001", score: 1, text: "Una mica / Ocasionalment" },
+            { id: "10000000-0000-4000-8200-000000000001", score: 2, text: "Bastant / Habitualment" },
+            { id: "10000000-0000-4000-8300-000000000001", score: 3, text: "Molt / Soc un referent al centre" },
+          ],
+        }] }],
       questions: [
         {
           id: "00000000-0000-4000-8000-000000000001",
+          criterionId: "01",
           position: 1,
           blockPosition: 1,
+          criterionPosition: 1,
           text: "Descripció breu: Pregunta de prova",
           randomizeOptions: false,
           options: [

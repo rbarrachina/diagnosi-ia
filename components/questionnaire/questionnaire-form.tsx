@@ -7,6 +7,7 @@ import { SCALE_OPTIONS } from "@/lib/questionnaire/scale";
 import type {
   PublicQuestionnaire,
   QuestionBlock,
+  QuestionCriterion,
   QuestionOption,
 } from "@/lib/questionnaire/types";
 
@@ -39,9 +40,15 @@ export function QuestionnaireForm({
   const isReadOnly = mode === "readOnly";
   const isWorkspaceAppearance = appearance === "workspace";
 
-  const questions = useMemo(
-    () => questionnaire.blocks.flatMap((block) => block.questions),
+  const pages = useMemo(
+    () => questionnaire.blocks.flatMap((block) =>
+      block.criteria.map((criterion) => ({ block, criterion })),
+    ),
     [questionnaire.blocks],
+  );
+  const questions = useMemo(
+    () => pages.flatMap(({ criterion }) => criterion.questions),
+    [pages],
   );
   const [optionOrder, setOptionOrder] = useState<Record<string, QuestionOption[]>>(
     () => orderedOptionsFor(questions),
@@ -50,13 +57,13 @@ export function QuestionnaireForm({
   const submissionSaved = useRef(false);
   const lastScrolledStep = useRef(currentStep);
 
-  const totalPages = questionnaire.blocks.length + 1;
+  const totalPages = pages.length + 1;
   const progressPercentage =
     submitState.status === "submitted"
       ? 100
       : Math.round((currentStep / totalPages) * 100);
-  const currentBlock = currentStep > 0 ? questionnaire.blocks[currentStep - 1] : null;
-  const isLastBlock = currentStep === questionnaire.blocks.length;
+  const currentPage = currentStep > 0 ? pages[currentStep - 1] : null;
+  const isLastPage = currentStep === pages.length;
   const alreadySubmitted = !isReadOnly && alreadySubmittedByAccount;
   const hasPendingAnswers =
     !isReadOnly &&
@@ -94,8 +101,8 @@ export function QuestionnaireForm({
     });
   }
 
-  function blockIsComplete(block: QuestionBlock): boolean {
-    return block.questions.every((question) => answers[question.id] !== undefined);
+  function pageIsComplete(criterion: QuestionCriterion): boolean {
+    return criterion.questions.every((question) => answers[question.id] !== undefined);
   }
 
   function goToNextStep() {
@@ -114,8 +121,8 @@ export function QuestionnaireForm({
       hasPreparedOptionOrder.current = true;
     }
 
-    if (!isReadOnly && currentBlock && !blockIsComplete(currentBlock)) {
-      const missingIds = currentBlock.questions
+    if (!isReadOnly && currentPage && !pageIsComplete(currentPage.criterion)) {
+      const missingIds = currentPage.criterion.questions
         .filter((question) => answers[question.id] === undefined)
         .map((question) => question.id);
       setMissingQuestionIds(missingIds);
@@ -128,7 +135,7 @@ export function QuestionnaireForm({
     }
 
     setMissingQuestionIds([]);
-    setCurrentStep((step) => Math.min(step + 1, questionnaire.blocks.length));
+    setCurrentStep((step) => Math.min(step + 1, pages.length));
   }
 
   async function submitAnswers() {
@@ -145,11 +152,11 @@ export function QuestionnaireForm({
         .filter((question) => answers[question.id] === undefined)
         .map((question) => question.id);
       const firstMissing = missingIds[0];
-      const targetBlockIndex = questionnaire.blocks.findIndex((block) =>
-        block.questions.some((question) => question.id === firstMissing),
+      const targetPageIndex = pages.findIndex(({ criterion }) =>
+        criterion.questions.some((question) => question.id === firstMissing),
       );
       setMissingQuestionIds(missingIds);
-      if (targetBlockIndex >= 0) setCurrentStep(targetBlockIndex + 1);
+      if (targetPageIndex >= 0) setCurrentStep(targetPageIndex + 1);
       if (firstMissing) focusQuestion(firstMissing);
       setSubmitState({
         status: "error",
@@ -242,10 +249,11 @@ export function QuestionnaireForm({
           questionCount={questions.length}
           questionnaire={questionnaire}
         />
-      ) : currentBlock ? (
-        <BlockPage
+      ) : currentPage ? (
+        <CriterionPage
           answers={answers}
-          block={currentBlock}
+          block={currentPage.block}
+          criterion={currentPage.criterion}
           missingQuestionIds={missingQuestionIds}
           optionOrder={optionOrder}
           isReadOnly={isReadOnly}
@@ -273,21 +281,24 @@ export function QuestionnaireForm({
             <ul className="mt-2 list-inside list-disc space-y-1">
               {missingQuestionIds.map((questionId) => {
                 const question = questions.find((item) => item.id === questionId);
-                const block = questionnaire.blocks.find((item) =>
-                  item.questions.some((itemQuestion) => itemQuestion.id === questionId),
+                const pageIndex = pages.findIndex(({ criterion: pageCriterion }) =>
+                  pageCriterion.questions.some((itemQuestion) => itemQuestion.id === questionId),
                 );
+                const page = pageIndex >= 0 ? pages[pageIndex] : null;
+                const block = page?.block;
+                const criterion = block?.criteria.find((item) => item.id === question?.criterionId);
                 if (!question || !block) return null;
                 return (
                   <li key={questionId}>
                     <button
                       className="text-left font-semibold"
                       onClick={() => {
-                        setCurrentStep(block.position);
+                        setCurrentStep(pageIndex + 1);
                         focusQuestion(questionId);
                       }}
                       type="button"
                     >
-                      <InterfaceText messageKey="pregunta" />{" "}{block.position}.{question.blockPosition}
+                      <InterfaceText messageKey="pregunta" />{" "}{block.position}.{criterion?.position}.{question.criterionPosition}
                     </button>
                   </li>
                 );
@@ -318,7 +329,7 @@ export function QuestionnaireForm({
             type="button"
           ><InterfaceText messageKey="anterior" /></button>
 
-          {isReadOnly && isLastBlock ? (
+          {isReadOnly && isLastPage ? (
             <button
               className="rounded-xl border border-line bg-surface px-5 py-3 text-sm font-semibold text-muted transition hover:border-action hover:text-action"
               onClick={() => {
@@ -327,7 +338,7 @@ export function QuestionnaireForm({
               }}
               type="button"
             ><InterfaceText messageKey="tornaALInici" /></button>
-          ) : isLastBlock ? (
+          ) : isLastPage ? (
             <button
               className="rounded-xl bg-action px-6 py-3 text-sm font-semibold text-action-contrast shadow-[0_12px_32px_var(--app-action-shadow)] transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-muted"
               disabled={submitState.status === "submitting"}
@@ -425,7 +436,7 @@ function IntroPage({
             onClick={onStart}
             type="button"
           >
-            {isReadOnly ? t("veureBlocs") : t("comencaElQuestionari")}
+            {isReadOnly ? t("veureCriteris") : t("comencaElQuestionari")}
           </button>
         </div>
       </div>
@@ -433,9 +444,10 @@ function IntroPage({
   );
 }
 
-function BlockPage({
+function CriterionPage({
   answers,
   block,
+  criterion,
   missingQuestionIds,
   isReadOnly,
   optionOrder,
@@ -443,6 +455,7 @@ function BlockPage({
 }: {
   answers: Record<string, AnswerValue>;
   block: QuestionBlock;
+  criterion: QuestionCriterion;
   missingQuestionIds: string[];
   isReadOnly: boolean;
   optionOrder: Record<string, QuestionOption[]>;
@@ -450,21 +463,22 @@ function BlockPage({
 }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-action sm:text-sm">
-        <InterfaceText messageKey="bloc" />{" "}{block.position}
-      </p>
       <h2
-        className="mt-4 text-2xl font-bold tracking-[-0.03em] text-ink sm:text-3xl"
+        className="text-2xl font-bold tracking-[-0.03em] text-action-hover sm:text-3xl"
         id="questionnaire-step-heading"
         tabIndex={-1}
       >
-        {block.title}
+        <InterfaceText messageKey="dimensio" />{" "}{block.position} · {block.title}
       </h2>
 
-      <div className="mt-8 space-y-8">
-        {block.questions.map((question) => {
+      <section className="mt-3 space-y-6">
+          <h3 className="text-lg font-semibold text-action sm:text-xl"><InterfaceText messageKey="criteri" /> {block.position}.{criterion.position} · {criterion.title}</h3>
+          {criterion.questions.map((question) => {
           const questionCopy = splitQuestionCopy(question.text);
-          const questionNumber = `${block.position}.${question.blockPosition}.`;
+          const questionText = questionCopy.description
+            ? `${questionCopy.description}: ${questionCopy.prompt}`
+            : questionCopy.prompt;
+          const questionNumber = `${block.position}.${criterion.position}.${question.criterionPosition}.`;
           const questionIsMissing = missingQuestionIds.includes(question.id);
           const errorId = `question-${question.id}-error`;
 
@@ -475,16 +489,8 @@ function BlockPage({
             className="questionnaire-question"
             key={question.id}
           >
-            <legend className="w-full text-ink">
-              <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-action sm:text-sm">
-                {questionNumber}
-                {questionCopy.description
-                  ? ` ${questionCopy.description}`
-                  : null}
-              </span>
-              <span className="mt-2 block text-base font-semibold leading-7 sm:text-lg">
-                {questionCopy.prompt}
-              </span>
+            <legend className="w-full text-base font-semibold leading-7 text-ink sm:text-lg">
+              {questionNumber} {questionText}
             </legend>
             {questionIsMissing ? (
               <p className="mt-2 text-sm font-semibold text-danger-text" id={errorId}>
@@ -529,8 +535,8 @@ function BlockPage({
             </div>
           </fieldset>
           );
-        })}
-      </div>
+          })}
+      </section>
     </div>
   );
 }

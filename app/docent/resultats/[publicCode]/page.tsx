@@ -8,7 +8,7 @@ import { getCurrentParticipantUser } from "@/lib/auth/session";
 import { isPublicCode } from "@/lib/crypto/public-code";
 import { getParticipantResult, listParticipantResults } from "@/lib/repositories/participant-results";
 import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
-import { BlockStageBar } from "@/components/participants/block-stage-bar";
+import { ParticipantDimensionResults } from "@/components/participants/participant-dimension-results";
 import { ParticipantWorkspaceFrame } from "@/components/participants/participant-workspace-frame";
 import { SCALE_OPTIONS } from "@/lib/questionnaire/scale";
 
@@ -64,9 +64,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
             </span>
             <span className="text-sm leading-6 text-muted">· {formatDate(result.completedAt)}</span>
           </p>
-          <div className="mt-6 grid scroll-mt-8 gap-4 md:grid-cols-2 lg:grid-cols-3" id="resum-per-blocs">
-            {result.blocks.map((block) => <BlockStageBar block={block} key={block.position} />)}
-          </div>
+          <ParticipantDimensionResults blocks={result.blocks} />
           <h2 className="mt-12 scroll-mt-8 text-2xl font-semibold" id="detall-per-blocs"><InterfaceText messageKey="detallPerBlocs" /></h2>
           <div className="mt-8 space-y-6">
             {result.blocks.map((block) => (
@@ -75,12 +73,16 @@ export default async function ParticipantResultPage({ params }: { params: Promis
                   <span>{block.position}. {block.title}</span>
                   <span aria-hidden="true" className="text-muted transition-transform group-open:rotate-180">⌄</span>
                 </summary>
-                <ol className="space-y-6 border-t border-line p-6">
-                  {block.questions.map((question) => (
-                    <li className="border-t border-line pt-4 first:border-t-0 first:pt-0" key={question.position}>
-                      <p className="font-medium">{block.position}.{question.blockPosition}. {question.text}</p>
-                      <ul className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        {question.options.map((option) => {
+                <div className="space-y-7 border-t border-line p-6">
+                  {[...new Map(block.questions.map((question) => [question.criterionPosition, question])).values()].map((criterion) => (
+                    <section key={criterion.criterionPosition}>
+                      <h3 className="mb-4 text-base font-semibold">{block.position}.{criterion.criterionPosition} · {criterion.criterionTitle}</h3>
+                      <ol className="space-y-6">
+                        {block.questions.filter((question) => question.criterionPosition === criterion.criterionPosition).map((question) => (
+                          <li className="border-t border-line pt-4 first:border-t-0 first:pt-0" key={question.position}>
+                            <p className="font-medium">{block.position}.{question.criterionPosition}.{question.questionPosition}. {question.text}</p>
+                            <ul className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                              {question.options.map((option) => {
                           const selected = option.value === question.value;
                           const colorClasses = question.randomizeOptions
                             ? "questionnaire-random-option"
@@ -96,11 +98,14 @@ export default async function ParticipantResultPage({ params }: { params: Promis
                               </div>
                             </li>
                           );
-                        })}
-                      </ul>
-                    </li>
+                              })}
+                            </ul>
+                          </li>
+                        ))}
+                      </ol>
+                    </section>
                   ))}
-                </ol>
+                </div>
               </details>
             ))}
           </div>
