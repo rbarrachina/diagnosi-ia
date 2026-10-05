@@ -90,7 +90,7 @@ function wrapTickLabel(label: string, maxLength: number): string[] {
   return lines;
 }
 
-function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength, fontSize }: {
+function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength, fontSize, centerVertically = false }: {
   payload: { value?: unknown };
   x: number | string;
   y: number | string;
@@ -98,10 +98,11 @@ function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength, font
   fill?: string;
   maxLength: number;
   fontSize?: number;
+  centerVertically?: boolean;
 }) {
   const lines = wrapTickLabel(String(payload.value ?? ""), maxLength);
   const lineHeight = 11;
-  const firstLineOffset = -((lines.length - 1) * lineHeight) / 2;
+  const firstLineOffset = centerVertically ? -((lines.length - 1) * lineHeight) / 2 : 0;
 
   return (
     <text
@@ -474,7 +475,7 @@ export function ResultsDashboard({
                 />
                 <PolarAngleAxis
                   dataKey="name"
-                  tick={(props) => <WrappedDimensionTick {...props} maxLength={18} fontSize={11} />}
+                  tick={(props) => <WrappedDimensionTick {...props} maxLength={18} fontSize={11} centerVertically />}
                 />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} tickLine={false} axisLine={false} />
                 <Radar

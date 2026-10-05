@@ -7,7 +7,8 @@ Semantic Versioning.
 ## [Unreleased]
 
 - Mostra els noms complets de les dimensions sota les barres i al gràfic
-  d'aranya, ajustats en diverses línies i amb més espai perquè no se superposin.
+  d'aranya, ajustats en diverses línies i amb més espai perquè no se superposin
+  ni envaeixin les barres.
 
 - Reforça el color del fons degradat a la gràfica de percentatges per dimensió
   perquè s'aproximi a la intensitat de les distribucions docents.

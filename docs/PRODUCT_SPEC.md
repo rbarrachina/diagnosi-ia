@@ -730,7 +730,8 @@ El servidor valida el token i retorna només dades de conjunt:
 - Les etiquetes de les gràfiques de barres i d'aranya mostren els noms complets
   a la llegenda de quatre columnes sota les gràfiques i al gràfic d'aranya.
   Els noms complets apareixen sota les barres, en diverses línies per evitar
-  superposicions, i l'eix horitzontal hi reserva prou alçada.
+  superposicions; cap línia no envaeix la zona del gràfic. L'eix horitzontal
+  hi reserva prou alçada.
 - Gràfica d'aranya per dimensió sense etiquetes numèriques de percentatge i amb un
   degradat de color de valors baixos a alts.
 - En seleccionar una dimensió al gràfic de barres, la dimensió queda ressaltada
