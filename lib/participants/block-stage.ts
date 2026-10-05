@@ -2,6 +2,23 @@ import type { ParticipantBlockResult } from "@/lib/participants/types";
 
 export type BlockStage = "basic" | "intermediate" | "advanced";
 
+export function getParticipantCompetence(blocks: ParticipantBlockResult[]): {
+  position: number;
+  stage: BlockStage;
+} | null {
+  if (blocks.length === 0 || blocks.some((block) => block.questions.length === 0)) return null;
+
+  const average = blocks.reduce((sum, block) => {
+    const total = block.questions.reduce((value, question) => value + question.value, 0);
+    return sum + total / block.questions.length;
+  }, 0) / blocks.length;
+
+  return {
+    position: average / 3 * 100,
+    stage: average < 1 ? "basic" : average < 2 ? "intermediate" : "advanced",
+  };
+}
+
 export function getBlockStage(block: ParticipantBlockResult): {
   position: number;
   stage: BlockStage;

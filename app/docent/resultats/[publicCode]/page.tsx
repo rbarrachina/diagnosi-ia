@@ -10,6 +10,7 @@ import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
 import { ParticipantDimensionResults } from "@/components/participants/participant-dimension-results";
 import { ParticipantWorkspaceFrame } from "@/components/participants/participant-workspace-frame";
 import { SCALE_OPTIONS } from "@/lib/questionnaire/scale";
+import { getParticipantCompetence } from "@/lib/participants/block-stage";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,13 @@ export default async function ParticipantResultPage({ params }: { params: Promis
   if (!user) redirect(`/auth/login?next=${encodeURIComponent(`/docent/resultats/${publicCode}`)}`);
   const result = await getParticipantResult({ participantUserId: user.id, publicCode });
   if (!result) notFound();
+  const competence = getParticipantCompetence(result.blocks);
+  const competenceStages = {
+    basic: { label: "etapaBasica", color: "text-red-700 dark:text-red-300" },
+    intermediate: { label: "etapaIntermedia", color: "text-amber-700 dark:text-amber-300" },
+    advanced: { label: "etapaAvancada", color: "text-green-700 dark:text-green-300" },
+  } as const;
+  const competenceDisplay = competence ? competenceStages[competence.stage] : null;
   const participations = await listParticipantResults(user.id);
 
   return (
@@ -51,6 +59,14 @@ export default async function ParticipantResultPage({ params }: { params: Promis
             <p className="text-2xl font-semibold leading-tight text-ink sm:text-3xl">
               {result.questionnaireTitle}
             </p>
+            <div className="rounded-md border border-line bg-surface px-4 py-3 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+                <InterfaceText messageKey="cdDocentEnIa" />
+              </p>
+              <p className={`mt-1 text-3xl font-bold ${competenceDisplay?.color ?? "text-muted"}`}>
+                <InterfaceText messageKey={competenceDisplay?.label ?? "senseDades"} />
+              </p>
+            </div>
             <form className="shrink-0" action="/api/docent/results/pdf" method="post">
               <input name="publicCode" type="hidden" value={result.publicCode} />
               <button className="min-h-10 rounded-xl bg-action px-4 py-2 text-sm font-semibold text-action-contrast" type="submit">

@@ -664,8 +664,14 @@ classificar. Un valor 0 queda a l'extrem esquerre de l'etapa bàsica. L'etiqueta
 del terç corresponent queda destacada; el lector de pantalla també rep la
 posició numèrica. No es repeteixen el nivell ni la puntuació al costat del
 títol, ni els extrems 0 i 100 sota les barres. Cada barra porta al detall de les
-preguntes i respostes de la dimensió. No es presenta cap etapa ni percentatge global
-del docent.
+preguntes i respostes de la dimensió. La capçalera web presenta una caixa
+`CD docent en IA` entre el títol i el botó PDF, amb l'etapa global del docent.
+La puntuació global és la mitjana aritmètica de les puntuacions normalitzades
+de les dimensions, amb el mateix pes per dimensió encara que tinguin nombres
+de preguntes diferents. Es calcula des de les respostes pròpies sense arrodonir
+les dimensions abans de fer la mitjana ni classificar pels mateixos terços.
+Només es mostra l'etapa, sense percentatge global; sense dimensions completes,
+la caixa mostra `Sense dades`. És exclusiva del docent propietari.
 
 Les targetes de dimensió són seleccionables. En seleccionar-ne una, queda
 ressaltada amb un fons blau i, a sota, es mostren en una fila els gràfics de

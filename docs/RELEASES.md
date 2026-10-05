@@ -27,6 +27,8 @@ La disposició adaptable de quatre dimensions per fila i la capçalera ampla al 
 s'inclou a `Unreleased`; és un canvi visual sense migracions ni configuració nova.
 També s'elimina el botó de retorn duplicat: la llista de diagnosis s'obre des
 del menú docent.
+La caixa global de CD docent en IA usa la mitjana de dimensions amb pes igual,
+només per al docent propietari, sense migracions ni noves dades persistides.
 El títol ampliat encapçala el resultat, amb el PDF just després i la versió amb la data a sota.
 
 1. Confirmar que `main` està neta i actualitzada.
