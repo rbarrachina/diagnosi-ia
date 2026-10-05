@@ -25,6 +25,8 @@ Després d'`1.0.0`:
 
 La disposició adaptable de quatre dimensions per fila i la capçalera ampla al resultat docent
 s'inclou a `Unreleased`; és un canvi visual sense migracions ni configuració nova.
+També s'elimina el botó de retorn duplicat: la llista de diagnosis s'obre des
+del menú docent.
 
 1. Confirmar que `main` està neta i actualitzada.
 2. Moure els canvis d'`Unreleased` a una secció amb versió i data.

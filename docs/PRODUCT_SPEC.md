@@ -644,10 +644,11 @@ La capçalera del resultat propi comparteix l'amplada adaptable de la vista,
 fins a 1536 px, amb marges laterals també a l'escriptori i el menú lateral
 situat sota el logotip.
 El resultat propi mostra el nom institucional a la capçalera de l'aplicació,
-just abans de les icones. El retorn a la llista de qüestionaris manté el botó arrodonit
-i comparteix fila amb la descàrrega del PDF. El títol `Resultat individual`
+just abans de les icones. El retorn a la llista de qüestionaris es fa des del
+menú docent, sense un botó duplicat al contingut. La descàrrega del PDF queda
+alineada a la dreta. El títol `Resultat individual`
 només és accessible als lectors de pantalla. El qüestionari i la versió
-apareixen destacats sota els botons, amb la data en un estil més discret,
+apareixen destacats sota el botó de PDF, amb la data en un estil més discret,
 seguits del resum gràfic amb una barra de 0 a
 100 per cada dimensió, sense títol ni text introductori addicionals, amb un
 indicador de la posició obtinguda i els tres terços `Bàsica`, `Intermèdia` i

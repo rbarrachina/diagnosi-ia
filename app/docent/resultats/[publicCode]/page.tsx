@@ -1,6 +1,5 @@
 import { InterfaceText } from "@/components/i18n/interface-text";
 import { IconLogoutButton } from "@/components/auth/auth-actions";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AppHeader } from "@/components/layout/app-header";
 import { ThemeToggle } from "@/components/home/theme-toggle";
@@ -48,10 +47,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
       >
         <section className="mx-auto w-full px-5 pb-24 pt-12 sm:px-8 md:pb-20">
           <h1 className="sr-only"><InterfaceText messageKey="resultatIndividual" /></h1>
-          <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
-            <Link className="inline-flex min-h-10 items-center justify-center rounded-full border border-action bg-accent-soft px-5 py-2 text-sm font-semibold text-action shadow-sm transition hover:bg-action hover:text-action-contrast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper" href="/docent?view=questionnaires">
-              <InterfaceText messageKey="lesMevesDiagnosis2" />
-            </Link>
+          <div className="flex items-center justify-end">
             <form action="/api/docent/results/pdf" method="post">
               <input name="publicCode" type="hidden" value={result.publicCode} />
               <button className="min-h-10 rounded-xl bg-action px-4 py-2 text-sm font-semibold text-action-contrast" type="submit">

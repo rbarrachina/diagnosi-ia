@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Elimina el botó duplicat de retorn a les diagnosis al resultat docent;
+  la navegació queda al menú i la descàrrega del PDF continua a la dreta.
+
 - Amplia el resultat docent i mostra quatre dimensions per fila en pantalles
   amples, dues en amplades mitjanes i una al mòbil, amb les barres alineades.
   La capçalera s'adapta a la mateixa amplada que la vista de resultats.
