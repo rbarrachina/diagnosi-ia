@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Fa visible el zero als gràfics de barres i d'aranya amb una marca gràfica
+  mínima del 3%, sense alterar la puntuació real ni els càlculs.
+
 - Vincula el clic d'una barra directament amb la dimensió corresponent, també
   quan una altra dimensió té puntuació zero.
 

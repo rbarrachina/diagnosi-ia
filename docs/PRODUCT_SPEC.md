@@ -727,6 +727,9 @@ El servidor valida el token i retorna només dades de conjunt:
   té un degradat de vermell a verd amb opacitat reforçada per igualar les
   gràfiques de distribució docent. Les barres són estretes, amb farcit semitransparent
   pastel segons l'etapa i contorn negre.
+  Si una dimensió té valor zero, tots dos gràfics dibuixen una marca mínima del
+  3% per fer-la visible; la puntuació real continua sent zero i els càlculs no
+  canvien.
 - Les etiquetes de les gràfiques de barres i d'aranya mostren els noms complets
   a la llegenda de quatre columnes sota les gràfiques i al gràfic d'aranya.
   Els noms complets apareixen sota les barres, en diverses línies per evitar

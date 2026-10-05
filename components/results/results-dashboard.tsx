@@ -68,6 +68,7 @@ function blockChartData(blocks: BlockResult[]) {
   return blocks.map((block) => ({
     name: block.title,
     percentatge: block.average ?? 0,
+    visiblePercentatge: block.average === 0 ? 3 : block.average ?? 0,
     position: block.position,
   }));
 }
@@ -425,7 +426,7 @@ export function ResultsDashboard({
                 <Bar
                   activeBar={false}
                   barSize={44}
-                  dataKey="percentatge"
+                  dataKey="visiblePercentatge"
                   fill="transparent"
                   onClick={(entry) => {
                     const block = results.blocks.find(({ position }) => position === entry.payload?.position);
@@ -481,7 +482,7 @@ export function ResultsDashboard({
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} tickLine={false} axisLine={false} />
                 <Radar
                   activeDot={false}
-                  dataKey="percentatge"
+                  dataKey="visiblePercentatge"
                   fill="transparent"
                   fillOpacity={0}
                   name={t("percentatge")}
