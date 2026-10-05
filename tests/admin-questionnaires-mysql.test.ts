@@ -19,12 +19,22 @@ type BlockRow = {
   title: string;
 };
 
+type CriterionRow = {
+  id: string;
+  questionnaire_id: string;
+  dimension_id: string;
+  position: number;
+  title: string;
+};
+
 type QuestionRow = {
   id: string;
   questionnaire_id: string;
   block_id: string;
+  criterion_id: string;
   position: number;
   block_position: number;
+  criterion_position: number;
   text: string;
   randomize_options: number;
 };
@@ -45,6 +55,7 @@ type ConnectionMock = {
 
 let questionnaires: QuestionnaireRow[];
 let blocks: BlockRow[];
+let criteria: CriterionRow[];
 let questions: QuestionRow[];
 let diagnosticSpaceCounts: Record<string, number>;
 let submissionCounts: Record<string, number>;
@@ -83,9 +94,13 @@ describe("MySQL admin questionnaire mutations", () => {
       block("01", "002", 1, "Bloc 1"),
       block("02", "002", 2, "Bloc 2"),
     ];
+    criteria = [
+      criterion("01", "002", "01", 1, "Criteri 1.1"),
+      criterion("01", "002", "02", 1, "Criteri 2.1"),
+    ];
     questions = [
-      question("question-1", "002", "01", 1, 1, "Pregunta 1"),
-      question("question-2", "002", "02", 11, 1, "Pregunta 2"),
+      question("question-1", "002", "01", "01", 1, 1, 1, "Pregunta 1"),
+      question("question-2", "002", "02", "01", 2, 1, 1, "Pregunta 2"),
     ];
     diagnosticSpaceCounts = { "002": 1 };
     submissionCounts = { "002": 1 };
@@ -160,7 +175,8 @@ describe("MySQL admin questionnaire mutations", () => {
   it("replaces draft structure when the version is inactive and has no responses", async () => {
     questionnaires.push(questionnaire("003", "2026.3", "Esborrany", 0));
     blocks.push(block("01", "003", 1, "Bloc vell"));
-    questions.push(question("old-question", "003", "01", 1, 1, "Pregunta vella"));
+    criteria.push(criterion("01", "003", "01", 1, "Criteri vell"));
+    questions.push(question("old-question", "003", "01", "01", 1, 1, 1, "Pregunta vella"));
 
     await replaceQuestionnaireContent({
       questionnaireId: "003",
@@ -185,6 +201,9 @@ describe("MySQL admin questionnaire mutations", () => {
     expect(questionnaires.find((row) => row.id === "003")?.estimated_minutes).toBe(12);
     expect(blocks.filter((row) => row.questionnaire_id === "003")).toEqual([
       expect.objectContaining({ id: "01", title: "Bloc nou" }),
+    ]);
+    expect(criteria.filter((row) => row.questionnaire_id === "003")).toEqual([
+      expect.objectContaining({ id: "01", title: "Criteri nou" }),
     ]);
     expect(questions.filter((row) => row.questionnaire_id === "003")).toHaveLength(2);
     expect(questions.some((row) => row.id === "old-question")).toBe(false);
@@ -240,7 +259,8 @@ describe("MySQL admin questionnaire mutations", () => {
   it("activates a complete version without updating existing diagnostic spaces", async () => {
     questionnaires.push(questionnaire("003", "2026.3", "Completa", 0));
     blocks.push(block("01", "003", 1, "Bloc 1"));
-    questions.push(question("question-3", "003", "01", 1, 1, "Pregunta 3"));
+    criteria.push(criterion("01", "003", "01", 1, "Criteri 1.1"));
+    questions.push(question("question-3", "003", "01", "01", 1, 1, 1, "Pregunta 3"));
 
     const result = await activateQuestionnaireVersion({ questionnaireId: "003" });
 
@@ -264,7 +284,8 @@ describe("MySQL admin questionnaire mutations", () => {
   it("deletes only inactive questionnaire versions and dependent anonymous rows", async () => {
     questionnaires.push(questionnaire("003", "2026.3", "Per eliminar", 0));
     blocks.push(block("01", "003", 1, "Bloc 1"));
-    questions.push(question("question-3", "003", "01", 1, 1, "Pregunta 3"));
+    criteria.push(criterion("01", "003", "01", 1, "Criteri 1.1"));
+    questions.push(question("question-3", "003", "01", "01", 1, 1, 1, "Pregunta 3"));
     diagnosticSpaceCounts["003"] = 1;
     submissionCounts["003"] = 1;
 
@@ -314,20 +335,34 @@ function block(
   };
 }
 
+function criterion(
+  id: string,
+  questionnaireId: string,
+  dimensionId: string,
+  position: number,
+  title: string,
+): CriterionRow {
+  return { id, questionnaire_id: questionnaireId, dimension_id: dimensionId, position, title };
+}
+
 function question(
   id: string,
   questionnaireId: string,
   blockId: string,
+  criterionId: string,
   position: number,
   blockPosition: number,
+  criterionPosition: number,
   text: string,
 ): QuestionRow {
   return {
     id,
     questionnaire_id: questionnaireId,
     block_id: blockId,
+    criterion_id: criterionId,
     position,
     block_position: blockPosition,
+    criterion_position: criterionPosition,
     text,
     randomize_options: 0,
   };
@@ -352,6 +387,10 @@ function createConnectionMock(): ConnectionMock {
 
       if (normalizedQuery.includes("release_lock")) {
         return [[{ released: 1 }]];
+      }
+
+      if (normalizedQuery.trimStart().startsWith("select (") && normalizedQuery.includes("as row_count")) {
+        return [[{ row_count: 0 }]];
       }
 
       if (normalizedQuery.includes("coalesce(max(cast(id as unsigned))")) {
@@ -410,9 +449,29 @@ function createConnectionMock(): ConnectionMock {
 
       if (
         normalizedQuery.trimStart().startsWith("select") &&
+        normalizedQuery.includes("from question_criteria") &&
+        !normalizedQuery.includes("count(*)")
+      ) {
+        return [[
+          ...criteria
+            .filter((row) => row.questionnaire_id === values[0])
+            .sort((a, b) => a.dimension_id.localeCompare(b.dimension_id) || a.position - b.position),
+        ]];
+      }
+
+      if (
+        normalizedQuery.trimStart().startsWith("select") &&
         normalizedQuery.includes("from question_options")
       ) {
         return [[]];
+      }
+
+      if (
+        normalizedQuery.trimStart().startsWith("select") &&
+        normalizedQuery.includes("from questions") &&
+        normalizedQuery.includes("scale_min")
+      ) {
+        return [[{ row_count: 0 }]];
       }
 
       if (
@@ -432,15 +491,22 @@ function createConnectionMock(): ConnectionMock {
         return [{ affectedRows: 1 }];
       }
 
+      if (normalizedQuery.includes("insert into question_criteria")) {
+        criteria.push(criterion(String(values[0]), String(values[1]), String(values[2]), Number(values[3]), String(values[4])));
+        return [{ affectedRows: 1 }];
+      }
+
       if (normalizedQuery.includes("insert into questions")) {
         questions.push(
           question(
             String(values[0]),
             String(values[1]),
             String(values[2]),
-            Number(values[3]),
+            String(values[3]),
             Number(values[4]),
-            String(values[5]),
+            Number(values[5]),
+            Number(values[6]),
+            String(values[7]),
           ),
         );
         return [{ affectedRows: 1 }];
@@ -452,6 +518,12 @@ function createConnectionMock(): ConnectionMock {
 
       if (normalizedQuery.includes("select count(*) as row_count")) {
         return [[{ row_count: getCountForQuery(normalizedQuery, String(values[0])) }]];
+      }
+
+      if (normalizedQuery.includes("update question_criteria")) {
+        const target = criteria.find((row) => row.questionnaire_id === values[1] && row.dimension_id === values[2] && row.position === values[3]);
+        if (target) target.title = String(values[0]);
+        return [{ affectedRows: target ? 1 : 0 }];
       }
 
       if (normalizedQuery.includes("update questionnaires") && normalizedQuery.includes("set title")) {
@@ -531,6 +603,11 @@ function createConnectionMock(): ConnectionMock {
         return [{ affectedRows: 1 }];
       }
 
+      if (normalizedQuery.includes("delete from question_criteria")) {
+        criteria = criteria.filter((row) => row.questionnaire_id !== values[0]);
+        return [{ affectedRows: 1 }];
+      }
+
       if (normalizedQuery.includes("delete from question_blocks")) {
         blocks = blocks.filter((row) => row.questionnaire_id !== values[0]);
         return [{ affectedRows: 1 }];
@@ -572,6 +649,10 @@ function getCountForQuery(query: string, questionnaireId: string): number {
 
   if (query.includes("from question_blocks")) {
     return blocks.filter((row) => row.questionnaire_id === questionnaireId).length;
+  }
+
+  if (query.includes("from question_criteria")) {
+    return criteria.filter((row) => row.questionnaire_id === questionnaireId).length;
   }
 
   if (query.includes("from questions")) {

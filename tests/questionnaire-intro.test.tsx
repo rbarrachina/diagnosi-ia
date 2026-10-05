@@ -99,11 +99,7 @@ describe("questionnaire introduction", () => {
     expect(screen.getByRole("group", { name: /Pregunta de prova/ })).toHaveClass(
       "questionnaire-question",
     );
-    expect(screen.getByText("1.1. Descripció breu")).toHaveClass(
-      "text-xs",
-      "text-action",
-    );
-    expect(screen.getByText("Pregunta de prova")).toHaveClass(
+    expect(screen.getByRole("group", { name: /1\.1\.1\. Descripció breu: Pregunta de prova/ }).querySelector("legend")).toHaveClass(
       "text-base",
       "font-semibold",
     );

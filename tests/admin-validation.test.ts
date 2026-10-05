@@ -13,10 +13,15 @@ function validBlocks() {
   return Array.from({ length: 10 }, (_, blockIndex) => ({
     position: blockIndex + 1,
     title: `Bloc ${blockIndex + 1}`,
-    questions: Array.from({ length: 10 }, (_, questionIndex) => ({
-      blockPosition: questionIndex + 1,
-      text: `Pregunta ${blockIndex + 1}.${questionIndex + 1}`,
-    })),
+    criteria: [{
+      position: 1,
+      title: `Criteri ${blockIndex + 1}.1`,
+      questions: Array.from({ length: 10 }, (_, questionIndex) => ({
+        blockPosition: questionIndex + 1,
+        criterionPosition: questionIndex + 1,
+        text: `Pregunta ${blockIndex + 1}.${questionIndex + 1}`,
+      })),
+    }],
   }));
 }
 
@@ -181,7 +186,7 @@ describe("admin validation schemas", () => {
           {
             position: 11,
             title: "Bloc 11",
-            questions: [],
+            criteria: [],
           },
         ],
       }),
@@ -202,9 +207,9 @@ describe("admin validation schemas", () => {
     ).toThrow();
 
     const duplicateQuestions = validBlocks();
-    duplicateQuestions[0].questions[1] = {
-      ...duplicateQuestions[0].questions[1],
-      blockPosition: 1,
+    duplicateQuestions[0].criteria[0].questions[1] = {
+      ...duplicateQuestions[0].criteria[0].questions[1],
+      criterionPosition: 1,
     };
 
     expect(() =>

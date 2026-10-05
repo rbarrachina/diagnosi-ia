@@ -57,7 +57,7 @@ describe("interface language", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 401, json: async () => ({ error: "Cal iniciar sessió." }) }));
     const { container } = render(<Spanish><QuestionnaireForm questionnaire={questionnaire} /></Spanish>);
     fireEvent.click(screen.getByRole("button", { name: "Comienza el cuestionario" }));
-    expect(screen.getByText("Bloc redactat pel centre")).toBeVisible();
+    expect(screen.getByRole("heading", { name: /Dimensió 1.*Bloc redactat pel centre/ })).toBeVisible();
     expect(screen.getByText("Pregunta original en català")).toBeVisible();
     expect(container.querySelector("[lang]")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Envía las respuestas" }));
