@@ -56,10 +56,16 @@ export default async function ParticipantResultPage({ params }: { params: Promis
         <section className="mx-auto w-full px-5 pb-24 pt-12 sm:px-8 md:pb-20">
           <h1 className="sr-only"><InterfaceText messageKey="resultatIndividual" /></h1>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-            <p className="text-2xl font-semibold leading-tight text-ink sm:text-3xl">
-              {result.questionnaireTitle}
-            </p>
-            <div className="rounded-md border border-line bg-surface px-4 py-3 shadow-sm">
+            <div className="min-w-0">
+              <p className="text-2xl font-semibold leading-tight text-ink sm:text-3xl">
+                {result.questionnaireTitle}
+              </p>
+              <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-sm leading-6 text-muted">
+                <span><InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion}</span>
+                <span>· {formatDate(result.completedAt)}</span>
+              </p>
+            </div>
+            <div className="self-center rounded-2xl border border-line bg-surface px-4 py-3 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
                 <InterfaceText messageKey="cdDocentEnIa" />
               </p>
@@ -67,17 +73,13 @@ export default async function ParticipantResultPage({ params }: { params: Promis
                 <InterfaceText messageKey={competenceDisplay?.label ?? "senseDades"} />
               </p>
             </div>
-            <form className="shrink-0" action="/api/docent/results/pdf" method="post">
+            <form className="shrink-0 self-start" action="/api/docent/results/pdf" method="post">
               <input name="publicCode" type="hidden" value={result.publicCode} />
               <button className="min-h-10 rounded-xl bg-action px-4 py-2 text-sm font-semibold text-action-contrast" type="submit">
                 <InterfaceText messageKey="descarregaElPdf" />
               </button>
             </form>
           </div>
-          <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-sm leading-6 text-muted">
-            <span><InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion}</span>
-            <span>· {formatDate(result.completedAt)}</span>
-          </p>
           <ParticipantDimensionResults blocks={result.blocks} />
           <h2 className="mt-12 scroll-mt-8 text-2xl font-semibold" id="detall-per-blocs"><InterfaceText messageKey="detallPerBlocs" /></h2>
           <div className="mt-8 space-y-6">

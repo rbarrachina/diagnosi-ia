@@ -8,6 +8,7 @@ Semantic Versioning.
 
 - Afegeix al resultat web docent una caixa de CD docent en IA entre el títol
   i el PDF, amb l'etapa calculada per la mitjana de dimensions amb pes igual.
+  Arrodoneix la caixa, la centra respecte del títol i subtítol i alinea el PDF a dalt.
 
 - Amplia el títol del resultat docent i situa la versió amb la data a sota,
   i la descàrrega del PDF just després del títol; quan no hi cap, el botó passa a sota.

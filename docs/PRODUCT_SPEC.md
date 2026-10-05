@@ -647,7 +647,10 @@ El resultat propi mostra el nom institucional a la capçalera de l'aplicació,
 just abans de les icones. El retorn a la llista de qüestionaris es fa des del
 menú docent, sense un botó duplicat al contingut. La descàrrega del PDF queda
 just després del títol, amb un petit espai; quan no hi cap, passa
-a la línia següent. La versió i la data queden juntes a sota d'aquesta fila.
+a la línia següent. La versió i la data queden juntes sota el títol, dins
+del mateix bloc. La caixa de CD té les vores arrodonides com les targetes
+de dimensions i queda centrada verticalment respecte del bloc de títol i
+subtítol; el botó PDF queda alineat a dalt.
 El títol `Resultat individual`
 només és accessible als lectors de pantalla. El títol del qüestionari
 apareix al principi amb una mida més gran, amb la versió i la data just a sota en un estil més discret,
