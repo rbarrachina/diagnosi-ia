@@ -90,22 +90,23 @@ function wrapTickLabel(label: string, maxLength: number): string[] {
   return lines;
 }
 
-function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength }: {
+function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength, fontSize }: {
   payload: { value?: unknown };
   x: number | string;
   y: number | string;
   textAnchor: "start" | "middle" | "end" | "inherit";
   fill?: string;
   maxLength: number;
+  fontSize?: number;
 }) {
   const lines = wrapTickLabel(String(payload.value ?? ""), maxLength);
-  const lineHeight = 12;
+  const lineHeight = 11;
   const firstLineOffset = -((lines.length - 1) * lineHeight) / 2;
 
   return (
     <text
       fill={fill ?? "#475569"}
-      fontSize={11}
+      fontSize={fontSize ?? 11}
       textAnchor={textAnchor}
       x={x}
       y={y}
@@ -376,7 +377,7 @@ export function ResultsDashboard({
         <h2 className="text-center text-lg font-semibold text-ink">
           <InterfaceText messageKey="percentatgePerBlocs" />
         </h2>
-        <div className="mt-4 grid gap-6 lg:grid-cols-2">
+        <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div aria-hidden="true" className="h-72 min-w-0">
             <ResponsiveContainer
               height="100%"
@@ -405,9 +406,10 @@ export function ResultsDashboard({
                 />
                 <CartesianGrid vertical={false} stroke="#d8dee6" strokeDasharray="3 3" />
                 <XAxis
-                  dataKey="position"
+                  dataKey="name"
+                  height={70}
                   interval={0}
-                  tick={{ fill: "#475569", fontSize: 12 }}
+                  tick={(props) => <WrappedDimensionTick {...props} maxLength={11} fontSize={10} />}
                 />
                 <YAxis
                   domain={[0, 100]}
@@ -472,7 +474,7 @@ export function ResultsDashboard({
                 />
                 <PolarAngleAxis
                   dataKey="name"
-                  tick={(props) => <WrappedDimensionTick {...props} maxLength={18} />}
+                  tick={(props) => <WrappedDimensionTick {...props} maxLength={18} fontSize={11} />}
                 />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} tickLine={false} axisLine={false} />
                 <Radar
