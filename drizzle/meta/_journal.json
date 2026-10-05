@@ -134,27 +134,6 @@
       "when": 1791111284870,
       "tag": "0018_next_hitman",
       "breakpoints": true
-    },
-    {
-      "idx": 19,
-      "version": "5",
-      "when": 1791111746238,
-      "tag": "0019_wakeful_puff_adder",
-      "breakpoints": true
-    },
-    {
-      "idx": 20,
-      "version": "5",
-      "when": 1791112500000,
-      "tag": "0020_version_format",
-      "breakpoints": true
-    },
-    {
-      "idx": 21,
-      "version": "5",
-      "when": 1791113200000,
-      "tag": "0021_free_version_values",
-      "breakpoints": true
     }
   ]
 }

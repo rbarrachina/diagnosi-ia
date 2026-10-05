@@ -1490,10 +1490,6 @@
           "name": "questionnaires_id_format_check",
           "value": "`questionnaires`.`id` regexp '^[0-9]{3}$'"
         },
-        "questionnaires_version_format_check": {
-          "name": "questionnaires_version_format_check",
-          "value": "`questionnaires`.`version` regexp '^[0-9]{4}[[:alnum:] ._-]*$'"
-        },
         "questionnaires_title_not_blank_check": {
           "name": "questionnaires_title_not_blank_check",
           "value": "trim(`questionnaires`.`title`) <> ''"
@@ -1505,6 +1501,10 @@
         "questionnaires_language_code_check": {
           "name": "questionnaires_language_code_check",
           "value": "`questionnaires`.`language_code` in ('ca', 'es', 'eu', 'gl', 'oc')"
+        },
+        "questionnaires_version_not_blank_check": {
+          "name": "questionnaires_version_not_blank_check",
+          "value": "trim(`questionnaires`.`version`) <> ''"
         }
       }
     },
@@ -1706,7 +1706,7 @@
         },
         "questions_block_position_check": {
           "name": "questions_block_position_check",
-          "value": "`questions`.`block_position` between 1 and 10"
+          "value": "`questions`.`block_position` between 1 and 100"
         },
         "questions_criterion_position_check": {
           "name": "questions_criterion_position_check",

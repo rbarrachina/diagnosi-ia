@@ -25,3 +25,12 @@ ALTER TABLE `question_criteria` ADD CONSTRAINT `question_criteria_dimension_fk` 
 CREATE INDEX `question_criteria_questionnaire_id_idx` ON `question_criteria` (`questionnaire_id`);--> statement-breakpoint
 ALTER TABLE `questions` ADD CONSTRAINT `questions_criterion_position_check` CHECK (`questions`.`criterion_position` between 1 and 10);--> statement-breakpoint
 ALTER TABLE `questions` ADD CONSTRAINT `questions_criterion_fk` FOREIGN KEY (`criterion_id`,`block_id`,`questionnaire_id`) REFERENCES `question_criteria`(`id`,`dimension_id`,`questionnaire_id`) ON DELETE restrict ON UPDATE no action;
+--> statement-breakpoint
+ALTER TABLE `questions` DROP CONSTRAINT `questions_block_position_check`;--> statement-breakpoint
+ALTER TABLE `questions` ADD CONSTRAINT `questions_block_position_check` CHECK (`questions`.`block_position` between 1 and 100);
+--> statement-breakpoint
+ALTER TABLE `questionnaires` DROP CONSTRAINT `questionnaires_version_format_check`;--> statement-breakpoint
+ALTER TABLE `questionnaires` ADD CONSTRAINT `questionnaires_version_format_check` CHECK (`questionnaires`.`version` regexp '^[0-9]{4}[[:alnum:] ._-]*$');
+--> statement-breakpoint
+ALTER TABLE `questionnaires` DROP CONSTRAINT `questionnaires_version_format_check`;--> statement-breakpoint
+ALTER TABLE `questionnaires` ADD CONSTRAINT `questionnaires_version_not_blank_check` CHECK (trim(`questionnaires`.`version`) <> '');

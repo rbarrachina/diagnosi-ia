@@ -1,2 +1,0 @@
-ALTER TABLE `questions` DROP CONSTRAINT `questions_block_position_check`;--> statement-breakpoint
-ALTER TABLE `questions` ADD CONSTRAINT `questions_block_position_check` CHECK (`questions`.`block_position` between 1 and 100);
