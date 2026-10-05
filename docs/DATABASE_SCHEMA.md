@@ -253,3 +253,39 @@ La migració `0017_participant_session_copy.sql` corregeix només els textos
 globals que encara contenen les afirmacions predeterminades antigues sobre
 l'anonimat o l'absència total de correu. No modifica plantilles personalitzades
 que no continguin literalment aquestes frases ni cap dada de participants.
+
+### DDL parcial en migracions MySQL
+
+MySQL confirma moltes instruccions DDL independentment, encara que una
+migració posterior falli. Drizzle desa el registre de la migració només quan
+acaba tot el fitxer; per tant, l'absència del registre no vol dir que no
+s'hagi aplicat cap canvi. Si `npm run db:migrate` falla, no s'ha de tornar a
+executar directament: primer cal comparar l'esquema real amb cada instrucció
+del fitxer pendent i identificar quines han quedat aplicades.
+
+La migració `0018_next_hitman.sql` va fallar a PRO en afegir
+`questions_criterion_fk`: `questions.criterion_id` havia heretat
+`utf8mb4_0900_ai_ci` del valor per defecte de la taula, mentre que
+`question_criteria.id` i les columnes relacionades feien servir
+`utf8mb4_unicode_ci`. Les instruccions anteriors ja havien creat la taula i les
+columnes; el registre Drizzle encara no existia. La correcció fixa explícitament
+`utf8mb4_unicode_ci` a la migració i `0019_fix_question_criterion_collation.sql`
+normalitza la columna en esquemes existents.
+
+Per recuperar una migració parcial en un entorn compartit:
+
+1. Aturar el servei i fer una còpia de seguretat de la base de dades.
+2. Consultar `information_schema.COLUMNS`, `TABLE_CONSTRAINTS` i
+   `__drizzle_migrations` de l'esquema configurat a `DATABASE_URL`.
+3. Completar només les instruccions pendents de la migració, assegurant que les
+   columnes de text d'una clau forana tenen el mateix conjunt de caràcters i
+   col·lació.
+4. Verificar les columnes, restriccions, claus i dades abans de registrar la
+   migració com a completada. Si cal inserir el registre manualment, obtenir
+   `hash` del fitxer exacte i `when` de `drizzle/meta/_journal.json` del mateix
+   commit desplegat; no reutilitzar valors d'un altre fitxer o versió.
+5. Executar `npm run db:migrate` per aplicar les migracions posteriors i
+   comprovar que el servei arrenca correctament.
+
+No utilitzar `db:push` per recuperar migracions de producció ni marcar una
+migració com a completada mentre en faltin instruccions.
