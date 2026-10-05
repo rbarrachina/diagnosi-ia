@@ -23,6 +23,9 @@ Després d'`1.0.0`:
 
 ## Preparar una release
 
+La disposició adaptable de quatre dimensions per fila i la capçalera ampla al resultat docent
+s'inclou a `Unreleased`; és un canvi visual sense migracions ni configuració nova.
+
 1. Confirmar que `main` està neta i actualitzada.
 2. Moure els canvis d'`Unreleased` a una secció amb versió i data.
 3. Actualitzar `package.json` i `package-lock.json` amb la mateixa versió.

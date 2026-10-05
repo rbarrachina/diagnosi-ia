@@ -33,6 +33,8 @@ distribuir-ne binaris. L'abast, les fonts originals i els pendents es documenten
 - `AppHeader`, `AppLogoLink`, `AppLogoMark` i `CentreAppShell` són els únics
   orígens del patró de capçalera, marca i fons autenticat. Les pàgines passen
   només el contingut i les dades del compte; no reprodueixen les capes visuals.
+  `AppHeader` admet una amplada estàndard o ampla; el resultat docent usa
+  l'amplada ampla de 1536 px, igual que la seva carcassa.
 - Els estils inline queden reservats a valors calculats en temps d'execució,
   com l'amplada del progrés i els colors de les sèries dels gràfics.
 

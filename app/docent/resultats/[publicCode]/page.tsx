@@ -31,6 +31,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
     <main className="app-shell min-h-screen bg-paper text-ink">
       <AppHeader
         brandHref="/docent"
+        contentWidth="wide"
         leadingControls={
           <span className="max-w-20 truncate text-right text-xs font-semibold text-ink sm:max-w-48 sm:text-sm lg:max-w-64" title={result.centreName}>
             {result.centreName}
@@ -45,7 +46,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
         participations={participations.map(({ publicCode: code, questionnaireTitle }) => ({ publicCode: code, questionnaireTitle }))}
         view="result"
       >
-        <section className="mx-auto max-w-5xl px-5 pb-24 pt-12 sm:px-8 md:pb-20">
+        <section className="mx-auto w-full px-5 pb-24 pt-12 sm:px-8 md:pb-20">
           <h1 className="sr-only"><InterfaceText messageKey="resultatIndividual" /></h1>
           <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
             <Link className="inline-flex min-h-10 items-center justify-center rounded-full border border-action bg-accent-soft px-5 py-2 text-sm font-semibold text-action shadow-sm transition hover:bg-action hover:text-action-contrast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper" href="/docent?view=questionnaires">

@@ -6,6 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Amplia el resultat docent i mostra quatre dimensions per fila en pantalles
+  amples, dues en amplades mitjanes i una al mòbil, amb les barres alineades.
+  La capçalera s'adapta a la mateixa amplada que la vista de resultats.
+
 - Unifica la col·lació de `questions.criterion_id` amb la de la resta
   d'identificadors relacionats perquè les consultes de criteris funcionin a
   MySQL quan el valor per defecte de la base de dades és diferent.

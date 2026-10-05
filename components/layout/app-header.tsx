@@ -11,6 +11,7 @@ type AppHeaderProps = {
   brandOpensInNewTab?: boolean;
   brandHref: string;
   children: ReactNode;
+  contentWidth?: "standard" | "wide";
   controlsRef?: React.RefObject<HTMLDivElement | null>;
   leadingControls?: ReactNode;
   showBrandLabelOnMobile?: boolean;
@@ -20,6 +21,7 @@ export function AppHeader({
   brandOpensInNewTab = false,
   brandHref,
   children,
+  contentWidth = "standard",
   controlsRef,
   leadingControls,
   showBrandLabelOnMobile = false,
@@ -36,7 +38,7 @@ export function AppHeader({
         data-scrolled="false"
       >
         <AppHeaderEffects />
-        <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between gap-2 px-5 sm:gap-3 sm:px-8 lg:px-10">
+        <div className={`mx-auto flex h-20 w-full items-center justify-between gap-2 px-5 sm:gap-3 sm:px-8 lg:px-10 ${contentWidth === "wide" ? "max-w-screen-2xl" : "max-w-7xl"}`}>
           <AppLogoLink
             href={brandHref}
             openInNewTab={brandOpensInNewTab}

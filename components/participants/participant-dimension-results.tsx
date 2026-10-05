@@ -46,13 +46,13 @@ export function ParticipantDimensionResults({ blocks }: { blocks: ParticipantBlo
 
   return (
     <>
-      <div className="mt-6 grid scroll-mt-8 gap-4 md:grid-cols-2 lg:grid-cols-3" id="resum-per-blocs">
+      <div className="mt-6 grid scroll-mt-8 gap-4 md:grid-cols-2 xl:grid-cols-4" id="resum-per-blocs">
         {blocks.map((block) => {
           const { position, stage } = getBlockStage(block);
           return (
             <button
               aria-pressed={selectedPosition === block.position}
-              className={`flex h-full flex-col rounded-2xl border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
+              className={`flex h-full min-w-0 flex-col rounded-2xl border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
                 selectedPosition === block.position
                   ? "border-action bg-accent-soft shadow-md ring-2 ring-action/30"
                   : "border-line bg-surface hover:border-action"
@@ -61,11 +61,13 @@ export function ParticipantDimensionResults({ blocks }: { blocks: ParticipantBlo
               onClick={() => setSelectedPosition((current) => current === block.position ? null : block.position)}
               type="button"
             >
-              <span className="font-semibold text-ink"><InterfaceText messageKey="dimensio" /> {block.position}. {block.title}</span>
+              <span className="mb-1 min-h-12 break-words font-semibold text-ink"><InterfaceText messageKey="dimensio" /> {block.position}. {block.title}</span>
               <span className="sr-only">
                 <InterfaceText messageKey="posicioOrientativa" />: <InterfaceText messageKey={stages.find((item) => item.id === stage)!.label} />, {Math.round(position)}/100
               </span>
-              <StageScale score={position} stage={stage} />
+              <div className="mt-auto">
+                <StageScale score={position} stage={stage} />
+              </div>
             </button>
           );
         })}

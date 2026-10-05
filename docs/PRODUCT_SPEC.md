@@ -640,6 +640,8 @@ en pantalles grans i ocupa l'espai disponible en pantalles petites.
 L'estat plegat es conserva entre les pàgines docents. Al mòbil, els mateixos
 accessos apareixen en un selector flotant compacte. La barra lateral no redueix
 el nombre de gràfiques per fila en pantalles amples.
+La capçalera del resultat propi comparteix l'amplada adaptable de la vista,
+fins a 1536 px, amb marges laterals en pantalles petites.
 El resultat propi mostra el nom institucional a la capçalera de l'aplicació,
 just abans de les icones. El retorn a la llista de qüestionaris manté el botó arrodonit
 i comparteix fila amb la descàrrega del PDF. El títol `Resultat individual`
@@ -649,7 +651,8 @@ seguits del resum gràfic amb una barra de 0 a
 100 per cada dimensió, sense títol ni text introductori addicionals, amb un
 indicador de la posició obtinguda i els tres terços `Bàsica`, `Intermèdia` i
 `Avançada`. Les barres es disposen en una columna al mòbil, dues en amplades
-mitjanes i tres en pantalles amples; dins de cada fila, les barres queden
+mitjanes i quatre a partir de 1280 px; la vista de resultats aprofita l'amplada
+disponible fins a 1536 px, inclosa la barra lateral. Dins de cada fila, les barres queden
 alineades encara que els títols tinguin longituds diferents. El valor és la
 suma de les respostes de la dimensió dividida pel màxim possible, reescalada a 0–100.
 Els límits són exactament un terç i dos terços, sense arrodonir abans de
