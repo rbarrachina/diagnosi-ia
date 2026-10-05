@@ -6,7 +6,7 @@ Semantic Versioning.
 
 ## [Unreleased]
 
-- Situa el títol i la versió al principi del resultat docent, amb la data a sota
+- Amplia el títol del resultat docent i situa la versió amb la data a sota,
   i la descàrrega del PDF just després del títol; quan no hi cap, el botó passa a sota.
 
 - Elimina el botó duplicat de retorn a les diagnosis al resultat docent;

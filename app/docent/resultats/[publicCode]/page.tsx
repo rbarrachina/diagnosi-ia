@@ -48,8 +48,8 @@ export default async function ParticipantResultPage({ params }: { params: Promis
         <section className="mx-auto w-full px-5 pb-24 pt-12 sm:px-8 md:pb-20">
           <h1 className="sr-only"><InterfaceText messageKey="resultatIndividual" /></h1>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-            <p className="text-base font-semibold leading-7 text-ink sm:text-lg">
-              {result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion}
+            <p className="text-2xl font-semibold leading-tight text-ink sm:text-3xl">
+              {result.questionnaireTitle}
             </p>
             <form className="shrink-0" action="/api/docent/results/pdf" method="post">
               <input name="publicCode" type="hidden" value={result.publicCode} />
@@ -58,7 +58,10 @@ export default async function ParticipantResultPage({ params }: { params: Promis
               </button>
             </form>
           </div>
-          <p className="mt-1 text-sm leading-6 text-muted">{formatDate(result.completedAt)}</p>
+          <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-sm leading-6 text-muted">
+            <span><InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion}</span>
+            <span>· {formatDate(result.completedAt)}</span>
+          </p>
           <ParticipantDimensionResults blocks={result.blocks} />
           <h2 className="mt-12 scroll-mt-8 text-2xl font-semibold" id="detall-per-blocs"><InterfaceText messageKey="detallPerBlocs" /></h2>
           <div className="mt-8 space-y-6">

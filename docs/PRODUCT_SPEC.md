@@ -646,11 +646,11 @@ situat sota el logotip.
 El resultat propi mostra el nom institucional a la capçalera de l'aplicació,
 just abans de les icones. El retorn a la llista de qüestionaris es fa des del
 menú docent, sense un botó duplicat al contingut. La descàrrega del PDF queda
-just després del títol i la versió, amb un petit espai; quan no hi cap, passa
-a la línia següent. La data queda a sota d'aquesta fila.
+just després del títol, amb un petit espai; quan no hi cap, passa
+a la línia següent. La versió i la data queden juntes a sota d'aquesta fila.
 El títol `Resultat individual`
-només és accessible als lectors de pantalla. El qüestionari i la versió
-apareixen destacats al principi, amb la data just a sota en un estil més discret,
+només és accessible als lectors de pantalla. El títol del qüestionari
+apareix al principi amb una mida més gran, amb la versió i la data just a sota en un estil més discret,
 seguits del resum gràfic amb una barra de 0 a
 100 per cada dimensió, sense títol ni text introductori addicionals, amb un
 indicador de la posició obtinguda i els tres terços `Bàsica`, `Intermèdia` i
