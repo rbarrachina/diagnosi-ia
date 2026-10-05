@@ -19,6 +19,7 @@ import {
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
+  type BaseTickContentProps,
   type TooltipContentProps,
   XAxis,
   YAxis,
@@ -64,12 +65,52 @@ function formatPercentage(value: number | null, t: InterfaceTranslator): string 
   return value === null ? t("senseDades") : `${value.toFixed(1)}%`;
 }
 
-function blockChartData(blocks: BlockResult[], t: InterfaceTranslator) {
+function blockChartData(blocks: BlockResult[]) {
   return blocks.map((block) => ({
-    name: t("blocValue0", { value0: block.position }),
+    name: block.title,
     percentatge: block.average ?? 0,
     position: block.position,
   }));
+}
+
+function wrapTickLabel(label: string, maxLength: number): string[] {
+  const words = label.split(/\s+/);
+  const lines: string[] = [];
+  let current = "";
+
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length > maxLength && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = next;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength }: BaseTickContentProps & { maxLength: number }) {
+  const lines = wrapTickLabel(String(payload.value ?? ""), maxLength);
+  const lineHeight = 12;
+  const firstLineOffset = -((lines.length - 1) * lineHeight) / 2;
+
+  return (
+    <text
+      fill={fill ?? "#475569"}
+      fontSize={10}
+      textAnchor={textAnchor}
+      x={x}
+      y={y}
+    >
+      {lines.map((line, index) => (
+        <tspan dy={index === 0 ? firstLineOffset : lineHeight} key={index} x={x}>
+          {line}
+        </tspan>
+      ))}
+    </text>
+  );
 }
 
 function criterionChartData(position: number, average: number | null, t: InterfaceTranslator) {
@@ -339,7 +380,7 @@ export function ResultsDashboard({
             >
               <BarChart
                 accessibilityLayer={false}
-                data={blockChartData(results.blocks, t)}
+                data={blockChartData(results.blocks)}
               >
                 <defs>
                   <linearGradient id="blockBarGradient" x1="0" y1="1" x2="0" y2="0">
@@ -357,7 +398,12 @@ export function ResultsDashboard({
                   stroke="none"
                 />
                 <CartesianGrid vertical={false} stroke="#d8dee6" strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
+                <XAxis
+                  dataKey="name"
+                  height={58}
+                  interval={0}
+                  tick={(props) => <WrappedDimensionTick {...props} maxLength={15} />}
+                />
                 <YAxis
                   domain={[0, 100]}
                   ticks={[100 / 6, 50, 250 / 3]}
@@ -403,7 +449,10 @@ export function ResultsDashboard({
               minWidth={0}
               width="100%"
             >
-              <RadarChart data={blockChartData(results.blocks, t)}>
+              <RadarChart
+                data={blockChartData(results.blocks)}
+                margin={{ top: 28, right: 72, bottom: 28, left: 72 }}
+              >
                 <defs>
                   <radialGradient id="blockRadarGradient" cx="50%" cy="50%" r="50%">
                     <stop offset="0%" stopColor="#ef4444" />
@@ -416,7 +465,10 @@ export function ResultsDashboard({
                   fillOpacity={0.68}
                   stroke="#d8dee6"
                 />
-                <PolarAngleAxis dataKey="name" tick={{ fill: "#334155", fontSize: 12 }} />
+                <PolarAngleAxis
+                  dataKey="name"
+                  tick={(props) => <WrappedDimensionTick {...props} maxLength={15} />}
+                />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} tickLine={false} axisLine={false} />
                 <Radar
                   activeDot={false}
