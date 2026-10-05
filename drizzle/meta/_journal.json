@@ -127,6 +127,13 @@
       "when": 1790457485000,
       "tag": "0017_participant_session_copy",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1791111284870,
+      "tag": "0018_next_hitman",
+      "breakpoints": true
     }
   ]
 }

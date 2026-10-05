@@ -4,6 +4,7 @@ import type {
   AnswerRecord,
   BlockScoreCountRecord,
   BlockDefinition,
+  CriterionDefinition,
   DistributionBucket,
   QuestionDefinition,
   ScaleOption,
@@ -91,6 +92,27 @@ function mergeDistributionCounts(
   }
 
   return merged;
+}
+
+function criteriaFromQuestions(
+  criteria: CriterionDefinition[] | undefined,
+  questions: QuestionDefinition[],
+): CriterionDefinition[] {
+  if (criteria) return criteria;
+
+  const derived = new Map<string, CriterionDefinition>();
+  for (const question of questions) {
+    const key = `${question.blockId}:${question.criterionPosition}`;
+    if (!derived.has(key)) {
+      derived.set(key, {
+        id: key,
+        blockId: question.blockId,
+        position: question.criterionPosition,
+        title: question.criterionTitle,
+      });
+    }
+  }
+  return Array.from(derived.values());
 }
 
 const interpretations: Record<QuestionnaireLanguageCode, [string, string, string, string, string]> = {
@@ -195,10 +217,12 @@ export function calculateAggregatedResults(params: {
   diagnosticSpaceCount?: number;
   totalSubmissions: number;
   blocks: BlockDefinition[];
+  criteria?: CriterionDefinition[];
   questions: QuestionDefinition[];
   answers: AnswerRecord[];
 }): AggregatedResults {
   const languageCode = params.languageCode ?? "ca";
+  const criteria = criteriaFromQuestions(params.criteria, params.questions);
   const questionsByBlock = new Map<string, QuestionDefinition[]>();
   const answersByQuestion = new Map<string, AnswerRecord[]>();
 
@@ -231,6 +255,9 @@ export function calculateAggregatedResults(params: {
           return {
             position: question.position,
             blockPosition: question.blockPosition,
+            criterionPosition: question.criterionPosition,
+            criterionQuestionPosition: question.criterionQuestionPosition,
+            criterionTitle: question.criterionTitle,
             text: question.text,
             average: averagePercentage(questionAnswers.map((answer) => answer.value)),
             distribution: formatDistribution(
@@ -249,6 +276,23 @@ export function calculateAggregatedResults(params: {
             (answersByQuestion.get(question.id) ?? []).map((answer) => answer.value),
           ),
         ),
+        criteria: criteria
+          .filter((criterion) => criterion.blockId === block.id)
+          .sort((a, b) => a.position - b.position)
+          .map((criterion) => {
+            const criterionQuestions = blockQuestions.filter(
+              (question) => question.criterionPosition === criterion.position,
+            );
+            return {
+              position: criterion.position,
+              title: criterion.title,
+              average: averagePercentage(
+                criterionQuestions.flatMap((question) =>
+                  (answersByQuestion.get(question.id) ?? []).map((answer) => answer.value),
+                ),
+              ),
+            };
+          }),
         scoreDistribution: Array.from({ length: BLOCK_SCORE_BUCKET_COUNT }, (_, bucket) => ({
           startPercentage: bucket * (100 / BLOCK_SCORE_BUCKET_COUNT),
           count: 0,
@@ -287,11 +331,13 @@ export function calculateAggregatedResultsFromCounts(params: {
   diagnosticSpaceCount?: number;
   totalSubmissions: number;
   blocks: BlockDefinition[];
+  criteria?: CriterionDefinition[];
   questions: QuestionDefinition[];
   answerCounts: AnswerCountRecord[];
   blockScoreCounts?: BlockScoreCountRecord[];
 }): AggregatedResults {
   const languageCode = params.languageCode ?? "ca";
+  const criteria = criteriaFromQuestions(params.criteria, params.questions);
   const questionsByBlock = new Map<string, QuestionDefinition[]>();
   const countsByQuestion = new Map<string, Record<ScaleValue, number>>();
   const scoreCountsByBlock = new Map<string, number[]>(
@@ -332,6 +378,9 @@ export function calculateAggregatedResultsFromCounts(params: {
           return {
             position: question.position,
             blockPosition: question.blockPosition,
+            criterionPosition: question.criterionPosition,
+            criterionQuestionPosition: question.criterionQuestionPosition,
+            criterionTitle: question.criterionTitle,
             text: question.text,
             average: weightedAveragePercentage(distributionCounts),
             distribution: formatDistribution(
@@ -352,6 +401,24 @@ export function calculateAggregatedResultsFromCounts(params: {
         position: block.position,
         title: block.title,
         average: weightedAveragePercentage(blockCounts),
+        criteria: criteria
+          .filter((criterion) => criterion.blockId === block.id)
+          .sort((a, b) => a.position - b.position)
+          .map((criterion) => {
+            const criterionQuestions = blockQuestions.filter(
+              (question) => question.criterionPosition === criterion.position,
+            );
+            const criterionCounts = mergeDistributionCounts(
+              criterionQuestions.map(
+                (question) => countsByQuestion.get(question.id) ?? createEmptyDistribution(),
+              ),
+            );
+            return {
+              position: criterion.position,
+              title: criterion.title,
+              average: weightedAveragePercentage(criterionCounts),
+            };
+          }),
         scoreDistribution: (scoreCountsByBlock.get(block.id) ??
           Array(BLOCK_SCORE_BUCKET_COUNT).fill(0)).map((count, bucket) => ({
           startPercentage: bucket * (100 / BLOCK_SCORE_BUCKET_COUNT),

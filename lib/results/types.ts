@@ -23,9 +23,25 @@ export type BlockScoreBucket = {
   count: number;
 };
 
+export type CriterionDefinition = {
+  id: string;
+  blockId: string;
+  position: number;
+  title: string;
+};
+
+export type CriterionResult = {
+  position: number;
+  title: string;
+  average: number | null;
+};
+
 export type QuestionResult = {
   position: number;
   blockPosition: number;
+  criterionPosition: number;
+  criterionQuestionPosition: number;
+  criterionTitle: string;
   text: string;
   average: number | null;
   distribution: DistributionBucket[];
@@ -35,6 +51,7 @@ export type BlockResult = {
   position: number;
   title: string;
   average: number | null;
+  criteria: CriterionResult[];
   scoreDistribution: BlockScoreBucket[];
   questions: QuestionResult[];
 };
@@ -62,6 +79,9 @@ export type QuestionDefinition = {
   blockId: string;
   position: number;
   blockPosition: number;
+  criterionPosition: number;
+  criterionQuestionPosition: number;
+  criterionTitle: string;
   text: string;
   options?: ScaleOption[];
 };

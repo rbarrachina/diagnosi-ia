@@ -6,6 +6,16 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Organitza les noves versions del qüestionari per dimensions, criteris i
+  preguntes, i permet començar en blanc o copiar una estructura existent.
+- Accepta qualsevol text no buit com a títol i versió del qüestionari, amb un
+  màxim de 20 caràcters per a la versió.
+- Permet seleccionar una dimensió als resultats per ressaltar-la i veure els
+  gràfics agregats dels seus criteris.
+- Al resultat individual, permet seleccionar una dimensió per ressaltar-la i
+  veure en una fila els gràfics dels criteris corresponents.
+- Fa opac i llegible el tooltip de respostes al gràfic de resultats del centre.
+
 - Substitueix el percentatge global de la targeta de resum per l'etapa de CD
   docent en IA, destacada en gran i amb el color corresponent.
 

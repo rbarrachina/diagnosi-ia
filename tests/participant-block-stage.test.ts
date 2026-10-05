@@ -11,6 +11,9 @@ function block(values: ScaleValue[]): ParticipantBlockResult {
     questions: values.map((value, index) => ({
       position: index + 1,
       blockPosition: index + 1,
+      criterionPosition: 1,
+      questionPosition: index + 1,
+      criterionTitle: "Criteri generals",
       text: `Pregunta ${index + 1}`,
       value,
       label: "Resposta",

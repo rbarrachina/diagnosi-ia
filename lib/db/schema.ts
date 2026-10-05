@@ -37,8 +37,8 @@ export const questionnaires = mysqlTable(
     uniqueIndex("questionnaires_title_unique_idx").on(sql`(lower(trim(${table.title})))`),
     check("questionnaires_id_format_check", sql`${table.id} regexp '^[0-9]{3}$'`),
     check(
-      "questionnaires_version_format_check",
-      sql`${table.version} regexp '^[0-9]{4}[[:alnum:] ._-]*$'`,
+      "questionnaires_version_not_blank_check",
+      sql`trim(${table.version}) <> ''`,
     ),
     check("questionnaires_title_not_blank_check", sql`trim(${table.title}) <> ''`),
     check(
@@ -81,14 +81,50 @@ export const questionBlocks = mysqlTable(
   ],
 );
 
+// A questionnaire dimension (the historical `question_blocks` row) can hold
+// multiple criteria. Keeping the table name preserves existing dimension ids
+// and result grouping while exposing criteria as a first-class entity.
+export const questionCriteria = mysqlTable(
+  "question_criteria",
+  {
+    id: blockId("id").notNull(),
+    questionnaireId: questionnaireId("questionnaire_id").notNull(),
+    dimensionId: blockId("dimension_id").notNull(),
+    position: int("position").notNull(),
+    title: varchar("title", { length: 255 }).notNull(),
+  },
+  (table) => [
+    primaryKey({
+      name: "question_criteria_pkey",
+      columns: [table.id, table.dimensionId, table.questionnaireId],
+    }),
+    uniqueIndex("question_criteria_dimension_position_key").on(
+      table.questionnaireId,
+      table.dimensionId,
+      table.position,
+    ),
+    index("question_criteria_questionnaire_id_idx").on(table.questionnaireId),
+    foreignKey({
+      name: "question_criteria_dimension_fk",
+      columns: [table.dimensionId, table.questionnaireId],
+      foreignColumns: [questionBlocks.id, questionBlocks.questionnaireId],
+    }).onDelete("restrict"),
+    check("question_criteria_id_format_check", sql`${table.id} regexp '^[0-9]{2}$'`),
+    check("question_criteria_position_check", sql`${table.position} between 1 and 10`),
+    check("question_criteria_title_not_blank_check", sql`trim(${table.title}) <> ''`),
+  ],
+);
+
 export const questions = mysqlTable(
   "questions",
   {
     id: uuid("id").notNull().primaryKey(),
     questionnaireId: questionnaireId("questionnaire_id").notNull(),
     blockId: blockId("block_id").notNull(),
+    criterionId: blockId("criterion_id").notNull(),
     position: int("position").notNull(),
     blockPosition: int("block_position").notNull(),
+    criterionPosition: int("criterion_position").notNull(),
     text: text("text").notNull(),
     scaleMin: tinyint("scale_min").notNull().default(0),
     scaleMax: tinyint("scale_max").notNull().default(3),
@@ -105,6 +141,12 @@ export const questions = mysqlTable(
       table.blockId,
       table.blockPosition,
     ),
+    uniqueIndex("questions_criterion_position_key").on(
+      table.questionnaireId,
+      table.blockId,
+      table.criterionId,
+      table.criterionPosition,
+    ),
     index("questions_questionnaire_id_idx").on(table.questionnaireId),
     index("questions_block_id_idx").on(table.blockId),
     foreignKey({
@@ -113,12 +155,18 @@ export const questions = mysqlTable(
       foreignColumns: [questionnaires.id],
     }).onDelete("restrict"),
     foreignKey({
+      name: "questions_criterion_fk",
+      columns: [table.criterionId, table.blockId, table.questionnaireId],
+      foreignColumns: [questionCriteria.id, questionCriteria.dimensionId, questionCriteria.questionnaireId],
+    }).onDelete("restrict"),
+    foreignKey({
       name: "questions_block_questionnaire_fk",
       columns: [table.blockId, table.questionnaireId],
       foreignColumns: [questionBlocks.id, questionBlocks.questionnaireId],
     }).onDelete("restrict"),
     check("questions_position_check", sql`${table.position} between 1 and 100`),
-    check("questions_block_position_check", sql`${table.blockPosition} between 1 and 10`),
+    check("questions_block_position_check", sql`${table.blockPosition} between 1 and 100`),
+    check("questions_criterion_position_check", sql`${table.criterionPosition} between 1 and 10`),
     check("questions_text_not_blank_check", sql`trim(${table.text}) <> ''`),
     check("questions_scale_min_check", sql`${table.scaleMin} = 0`),
     check("questions_scale_max_check", sql`${table.scaleMax} = 3`),

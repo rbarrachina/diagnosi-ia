@@ -347,6 +347,13 @@ function createPoolMock(): PoolMock {
         ];
       }
 
+      if (normalizedQuery.includes("from question_criteria")) {
+        return [[
+          { id: "01", block_id: "01", position: 1, title: "Criteri 1" },
+          { id: "01", block_id: "02", position: 1, title: "Criteri 1" },
+        ]];
+      }
+
       if (normalizedQuery.includes("from questions")) {
         return [
           [
@@ -355,6 +362,9 @@ function createPoolMock(): PoolMock {
               block_id: "01",
               position: 1,
               block_position: 1,
+              criterion_position: 1,
+              criterion_question_position: 1,
+              criterion_title: "Criteri 1",
               text: "Pregunta 1",
             },
             {
@@ -362,6 +372,9 @@ function createPoolMock(): PoolMock {
               block_id: "02",
               position: 2,
               block_position: 1,
+              criterion_position: 1,
+              criterion_question_position: 1,
+              criterion_title: "Criteri 1",
               text: "Pregunta 2",
             },
           ],

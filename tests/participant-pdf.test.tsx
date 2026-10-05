@@ -17,6 +17,9 @@ const result: ParticipantResult = {
     questions: [{
       position: 1,
       blockPosition: 1,
+      criterionPosition: 1,
+      questionPosition: 1,
+      criterionTitle: "Criteri general",
       text: "Pregunta de prova",
       value: 2,
       label: "Bastant / Habitualment",

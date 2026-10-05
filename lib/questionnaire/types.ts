@@ -9,8 +9,10 @@ export type QuestionOption = {
 
 export type Question = {
   id: string;
+  criterionId: string;
   position: number;
   blockPosition: number;
+  criterionPosition: number;
   text: string;
   randomizeOptions: boolean;
   options: QuestionOption[];
@@ -20,8 +22,11 @@ export type QuestionBlock = {
   id: string;
   position: number;
   title: string;
+  criteria: QuestionCriterion[];
   questions: Question[];
 };
+
+export type QuestionCriterion = { id: string; position: number; title: string; questions: Question[] };
 
 export type PublicQuestionnaire = {
   centreName: string;

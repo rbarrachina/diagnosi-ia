@@ -17,6 +17,7 @@ describe("question options", () => {
     expect(
       adminQuestionInputSchema.safeParse({
         blockPosition: 1,
+        criterionPosition: 1,
         text: "Pregunta",
         randomizeOptions: true,
         options,
@@ -26,6 +27,7 @@ describe("question options", () => {
     expect(
       adminQuestionInputSchema.safeParse({
         blockPosition: 1,
+        criterionPosition: 1,
         text: "Pregunta",
         randomizeOptions: false,
         options: options.map((option) => ({ ...option, text: "Duplicada" })),

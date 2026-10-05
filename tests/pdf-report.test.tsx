@@ -24,6 +24,7 @@ const results: AggregatedResults = {
       position: 1,
       title: "Bloc 1",
       average: 50,
+      criteria: [{ position: 1, title: "Criteri 1", average: 50 }],
       scoreDistribution: Array.from({ length: 9 }, (_, bucket) => ({
         startPercentage: bucket * (100 / 9),
         count: 0,
@@ -32,6 +33,9 @@ const results: AggregatedResults = {
         {
           position: 1,
           blockPosition: 1,
+          criterionPosition: 1,
+          criterionQuestionPosition: 1,
+          criterionTitle: "Criteri 1",
           text: "Pregunta 1",
           average: 50,
           distribution: [
@@ -47,6 +51,7 @@ const results: AggregatedResults = {
       position: 2,
       title: "Bloc 2",
       average: 33.33,
+      criteria: [{ position: 1, title: "Criteri 1", average: 33.33 }],
       scoreDistribution: Array.from({ length: 9 }, (_, bucket) => ({
         startPercentage: bucket * (100 / 9),
         count: 0,
@@ -55,6 +60,9 @@ const results: AggregatedResults = {
         {
           position: 2,
           blockPosition: 1,
+          criterionPosition: 1,
+          criterionQuestionPosition: 1,
+          criterionTitle: "Criteri 1",
           text: "Pregunta 2",
           average: 33.33,
           distribution: [

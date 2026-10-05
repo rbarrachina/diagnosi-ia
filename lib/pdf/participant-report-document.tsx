@@ -100,9 +100,12 @@ export function ParticipantReportDocument({ result }: { result: ParticipantResul
         {result.blocks.map((block) => (
           <View key={block.position} style={styles.block}>
             <Text style={styles.blockHeading}>{block.position}. {block.title}</Text>
-            {block.questions.map((question) => (
+            {[...new Map(block.questions.map((question) => [question.criterionPosition, question])).values()].map((criterion) => (
+              <View key={criterion.criterionPosition}>
+                <Text style={styles.questionText}>{block.position}.{criterion.criterionPosition} · {criterion.criterionTitle}</Text>
+                {block.questions.filter((question) => question.criterionPosition === criterion.criterionPosition).map((question) => (
               <View key={question.position} style={styles.question} wrap={false}>
-                <Text style={styles.questionText}>{block.position}.{question.blockPosition}. {question.text}</Text>
+                <Text style={styles.questionText}>{block.position}.{question.criterionPosition}.{question.questionPosition}. {question.text}</Text>
                 <View style={styles.options}>
                   {question.options.map((option) => {
                     const selected = option.value === question.value;
@@ -125,6 +128,8 @@ export function ParticipantReportDocument({ result }: { result: ParticipantResul
                     );
                   })}
                 </View>
+              </View>
+                ))}
               </View>
             ))}
           </View>

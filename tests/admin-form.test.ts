@@ -10,19 +10,21 @@ function buildFormData() {
   for (let blockPosition = 1; blockPosition <= 5; blockPosition += 1) {
     formData.append("blockPosition", String(blockPosition));
     formData.set(`block-${blockPosition}-title`, `Bloc ${blockPosition}`);
+    formData.append(`dimension-${blockPosition}-criterionPosition`, "1");
+    formData.set(`dimension-${blockPosition}-criterion-1-title`, `Criteri ${blockPosition}.1`);
 
     for (let questionPosition = 1; questionPosition <= 4; questionPosition += 1) {
       formData.append(
-        `block-${blockPosition}-questionPosition`,
+        `dimension-${blockPosition}-criterion-1-questionPosition`,
         String(questionPosition),
       );
       formData.set(
-        `block-${blockPosition}-question-${questionPosition}`,
+        `dimension-${blockPosition}-criterion-1-question-${questionPosition}`,
         `Pregunta ${blockPosition}.${questionPosition}`,
       );
       for (let score = 0; score <= 3; score += 1) {
         formData.set(
-          `block-${blockPosition}-question-${questionPosition}-option-${score}`,
+          `dimension-${blockPosition}-criterion-1-question-${questionPosition}-option-${score}`,
           `Opció ${score} de la pregunta ${blockPosition}.${questionPosition}`,
         );
       }
@@ -33,7 +35,7 @@ function buildFormData() {
 }
 
 describe("admin questionnaire form parsing", () => {
-  it("parses the editable block and question form", () => {
+  it("parses the editable dimension, criterion, and question form", () => {
     const parsed = parseQuestionnaireContentFormData(buildFormData());
 
     expect(parsed).toEqual({
@@ -46,16 +48,26 @@ describe("admin questionnaire form parsing", () => {
         expect.objectContaining({
           position: 1,
           title: "Bloc 1",
-          questions: expect.arrayContaining([
-            expect.objectContaining({ blockPosition: 1, text: "Pregunta 1.1" }),
-            expect.objectContaining({ blockPosition: 4, text: "Pregunta 1.4" }),
+          criteria: expect.arrayContaining([
+            expect.objectContaining({
+              position: 1,
+              title: "Criteri 1.1",
+              questions: expect.arrayContaining([
+                expect.objectContaining({ blockPosition: 1, criterionPosition: 1, text: "Pregunta 1.1" }),
+                expect.objectContaining({ blockPosition: 4, criterionPosition: 4, text: "Pregunta 1.4" }),
+              ]),
+            }),
           ]),
         }),
         expect.objectContaining({
           position: 5,
           title: "Bloc 5",
-          questions: expect.arrayContaining([
-            expect.objectContaining({ blockPosition: 4, text: "Pregunta 5.4" }),
+          criteria: expect.arrayContaining([
+            expect.objectContaining({
+              questions: expect.arrayContaining([
+                expect.objectContaining({ blockPosition: 4, criterionPosition: 4, text: "Pregunta 5.4" }),
+              ]),
+            }),
           ]),
         }),
       ]),
@@ -79,7 +91,7 @@ describe("admin questionnaire form parsing", () => {
 
   it("rejects declared questions without text", () => {
     const formData = buildFormData();
-    formData.delete("block-3-question-2");
+    formData.delete("dimension-3-criterion-1-question-2");
 
     expect(() => parseQuestionnaireContentFormData(formData)).toThrow();
   });

@@ -25,6 +25,9 @@ type AnswerRow = RowDataPacket & {
   block_title: string;
   question_position: number;
   question_block_position: number;
+  question_criterion_position: number;
+  criterion_position: number;
+  criterion_title: string;
   question_text: string;
   randomize_options: number | boolean;
   value: ScaleValue;
@@ -95,6 +98,9 @@ export async function getParticipantResult(params: {
         question_blocks.title as block_title,
         questions.position as question_position,
         questions.block_position as question_block_position,
+        questions.criterion_position as question_criterion_position,
+        question_criteria.position as criterion_position,
+        question_criteria.title as criterion_title,
         questions.text as question_text,
         questions.randomize_options,
         answers.value,
@@ -117,9 +123,13 @@ export async function getParticipantResult(params: {
       inner join question_blocks
         on question_blocks.id = questions.block_id
         and question_blocks.questionnaire_id = questions.questionnaire_id
+      inner join question_criteria
+        on question_criteria.id = questions.criterion_id
+        and question_criteria.dimension_id = questions.block_id
+        and question_criteria.questionnaire_id = questions.questionnaire_id
       where participant_submissions.participant_user_id = ?
         and diagnostic_spaces.public_code = ?
-      order by question_blocks.position, questions.block_position, question_options.score
+      order by question_blocks.position, question_criteria.position, questions.criterion_position, question_options.score
     `,
     [params.participantUserId, params.publicCode],
   );
@@ -157,6 +167,9 @@ function groupAnswers(rows: AnswerRow[]): ParticipantBlockResult[] {
       question = {
         position: row.question_position,
         blockPosition: row.question_block_position,
+        criterionPosition: row.criterion_position,
+        questionPosition: row.question_criterion_position,
+        criterionTitle: row.criterion_title,
         text: row.question_text,
         value: row.value,
         label: "",

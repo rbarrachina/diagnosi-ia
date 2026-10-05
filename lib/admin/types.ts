@@ -39,15 +39,24 @@ export type AdminQuestionSummary = {
   id: string;
   position: number;
   blockPosition: number;
+  criterionPosition: number;
   text: string;
   randomizeOptions: boolean;
   options: AdminQuestionOptionSummary[];
+};
+
+export type AdminQuestionCriterionSummary = {
+  id: string;
+  position: number;
+  title: string;
+  questions: AdminQuestionSummary[];
 };
 
 export type AdminQuestionBlockSummary = {
   id: string;
   position: number;
   title: string;
+  criteria: AdminQuestionCriterionSummary[];
   questions: AdminQuestionSummary[];
 };
 

@@ -110,6 +110,6 @@ describe("submission payload validation", () => {
         ...validPayload(),
         questionnaireVersion: "v3",
       }),
-    ).toThrow();
+    ).not.toThrow();
   });
 });

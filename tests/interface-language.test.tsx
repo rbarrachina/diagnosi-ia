@@ -16,11 +16,11 @@ function Spanish({ children }: { children: ReactNode }) {
 const questionnaire: PublicQuestionnaire = {
   centreName: "Centre de prova", publicCode: "C-ABCD-EFGH", languageCode: "ca",
   questionnaireVersion: "2026.2", estimatedMinutes: 10,
-  blocks: [{ id: "01", position: 1, title: "Bloc redactat pel centre", questions: [{
-    id: "q1", position: 1, blockPosition: 1, text: "Pregunta original en català",
+  blocks: [{ id: "01", position: 1, title: "Bloc redactat pel centre", criteria: [{ id: "01", position: 1, title: "Criteri de prova", questions: [{
+    id: "q1", criterionId: "01", position: 1, blockPosition: 1, criterionPosition: 1, text: "Pregunta original en català",
     randomizeOptions: false,
     options: [0, 1, 2, 3].map((score) => ({ id: `option${score}`, score: score as 0 | 1 | 2 | 3, text: `Resposta original ${score}` })),
-  }] }],
+  }] }], questions: [] }],
 };
 
 afterEach(() => vi.unstubAllGlobals());
@@ -57,8 +57,8 @@ describe("interface language", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 401, json: async () => ({ error: "Cal iniciar sessió." }) }));
     const { container } = render(<Spanish><QuestionnaireForm questionnaire={questionnaire} /></Spanish>);
     fireEvent.click(screen.getByRole("button", { name: "Comienza el cuestionario" }));
-    expect(screen.getByText("Bloc redactat pel centre")).toBeVisible();
-    expect(screen.getByText("Pregunta original en català")).toBeVisible();
+    expect(screen.getByRole("heading", { name: /Dimensión 1.*Bloc redactat pel centre/ })).toBeVisible();
+    expect(screen.getByRole("group", { name: /1\.1\.1\. Pregunta original en català/ })).toBeVisible();
     expect(container.querySelector("[lang]")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Envía las respuestas" }));
     expect(screen.getByText("Debes responder esta pregunta.")).toBeVisible();

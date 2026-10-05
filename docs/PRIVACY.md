@@ -135,7 +135,7 @@ de veritat per impedir duplicats i recuperar la participació.
 ## Resultats individuals del docent
 
 El docent autenticat pot veure les seves respostes, la posició i etapa per
-blocs, data, centre i versió, i generar un PDF propi. La consulta sempre filtra
+dimensions, data, centre i versió, i generar un PDF propi. La consulta sempre filtra
 per l'identificador de la sessió; el navegador no decideix el propietari ni rep
 `participant_user_id` o `submission_id`. L'etapa de cada bloc es calcula només
 a partir de les respostes pròpies, per terços de l'escala 0–100. No hi ha

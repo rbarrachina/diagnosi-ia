@@ -4,6 +4,9 @@ import type { QuestionnaireLanguageCode } from "@/lib/questionnaire/languages";
 export type ParticipantQuestionResult = {
   position: number;
   blockPosition: number;
+  criterionPosition: number;
+  questionPosition: number;
+  criterionTitle: string;
   text: string;
   value: ScaleValue;
   label: string;

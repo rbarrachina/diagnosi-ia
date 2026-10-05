@@ -291,7 +291,7 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
               {block.questions.map((question) => (
                 <View key={question.position} style={styles.question}>
                   <Text style={styles.questionText}>
-                    {block.position}.{question.blockPosition}. {question.text}
+                    {block.position}.{question.criterionPosition}.{question.criterionQuestionPosition}. {question.criterionTitle} — {question.text}
                   </Text>
                   <Text>{copy.percentage}: {formatPercentage(question.average, copy)}</Text>
                   <DistributionBar distribution={question.distribution} />

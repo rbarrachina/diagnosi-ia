@@ -137,6 +137,12 @@ try {
       `,
       [block.id, questionnaire.id, block.position, block.title],
     );
+    await connection.execute(
+      `insert into question_criteria (id, questionnaire_id, dimension_id, position, title)
+       values ('01', ?, ?, 1, 'Criteri generals')
+       on duplicate key update title = values(title)`,
+      [questionnaire.id, block.id],
+    );
   }
 
   for (const question of questionSeed) {
@@ -152,16 +158,20 @@ try {
           id,
           questionnaire_id,
           block_id,
+          criterion_id,
           position,
           block_position,
+          criterion_position,
           text,
           scale_min,
           scale_max
         )
-        values (?, ?, ?, ?, ?, ?, 0, 3)
+        values (?, ?, ?, '01', ?, ?, ?, ?, 0, 3)
         on duplicate key update
           block_id = values(block_id),
+          criterion_id = values(criterion_id),
           block_position = values(block_position),
+          criterion_position = values(criterion_position),
           text = values(text),
           scale_min = values(scale_min),
           scale_max = values(scale_max)
@@ -171,6 +181,7 @@ try {
         questionnaire.id,
         block.id,
         question.position,
+        question.blockPosition,
         question.blockPosition,
         question.text,
       ],

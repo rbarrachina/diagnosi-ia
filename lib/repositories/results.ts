@@ -10,6 +10,7 @@ import type {
   AnswerCountRecord,
   BlockScoreCountRecord,
   BlockDefinition,
+  CriterionDefinition,
   QuestionDefinition,
   ScaleValue,
 } from "@/lib/results/types";
@@ -57,11 +58,21 @@ type BlockRow = RowDataPacket & {
   title: string;
 };
 
+type CriterionRow = RowDataPacket & {
+  id: string;
+  block_id: string;
+  position: number;
+  title: string;
+};
+
 type QuestionRow = RowDataPacket & {
   id: string;
   block_id: string;
   position: number;
   block_position: number;
+  criterion_position: number;
+  criterion_question_position: number;
+  criterion_title: string;
   text: string;
 };
 
@@ -282,6 +293,7 @@ async function loadAdminResultsCentreById(
 async function getAggregatedResultsForSpace(space: SpaceRow) {
   const [
     [blocks],
+    [criteria],
     [questions],
     [options],
     [submissionCounts],
@@ -297,12 +309,27 @@ async function getAggregatedResultsForSpace(space: SpaceRow) {
       `,
       [space.questionnaire_id],
     ),
+    mysqlPool.execute<CriterionRow[]>(
+      `
+        select id, dimension_id as block_id, position, title
+        from question_criteria
+        where questionnaire_id = ?
+        order by dimension_id asc, position asc
+      `,
+      [space.questionnaire_id],
+    ),
     mysqlPool.execute<QuestionRow[]>(
       `
-        select id, block_id, position, block_position, text
+        select questions.id, questions.block_id, questions.position, questions.block_position,
+          question_criteria.position as criterion_position,
+          questions.criterion_position as criterion_question_position,
+          question_criteria.title as criterion_title, questions.text
         from questions
-        where questionnaire_id = ?
-        order by position asc
+        inner join question_criteria on question_criteria.id = questions.criterion_id
+          and question_criteria.dimension_id = questions.block_id
+          and question_criteria.questionnaire_id = questions.questionnaire_id
+        where questions.questionnaire_id = ?
+        order by questions.position asc
       `,
       [space.questionnaire_id],
     ),
@@ -373,6 +400,7 @@ async function getAggregatedResultsForSpace(space: SpaceRow) {
     generatedAt: new Date().toISOString(),
     totalSubmissions: Number(submissionCounts[0]?.submission_count ?? 0),
     blocks: mapBlocks(blocks),
+    criteria: mapCriteria(criteria),
     questions: mapQuestions(questions, options),
     answerCounts: mapAnswerCounts(answerCounts),
     blockScoreCounts: mapBlockScoreCounts(blockScoreCounts),
@@ -390,6 +418,7 @@ async function getAggregatedResultsForQuestionnaire(
     : [questionnaire.id, minimumSubmissions];
   const [
     [blocks],
+    [criteria],
     [questions],
     [options],
     [diagnosticSpaceCounts],
@@ -406,12 +435,27 @@ async function getAggregatedResultsForQuestionnaire(
       `,
       [questionnaire.id],
     ),
+    mysqlPool.execute<CriterionRow[]>(
+      `
+        select id, dimension_id as block_id, position, title
+        from question_criteria
+        where questionnaire_id = ?
+        order by dimension_id asc, position asc
+      `,
+      [questionnaire.id],
+    ),
     mysqlPool.execute<QuestionRow[]>(
       `
-        select id, block_id, position, block_position, text
+        select questions.id, questions.block_id, questions.position, questions.block_position,
+          question_criteria.position as criterion_position,
+          questions.criterion_position as criterion_question_position,
+          question_criteria.title as criterion_title, questions.text
         from questions
-        where questionnaire_id = ?
-        order by position asc
+        inner join question_criteria on question_criteria.id = questions.criterion_id
+          and question_criteria.dimension_id = questions.block_id
+          and question_criteria.questionnaire_id = questions.questionnaire_id
+        where questions.questionnaire_id = ?
+        order by questions.position asc
       `,
       [questionnaire.id],
     ),
@@ -535,6 +579,7 @@ async function getAggregatedResultsForQuestionnaire(
       : Number(diagnosticSpaceCounts[0]?.diagnostic_space_count ?? 0),
     totalSubmissions: Number(submissionCounts[0]?.submission_count ?? 0),
     blocks: mapBlocks(blocks),
+    criteria: mapCriteria(criteria),
     questions: mapQuestions(questions, options),
     answerCounts: mapAnswerCounts(answerCounts),
     blockScoreCounts: mapBlockScoreCounts(blockScoreCounts),
@@ -549,6 +594,15 @@ function mapBlocks(blocks: BlockRow[]): BlockDefinition[] {
   }));
 }
 
+function mapCriteria(criteria: CriterionRow[]): CriterionDefinition[] {
+  return criteria.map((criterion) => ({
+    id: criterion.id,
+    blockId: criterion.block_id,
+    position: criterion.position,
+    title: criterion.title,
+  }));
+}
+
 function mapQuestions(
   questions: QuestionRow[],
   options: QuestionOptionRow[],
@@ -558,6 +612,9 @@ function mapQuestions(
     blockId: question.block_id,
     position: question.position,
     blockPosition: question.block_position,
+    criterionPosition: question.criterion_position,
+    criterionQuestionPosition: question.criterion_question_position,
+    criterionTitle: question.criterion_title,
     text: question.text,
     options: options
       .filter((option) => option.question_id === question.id)

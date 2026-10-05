@@ -22,7 +22,7 @@ nom ni persistir-ne el correu a MySQL. El correu queda temporalment a la sessió
 docent mínima per revalidar el domini, i els accessos institucionals continuen
 sent exclusivament agregats.
 
-La presentació individual mostra el perfil per blocs en barres de 0 a 100 amb
+La presentació individual mostra el perfil per dimensions en barres de 0 a 100 amb
 etapes bàsica, intermèdia i avançada per terços; el detall inferior conserva
 les respostes pròpies. El PDF individual manté aquesta mateixa lectura.
 
@@ -120,7 +120,7 @@ Estat: completada.
 
 - Bootstrap atòmic del primer administrador.
 - Invitacions per correu XTEC separades de les respostes.
-- Gestió de versions, blocs, preguntes i configuració.
+- Gestió de versions, dimensions, criteris, preguntes i configuració.
 - Edició protegida de versions assignades.
 - Resultats globals i PDF agregats per versió.
 - Resum inicial agregat de centres i del qüestionari actiu, subjecte al llindar.

@@ -25,7 +25,8 @@ respostes.
 ```mermaid
 erDiagram
   questionnaires ||--o{ question_blocks : contains
-  question_blocks ||--o{ questions : contains
+  question_blocks ||--o{ question_criteria : contains
+  question_criteria ||--o{ questions : contains
   questions ||--|{ question_options : offers
   questionnaires ||--o{ diagnostic_spaces : assigned_to
   centres ||--o{ centre_accounts : authorizes
@@ -44,22 +45,29 @@ erDiagram
 ### `questionnaires`
 
 Versions del qüestionari. L'identificador té tres dígits, la versió i el títol
-són únics, els minuts estimats van d'1 a 120 i només una versió pot estar activa
-des de la lògica transaccional d'administració. `language_code` és obligatori i
-només admet `ca`, `es`, `eu`, `gl` o `oc`; fixa també la llengua dels informes.
+són únics i no buits. La versió admet qualsevol text de fins a 20 caràcters. Els
+minuts estimats van d'1 a 120 i només una versió pot estar activa des de la
+lògica transaccional d'administració. `language_code` és obligatori i només
+admet `ca`, `es`, `eu`, `gl` o `oc`; fixa també la llengua dels informes.
 
-### `question_blocks`
+### `question_blocks` (dimensions)
 
-Blocs ordenats d'una versió. La clau primària és
+Dimensions ordenades d'una versió. La clau primària és
 `(id, questionnaire_id)`; l'identificador té dos dígits i la posició va d'1 a
 10.
 
+### `question_criteria`
+
+Criteris ordenats dins d'una dimensió. La clau primària és
+`(id, dimension_id, questionnaire_id)` i una dimensió pot tenir fins a 10
+criteris.
+
 ### `questions`
 
-Preguntes tancades amb UUID, versió, bloc, posició global, posició dins del bloc
-i text. `randomize_options` decideix si el formulari barreja les opcions i usa
-colors neutres. L'escala vàlida és fixa de 0 a 3. Cada bloc admet entre 1 i 10
-preguntes i cada versió fins a 100.
+Preguntes tancades amb UUID, versió, dimensió, criteri, posició global,
+posició dins de la dimensió i posició dins del criteri. `randomize_options` decideix si el formulari barreja les opcions i usa
+colors neutres. L'escala vàlida és fixa de 0 a 3. Cada criteri admet entre 1 i
+10 preguntes i cada versió fins a 100.
 
 ### `question_options`
 
@@ -174,7 +182,7 @@ No pot contenir dades de participants.
 ## Regles de versionat del qüestionari
 
 - La versió inicial és `2026.1` i la versió activa corregida és `2026.2`.
-- El seed actiu inicial conté 5 blocs i 20 preguntes amb escala 0-3.
+- El seed actiu inicial conté 5 dimensions, cadascuna amb un criteri de compatibilitat, i 20 preguntes amb escala 0-3.
 - La migració crea per a cada pregunta existent les quatre opcions històriques,
   assigna `language_code = 'ca'` i deixa `randomize_options = false`.
 - Una versió sense espais assignats pot editar estructura.
@@ -206,11 +214,11 @@ transaccions server-side.
 ## Resultats agregats
 
 Les consultes agrupen per `question_id` i `value` i retornen només el recompte.
-Per a la distribució de puntuacions per bloc, una subconsulta SQL agrupa
-temporalment per enviament i bloc per calcular-ne la puntuació normalitzada; la
+Per a la distribució de puntuacions per dimensió, una subconsulta SQL agrupa
+temporalment per enviament i dimensió per calcular-ne la puntuació normalitzada; la
 consulta exterior retorna només els recomptes en nou trams percentuals. Cap
 `submission_id`, puntuació individual o combinació de respostes surt de MySQL.
-El model final inclou totals, percentatges globals, per bloc i per pregunta, i
+El model final inclou totals, percentatges globals, per dimensió i per pregunta, i
 distribucions agregades.
 
 Els resultats d'administracio poden limitar l'agregacio a un `centre_id`

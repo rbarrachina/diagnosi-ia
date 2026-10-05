@@ -3,7 +3,7 @@ import type { InterfaceTranslator } from "@/lib/i18n/interface-messages";
 
 import { InterfaceText, useInterfaceTranslator } from "@/components/i18n/interface-text";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Bar,
   BarChart,
@@ -68,7 +68,16 @@ function blockChartData(blocks: BlockResult[], t: InterfaceTranslator) {
   return blocks.map((block) => ({
     name: t("blocValue0", { value0: block.position }),
     percentatge: block.average ?? 0,
+    position: block.position,
   }));
+}
+
+function criterionChartData(position: number, average: number | null, t: InterfaceTranslator) {
+  return [{
+    name: t("criteri"),
+    percentatge: average ?? 0,
+    position,
+  }];
 }
 
 function blockStageLabel(value: number, t: InterfaceTranslator): string {
@@ -163,7 +172,13 @@ function QuestionDistributionTooltip({
   }
 
   return (
-    <div className="max-w-sm border border-line bg-surface px-3 py-2 shadow-sm">
+    <div
+      className="relative z-50 max-w-sm border border-line px-3 py-2 shadow-lg"
+      style={{
+        backgroundColor: "var(--app-surface-strong, var(--color-surface))",
+        opacity: 1,
+      }}
+    >
       <p className="text-sm font-semibold leading-5 text-ink">
         {question.name}. {question.questionText}
       </p>
@@ -196,6 +211,15 @@ export function ResultsDashboard({
   title = "Diagnosi IA",
 }: ResultsDashboardProps) {
   const t = useInterfaceTranslator();
+  const [selectedBlockPosition, setSelectedBlockPosition] = useState<number | null>(null);
+  const selectedBlock = results.blocks.find(
+    (block) => block.position === selectedBlockPosition,
+  ) ?? null;
+
+  function selectBlock(position: number) {
+    setSelectedBlockPosition((current) => current === position ? null : position);
+  }
+
   return (
     <section
       className={`mx-auto w-full max-w-6xl ${
@@ -348,15 +372,24 @@ export function ResultsDashboard({
                   barSize={44}
                   dataKey="percentatge"
                   fill="transparent"
+                  onClick={(_entry, index) => {
+                    const block = results.blocks[index];
+                    if (block) selectBlock(block.position);
+                  }}
                   radius={[4, 4, 0, 0]}
                 >
                   {results.blocks.map((block) => (
                     <Cell
                       key={block.position}
-                      fill={blockStageFill(block.average ?? 0)}
-                      fillOpacity={0.3}
-                      stroke="#111827"
-                      strokeWidth={2}
+                      cursor="pointer"
+                      fill={selectedBlockPosition === block.position
+                        ? "var(--app-action)"
+                        : blockStageFill(block.average ?? 0)}
+                      fillOpacity={selectedBlockPosition === block.position ? 0.9 : 0.3}
+                      stroke={selectedBlockPosition === block.position
+                        ? "var(--app-action-hover)"
+                        : "#111827"}
+                      strokeWidth={selectedBlockPosition === block.position ? 3 : 2}
                     />
                   ))}
                 </Bar>
@@ -398,16 +431,80 @@ export function ResultsDashboard({
             </ResponsiveContainer>
           </div>
         </div>
-        <dl className="mt-5 grid gap-3 border-t border-line pt-4 text-sm text-muted sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-5 grid gap-3 border-t border-line pt-4 text-sm text-muted sm:grid-cols-2 lg:grid-cols-3">
           {results.blocks.map((block) => (
-            <div className="flex gap-2" key={block.position}>
-              <dt className="shrink-0 font-semibold text-ink">
-                <InterfaceText messageKey="bloc" />{" "}{block.position}
-              </dt>
-              <dd>{block.title}</dd>
-            </div>
+            <button
+              aria-pressed={selectedBlockPosition === block.position}
+              className={`flex gap-2 rounded-md border px-2 py-1 text-left transition ${
+                selectedBlockPosition === block.position
+                  ? "border-action bg-info-bg text-info-text"
+                  : "border-transparent hover:bg-accent-soft"
+              }`}
+              key={block.position}
+              onClick={() => selectBlock(block.position)}
+              type="button"
+            >
+              <span className="shrink-0 font-semibold text-ink">
+                <InterfaceText messageKey="dimensio" />{" "}{block.position}
+              </span>
+              <span>{block.title}</span>
+            </button>
           ))}
-        </dl>
+        </div>
+        {selectedBlock ? (
+          <section aria-live="polite" className="mt-5 border-t border-line pt-4">
+            <h3 className="text-base font-semibold text-ink">
+              <InterfaceText messageKey="dimensio" />{" "}{selectedBlock.position} · {selectedBlock.title} — <InterfaceText messageKey="criteris" />
+            </h3>
+            <div className="mt-4 flex snap-x gap-4 overflow-x-auto pb-3">
+              {selectedBlock.criteria.map((criterion) => (
+                <article
+                  className="w-72 shrink-0 snap-start rounded-md border border-info-border bg-info-bg/40 p-4"
+                  key={criterion.position}
+                >
+                  <h4 className="min-h-12 text-sm font-semibold text-ink">
+                    <InterfaceText messageKey="criteri" /> {selectedBlock.position}.{criterion.position} · {criterion.title}
+                  </h4>
+                  <p className={`mt-2 text-sm font-semibold ${blockStageTextClass(criterion.average)}`}>
+                    <InterfaceText messageKey="percentatge" />{" "}{formatPercentage(criterion.average, t)}
+                  </p>
+                  <div aria-hidden="true" className="mt-3 h-52 min-w-0">
+                    <ResponsiveContainer
+                      height="100%"
+                      initialDimension={CHART_INITIAL_DIMENSION}
+                      minWidth={0}
+                      width="100%"
+                    >
+                      <BarChart data={criterionChartData(criterion.position, criterion.average, t)}>
+                        <CartesianGrid vertical={false} stroke="#d8dee6" strokeDasharray="3 3" />
+                        <XAxis dataKey="name" tick={false} tickLine={false} />
+                        <YAxis
+                          domain={[0, 100]}
+                          ticks={[100 / 6, 50, 250 / 3]}
+                          tickFormatter={(value: number) => blockStageLabel(value, t)}
+                          tickLine={false}
+                          width={88}
+                        />
+                        <ReferenceLine y={100 / 3} stroke="#94a3b8" strokeDasharray="2 4" strokeWidth={1} />
+                        <ReferenceLine y={200 / 3} stroke="#94a3b8" strokeDasharray="2 4" strokeWidth={1} />
+                        <Bar
+                          activeBar={false}
+                          barSize={40}
+                          dataKey="percentatge"
+                          fill={blockStageFill(criterion.average ?? 0)}
+                          fillOpacity={0.72}
+                          radius={[4, 4, 0, 0]}
+                          stroke="#111827"
+                          strokeWidth={2}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
 
       <div className="mt-6 rounded-md border border-line bg-surface p-5 shadow-sm">
@@ -533,7 +630,10 @@ export function ResultsDashboard({
                   <CartesianGrid stroke="#d8dee6" strokeDasharray="3 3" />
                   <XAxis domain={[0, 100]} type="number" unit="%" />
                   <YAxis dataKey="name" interval={0} type="category" width={44} />
-                  <Tooltip content={QuestionDistributionTooltip} />
+                  <Tooltip
+                    content={QuestionDistributionTooltip}
+                    wrapperStyle={{ zIndex: 50 }}
+                  />
                   <Legend content={<OrderedScaleLegend />} />
                   {ORDERED_SCALE_OPTIONS.map((option) => (
                     <Bar
@@ -579,7 +679,7 @@ export function ResultsDashboard({
                   {block.questions.map((question) => (
                     <tr className="border-b border-line last:border-b-0" key={question.position}>
                       <td className="py-3 pr-4 text-muted">
-                        {block.position}.{question.blockPosition}. {question.text}
+                        {block.position}.{question.criterionPosition}.{question.criterionQuestionPosition}. {question.criterionTitle} — {question.text}
                       </td>
                       <td className="whitespace-nowrap py-3 pr-4 font-semibold text-ink">
                         {formatPercentage(question.average, t)}

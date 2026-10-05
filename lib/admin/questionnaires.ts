@@ -22,6 +22,7 @@ import {
   questionnaireIdSchema,
   replaceQuestionnaireContentInputSchema,
   type AdminQuestionBlockInput,
+  type AdminQuestionCriterionInput,
   type ActivateQuestionnaireVersionInput,
   type CopyQuestionnaireVersionInput,
   type CreateQuestionnaireDraftInput,
@@ -50,8 +51,10 @@ type BlockRow = RowDataPacket & {
 type QuestionRow = RowDataPacket & {
   id: string;
   block_id: string;
+  criterion_id: string;
   position: number;
   block_position: number;
+  criterion_position: number;
   text: string;
   randomize_options: number | boolean;
 };
@@ -101,7 +104,7 @@ export class AdminQuestionnaireOperationError extends Error {
 }
 
 async function countRows(
-  table: "diagnostic_spaces" | "question_blocks" | "questions" | "submissions",
+  table: "diagnostic_spaces" | "question_blocks" | "question_criteria" | "questions" | "submissions",
   questionnaireId: string,
 ): Promise<number> {
   const [rows] = await mysqlPool.execute<CountRow[]>(
@@ -140,8 +143,11 @@ async function buildSummary(row: QuestionnaireRow): Promise<AdminQuestionnaireSu
   };
 }
 
+type CriterionRow = RowDataPacket & { id: string; dimension_id: string; position: number; title: string };
+
 function mapBlocks(
   blocks: BlockRow[],
+  criteria: CriterionRow[],
   questions: QuestionRow[],
   options: OptionRow[],
 ): AdminQuestionBlockSummary[] {
@@ -164,6 +170,7 @@ function mapBlocks(
       id: question.id,
       position: question.position,
       blockPosition: question.block_position,
+      criterionPosition: question.criterion_position,
       text: question.text,
       randomizeOptions: toBoolean(question.randomize_options),
       options: (optionsByQuestion.get(question.id) ?? []).sort(
@@ -173,14 +180,35 @@ function mapBlocks(
     questionsByBlock.set(question.block_id, blockQuestions);
   }
 
-  return blocks.map((block) => ({
+  const questionsByCriterion = new Map<string, AdminQuestionSummary[]>();
+  for (const question of questions) {
+    const list = questionsByCriterion.get(`${question.block_id}:${question.criterion_id}`) ?? [];
+    const mapped = questionsByBlock.get(question.block_id)?.find((item) => item.id === question.id);
+    if (mapped) list.push(mapped);
+    questionsByCriterion.set(`${question.block_id}:${question.criterion_id}`, list);
+  }
+
+  return blocks.map((block) => {
+    const dimensionCriteria = criteria
+      .filter((criterion) => criterion.dimension_id === block.id)
+      .sort((a, b) => a.position - b.position)
+      .map((criterion) => ({
+        id: criterion.id,
+        position: criterion.position,
+        title: criterion.title,
+        questions: (questionsByCriterion.get(`${block.id}:${criterion.id}`) ?? [])
+          .sort((a, b) => a.criterionPosition - b.criterionPosition),
+      }));
+    return {
     id: block.id,
     position: block.position,
     title: block.title,
+    criteria: dimensionCriteria,
     questions: (questionsByBlock.get(block.id) ?? []).sort(
       (a, b) => a.blockPosition - b.blockPosition,
     ),
-  }));
+  };
+  });
 }
 
 export async function listQuestionnaireVersions(): Promise<AdminQuestionnaireSummary[]> {
@@ -217,6 +245,7 @@ export async function getQuestionnaireVersionDetail(
   const [
     summary,
     [blocks],
+    [criteria],
     [questions],
     [options],
   ] = await Promise.all([
@@ -230,9 +259,13 @@ export async function getQuestionnaireVersionDetail(
       `,
       [parsedQuestionnaireId],
     ),
+    mysqlPool.execute<CriterionRow[]>(
+      `select id, dimension_id, position, title from question_criteria where questionnaire_id = ? order by dimension_id, position`,
+      [parsedQuestionnaireId],
+    ),
     mysqlPool.execute<QuestionRow[]>(
       `
-        select id, block_id, position, block_position, text, randomize_options
+        select id, block_id, criterion_id, position, block_position, criterion_position, text, randomize_options
         from questions
         where questionnaire_id = ?
         order by position asc
@@ -252,7 +285,7 @@ export async function getQuestionnaireVersionDetail(
 
   return {
     ...summary,
-    blocks: mapBlocks(blocks, questions, options),
+    blocks: mapBlocks(blocks, criteria, questions, options),
   };
 }
 
@@ -466,6 +499,10 @@ export async function deleteQuestionnaireVersion(
       [payload.questionnaireId],
     );
     await connection.execute<ResultSetHeader>(
+      "delete from question_criteria where questionnaire_id = ?",
+      [payload.questionnaireId],
+    );
+    await connection.execute<ResultSetHeader>(
       "delete from question_blocks where questionnaire_id = ?",
       [payload.questionnaireId],
     );
@@ -529,11 +566,15 @@ async function copyQuestionnaireVersionInternal(input: {
     );
     const [questions] = await connection.execute<QuestionRow[]>(
       `
-        select id, block_id, position, block_position, text, randomize_options
+        select id, block_id, criterion_id, position, block_position, criterion_position, text, randomize_options
         from questions
         where questionnaire_id = ?
         order by position asc
       `,
+      [input.sourceQuestionnaireId],
+    );
+    const [criteria] = await connection.execute<CriterionRow[]>(
+      `select id, dimension_id, position, title from question_criteria where questionnaire_id = ? order by dimension_id, position`,
       [input.sourceQuestionnaireId],
     );
     const [options] = await connection.execute<OptionRow[]>(
@@ -556,6 +597,13 @@ async function copyQuestionnaireVersionInternal(input: {
       );
     }
 
+    for (const criterion of criteria) {
+      await connection.execute<ResultSetHeader>(
+        `insert into question_criteria (id, questionnaire_id, dimension_id, position, title) values (?, ?, ?, ?, ?)`,
+        [criterion.id, questionnaireId, criterion.dimension_id, criterion.position, criterion.title],
+      );
+    }
+
     for (const question of questions) {
       const newQuestionId = randomUUID();
       await connection.execute<ResultSetHeader>(
@@ -564,21 +612,25 @@ async function copyQuestionnaireVersionInternal(input: {
             id,
             questionnaire_id,
             block_id,
+            criterion_id,
             position,
             block_position,
+            criterion_position,
             text,
             scale_min,
             scale_max,
             randomize_options
           )
-          values (?, ?, ?, ?, ?, ?, 0, 3, ?)
+          values (?, ?, ?, ?, ?, ?, ?, ?, 0, 3, ?)
         `,
         [
           newQuestionId,
           questionnaireId,
           question.block_id,
+          question.criterion_id,
           question.position,
           question.block_position,
+          question.criterion_position,
           question.text,
           toBoolean(question.randomize_options),
         ],
@@ -740,7 +792,7 @@ async function getQuestionnaireMutationResult(
 
 async function countRowsForConnection(
   connection: PoolConnection,
-  table: "diagnostic_spaces" | "question_blocks" | "questions" | "submissions",
+  table: "diagnostic_spaces" | "question_blocks" | "question_criteria" | "questions" | "submissions",
   questionnaireId: string,
 ): Promise<number> {
   const [rows] = await connection.execute<CountRow[]>(
@@ -773,10 +825,15 @@ async function replaceStructuralContent(
     [payload.questionnaireId],
   );
   await connection.execute<ResultSetHeader>(
+    "delete from question_criteria where questionnaire_id = ?",
+    [payload.questionnaireId],
+  );
+  await connection.execute<ResultSetHeader>(
     "delete from question_blocks where questionnaire_id = ?",
     [payload.questionnaireId],
   );
 
+  let questionPosition = 0;
   for (const block of sortBlocks(payload.blocks)) {
     const blockId = formatBlockId(block.position);
     await connection.execute<ResultSetHeader>(
@@ -787,49 +844,53 @@ async function replaceStructuralContent(
       [blockId, payload.questionnaireId, block.position, block.title.trim()],
     );
 
-    for (const question of sortQuestions(block.questions)) {
-      const questionId = randomUUID();
+    for (const criterion of sortCriteria(block.criteria)) {
+      const criterionId = formatBlockId(criterion.position);
       await connection.execute<ResultSetHeader>(
-        `
-          insert into questions (
-            id,
-            questionnaire_id,
-            block_id,
-            position,
-            block_position,
-            text,
-            scale_min,
-            scale_max,
-            randomize_options
-          )
-          values (?, ?, ?, ?, ?, ?, 0, 3, ?)
-        `,
-        [
-          questionId,
-          payload.questionnaireId,
-          blockId,
-          getQuestionPosition(block.position, question.blockPosition),
-          question.blockPosition,
-          question.text.trim(),
-          question.randomizeOptions,
-        ],
+        `insert into question_criteria (id, questionnaire_id, dimension_id, position, title)
+          values (?, ?, ?, ?, ?)`,
+        [criterionId, payload.questionnaireId, blockId, criterion.position, criterion.title.trim()],
       );
 
-      for (const option of question.options.slice().sort((a, b) => a.score - b.score)) {
+      for (const question of sortQuestions(criterion.questions)) {
+        questionPosition += 1;
+        const questionId = randomUUID();
         await connection.execute<ResultSetHeader>(
           `
-            insert into question_options
-              (id, questionnaire_id, question_id, score, text)
-            values (?, ?, ?, ?, ?)
+            insert into questions (
+              id,
+              questionnaire_id,
+              block_id,
+              criterion_id,
+              position,
+              block_position,
+              criterion_position,
+              text,
+              scale_min,
+              scale_max,
+              randomize_options
+            )
+            values (?, ?, ?, ?, ?, ?, ?, ?, 0, 3, ?)
           `,
           [
-            randomUUID(),
-            payload.questionnaireId,
             questionId,
-            option.score,
-            option.text.trim(),
+          payload.questionnaireId,
+          blockId,
+          criterionId,
+          questionPosition,
+          question.blockPosition,
+          question.criterionPosition,
+          question.text.trim(),
+          question.randomizeOptions,
           ],
         );
+
+        for (const option of question.options.slice().sort((a, b) => a.score - b.score)) {
+          await connection.execute<ResultSetHeader>(
+            `insert into question_options (id, questionnaire_id, question_id, score, text) values (?, ?, ?, ?, ?)`,
+            [randomUUID(), payload.questionnaireId, questionId, option.score, option.text.trim()],
+          );
+        }
       }
     }
   }
@@ -870,7 +931,15 @@ async function updateTextOnlyContent(
       [block.title.trim(), payload.questionnaireId, block.position],
     );
 
-    for (const question of sortQuestions(block.questions)) {
+    for (const criterion of sortCriteria(block.criteria)) {
+      await connection.execute<ResultSetHeader>(
+        `update question_criteria set title = ? where questionnaire_id = ? and dimension_id = ? and position = ?`,
+        [criterion.title.trim(), payload.questionnaireId, formatBlockId(block.position), criterion.position],
+      );
+    }
+
+    for (const criterion of sortCriteria(block.criteria)) {
+      for (const question of sortQuestions(criterion.questions)) {
       await connection.execute<ResultSetHeader>(
         `
           update questions
@@ -915,6 +984,7 @@ async function updateTextOnlyContent(
           ],
         );
       }
+      }
     }
   }
 }
@@ -932,9 +1002,13 @@ async function assertStructureMatchesExisting(
     `,
     [payload.questionnaireId],
   );
+  const [criteria] = await connection.execute<CriterionRow[]>(
+    `select id, dimension_id, position, title from question_criteria where questionnaire_id = ? order by dimension_id, position`,
+    [payload.questionnaireId],
+  );
   const [questions] = await connection.execute<QuestionRow[]>(
     `
-      select questions.id, questions.block_id, questions.position, questions.block_position, questions.text, questions.randomize_options
+      select questions.id, questions.block_id, questions.criterion_id, questions.position, questions.block_position, questions.criterion_position, questions.text, questions.randomize_options
       from questions
       join question_blocks
         on question_blocks.questionnaire_id = questions.questionnaire_id
@@ -957,15 +1031,30 @@ async function assertStructureMatchesExisting(
   }
 
   const blockPositionById = new Map(blocks.map((block) => [block.id, block.position]));
+  const criterionPositionById = new Map(criteria.map((criterion) => [
+    `${criterion.dimension_id}:${criterion.id}`,
+    criterion.position,
+  ]));
+  const expectedCriterionPositions = criteria
+    .map((criterion) => `${blockPositionById.get(criterion.dimension_id)}:${criterion.position}`)
+    .sort();
+  const requestedCriterionPositions = payload.blocks
+    .flatMap((block) => block.criteria.map((criterion) => `${block.position}:${criterion.position}`))
+    .sort();
+  if (!sameStringList(expectedCriterionPositions, requestedCriterionPositions)) {
+    throw new AdminQuestionnaireOperationError("Questionnaire structure cannot be changed after responses or activation");
+  }
+
   const expectedQuestionPositions = questions
     .map((question) => {
       const blockPosition = blockPositionById.get(question.block_id);
-      return `${blockPosition}:${question.block_position}`;
+      const criterionPosition = criterionPositionById.get(`${question.block_id}:${question.criterion_id}`);
+      return `${blockPosition}:${criterionPosition}:${question.criterion_position}`;
     })
     .sort();
   const requestedQuestionPositions = payload.blocks
     .flatMap((block) =>
-      block.questions.map((question) => `${block.position}:${question.blockPosition}`),
+      block.criteria.flatMap((criterion) => criterion.questions.map((question) => `${block.position}:${criterion.position}:${question.criterionPosition}`)),
     )
     .sort();
 
@@ -979,17 +1068,17 @@ async function assertStructureMatchesExisting(
     questions.map((question) => {
       const blockPosition = blockPositionById.get(question.block_id);
       return [
-        `${blockPosition}:${question.block_position}`,
+        `${blockPosition}:${criterionPositionById.get(`${question.block_id}:${question.criterion_id}`)}:${question.criterion_position}`,
         toBoolean(question.randomize_options),
       ];
     }),
   );
 
   for (const block of payload.blocks) {
-    for (const question of block.questions) {
+    for (const criterion of block.criteria) for (const question of criterion.questions) {
       if (
         existingRandomizationByPosition.get(
-          `${block.position}:${question.blockPosition}`,
+          `${block.position}:${criterion.position}:${question.criterionPosition}`,
         ) !== question.randomizeOptions
       ) {
         throw new AdminQuestionnaireOperationError(
@@ -1009,7 +1098,27 @@ async function assertQuestionnaireCanBeActivated(
     "question_blocks",
     questionnaireId,
   );
+  const criterionCount = await countRowsForConnection(connection, "question_criteria", questionnaireId);
   const questionCount = await countRowsForConnection(connection, "questions", questionnaireId);
+  const [invalidStructureRows] = await connection.execute<CountRow[]>(
+    `select (
+       select count(*) from question_blocks d
+       left join question_criteria c on c.questionnaire_id = d.questionnaire_id and c.dimension_id = d.id
+       where d.questionnaire_id = ? and c.id is null
+     ) + (
+       select count(*) from question_criteria c
+       left join questions q on q.questionnaire_id = c.questionnaire_id and q.block_id = c.dimension_id and q.criterion_id = c.id
+       where c.questionnaire_id = ? and q.id is null
+     ) + (
+       select count(*) from question_criteria c
+       where c.questionnaire_id = ? and (select count(*) from question_criteria c2 where c2.questionnaire_id = c.questionnaire_id and c2.dimension_id = c.dimension_id) > 10
+     ) + (
+       select count(*) from question_criteria c
+       where c.questionnaire_id = ? and (select count(*) from questions q where q.questionnaire_id = c.questionnaire_id and q.block_id = c.dimension_id and q.criterion_id = c.id) > 10
+     ) as row_count`,
+    [questionnaireId, questionnaireId, questionnaireId, questionnaireId],
+  );
+  const invalidStructureCount = Number(invalidStructureRows[0]?.row_count ?? 0);
   const [invalidQuestionRows] = await connection.execute<CountRow[]>(
     `
       select count(*) as row_count
@@ -1039,8 +1148,10 @@ async function assertQuestionnaireCanBeActivated(
   if (
     blockCount < 1 ||
     blockCount > 10 ||
-    questionCount < blockCount ||
+    criterionCount < blockCount ||
+    questionCount < criterionCount ||
     questionCount > 100 ||
+    invalidStructureCount !== 0 ||
     invalidQuestionCount !== 0
   ) {
     throw new AdminQuestionnaireOperationError(
@@ -1053,18 +1164,18 @@ function formatBlockId(position: number): string {
   return String(position).padStart(2, "0");
 }
 
-function getQuestionPosition(blockPosition: number, questionBlockPosition: number): number {
-  return (blockPosition - 1) * 10 + questionBlockPosition;
-}
-
 function sortBlocks(blocks: AdminQuestionBlockInput[]): AdminQuestionBlockInput[] {
   return blocks.slice().sort((a, b) => a.position - b.position);
 }
 
+function sortCriteria(criteria: AdminQuestionCriterionInput[]) {
+  return criteria.slice().sort((a, b) => a.position - b.position);
+}
+
 function sortQuestions(
-  questions: AdminQuestionBlockInput["questions"],
-): AdminQuestionBlockInput["questions"] {
-  return questions.slice().sort((a, b) => a.blockPosition - b.blockPosition);
+  questions: AdminQuestionCriterionInput["questions"],
+): AdminQuestionCriterionInput["questions"] {
+  return questions.slice().sort((a, b) => a.criterionPosition - b.criterionPosition);
 }
 
 function compareNumbers(a: number, b: number): number {
