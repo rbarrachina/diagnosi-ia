@@ -47,20 +47,20 @@ export default async function ParticipantResultPage({ params }: { params: Promis
       >
         <section className="mx-auto w-full px-5 pb-24 pt-12 sm:px-8 md:pb-20">
           <h1 className="sr-only"><InterfaceText messageKey="resultatIndividual" /></h1>
-          <div className="flex items-center justify-end">
-            <form action="/api/docent/results/pdf" method="post">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+            <div className="min-w-0">
+              <p className="text-base font-semibold leading-7 text-ink sm:text-lg">
+                {result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion}
+              </p>
+              <p className="mt-1 text-sm leading-6 text-muted">{formatDate(result.completedAt)}</p>
+            </div>
+            <form className="shrink-0 self-start" action="/api/docent/results/pdf" method="post">
               <input name="publicCode" type="hidden" value={result.publicCode} />
               <button className="min-h-10 rounded-xl bg-action px-4 py-2 text-sm font-semibold text-action-contrast" type="submit">
                 <InterfaceText messageKey="descarregaElPdf" />
               </button>
             </form>
           </div>
-          <p className="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <span className="text-base font-semibold leading-7 text-ink sm:text-lg">
-              {result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion}
-            </span>
-            <span className="text-sm leading-6 text-muted">· {formatDate(result.completedAt)}</span>
-          </p>
           <ParticipantDimensionResults blocks={result.blocks} />
           <h2 className="mt-12 scroll-mt-8 text-2xl font-semibold" id="detall-per-blocs"><InterfaceText messageKey="detallPerBlocs" /></h2>
           <div className="mt-8 space-y-6">
