@@ -646,14 +646,14 @@ situat sota el logotip.
 El resultat propi mostra el nom institucional a la capçalera de l'aplicació,
 just abans de les icones. El retorn a la llista de qüestionaris es fa des del
 menú docent, sense un botó duplicat al contingut. La descàrrega del PDF queda
-just després del títol, amb un petit espai; quan no hi cap, passa
-a la línia següent. La versió i la data queden juntes sota el títol, dins
-del mateix bloc. La caixa de CD té les vores arrodonides com les targetes
+després de la caixa CD al costat del títol, amb un petit espai; quan no hi cap, passa
+a la línia següent. Només la data es mostra sota el títol; la versió no es
+mostra al resultat web docent. La caixa de CD té les vores arrodonides com les targetes
 de dimensions i queda centrada verticalment respecte del bloc de títol i
 subtítol; el botó PDF queda alineat a dalt.
 El títol `Resultat individual`
 només és accessible als lectors de pantalla. El títol del qüestionari
-apareix al principi amb una mida més gran, amb la versió i la data just a sota en un estil més discret,
+apareix al principi amb una mida més gran, amb la data just a sota en un estil més discret,
 seguits del resum gràfic amb una barra de 0 a
 100 per cada dimensió, sense títol ni text introductori addicionals, amb un
 indicador de la posició obtinguda i els tres terços `Bàsica`, `Intermèdia` i

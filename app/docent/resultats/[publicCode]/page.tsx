@@ -60,10 +60,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
               <p className="text-2xl font-semibold leading-tight text-ink sm:text-3xl">
                 {result.questionnaireTitle}
               </p>
-              <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-sm leading-6 text-muted">
-                <span><InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion}</span>
-                <span>· {formatDate(result.completedAt)}</span>
-              </p>
+              <p className="mt-2 text-sm leading-6 text-muted">{formatDate(result.completedAt)}</p>
             </div>
             <div className="self-center rounded-2xl border border-line bg-surface px-4 py-3 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
