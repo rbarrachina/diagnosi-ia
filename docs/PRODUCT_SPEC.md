@@ -728,8 +728,9 @@ El servidor valida el token i retorna només dades de conjunt:
   gràfiques de distribució docent. Les barres són estretes, amb farcit semitransparent
   pastel segons l'etapa i contorn negre.
 - Les etiquetes de les gràfiques de barres i d'aranya mostren els noms complets
-  de les dimensions. Els noms llargs s'ajusten en diverses línies i el gràfic
-  d'aranya reserva marge perquè no quedin tallats.
+  a la llegenda de quatre columnes sota les gràfiques i al gràfic d'aranya.
+  L'eix horitzontal de les barres mostra el número de dimensió per evitar
+  superposar els noms llargs.
 - Gràfica d'aranya per dimensió sense etiquetes numèriques de percentatge i amb un
   degradat de color de valors baixos a alts.
 - En seleccionar una dimensió al gràfic de barres, la dimensió queda ressaltada

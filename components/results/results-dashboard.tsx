@@ -19,7 +19,6 @@ import {
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
-  type BaseTickContentProps,
   type TooltipContentProps,
   XAxis,
   YAxis,
@@ -91,7 +90,14 @@ function wrapTickLabel(label: string, maxLength: number): string[] {
   return lines;
 }
 
-function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength }: BaseTickContentProps & { maxLength: number }) {
+function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength }: {
+  payload: { value?: unknown };
+  x: number | string;
+  y: number | string;
+  textAnchor: "start" | "middle" | "end" | "inherit";
+  fill?: string;
+  maxLength: number;
+}) {
   const lines = wrapTickLabel(String(payload.value ?? ""), maxLength);
   const lineHeight = 12;
   const firstLineOffset = -((lines.length - 1) * lineHeight) / 2;
@@ -99,7 +105,7 @@ function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength }: Ba
   return (
     <text
       fill={fill ?? "#475569"}
-      fontSize={10}
+      fontSize={11}
       textAnchor={textAnchor}
       x={x}
       y={y}
@@ -399,10 +405,9 @@ export function ResultsDashboard({
                 />
                 <CartesianGrid vertical={false} stroke="#d8dee6" strokeDasharray="3 3" />
                 <XAxis
-                  dataKey="name"
-                  height={58}
+                  dataKey="position"
                   interval={0}
-                  tick={(props) => <WrappedDimensionTick {...props} maxLength={15} />}
+                  tick={{ fill: "#475569", fontSize: 12 }}
                 />
                 <YAxis
                   domain={[0, 100]}
@@ -467,7 +472,7 @@ export function ResultsDashboard({
                 />
                 <PolarAngleAxis
                   dataKey="name"
-                  tick={(props) => <WrappedDimensionTick {...props} maxLength={15} />}
+                  tick={(props) => <WrappedDimensionTick {...props} maxLength={18} />}
                 />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} tickLine={false} axisLine={false} />
                 <Radar
@@ -483,7 +488,7 @@ export function ResultsDashboard({
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="mt-5 grid gap-3 border-t border-line pt-4 text-sm text-muted sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-5 grid gap-3 border-t border-line pt-4 text-sm text-muted sm:grid-cols-2 lg:grid-cols-4">
           {results.blocks.map((block) => (
             <button
               aria-pressed={selectedBlockPosition === block.position}

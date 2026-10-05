@@ -32,6 +32,8 @@ només per al docent propietari, sense migracions ni noves dades persistides.
 La caixa arrodonida queda centrada respecte del títol i subtítol, amb el PDF a dalt.
 El fons de la gràfica per dimensió guanya intensitat per igualar la distribució docent.
 Les gràfiques de percentatge mostren els noms complets de les dimensions i els ajusten en diverses línies.
+Per evitar superposicions, l'eix de les barres mostra els números i la llegenda
+amb els noms complets ocupa quatre columnes.
 El títol ampliat encapçala el resultat, amb el PDF després de la caixa CD i només
 la data a sota; la versió s'oculta al resultat web docent.
 

@@ -8,6 +8,8 @@ Semantic Versioning.
 
 - Mostra els noms complets de les dimensions als gràfics de barres i d'aranya,
   amb etiquetes multilínia per als títols llargs.
+- Evita que els noms de dimensió se superposin a les barres: hi mostra els
+  números i posa els títols complets en una llegenda de quatre columnes.
 
 - Reforça el color del fons degradat a la gràfica de percentatges per dimensió
   perquè s'aproximi a la intensitat de les distribucions docents.
