@@ -35,6 +35,7 @@ Les gràfiques de percentatge mostren els noms complets de les dimensions i els 
 Els noms complets apareixen sota les barres en línies curtes, amb més espai
 horitzontal per evitar superposicions i sense entrar a la zona del gràfic.
 També queden una mica més avall, amb separació respecte de l'eix.
+El clic a una barra selecciona la dimensió correcta fins i tot si una altra val zero.
 El títol ampliat encapçala el resultat, amb el PDF després de la caixa CD i només
 la data a sota; la versió s'oculta al resultat web docent.
 

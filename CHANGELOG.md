@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Vincula el clic d'una barra directament amb la dimensió corresponent, també
+  quan una altra dimensió té puntuació zero.
+
 - Mostra els noms complets de les dimensions sota les barres i al gràfic
   d'aranya, ajustats en diverses línies i amb més espai perquè no se superposin
   ni envaeixin les barres. Els noms queden separats de l'eix horitzontal.

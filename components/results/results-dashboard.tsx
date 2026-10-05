@@ -427,8 +427,8 @@ export function ResultsDashboard({
                   barSize={44}
                   dataKey="percentatge"
                   fill="transparent"
-                  onClick={(_entry, index) => {
-                    const block = results.blocks[index];
+                  onClick={(entry) => {
+                    const block = results.blocks.find(({ position }) => position === entry.payload?.position);
                     if (block) selectBlock(block.position);
                   }}
                   radius={[4, 4, 0, 0]}
