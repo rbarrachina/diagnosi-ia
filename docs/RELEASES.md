@@ -34,6 +34,7 @@ El fons de la gràfica per dimensió guanya intensitat per igualar la distribuci
 Les gràfiques de percentatge mostren els noms complets de les dimensions i els ajusten en diverses línies.
 Els noms complets apareixen sota les barres en línies curtes, amb més espai
 horitzontal per evitar superposicions i sense entrar a la zona del gràfic.
+També queden una mica més avall, amb separació respecte de l'eix.
 El títol ampliat encapçala el resultat, amb el PDF després de la caixa CD i només
 la data a sota; la versió s'oculta al resultat web docent.
 

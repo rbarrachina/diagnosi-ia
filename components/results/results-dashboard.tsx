@@ -408,8 +408,9 @@ export function ResultsDashboard({
                 <CartesianGrid vertical={false} stroke="#d8dee6" strokeDasharray="3 3" />
                 <XAxis
                   dataKey="name"
-                  height={70}
+                  height={78}
                   interval={0}
+                  tickMargin={8}
                   tick={(props) => <WrappedDimensionTick {...props} maxLength={11} fontSize={10} />}
                 />
                 <YAxis

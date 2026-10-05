@@ -731,7 +731,7 @@ El servidor valida el token i retorna només dades de conjunt:
   a la llegenda de quatre columnes sota les gràfiques i al gràfic d'aranya.
   Els noms complets apareixen sota les barres, en diverses línies per evitar
   superposicions; cap línia no envaeix la zona del gràfic. L'eix horitzontal
-  hi reserva prou alçada.
+  hi reserva prou alçada i separació sota l'eix.
 - Gràfica d'aranya per dimensió sense etiquetes numèriques de percentatge i amb un
   degradat de color de valors baixos a alts.
 - En seleccionar una dimensió al gràfic de barres, la dimensió queda ressaltada
