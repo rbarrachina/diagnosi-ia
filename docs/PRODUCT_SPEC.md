@@ -663,9 +663,11 @@ disponible fins a 1536 px, inclosa la barra lateral. Dins de cada fila, les barr
 alineades encara que els títols tinguin longituds diferents. El valor és la
 suma de les respostes de la dimensió dividida pel màxim possible, reescalada a 0–100.
 Els límits són exactament un terç i dos terços, sense arrodonir abans de
-classificar. Un valor 0 queda a l'extrem esquerre de l'etapa bàsica. L'etiqueta
-del terç corresponent queda destacada; el lector de pantalla també rep la
-posició numèrica. No es repeteixen el nivell ni la puntuació al costat del
+classificar: fins a un terç correspon a `Bàsica`, per sobre d'un terç i fins a
+dos terços a `Intermèdia`, i per sobre de dos terços a `Avançada`. Un valor 0
+queda a l'extrem esquerre de l'etapa bàsica. L'etiqueta del terç corresponent
+queda destacada; el lector de pantalla també rep la posició numèrica. No es
+repeteixen el nivell ni la puntuació al costat del
 títol, ni els extrems 0 i 100 sota les barres. Cada barra porta al detall de les
 preguntes i respostes de la dimensió. La capçalera web presenta una caixa
 `CD docent en IA` entre el títol i el botó PDF, amb l'etapa global del docent.

@@ -28,11 +28,11 @@ describe("individual block stages", () => {
     expect(getBlockStage(block([0, 0, 0, 0]))).toEqual({ position: 0, stage: "basic" });
   });
 
-  it("uses exact thirds at both stage boundaries", () => {
+  it("keeps exact thirds in the lower stage", () => {
     expect(getBlockStage(block([1, 1, 1, 0])).stage).toBe("basic");
-    expect(getBlockStage(block([1, 1, 1, 1])).stage).toBe("intermediate");
+    expect(getBlockStage(block([1, 1, 1, 1])).stage).toBe("basic");
     expect(getBlockStage(block([2, 2, 2, 1])).stage).toBe("intermediate");
-    expect(getBlockStage(block([2, 2, 2, 2])).stage).toBe("advanced");
+    expect(getBlockStage(block([2, 2, 2, 2])).stage).toBe("intermediate");
   });
 
   it("places the maximum at the far right of the advanced stage", () => {
@@ -48,9 +48,9 @@ describe("individual overall competence", () => {
     });
   });
 
-  it("classifies exact thirds without rounding dimension scores", () => {
-    expect(getParticipantCompetence([block([0]), block([2])])?.stage).toBe("intermediate");
-    expect(getParticipantCompetence([block([1]), block([3])])?.stage).toBe("advanced");
+  it("classifies exact thirds in the lower stage without rounding dimension scores", () => {
+    expect(getParticipantCompetence([block([0]), block([2])])?.stage).toBe("basic");
+    expect(getParticipantCompetence([block([1]), block([3])])?.stage).toBe("intermediate");
     expect(getParticipantCompetence([block([1]), block([2, 2, 1])])?.stage).toBe("intermediate");
     expect(getParticipantCompetence([block([0]), block([1, 1, 1])])?.stage).toBe("basic");
   });

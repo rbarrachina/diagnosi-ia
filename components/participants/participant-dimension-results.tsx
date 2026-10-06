@@ -14,8 +14,8 @@ const stages = [
 type StageId = (typeof stages)[number]["id"];
 
 function stageForScore(score: number): StageId {
-  if (score < 100 / 3) return "basic";
-  if (score < 200 / 3) return "intermediate";
+  if (score <= 100 / 3) return "basic";
+  if (score <= 200 / 3) return "intermediate";
   return "advanced";
 }
 

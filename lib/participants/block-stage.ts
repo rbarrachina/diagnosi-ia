@@ -15,7 +15,7 @@ export function getParticipantCompetence(blocks: ParticipantBlockResult[]): {
 
   return {
     position: average / 3 * 100,
-    stage: average < 1 ? "basic" : average < 2 ? "intermediate" : "advanced",
+    stage: average <= 1 ? "basic" : average <= 2 ? "intermediate" : "advanced",
   };
 }
 
@@ -30,9 +30,9 @@ export function getBlockStage(block: ParticipantBlockResult): {
 
   return {
     position: (total / maximum) * 100,
-    stage: total * 3 < maximum
+    stage: total * 3 <= maximum
       ? "basic"
-      : total * 3 < maximum * 2
+      : total * 3 <= maximum * 2
         ? "intermediate"
         : "advanced",
   };

@@ -6,6 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Manté els valors exactes d'un terç a l'etapa Bàsica i els valors exactes de
+  dos terços a l'etapa Intermèdia, tant al resum docent com a les dimensions i
+  als gràfics.
+
 - Fa visible el zero als gràfics de barres i d'aranya amb una marca gràfica
   mínima del 3%, sense alterar la puntuació real ni els càlculs.
 

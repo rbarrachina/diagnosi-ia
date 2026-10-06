@@ -131,21 +131,21 @@ function criterionChartData(position: number, average: number | null, t: Interfa
 }
 
 function blockStageLabel(value: number, t: InterfaceTranslator): string {
-  if (value < 100 / 3) return t("etapaBasica");
-  if (value < 200 / 3) return t("etapaIntermedia");
+  if (value <= 100 / 3) return t("etapaBasica");
+  if (value <= 200 / 3) return t("etapaIntermedia");
   return t("etapaAvancada");
 }
 
 function blockStageFill(value: number): string {
-  if (value < 100 / 3) return "#fca5a5";
-  if (value < 200 / 3) return "#fde68a";
+  if (value <= 100 / 3) return "#fca5a5";
+  if (value <= 200 / 3) return "#fde68a";
   return "#86efac";
 }
 
 function blockStageTextClass(value: number | null): string {
   if (value === null) return "text-muted";
-  if (value < 100 / 3) return "text-red-700 dark:text-red-300";
-  if (value < 200 / 3) return "text-amber-700 dark:text-amber-300";
+  if (value <= 100 / 3) return "text-red-700 dark:text-red-300";
+  if (value <= 200 / 3) return "text-amber-700 dark:text-amber-300";
   return "text-green-700 dark:text-green-300";
 }
 
