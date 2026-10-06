@@ -6,6 +6,40 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Manté els valors exactes d'un terç a l'etapa Bàsica i els valors exactes de
+  dos terços a l'etapa Intermèdia, tant al resum docent com a les dimensions i
+  als gràfics.
+
+- Fa visible el zero als gràfics de barres i d'aranya amb una marca gràfica
+  mínima del 3%, sense alterar la puntuació real ni els càlculs.
+
+- Vincula el clic d'una barra directament amb la dimensió corresponent, també
+  quan una altra dimensió té puntuació zero.
+
+- Mostra els noms complets de les dimensions sota les barres i al gràfic
+  d'aranya, ajustats en diverses línies i amb més espai perquè no se superposin
+  ni envaeixin les barres. Els noms queden separats de l'eix horitzontal.
+
+- Reforça el color del fons degradat a la gràfica de percentatges per dimensió
+  perquè s'aproximi a la intensitat de les distribucions docents.
+
+- Oculta la versió al resultat web docent i conserva la data sota el títol.
+
+- Afegeix al resultat web docent una caixa de CD docent en IA entre el títol
+  i el PDF, amb l'etapa calculada per la mitjana de dimensions amb pes igual.
+  Arrodoneix la caixa, la centra respecte del títol i subtítol i alinea el PDF a dalt.
+
+- Amplia el títol del resultat docent i situa la data a sota,
+  i la descàrrega del PDF just després del títol; quan no hi cap, el botó passa a sota.
+
+- Elimina el botó duplicat de retorn a les diagnosis al resultat docent;
+  la navegació queda al menú i la descàrrega del PDF continua a la dreta.
+
+- Amplia el resultat docent i mostra quatre dimensions per fila en pantalles
+  amples, dues en amplades mitjanes i una al mòbil, amb les barres alineades.
+  La capçalera s'adapta a la mateixa amplada que la vista de resultats.
+  Manté marges laterals a l'escriptori i situa el menú sota el logotip.
+
 - Unifica la col·lació de `questions.criterion_id` amb la de la resta
   d'identificadors relacionats perquè les consultes de criteris funcionin a
   MySQL quan el valor per defecte de la base de dades és diferent.

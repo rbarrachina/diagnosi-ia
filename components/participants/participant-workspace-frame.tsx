@@ -31,7 +31,7 @@ export function ParticipantWorkspaceFrame({
   const showQuestionnaires = view === "questionnaires" || view === "result";
 
   return (
-    <div className="relative mx-auto flex h-[100svh] w-full max-w-7xl overflow-hidden pt-20">
+    <div className={`relative mx-auto flex h-[100svh] w-full overflow-hidden pt-20 ${view === "result" ? "max-w-screen-2xl md:px-4 lg:px-8" : "max-w-7xl"}`}>
       <aside
         aria-label={t("menuDocent")}
         className={`participant-sidebar hidden h-full shrink-0 flex-col overflow-hidden border-r border-line bg-[color-mix(in_srgb,var(--color-paper)_88%,transparent)] px-3 py-5 backdrop-blur-md transition-[width] duration-200 md:flex md:w-[72px] ${expanded ? "lg:w-60" : "lg:w-[72px]"}`}

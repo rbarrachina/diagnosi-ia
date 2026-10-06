@@ -142,6 +142,12 @@ a partir de les respostes pròpies, per terços de l'escala 0–100. No hi ha
 comparacions ni dades alienes. El centre, el responsable, l'administració i l'enllaç
 privat continuen rebent només agregats.
 
+La capçalera del resultat web propi també pot mostrar l'etapa global de CD
+docent en IA, calculada com la mitjana de les puntuacions normalitzades de les
+dimensions amb pes igual per dimensió. Es deriva exclusivament de les respostes
+pròpies ja autoritzades i no es persisteix com a dada nova ni es comunica als
+rols institucionals. La classificació usa els terços exactes sense arrodoniment previ.
+
 En aquesta fase no hi ha eliminació directa pel docent. Les sol·licituds de
 supressió requereixen un procediment administratiu. La participació es conserva
 mentre existeix l'espai i s'elimina en reiniciar-lo o eliminar-lo. La durada de

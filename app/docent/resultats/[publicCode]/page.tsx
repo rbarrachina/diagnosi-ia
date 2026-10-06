@@ -1,6 +1,5 @@
 import { InterfaceText } from "@/components/i18n/interface-text";
 import { IconLogoutButton } from "@/components/auth/auth-actions";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AppHeader } from "@/components/layout/app-header";
 import { ThemeToggle } from "@/components/home/theme-toggle";
@@ -11,6 +10,7 @@ import { getResponsiblePortalStatus } from "@/lib/auth/responsible-access";
 import { ParticipantDimensionResults } from "@/components/participants/participant-dimension-results";
 import { ParticipantWorkspaceFrame } from "@/components/participants/participant-workspace-frame";
 import { SCALE_OPTIONS } from "@/lib/questionnaire/scale";
+import { getParticipantCompetence } from "@/lib/participants/block-stage";
 
 export const dynamic = "force-dynamic";
 
@@ -25,12 +25,20 @@ export default async function ParticipantResultPage({ params }: { params: Promis
   if (!user) redirect(`/auth/login?next=${encodeURIComponent(`/docent/resultats/${publicCode}`)}`);
   const result = await getParticipantResult({ participantUserId: user.id, publicCode });
   if (!result) notFound();
+  const competence = getParticipantCompetence(result.blocks);
+  const competenceStages = {
+    basic: { label: "etapaBasica", color: "text-red-700 dark:text-red-300" },
+    intermediate: { label: "etapaIntermedia", color: "text-amber-700 dark:text-amber-300" },
+    advanced: { label: "etapaAvancada", color: "text-green-700 dark:text-green-300" },
+  } as const;
+  const competenceDisplay = competence ? competenceStages[competence.stage] : null;
   const participations = await listParticipantResults(user.id);
 
   return (
     <main className="app-shell min-h-screen bg-paper text-ink">
       <AppHeader
         brandHref="/docent"
+        contentWidth="wide"
         leadingControls={
           <span className="max-w-20 truncate text-right text-xs font-semibold text-ink sm:max-w-48 sm:text-sm lg:max-w-64" title={result.centreName}>
             {result.centreName}
@@ -45,25 +53,30 @@ export default async function ParticipantResultPage({ params }: { params: Promis
         participations={participations.map(({ publicCode: code, questionnaireTitle }) => ({ publicCode: code, questionnaireTitle }))}
         view="result"
       >
-        <section className="mx-auto max-w-5xl px-5 pb-24 pt-12 sm:px-8 md:pb-20">
+        <section className="mx-auto w-full px-5 pb-24 pt-12 sm:px-8 md:pb-20">
           <h1 className="sr-only"><InterfaceText messageKey="resultatIndividual" /></h1>
-          <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
-            <Link className="inline-flex min-h-10 items-center justify-center rounded-full border border-action bg-accent-soft px-5 py-2 text-sm font-semibold text-action shadow-sm transition hover:bg-action hover:text-action-contrast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper" href="/docent?view=questionnaires">
-              <InterfaceText messageKey="lesMevesDiagnosis2" />
-            </Link>
-            <form action="/api/docent/results/pdf" method="post">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+            <div className="min-w-0">
+              <p className="text-2xl font-semibold leading-tight text-ink sm:text-3xl">
+                {result.questionnaireTitle}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-muted">{formatDate(result.completedAt)}</p>
+            </div>
+            <div className="self-center rounded-2xl border border-line bg-surface px-4 py-3 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+                <InterfaceText messageKey="cdDocentEnIa" />
+              </p>
+              <p className={`mt-1 text-3xl font-bold ${competenceDisplay?.color ?? "text-muted"}`}>
+                <InterfaceText messageKey={competenceDisplay?.label ?? "senseDades"} />
+              </p>
+            </div>
+            <form className="shrink-0 self-start" action="/api/docent/results/pdf" method="post">
               <input name="publicCode" type="hidden" value={result.publicCode} />
               <button className="min-h-10 rounded-xl bg-action px-4 py-2 text-sm font-semibold text-action-contrast" type="submit">
                 <InterfaceText messageKey="descarregaElPdf" />
               </button>
             </form>
           </div>
-          <p className="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <span className="text-base font-semibold leading-7 text-ink sm:text-lg">
-              {result.questionnaireTitle}{" "}<InterfaceText messageKey="versio2" />{" "}{result.questionnaireVersion}
-            </span>
-            <span className="text-sm leading-6 text-muted">· {formatDate(result.completedAt)}</span>
-          </p>
           <ParticipantDimensionResults blocks={result.blocks} />
           <h2 className="mt-12 scroll-mt-8 text-2xl font-semibold" id="detall-per-blocs"><InterfaceText messageKey="detallPerBlocs" /></h2>
           <div className="mt-8 space-y-6">

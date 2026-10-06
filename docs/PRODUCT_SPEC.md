@@ -640,25 +640,43 @@ en pantalles grans i ocupa l'espai disponible en pantalles petites.
 L'estat plegat es conserva entre les pàgines docents. Al mòbil, els mateixos
 accessos apareixen en un selector flotant compacte. La barra lateral no redueix
 el nombre de gràfiques per fila en pantalles amples.
+La capçalera del resultat propi comparteix l'amplada adaptable de la vista,
+fins a 1536 px, amb marges laterals també a l'escriptori i el menú lateral
+situat sota el logotip.
 El resultat propi mostra el nom institucional a la capçalera de l'aplicació,
-just abans de les icones. El retorn a la llista de qüestionaris manté el botó arrodonit
-i comparteix fila amb la descàrrega del PDF. El títol `Resultat individual`
-només és accessible als lectors de pantalla. El qüestionari i la versió
-apareixen destacats sota els botons, amb la data en un estil més discret,
+just abans de les icones. El retorn a la llista de qüestionaris es fa des del
+menú docent, sense un botó duplicat al contingut. La descàrrega del PDF queda
+després de la caixa CD al costat del títol, amb un petit espai; quan no hi cap, passa
+a la línia següent. Només la data es mostra sota el títol; la versió no es
+mostra al resultat web docent. La caixa de CD té les vores arrodonides com les targetes
+de dimensions i queda centrada verticalment respecte del bloc de títol i
+subtítol; el botó PDF queda alineat a dalt.
+El títol `Resultat individual`
+només és accessible als lectors de pantalla. El títol del qüestionari
+apareix al principi amb una mida més gran, amb la data just a sota en un estil més discret,
 seguits del resum gràfic amb una barra de 0 a
 100 per cada dimensió, sense títol ni text introductori addicionals, amb un
 indicador de la posició obtinguda i els tres terços `Bàsica`, `Intermèdia` i
 `Avançada`. Les barres es disposen en una columna al mòbil, dues en amplades
-mitjanes i tres en pantalles amples; dins de cada fila, les barres queden
+mitjanes i quatre a partir de 1280 px; la vista de resultats aprofita l'amplada
+disponible fins a 1536 px, inclosa la barra lateral. Dins de cada fila, les barres queden
 alineades encara que els títols tinguin longituds diferents. El valor és la
 suma de les respostes de la dimensió dividida pel màxim possible, reescalada a 0–100.
 Els límits són exactament un terç i dos terços, sense arrodonir abans de
-classificar. Un valor 0 queda a l'extrem esquerre de l'etapa bàsica. L'etiqueta
-del terç corresponent queda destacada; el lector de pantalla també rep la
-posició numèrica. No es repeteixen el nivell ni la puntuació al costat del
+classificar: fins a un terç correspon a `Bàsica`, per sobre d'un terç i fins a
+dos terços a `Intermèdia`, i per sobre de dos terços a `Avançada`. Un valor 0
+queda a l'extrem esquerre de l'etapa bàsica. L'etiqueta del terç corresponent
+queda destacada; el lector de pantalla també rep la posició numèrica. No es
+repeteixen el nivell ni la puntuació al costat del
 títol, ni els extrems 0 i 100 sota les barres. Cada barra porta al detall de les
-preguntes i respostes de la dimensió. No es presenta cap etapa ni percentatge global
-del docent.
+preguntes i respostes de la dimensió. La capçalera web presenta una caixa
+`CD docent en IA` entre el títol i el botó PDF, amb l'etapa global del docent.
+La puntuació global és la mitjana aritmètica de les puntuacions normalitzades
+de les dimensions, amb el mateix pes per dimensió encara que tinguin nombres
+de preguntes diferents. Es calcula des de les respostes pròpies sense arrodonir
+les dimensions abans de fer la mitjana ni classificar pels mateixos terços.
+Només es mostra l'etapa, sense percentatge global; sense dimensions completes,
+la caixa mostra `Sense dades`. És exclusiva del docent propietari.
 
 Les targetes de dimensió són seleccionables. En seleccionar-ne una, queda
 ressaltada amb un fons blau i, a sota, es mostren en una fila els gràfics de
@@ -708,8 +726,17 @@ El servidor valida el token i retorna només dades de conjunt:
   individuals.
 - Gràfica de barres per dimensió amb l'eix vertical etiquetat com a nivell bàsic,
   intermedi i avançat. Dues línies fines marquen els límits dels rangs; el fons
-  té un degradat de vermell a verd. Les barres són estretes, amb farcit semitransparent
+  té un degradat de vermell a verd amb opacitat reforçada per igualar les
+  gràfiques de distribució docent. Les barres són estretes, amb farcit semitransparent
   pastel segons l'etapa i contorn negre.
+  Si una dimensió té valor zero, tots dos gràfics dibuixen una marca mínima del
+  3% per fer-la visible; la puntuació real continua sent zero i els càlculs no
+  canvien.
+- Les etiquetes de les gràfiques de barres i d'aranya mostren els noms complets
+  a la llegenda de quatre columnes sota les gràfiques i al gràfic d'aranya.
+  Els noms complets apareixen sota les barres, en diverses línies per evitar
+  superposicions; cap línia no envaeix la zona del gràfic. L'eix horitzontal
+  hi reserva prou alçada i separació sota l'eix.
 - Gràfica d'aranya per dimensió sense etiquetes numèriques de percentatge i amb un
   degradat de color de valors baixos a alts.
 - En seleccionar una dimensió al gràfic de barres, la dimensió queda ressaltada

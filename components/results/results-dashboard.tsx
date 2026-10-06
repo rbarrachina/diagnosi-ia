@@ -64,12 +64,62 @@ function formatPercentage(value: number | null, t: InterfaceTranslator): string 
   return value === null ? t("senseDades") : `${value.toFixed(1)}%`;
 }
 
-function blockChartData(blocks: BlockResult[], t: InterfaceTranslator) {
+function blockChartData(blocks: BlockResult[]) {
   return blocks.map((block) => ({
-    name: t("blocValue0", { value0: block.position }),
+    name: block.title,
     percentatge: block.average ?? 0,
+    visiblePercentatge: block.average === 0 ? 3 : block.average ?? 0,
     position: block.position,
   }));
+}
+
+function wrapTickLabel(label: string, maxLength: number): string[] {
+  const words = label.split(/\s+/);
+  const lines: string[] = [];
+  let current = "";
+
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length > maxLength && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = next;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength, fontSize, centerVertically = false }: {
+  payload: { value?: unknown };
+  x: number | string;
+  y: number | string;
+  textAnchor: "start" | "middle" | "end" | "inherit";
+  fill?: string;
+  maxLength: number;
+  fontSize?: number;
+  centerVertically?: boolean;
+}) {
+  const lines = wrapTickLabel(String(payload.value ?? ""), maxLength);
+  const lineHeight = 11;
+  const firstLineOffset = centerVertically ? -((lines.length - 1) * lineHeight) / 2 : 0;
+
+  return (
+    <text
+      fill={fill ?? "#475569"}
+      fontSize={fontSize ?? 11}
+      textAnchor={textAnchor}
+      x={x}
+      y={y}
+    >
+      {lines.map((line, index) => (
+        <tspan dy={index === 0 ? firstLineOffset : lineHeight} key={index} x={x}>
+          {line}
+        </tspan>
+      ))}
+    </text>
+  );
 }
 
 function criterionChartData(position: number, average: number | null, t: InterfaceTranslator) {
@@ -81,21 +131,21 @@ function criterionChartData(position: number, average: number | null, t: Interfa
 }
 
 function blockStageLabel(value: number, t: InterfaceTranslator): string {
-  if (value < 100 / 3) return t("etapaBasica");
-  if (value < 200 / 3) return t("etapaIntermedia");
+  if (value <= 100 / 3) return t("etapaBasica");
+  if (value <= 200 / 3) return t("etapaIntermedia");
   return t("etapaAvancada");
 }
 
 function blockStageFill(value: number): string {
-  if (value < 100 / 3) return "#fca5a5";
-  if (value < 200 / 3) return "#fde68a";
+  if (value <= 100 / 3) return "#fca5a5";
+  if (value <= 200 / 3) return "#fde68a";
   return "#86efac";
 }
 
 function blockStageTextClass(value: number | null): string {
   if (value === null) return "text-muted";
-  if (value < 100 / 3) return "text-red-700 dark:text-red-300";
-  if (value < 200 / 3) return "text-amber-700 dark:text-amber-300";
+  if (value <= 100 / 3) return "text-red-700 dark:text-red-300";
+  if (value <= 200 / 3) return "text-amber-700 dark:text-amber-300";
   return "text-green-700 dark:text-green-300";
 }
 
@@ -329,7 +379,7 @@ export function ResultsDashboard({
         <h2 className="text-center text-lg font-semibold text-ink">
           <InterfaceText messageKey="percentatgePerBlocs" />
         </h2>
-        <div className="mt-4 grid gap-6 lg:grid-cols-2">
+        <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div aria-hidden="true" className="h-72 min-w-0">
             <ResponsiveContainer
               height="100%"
@@ -339,7 +389,7 @@ export function ResultsDashboard({
             >
               <BarChart
                 accessibilityLayer={false}
-                data={blockChartData(results.blocks, t)}
+                data={blockChartData(results.blocks)}
               >
                 <defs>
                   <linearGradient id="blockBarGradient" x1="0" y1="1" x2="0" y2="0">
@@ -353,11 +403,17 @@ export function ResultsDashboard({
                   y1={0}
                   y2={100}
                   fill="url(#blockBarGradient)"
-                  fillOpacity={0.42}
+                  fillOpacity={0.65}
                   stroke="none"
                 />
                 <CartesianGrid vertical={false} stroke="#d8dee6" strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
+                <XAxis
+                  dataKey="name"
+                  height={78}
+                  interval={0}
+                  tickMargin={8}
+                  tick={(props) => <WrappedDimensionTick {...props} maxLength={11} fontSize={10} />}
+                />
                 <YAxis
                   domain={[0, 100]}
                   ticks={[100 / 6, 50, 250 / 3]}
@@ -370,10 +426,10 @@ export function ResultsDashboard({
                 <Bar
                   activeBar={false}
                   barSize={44}
-                  dataKey="percentatge"
+                  dataKey="visiblePercentatge"
                   fill="transparent"
-                  onClick={(_entry, index) => {
-                    const block = results.blocks[index];
+                  onClick={(entry) => {
+                    const block = results.blocks.find(({ position }) => position === entry.payload?.position);
                     if (block) selectBlock(block.position);
                   }}
                   radius={[4, 4, 0, 0]}
@@ -403,7 +459,10 @@ export function ResultsDashboard({
               minWidth={0}
               width="100%"
             >
-              <RadarChart data={blockChartData(results.blocks, t)}>
+              <RadarChart
+                data={blockChartData(results.blocks)}
+                margin={{ top: 28, right: 72, bottom: 28, left: 72 }}
+              >
                 <defs>
                   <radialGradient id="blockRadarGradient" cx="50%" cy="50%" r="50%">
                     <stop offset="0%" stopColor="#ef4444" />
@@ -416,11 +475,14 @@ export function ResultsDashboard({
                   fillOpacity={0.68}
                   stroke="#d8dee6"
                 />
-                <PolarAngleAxis dataKey="name" tick={{ fill: "#334155", fontSize: 12 }} />
+                <PolarAngleAxis
+                  dataKey="name"
+                  tick={(props) => <WrappedDimensionTick {...props} maxLength={18} fontSize={11} centerVertically />}
+                />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} tickLine={false} axisLine={false} />
                 <Radar
                   activeDot={false}
-                  dataKey="percentatge"
+                  dataKey="visiblePercentatge"
                   fill="transparent"
                   fillOpacity={0}
                   name={t("percentatge")}
@@ -431,7 +493,7 @@ export function ResultsDashboard({
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="mt-5 grid gap-3 border-t border-line pt-4 text-sm text-muted sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-5 grid gap-3 border-t border-line pt-4 text-sm text-muted sm:grid-cols-2 lg:grid-cols-4">
           {results.blocks.map((block) => (
             <button
               aria-pressed={selectedBlockPosition === block.position}

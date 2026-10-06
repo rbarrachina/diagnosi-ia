@@ -25,6 +25,8 @@ sent exclusivament agregats.
 La presentació individual mostra el perfil per dimensions en barres de 0 a 100 amb
 etapes bàsica, intermèdia i avançada per terços; el detall inferior conserva
 les respostes pròpies. El PDF individual manté aquesta mateixa lectura.
+La capçalera web incorpora l'etapa global de CD docent en IA, derivada de la
+mitjana de les puntuacions de dimensions amb pes igual i sense arrodoniment previ.
 
 La infraestructura d'internacionalització usa catàlegs tipats, selecció
 explícita i una cookie funcional. No fa detecció automàtica del navegador i

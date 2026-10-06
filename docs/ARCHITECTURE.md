@@ -33,6 +33,8 @@ distribuir-ne binaris. L'abast, les fonts originals i els pendents es documenten
 - `AppHeader`, `AppLogoLink`, `AppLogoMark` i `CentreAppShell` són els únics
   orígens del patró de capçalera, marca i fons autenticat. Les pàgines passen
   només el contingut i les dades del compte; no reprodueixen les capes visuals.
+  `AppHeader` admet una amplada estàndard o ampla; el resultat docent usa
+  l'amplada ampla de 1536 px, igual que la seva carcassa.
 - Els estils inline queden reservats a valors calculats en temps d'execució,
   com l'amplada del progrés i els colors de les sèries dels gràfics.
 
@@ -50,6 +52,9 @@ distribuir-ne binaris. L'abast, les fonts originals i els pendents es documenten
   al servidor que `participant_user_id` coincideix amb l'identificador de sessió.
 - La pàgina i el PDF docents deriven la posició i l'etapa de cada bloc de les
   respostes pròpies amb un càlcul compartit; no consulten agregats de centre.
+- La caixa global del resultat web docent usa la mitjana de dimensions de
+  `getParticipantCompetence`, calculada des de les respostes pròpies sense
+  arrodonir; no usa la mitjana per pregunta del camp històric `globalScore`.
 - Cap endpoint de centre o administració retorna files individuals.
 - Els tokens privats es desen com HMAC per validar-los i xifrats per
   recuperar-los; mai en text pla.

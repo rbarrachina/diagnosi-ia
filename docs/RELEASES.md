@@ -23,6 +23,23 @@ Després d'`1.0.0`:
 
 ## Preparar una release
 
+La disposició adaptable de quatre dimensions per fila i la capçalera ampla al resultat docent
+s'inclou a `Unreleased`; és un canvi visual sense migracions ni configuració nova.
+També s'elimina el botó de retorn duplicat: la llista de diagnosis s'obre des
+del menú docent.
+La caixa global de CD docent en IA usa la mitjana de dimensions amb pes igual,
+només per al docent propietari, sense migracions ni noves dades persistides.
+La caixa arrodonida queda centrada respecte del títol i subtítol, amb el PDF a dalt.
+El fons de la gràfica per dimensió guanya intensitat per igualar la distribució docent.
+Les gràfiques de percentatge mostren els noms complets de les dimensions i els ajusten en diverses línies.
+Els noms complets apareixen sota les barres en línies curtes, amb més espai
+horitzontal per evitar superposicions i sense entrar a la zona del gràfic.
+També queden una mica més avall, amb separació respecte de l'eix.
+El clic a una barra selecciona la dimensió correcta fins i tot si una altra val zero.
+Les dimensions a zero tenen una marca mínima visible als dos gràfics; els valors no canvien.
+El títol ampliat encapçala el resultat, amb el PDF després de la caixa CD i només
+la data a sota; la versió s'oculta al resultat web docent.
+
 1. Confirmar que `main` està neta i actualitzada.
 2. Moure els canvis d'`Unreleased` a una secció amb versió i data.
 3. Actualitzar `package.json` i `package-lock.json` amb la mateixa versió.
