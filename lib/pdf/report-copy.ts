@@ -27,6 +27,8 @@ export type ReportCopy = {
   blockPrivacy: string;
   participantSubject: string;
   participantTitle: string;
+  participantCompetence: string;
+  progressionStage: string;
   completedOn: string;
   globalScore: string;
   participantBlockProfile: string;
@@ -35,6 +37,7 @@ export type ReportCopy = {
   intermediateStage: string;
   advancedStage: string;
   block: string;
+  dimension: string;
   selectedAnswer: string;
   participantPrivacy: string;
 };
@@ -52,8 +55,8 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
     aggregatePrivacy: "Nota metodològica: aquest informe presenta exclusivament resultats de conjunt. No inclou identificadors de participants, no mostra respostes individuals i no permet reconstruir el conjunt complet de respostes d’una mateixa persona.",
     blockResults: "Resultats de la dimensió", blockPercentage: "Percentatge de la dimensió", questionResults: "Resultats per pregunta",
     percentage: "Percentatge", blockPrivacy: "Les dades d’aquesta dimensió es presenten en conjunt. L’informe no inclou respostes individuals ni permet avaluar cap docent.",
-    participantSubject: "Resultat individual pseudonimitzat", participantTitle: "Resultat individual",
-    completedOn: "Realitzat el", globalScore: "Puntuació global", block: "Bloc", selectedAnswer: "Resposta seleccionada",
+    participantSubject: "Resultat individual pseudonimitzat", progressionStage: "Etapa de progressió", participantCompetence: "Competència Digital docent en IA", participantTitle: "Resultat individual",
+    completedOn: "Realitzat el", globalScore: "Puntuació global", block: "Bloc", dimension: "Dimensió", selectedAnswer: "Resposta seleccionada",
     participantBlockProfile: "Perfil per dimensions", participantBlockDetails: "Respostes per dimensions i criteris", basicStage: "Bàsica", intermediateStage: "Intermèdia", advancedStage: "Avançada",
     participantPrivacy: "Aquest document només conté la participació recuperada amb el compte autenticat. No inclou el nom, el correu, l’identificador pseudònim, identificadors interns, comparacions ni dades d’altres participants.",
   },
@@ -67,8 +70,8 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
     aggregatePrivacy: "Nota metodológica: este informe presenta exclusivamente resultados agregados. No incluye identificadores de participantes, no muestra respuestas individuales ni permite reconstruir el conjunto completo de respuestas de una misma persona.",
     blockResults: "Resultados de la dimensión", blockPercentage: "Porcentaje de la dimensión", questionResults: "Resultados por pregunta", percentage: "Porcentaje",
     blockPrivacy: "Los datos de esta dimensión se presentan de forma agregada. El informe no incluye respuestas individuales ni permite evaluar a ningún docente.",
-    participantSubject: "Resultado individual seudonimizado", participantTitle: "Resultado individual", completedOn: "Realizado el",
-    globalScore: "Puntuación global", block: "Bloque", selectedAnswer: "Respuesta seleccionada",
+    participantSubject: "Resultado individual seudonimizado", progressionStage: "Etapa de progresión", participantCompetence: "CD docente en IA", participantTitle: "Resultado individual", completedOn: "Realizado el",
+    globalScore: "Puntuación global", block: "Bloque", dimension: "Dimensión", selectedAnswer: "Respuesta seleccionada",
     participantBlockProfile: "Perfil por dimensiones", participantBlockDetails: "Respuestas por dimensiones y criterios", basicStage: "Básica", intermediateStage: "Intermedia", advancedStage: "Avanzada",
     participantPrivacy: "Este documento solo contiene la participación recuperada con la cuenta autenticada. No incluye el nombre, el correo, el identificador seudónimo, identificadores internos, comparaciones ni datos de otros participantes.",
   },
@@ -82,8 +85,8 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
     aggregatePrivacy: "Ohar metodologikoa: txosten honek emaitza agregatuak baino ez ditu aurkezten. Ez du parte-hartzaileen identifikatzailerik edo banakako erantzunik jasotzen, eta ezin da pertsona beraren erantzun multzo osoa berreraiki.",
     blockResults: "Dimentsioaren emaitzak", blockPercentage: "Dimentsioaren ehunekoa", questionResults: "Galderaz galderako emaitzak", percentage: "Ehunekoa",
     blockPrivacy: "Dimentsio honetako datuak modu agregatuan aurkezten dira. Txostenak ez du banakako erantzunik jasotzen eta ez du irakaslerik ebaluatzeko balio.",
-    participantSubject: "Banakako emaitza pseudonimizatua", participantTitle: "Banakako emaitza", completedOn: "Egindako data:",
-    globalScore: "Puntuazio globala", block: "Blokea", selectedAnswer: "Hautatutako erantzuna",
+    participantSubject: "Banakako emaitza pseudonimizatua", progressionStage: "Progresio-etapa", participantCompetence: "CD docente en IA", participantTitle: "Banakako emaitza", completedOn: "Egindako data:",
+    globalScore: "Puntuazio globala", block: "Blokea", dimension: "Dimentsioa", selectedAnswer: "Hautatutako erantzuna",
     participantBlockProfile: "Profila dimentsioka", participantBlockDetails: "Erantzunak dimentsio eta irizpideka", basicStage: "Oinarrizkoa", intermediateStage: "Tartekoa", advancedStage: "Aurreratua",
     participantPrivacy: "Dokumentu honek autentifikatutako kontuarekin berreskuratutako parte-hartzea baino ez du jasotzen. Ez du izenik, helbide elektronikorik, identifikatzaile pseudonimorik, barne-identifikatzailerik, konparaziorik edo beste parte-hartzaileen daturik jasotzen.",
   },
@@ -97,8 +100,8 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
     aggregatePrivacy: "Nota metodolóxica: este informe presenta exclusivamente resultados agregados. Non inclúe identificadores de participantes, non mostra respostas individuais nin permite reconstruír o conxunto completo de respostas dunha mesma persoa.",
     blockResults: "Resultados da dimensión", blockPercentage: "Porcentaxe da dimensión", questionResults: "Resultados por pregunta", percentage: "Porcentaxe",
     blockPrivacy: "Os datos desta dimensión preséntanse de forma agregada. O informe non inclúe respostas individuais nin permite avaliar ningún docente.",
-    participantSubject: "Resultado individual pseudonimizado", participantTitle: "Resultado individual", completedOn: "Realizado o",
-    globalScore: "Puntuación global", block: "Bloque", selectedAnswer: "Resposta seleccionada",
+    participantSubject: "Resultado individual pseudonimizado", progressionStage: "Etapa de progresión", participantCompetence: "CD docente en IA", participantTitle: "Resultado individual", completedOn: "Realizado o",
+    globalScore: "Puntuación global", block: "Bloque", dimension: "Dimensión", selectedAnswer: "Resposta seleccionada",
     participantBlockProfile: "Perfil por dimensións", participantBlockDetails: "Respostas por dimensións e criterios", basicStage: "Básica", intermediateStage: "Intermedia", advancedStage: "Avanzada",
     participantPrivacy: "Este documento só contén a participación recuperada coa conta autenticada. Non inclúe o nome, o correo, o identificador pseudónimo, identificadores internos, comparacións nin datos doutras persoas participantes.",
   },
@@ -112,8 +115,8 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
     aggregatePrivacy: "Nòta metodologica: aguest rapòrt presente sonque resultats agregats. Non includís identificadors de participants, non mòstre responses individuaus e non permet reconstruïr eth conjunt complèt de responses d’ua madeisha persona.",
     blockResults: "Resultats dera dimension", blockPercentage: "Percentatge dera dimension", questionResults: "Resultats per qüestion", percentage: "Percentatge",
     blockPrivacy: "Es donades d’aguesta dimension se presenten de manèra agregada. Eth rapòrt non includís responses individuaus ne permet avalorar cap docent.",
-    participantSubject: "Resultat individuau pseudonimizat", participantTitle: "Resultat individuau", completedOn: "Realizat eth",
-    globalScore: "Puntuacion globau", block: "Blòc", selectedAnswer: "Response seleccionada",
+    participantSubject: "Resultat individuau pseudonimizat", progressionStage: "Etapa de progression", participantCompetence: "CD docent en IA", participantTitle: "Resultat individuau", completedOn: "Realizat eth",
+    globalScore: "Puntuacion globau", block: "Blòc", dimension: "Dimension", selectedAnswer: "Response seleccionada",
     participantBlockProfile: "Perfil per dimensions", participantBlockDetails: "Responses per dimensions e critèris", basicStage: "Basica", intermediateStage: "Intermediària", advancedStage: "Avançada",
     participantPrivacy: "Aguest document sonque conten era participacion recuperada damb eth compde autentificat. Non includís eth nòm, eth corrèu, er identificador pseudonim, identificadors intèrns, comparacions ne donades d’auti participants.",
   },

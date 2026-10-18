@@ -23,12 +23,31 @@ Després d'`1.0.0`:
 
 ## Preparar una release
 
+El resultat docent obre inicialment els criteris de la primera dimensió,
+sense fletxes, text addicional ni migracions.
+El bloc de criteris es presenta centrat, amb amplada limitada i fons blau suau.
+L'amplada s'ajusta al nombre de criteris, amb el títol en diverses línies si cal.
+Els gràfics de criteris no mostren percentatges visibles.
+El detall de respostes incorpora desplegables independents per criteri, inicialment plegats.
+
 La disposició adaptable de quatre dimensions per fila i la capçalera ampla al resultat docent
 s'inclou a `Unreleased`; és un canvi visual sense migracions ni configuració nova.
 També s'elimina el botó de retorn duplicat: la llista de diagnosis s'obre des
 del menú docent.
 La caixa global de CD docent en IA usa la mitjana de dimensions amb pes igual,
 només per al docent propietari, sense migracions ni noves dades persistides.
+El PDF propi usa `Competència Digital docent en IA` com a títol, seguit del qüestionari i versió,
+nom institucional amb data entre parèntesis i nivell assolit en caixa compacta amb fons blau
+i etiqueta `Etapa de progressió`, també usada a la caixa global de la web,
+caixes blau clar per dimensió només a la primera pàgina, respostes sense
+separadors amb triangle de selecció i cap peu.
+El detall redueix els espais abans i després de cada pregunta i comença
+directament amb `Dimensió N: títol`, sense encapçalament genèric de respostes.
+Les mides del detall disminueixen per nivell: dimensió 14 pt, criteri 11 pt i pregunta 9 pt.
+Agrupa cada dimensió en una capçalera amb títol i escala ampliada al costat,
+seguida dels seus criteris, amb escala i etiquetes més grans i més separació
+respecte de la dimensió següent. Incorpora aquesta etapa i els gràfics a
+la primera pàgina, amb el detall des de la segona i cada dimensió en pàgina nova.
 La caixa arrodonida queda centrada respecte del títol i subtítol, amb el PDF a dalt.
 El fons de la gràfica per dimensió guanya intensitat per igualar la distribució docent.
 Les gràfiques de percentatge mostren els noms complets de les dimensions i els ajusten en diverses línies.

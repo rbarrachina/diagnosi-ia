@@ -6,6 +6,42 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Ordena la jerarquia tipogràfica del detall PDF: dimensió de 14 pt, criteri
+  d’11 pt i pregunta de 9 pt.
+
+- Elimina l’encapçalament genèric de les pàgines de respostes del PDF docent
+  i encapçala cada secció amb `Dimensió N: títol`.
+
+- Agrupa cada dimensió i els seus criteris en una caixa blau clar només al
+  resum de la primera pàgina del PDF docent.
+
+- Compacta els espais entre criteris, preguntes i respostes al PDF docent.
+
+- Etiqueta el nivell global de la web i del PDF docent amb `Etapa de progressió`.
+
+- Agrupa el resum PDF per dimensió, amb títol més gran i escala ampliada al
+  costat, etiquetes més llegibles i més aire entre dimensions, amb els gràfics
+  de criteris just a sota.
+
+- Encapçala el PDF docent amb Competència Digital docent en IA, qüestionari i versió,
+  nom institucional amb data entre parèntesis, i apropa el nivell assolit. Compacta
+  la caixa CD, elimina els separadors i els peus,
+  i marca la resposta seleccionada amb un triangle.
+
+- Reorganitza el PDF docent amb etapa global, dimensions i criteris al resum
+  inicial, escales com les de la web i respostes en pàgines separades per dimensió.
+
+- Permet desplegar les preguntes i respostes pròpies per criteri dins de cada dimensió.
+
+- Elimina els percentatges visibles dels gràfics de criteris del resultat docent.
+
+- Centra el bloc de criteris del resultat docent, en limita l'amplada i
+  reforça el fons blau suau per diferenciar-lo del resum de dimensions.
+  L'amplada s'ajusta al nombre de criteris disponibles.
+
+- Obre per defecte els criteris de la primera dimensió al resultat docent,
+  sense afegir fletxes ni text a les targetes.
+
 - Manté els valors exactes d'un terç a l'etapa Bàsica i els valors exactes de
   dos terços a l'etapa Intermèdia, tant al resum docent com a les dimensions i
   als gràfics.

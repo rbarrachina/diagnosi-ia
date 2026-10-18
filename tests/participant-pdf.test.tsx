@@ -35,6 +35,20 @@ const result: ParticipantResult = {
 };
 
 describe("participant PDF", () => {
+  it("keeps four dimensions and their criteria on the overview, then starts each dimension on a new page", async () => {
+    const blocks = Array.from({ length: 4 }, (_, index) => ({
+      ...result.blocks[0],
+      position: index + 1,
+      questions: Array.from({ length: 3 }, (_, criterionIndex) => ({
+        ...result.blocks[0].questions[0],
+        position: criterionIndex + 1,
+        criterionPosition: criterionIndex + 1,
+      })),
+    }));
+    const buffer = await renderParticipantReportPdf({ ...result, blocks });
+    expect(buffer.toString("latin1").match(/\/Type \/Page\b/g)).toHaveLength(5);
+  });
+
   it("renders a server-side PDF with the participant's selected answers", async () => {
     const buffer = await renderParticipantReportPdf(result);
     expect(buffer.subarray(0, 4).toString()).toBe("%PDF");

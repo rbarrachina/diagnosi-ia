@@ -19,6 +19,7 @@ export const interfaceEs = {
   "centres": "Centros",
   "respostes": "Respuestas",
   "percentatgeGlobal": "Porcentaje global",
+  "etapaDeProgressio": "Etapa de progresión",
   "cdDocentEnIa": "CD docente en IA",
   "escala": "Escala",
   "percentatgePerBlocs": "Porcentaje por dimensiones",

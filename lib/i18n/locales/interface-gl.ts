@@ -20,6 +20,7 @@ export const interfaceGl = {
   "centres": "Centros",
   "respostes": "Respostas",
   "percentatgeGlobal": "Porcentaxe global",
+  "etapaDeProgressio": "Etapa de progresión",
   "cdDocentEnIa": "CD docente en IA",
   "escala": "Escala",
   "percentatgePerBlocs": "Porcentaxe por dimensións",
