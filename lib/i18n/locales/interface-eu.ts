@@ -20,6 +20,7 @@ export const interfaceEu = {
   "centres": "Ikastetxeak",
   "respostes": "Erantzunak",
   "percentatgeGlobal": "Ehuneko orokorra",
+  "etapaDeProgressio": "Progresio-etapa",
   "cdDocentEnIa": "CD docente en IA",
   "escala": "Eskala",
   "percentatgePerBlocs": "Ehunekoa dimentsioka",

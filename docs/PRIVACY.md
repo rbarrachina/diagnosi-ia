@@ -142,7 +142,7 @@ a partir de les respostes pròpies, per terços de l'escala 0–100. No hi ha
 comparacions ni dades alienes. El centre, el responsable, l'administració i l'enllaç
 privat continuen rebent només agregats.
 
-La capçalera del resultat web propi també pot mostrar l'etapa global de CD
+La capçalera del resultat propi i la primera pàgina del PDF també poden mostrar l'etapa global de CD
 docent en IA, calculada com la mitjana de les puntuacions normalitzades de les
 dimensions amb pes igual per dimensió. Es deriva exclusivament de les respostes
 pròpies ja autoritzades i no es persisteix com a dada nova ni es comunica als

@@ -20,6 +20,7 @@ export const interfaceOc = {
   "centres": "Centres",
   "respostes": "Responses",
   "percentatgeGlobal": "Percentatge globau",
+  "etapaDeProgressio": "Etapa de progression",
   "cdDocentEnIa": "CD docent en IA",
   "escala": "Escala",
   "percentatgePerBlocs": "Percentatge per dimensions",

@@ -670,7 +670,7 @@ queda destacada; el lector de pantalla també rep la posició numèrica. No es
 repeteixen el nivell ni la puntuació al costat del
 títol, ni els extrems 0 i 100 sota les barres. Cada barra porta al detall de les
 preguntes i respostes de la dimensió. La capçalera web presenta una caixa
-`CD docent en IA` entre el títol i el botó PDF, amb l'etapa global del docent.
+`Etapa de progressió` entre el títol i el botó PDF, amb l'etapa global del docent.
 La puntuació global és la mitjana aritmètica de les puntuacions normalitzades
 de les dimensions, amb el mateix pes per dimensió encara que tinguin nombres
 de preguntes diferents. Es calcula des de les respostes pròpies sense arrodonir
@@ -681,18 +681,46 @@ la caixa mostra `Sense dades`. És exclusiva del docent propietari.
 Les targetes de dimensió són seleccionables. En seleccionar-ne una, queda
 ressaltada amb un fons blau i, a sota, es mostren en una fila els gràfics de
 les puntuacions dels criteris d'aquella dimensió, amb la mateixa escala visual.
+La primera dimensió es mostra seleccionada i amb els criteris oberts per defecte.
+Les targetes mantenen una presentació minimalista, sense fletxes ni text addicional.
+El bloc de criteris queda centrat, amb l'amplada ajustada al nombre de criteris
+i limitada a 1024 px o l'espai disponible, i un fons
+blau suau com el de la dimensió seleccionada, per donar-li menys pes visual.
+Els gràfics de criteris mostren la barra i les etapes sense percentatges visibles.
+Prémer la targeta seleccionada plega els criteris; prémer una altra canvia el detall.
 La puntuació de cada criteri es calcula només a partir de les respostes de la
 participació pròpia.
 
 El resultat propi presenta cada dimensió en un desplegable i agrupa les
-preguntes sota el criteri corresponent. En obrir-lo, mostra les preguntes i les
+preguntes en desplegables independents per criteri, inicialment plegats.
+En obrir un criteri, mostra les preguntes i les
 quatre opcions de resposta amb el mateix disseny del qüestionari;
 la resposta triada queda destacada. Les preguntes amb ordre aleatori conserven
 els colors neutres i mostren les opcions en ordre de puntuació, perquè l'ordre
 aleatori de la sessió no es desa. El PDF individual mostra igualment les
 quatre opcions de cada pregunta i destaca la resposta triada, sense etiqueta ni
 puntuació numèrica; les preguntes s'agrupen sota els títols de dimensió i
-criteri. Manté l'estructura de resum per dimensions i detall de respostes. La data i l'hora de realització es
+criteri. Manté l'estructura de resum per dimensions i detall de respostes. La primera pàgina del PDF individual mostra l'etapa global de CD docent en IA,
+calculada com a la web i un bloc per dimensió: una capçalera més gran amb
+`Dimensió N: títol` i, al costat, l'escala de la dimensió ampliada sense repetir
+el títol. L'escala de dimensió ocupa el 44% de la capçalera, amb etiquetes més
+grans i més separació entre els criteris i la dimensió següent. Sota cada
+capçalera hi ha els gràfics de criteris. A la primera pàgina, cada dimensió
+s'encerra en una caixa blau clar que agrupa el títol, l’escala i els criteris;
+les pàgines de respostes no incorporen aquesta caixa. Les escales
+usen un degradat continu, un marcador triangular i les tres etapes, sense percentatges.
+El PDF s'encapçala amb `Competència Digital docent en IA`; a sota mostra el títol del qüestionari
+i la versió, seguits del nom institucional i la data entre parèntesis a la mateixa
+línia. El nivell assolit apareix immediatament a sota en una caixa compacta,
+amb fons blau suau i negreta, sota l'etiqueta `Etapa de progressió`. Les respostes no tenen línies de separació i l'opció seleccionada
+porta també un petit triangle a sota. No hi ha peu de pàgina. El detall usa espaiat compacte entre el criteri i la
+primera pregunta, i entre les respostes i la pregunta següent.
+El detall de respostes comença a la segona pàgina i cada dimensió comença en
+una pàgina nova; si és llarga pot continuar en pàgines següents. Les pàgines de
+respostes comencen directament amb `Dimensió N: títol`, sense encapçalament
+genèric de respostes. La jerarquia tipogràfica del detall és descendent:
+dimensió de 14 pt, criteri d’11 pt i pregunta de 9 pt.
+La data i l'hora de realització es
 mostren en la zona horària `Europe/Madrid`, independentment de la zona del
 servidor. Es pot consultar també quan l'espai està tancat. No mostra la
 identitat docent, identificadors interns, resultats del centre, comparacions o

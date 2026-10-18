@@ -64,7 +64,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
             </div>
             <div className="self-center rounded-2xl border border-line bg-surface px-4 py-3 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-                <InterfaceText messageKey="cdDocentEnIa" />
+                <InterfaceText messageKey="etapaDeProgressio" />
               </p>
               <p className={`mt-1 text-3xl font-bold ${competenceDisplay?.color ?? "text-muted"}`}>
                 <InterfaceText messageKey={competenceDisplay?.label ?? "senseDades"} />
@@ -81,16 +81,19 @@ export default async function ParticipantResultPage({ params }: { params: Promis
           <h2 className="mt-12 scroll-mt-8 text-2xl font-semibold" id="detall-per-blocs"><InterfaceText messageKey="detallPerBlocs" /></h2>
           <div className="mt-8 space-y-6">
             {result.blocks.map((block) => (
-              <details className="group scroll-mt-8 rounded-2xl border border-line bg-surface" id={`bloc-${block.position}`} key={block.position}>
+              <details className="group/dimension scroll-mt-8 rounded-2xl border border-line bg-surface" id={`bloc-${block.position}`} key={block.position}>
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-6 text-xl font-semibold">
                   <span>{block.position}. {block.title}</span>
-                  <span aria-hidden="true" className="text-muted transition-transform group-open:rotate-180">⌄</span>
+                  <span aria-hidden="true" className="text-muted transition-transform group-open/dimension:rotate-180">⌄</span>
                 </summary>
                 <div className="space-y-7 border-t border-line p-6">
                   {[...new Map(block.questions.map((question) => [question.criterionPosition, question])).values()].map((criterion) => (
-                    <section key={criterion.criterionPosition}>
-                      <h3 className="mb-4 text-base font-semibold">{block.position}.{criterion.criterionPosition} · {criterion.criterionTitle}</h3>
-                      <ol className="space-y-6">
+                    <details className="group/criterion" key={criterion.criterionPosition}>
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-lg py-2 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                        <h3>{block.position}.{criterion.criterionPosition} · {criterion.criterionTitle}</h3>
+                        <span aria-hidden="true" className="text-muted transition-transform group-open/criterion:rotate-180">⌄</span>
+                      </summary>
+                      <ol className="mt-4 space-y-6">
                         {block.questions.filter((question) => question.criterionPosition === criterion.criterionPosition).map((question) => (
                           <li className="border-t border-line pt-4 first:border-t-0 first:pt-0" key={question.position}>
                             <p className="font-medium">{block.position}.{question.criterionPosition}.{question.questionPosition}. {question.text}</p>
@@ -116,7 +119,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
                           </li>
                         ))}
                       </ol>
-                    </section>
+                    </details>
                   ))}
                 </div>
               </details>

@@ -41,7 +41,7 @@ function StageScale({ score, stage }: { score: number; stage: StageId }) {
 }
 
 export function ParticipantDimensionResults({ blocks }: { blocks: ParticipantBlockResult[] }) {
-  const [selectedPosition, setSelectedPosition] = useState<number | null>(null);
+  const [selectedPosition, setSelectedPosition] = useState<number | null>(() => blocks[0]?.position ?? null);
   const selectedBlock = blocks.find((block) => block.position === selectedPosition) ?? null;
 
   return (
@@ -51,11 +51,11 @@ export function ParticipantDimensionResults({ blocks }: { blocks: ParticipantBlo
           const { position, stage } = getBlockStage(block);
           return (
             <button
-              aria-pressed={selectedPosition === block.position}
+              aria-expanded={selectedPosition === block.position}
               className={`flex h-full min-w-0 flex-col rounded-2xl border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
                 selectedPosition === block.position
                   ? "border-action bg-accent-soft shadow-md ring-2 ring-action/30"
-                  : "border-line bg-surface hover:border-action"
+                  : "border-line bg-surface hover:border-action hover:bg-accent-soft/50"
               }`}
               key={block.position}
               onClick={() => setSelectedPosition((current) => current === block.position ? null : block.position)}
@@ -73,8 +73,8 @@ export function ParticipantDimensionResults({ blocks }: { blocks: ParticipantBlo
         })}
       </div>
       {selectedBlock ? (
-        <section aria-live="polite" className="mt-5 rounded-2xl border border-action/30 bg-accent-soft/50 p-5">
-          <h2 className="font-semibold text-ink">
+        <section aria-live="polite" className="mx-auto mt-5 w-fit min-w-0 max-w-[min(100%,64rem)] rounded-2xl border border-action/30 bg-accent-soft p-5">
+          <h2 className="w-0 min-w-full break-words font-semibold text-ink">
             <InterfaceText messageKey="dimensio" /> {selectedBlock.position}. {selectedBlock.title} · <InterfaceText messageKey="criteris" />
           </h2>
           <div className="mt-4 flex snap-x gap-4 overflow-x-auto pb-3">
@@ -94,7 +94,6 @@ export function ParticipantDimensionResults({ blocks }: { blocks: ParticipantBlo
                   <h3 className="min-h-12 text-sm font-semibold text-ink">
                     <InterfaceText messageKey="criteri" /> {selectedBlock.position}.{question.criterionPosition} · {question.criterionTitle}
                   </h3>
-                  <p className="mt-2 text-sm font-semibold text-muted">{score.toFixed(1)}%</p>
                   <StageScale score={score} stage={stage} />
                 </article>
               );

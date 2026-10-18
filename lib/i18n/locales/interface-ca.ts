@@ -18,6 +18,7 @@ export const interfaceCa = {
   "centres": "Centres",
   "respostes": "Respostes",
   "percentatgeGlobal": "Percentatge global",
+  "etapaDeProgressio": "Etapa de progressió",
   "cdDocentEnIa": "CD docent en IA",
   "escala": "Escala",
   "percentatgePerBlocs": "Percentatge per dimensions",
