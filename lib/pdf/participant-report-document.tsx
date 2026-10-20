@@ -151,7 +151,7 @@ function formatDate(value: string, locale: string): string {
   }).format(new Date(value));
 }
 
-function ReportStageScale({ position, stage, copy, large = false }: { position: number; stage: BlockStage; copy: ReturnType<typeof getReportCopy>; large?: boolean }) {
+export function ReportStageScale({ position, stage, copy, large = false }: { position: number; stage: BlockStage; copy: ReturnType<typeof getReportCopy>; large?: boolean }) {
   const labels = [
     { id: "basic", text: copy.basicStage },
     { id: "intermediate", text: copy.intermediateStage },

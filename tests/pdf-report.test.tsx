@@ -91,10 +91,10 @@ describe("renderDiagnosticReportPdf", () => {
     expect(buffer.toString("latin1")).not.toMatch(/\/FontFile[23]?\b/);
   });
 
-  it("renders one general page and one page per block", async () => {
+  it("renders a graphical overview, one page per block and an interpretation page", async () => {
     const buffer = await renderDiagnosticReportPdf(results);
 
-    expect(countPdfPages(buffer)).toBe(results.blocks.length + 1);
+    expect(countPdfPages(buffer)).toBe(results.blocks.length + 2);
   });
 
   it("does not render tokens or individual answer fields", () => {
@@ -106,4 +106,10 @@ describe("renderDiagnosticReportPdf", () => {
     expect(reportSource).not.toMatch(/privateToken|resultsToken|token_hash|submissionId/i);
     expect(reportSource).not.toMatch(/answers\.submission_id|submission_id|owner_user_id/i);
   });
+});
+
+it("keeps five dimensions on the overview and paginates complete questions", async () => {
+  const preview = { ...results, centreName: "Centre de demostració", blocks: Array.from({length: 5}, (_, i) => ({...results.blocks[0], position: i + 1, title: "Competència digital i ús educatiu de la IA", questions: Array.from({length: 4}, (_, q) => ({...results.blocks[0].questions[0], position: q + 1, text: "Reflexiono sobre les oportunitats i els límits de la intel·ligència artificial en la pràctica educativa."}))})) };
+  const buffer = await renderDiagnosticReportPdf(preview);
+  expect(countPdfPages(buffer)).toBe(12);
 });

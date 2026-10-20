@@ -175,3 +175,15 @@ Abans d'integrar-la, provar la compilació amb `npm run build` i `npm start`:
 Les pàgines continuen sent dinàmiques. No habilitar memòria cau compartida
 d'HTML, generació estàtica ni Partial Prerendering sense redissenyar la CSP.
 Conservar l'HSTS del VirtualHost HTTPS, que té una funció independent.
+
+### Canvis pendents del PDF agregat
+
+El PDF de centre adopta el resum d’escales de dimensions i criteris del docent,
+i mostra cada opció amb percentatge i recompte sota la distribució de la pregunta.
+La interpretació i les notes de conjunt passen al final. El renderitzador compartit
+aplica també aquesta presentació als informes agregats d’administració.
+
+La capçalera del PDF agregat mostra la Competència Digital docent en IA
+amb l’etapa bàsica, intermèdia o avançada derivada del resultat global,
+en lloc del percentatge global, igual que el tauler de centre.
+Els percentatges de distribució per opció es mantenen.

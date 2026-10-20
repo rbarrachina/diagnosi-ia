@@ -6,6 +6,17 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Compacta l’interlineat dels enunciats de les preguntes al PDF de centre.
+
+- Etiqueta el nom institucional del PDF amb «Centre» en lloc d’«Àmbit».
+
+- Abreuja la capçalera del PDF a «CD docent en IA» i dona color al text de
+  l’etapa: bàsica en vermell, intermèdia en ambre i avançada en verd.
+
+- Redissenya el PDF de centre amb resum gràfic de dimensions i criteris,
+  distribucions per pregunta i taules d’opcions amb percentatges i recomptes.
+  Trasllada la interpretació i les orientacions al final de l’informe.
+
 - Amplia les etiquetes sota les barres i separa els textos de l’aranya
   perquè quedin fora del polígon.
 
@@ -596,3 +607,8 @@ Semantic Versioning.
 [0.2.1]: https://github.com/rbarrachina/diagnosi-ia/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/rbarrachina/diagnosi-ia/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/rbarrachina/diagnosi-ia/releases/tag/v0.1.0
+
+La capçalera del PDF agregat mostra la Competència Digital docent en IA
+amb l’etapa bàsica, intermèdia o avançada derivada del resultat global,
+en lloc del percentatge global, igual que el tauler de centre.
+Els percentatges de distribució per opció es mantenen.
