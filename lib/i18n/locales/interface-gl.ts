@@ -2,6 +2,9 @@ import type { InterfaceTranslations } from "@/lib/i18n/interface-messages";
 
 // Esborrany pendent de revisió lingüística professional.
 export const interfaceGl = {
+  "etapaIntermitja": "Intermedia",
+  "detallDimensions": "Detalle de dimensións",
+  "altresGrafics": "Outros gráficos",
   "questionari": "Cuestionario",
   "accesDocent": "Acceso docente",
   "iniciaSessioAmbGoogle": "Inicia sesión con Google",

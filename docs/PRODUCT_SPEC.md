@@ -748,26 +748,32 @@ El servidor valida el token i retorna només dades de conjunt:
 - A la targeta resum, el percentatge global es representa com l'etapa agregada
   `Bàsica`, `Intermèdia` o `Avançada`, sota el títol `CD docent en IA` i amb
   el color corresponent; si no hi ha dades, es mostra `Sense dades`.
+- Les gràfiques de barres i aranya del creador queden plegades per defecte sota «Altres gràfics». Un segon botó «Detall dimensions» desplega la selecció de dimensions i les escales de color dels seus criteris, en lloc de barres verticals. La primera dimensió queda seleccionada inicialment. Les escales del resum continuen visibles.
+- A la vista del creador, abans de «Percentatge per dimensions», una targeta per dimensió mostra la mitjana agregada del claustre amb la mateixa escala de color i etapes que el resultat docent. Sense respostes mostra «Sense dades». Les gràfiques existents es mantenen a sota.
 - Percentatge per dimensió.
+- La distribució per dimensió mostra només «Bàsica», «Intermitja» i «Avançada» a l’eix horitzontal; cada barra conserva el recompte del seu tram percentual i el tooltip mostra només el nombre de docents, sense percentatges, quan el recompte és superior a zero. Les etiquetes de l’eix es mostren a 14 px. L’eix vertical arriba exactament al 125% del recompte màxim, amb marques enteres i passos regulars; sense dades usa un límit visual d’1. La capçalera de cada dimensió no mostra el percentatge mitjà.
 - Distribució agregada de les puntuacions docents de cada dimensió en nou trams
   percentuals; només es retornen recomptes, sense puntuacions ni identificadors
   individuals.
 - Gràfica de barres per dimensió amb l'eix vertical etiquetat com a nivell bàsic,
   intermedi i avançat. Dues línies fines marquen els límits dels rangs; el fons
   té un degradat de vermell a verd amb opacitat reforçada per igualar les
-  gràfiques de distribució docent. Les barres són estretes, amb farcit semitransparent
-  pastel segons l'etapa i contorn negre.
+  gràfiques de distribució docent. Les barres són estretes, amb interior transparent i contorn negre.
   Si una dimensió té valor zero, tots dos gràfics dibuixen una marca mínima del
   3% per fer-la visible; la puntuació real continua sent zero i els càlculs no
   canvien.
 - Les etiquetes de les gràfiques de barres i d'aranya mostren els noms complets
   a la llegenda de quatre columnes sota les gràfiques i al gràfic d'aranya.
-  Els noms complets apareixen sota les barres, en diverses línies per evitar
+  Els noms complets, precedits de «Dimensió X: » tant a les barres com a l’aranya, apareixen sota les barres, en diverses línies per evitar
   superposicions; cap línia no envaeix la zona del gràfic. L'eix horitzontal
   hi reserva prou alçada i separació sota l'eix.
+- Les etiquetes de barres admeten línies més amples (20 caràcters orientatius);
+  les de l’aranya es desplacen cap a fora, amb tot el text superior per sobre
+  del vèrtex i el text inferior per sota.
 - Gràfica d'aranya per dimensió sense etiquetes numèriques de percentatge i amb un
   degradat de color de valors baixos a alts.
-- En seleccionar una dimensió al gràfic de barres, la dimensió queda ressaltada
+- El gràfic de barres és només visual, sense clic ni selecció. En seleccionar
+  una dimensió al selector del detall, la dimensió queda ressaltada
   amb fons blau i apareixen a sota, en una fila desplaçable, els gràfics de
   percentatge dels seus criteris. Els percentatges de criteri es calculen només
   a partir de recomptes de respostes agregats.

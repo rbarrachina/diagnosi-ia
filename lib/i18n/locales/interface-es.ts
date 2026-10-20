@@ -1,6 +1,9 @@
 import type { InterfaceTranslations } from "@/lib/i18n/interface-messages";
 
 export const interfaceEs = {
+  "etapaIntermitja": "Intermedia",
+  "detallDimensions": "Detalle de dimensiones",
+  "altresGrafics": "Otros gráficos",
   "questionari": "Cuestionario",
   "accesDocent": "Acceso docente",
   "iniciaSessioAmbGoogle": "Inicia sesión con Google",

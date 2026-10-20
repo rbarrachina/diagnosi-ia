@@ -95,6 +95,7 @@ export function OwnerResultsClient({
   return (
     <ResultsDashboard
       integrated
+      showDimensionScales
       introContent={(
         <section
           aria-labelledby="results-link-heading"

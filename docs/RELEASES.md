@@ -23,6 +23,18 @@ Després d'`1.0.0`:
 
 ## Preparar una release
 
+La distribució per dimensió conserva nou trams de recompte, amb tres etiquetes
+d’etapa a l’eix horitzontal i un tooltip només amb el nombre de docents, sense percentatges.
+
+Les gràfiques de barres i aranya del centre es despleguen amb «Altres gràfics»
+i comencen plegades; les escales de dimensió es mantenen visibles.
+«Detall dimensions» desplega separadament les dimensions i els criteris,
+amb escales de color en lloc de barres verticals.
+
+El resultat del centre incorpora a `Unreleased` escales per dimensió amb les
+mitjanes agregades existents, abans de les gràfiques de barres i aranya.
+És un canvi visual sense migracions ni dades noves.
+
 El resultat docent obre inicialment els criteris de la primera dimensió,
 sense fletxes, text addicional ni migracions.
 El bloc de criteris es presenta centrat, amb amplada limitada i fons blau suau.

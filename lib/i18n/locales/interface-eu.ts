@@ -2,6 +2,9 @@ import type { InterfaceTranslations } from "@/lib/i18n/interface-messages";
 
 // Esborrany pendent de revisió lingüística professional.
 export const interfaceEu = {
+  "etapaIntermitja": "Tartekoa",
+  "detallDimensions": "Dimentsioen xehetasuna",
+  "altresGrafics": "Beste grafiko batzuk",
   "questionari": "Galdetegia",
   "accesDocent": "Irakasleen sarbidea",
   "iniciaSessioAmbGoogle": "Hasi saioa Google-rekin",

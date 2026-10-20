@@ -38,6 +38,10 @@ distribuir-ne binaris. L'abast, les fonts originals i els pendents es documenten
 - Els estils inline queden reservats a valors calculats en temps d'execució,
   com l'amplada del progrés i els colors de les sèries dels gràfics.
 
+Les escales de dimensió del centre reutilitzen `StageScale` del resultat docent,
+però consumeixen exclusivament `BlockResult.average` dels agregats existents.
+No es carreguen participacions ni es modifiquen consultes o endpoints.
+
 ## Principis
 
 - El navegador no es connecta directament a MySQL.

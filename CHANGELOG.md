@@ -6,6 +6,38 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Amplia les etiquetes sota les barres i separa els textos de l’aranya
+  perquè quedin fora del polígon.
+
+- Prefixa les etiquetes dels gràfics de barres i aranya amb «Dimensió X: ».
+
+- Fa transparent l’interior de les barres del gràfic general de dimensions.
+
+- Elimina el clic i el ressaltat de selecció del gràfic general de barres;
+  les dimensions es trien al selector del detall.
+
+- Mostra només el nombre de docents al tooltip de distribució per dimensió.
+
+- Ajusta el límit vertical de la distribució al 125% de la barra màxima,
+  sense mínim fix de quatre persones.
+
+- Retira el percentatge de la capçalera de cada dimensió i fixa els ticks enters
+  de la distribució perquè els recomptes petits no ometin el 3.
+
+- Oculta el tooltip dels trams sense docents i amplia les etiquetes d’etapa
+  de la distribució per dimensió.
+
+- Simplifica l’eix de les distribucions per dimensió a tres etapes i mostra
+  el nombre de docents de cada tram en passar-hi el cursor.
+
+- Separa «Altres gràfics» de «Detall dimensions» al centre i representa els criteris
+  amb escales de color com les dimensions.
+
+- Plega per defecte les gràfiques de barres i aranya del centre sota el botó «Altres gràfics».
+
+- Afegeix al resultat del centre les escales per dimensió amb les mitjanes agregades
+  del claustre i el mateix format visual docent, abans dels gràfics existents.
+
 - Ordena la jerarquia tipogràfica del detall PDF: dimensió de 14 pt, criteri
   d’11 pt i pregunta de 9 pt.
 
