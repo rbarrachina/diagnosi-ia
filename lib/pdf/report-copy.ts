@@ -8,6 +8,7 @@ export type ReportCopy = {
   allCentres: string;
   spaceCode: string;
   version: string;
+  centre: string;
   centres: string;
   responses: string;
   globalPercentage: string;
@@ -46,7 +47,7 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
   ca: {
     locale: "ca-ES", aggregateSubject: "Informe de conjunt de diagnosi pseudonimitzada",
     aggregateSubtitle: "Informe de conjunt de diagnosi generat el", scope: "Àmbit", allCentres: "Tots els centres",
-    spaceCode: "Codi de l’espai", version: "Versió", centres: "Centres", responses: "Respostes",
+    spaceCode: "Codi de l’espai", version: "Versió", centre: "Centre", centres: "Centres", responses: "Respostes",
     globalPercentage: "Percentatge global", noData: "Sense dades",
     lowResponses: "Poques respostes: interpreta els resultats amb prudència.", scale: "Escala",
     scoreScale: "0–3 punts; les opcions de cada pregunta es mostren ordenades per puntuació.",
@@ -63,7 +64,7 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
   es: {
     locale: "es-ES", aggregateSubject: "Informe agregado de diagnóstico seudonimizado",
     aggregateSubtitle: "Informe agregado de diagnóstico generado el", scope: "Ámbito", allCentres: "Todos los centros", spaceCode: "Código del espacio",
-    version: "Versión", centres: "Centros", responses: "Respuestas", globalPercentage: "Porcentaje global", noData: "Sin datos",
+    version: "Versión", centre: "Centro", centres: "Centros", responses: "Respuestas", globalPercentage: "Porcentaje global", noData: "Sin datos",
     lowResponses: "Hay pocas respuestas: interpreta los resultados con prudencia.", scale: "Escala",
     scoreScale: "0–3 puntos; las opciones de cada pregunta se muestran ordenadas por puntuación.", blockOverview: "Resultado general por dimensiones",
     interpretation: "Interpretación", strengths: "Fortalezas", improvements: "Ámbitos con margen de mejora",
@@ -78,7 +79,7 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
   eu: {
     locale: "eu-ES", aggregateSubject: "Diagnosi pseudonimizatuaren emaitza agregatuen txostena",
     aggregateSubtitle: "Diagnosi-txosten agregatua, sortze-data:", scope: "Esparrua", allCentres: "Ikastetxe guztiak", spaceCode: "Gunearen kodea", version: "Bertsioa",
-    centres: "Ikastetxeak", responses: "Erantzunak", globalPercentage: "Ehuneko globala", noData: "Daturik ez",
+    centre: "Ikastetxea", centres: "Ikastetxeak", responses: "Erantzunak", globalPercentage: "Ehuneko globala", noData: "Daturik ez",
     lowResponses: "Erantzun gutxi daude: interpretatu emaitzak zuhurtziaz.", scale: "Eskala",
     scoreScale: "0–3 puntu; galdera bakoitzeko aukerak puntuazioaren arabera ordenatuta ageri dira.", blockOverview: "Dimentsioen emaitza orokorra",
     interpretation: "Interpretazioa", strengths: "Indarguneak", improvements: "Hobetzeko arloak",
@@ -93,7 +94,7 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
   gl: {
     locale: "gl-ES", aggregateSubject: "Informe agregado de diagnose pseudonimizada",
     aggregateSubtitle: "Informe agregado de diagnose xerado o", scope: "Ámbito", allCentres: "Todos os centros", spaceCode: "Código do espazo", version: "Versión",
-    centres: "Centros", responses: "Respostas", globalPercentage: "Porcentaxe global", noData: "Sen datos",
+    centre: "Centro", centres: "Centros", responses: "Respostas", globalPercentage: "Porcentaxe global", noData: "Sen datos",
     lowResponses: "Hai poucas respostas: interpreta os resultados con prudencia.", scale: "Escala",
     scoreScale: "0–3 puntos; as opcións de cada pregunta móstranse ordenadas por puntuación.", blockOverview: "Resultado xeral por dimensións",
     interpretation: "Interpretación", strengths: "Fortalezas", improvements: "Ámbitos con marxe de mellora",
@@ -108,7 +109,7 @@ const copies: Record<QuestionnaireLanguageCode, ReportCopy> = {
   oc: {
     locale: "oc-ES", aggregateSubject: "Rapòrt agregat de diagnostic pseudonimizat",
     aggregateSubtitle: "Rapòrt agregat de diagnostic generat eth", scope: "Encastre", allCentres: "Toti es centres", spaceCode: "Còdi der espaci", version: "Version",
-    centres: "Centres", responses: "Responses", globalPercentage: "Percentatge globau", noData: "Sense donades",
+    centre: "Centre", centres: "Centres", responses: "Responses", globalPercentage: "Percentatge globau", noData: "Sense donades",
     lowResponses: "I a pògues responses: interpreta es resultats damb prudéncia.", scale: "Escala",
     scoreScale: "0–3 punts; es opcions de cada qüestion se mòstren ordenades per puntuacion.", blockOverview: "Resultat generau per dimensions",
     interpretation: "Interpretacion", strengths: "Fortaleses", improvements: "Encastres damb marge de melhora",

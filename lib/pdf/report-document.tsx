@@ -5,6 +5,7 @@ import {
   Text,
   View,
 } from "@react-pdf/renderer";
+import { ReportStageScale } from "@/lib/pdf/participant-report-document";
 import { scaleColor } from "@/lib/questionnaire/scale";
 import type { AggregatedResults, DistributionBucket } from "@/lib/results/types";
 import { getReportCopy } from "@/lib/pdf/report-copy";
@@ -88,15 +89,25 @@ const styles = StyleSheet.create({
     backgroundColor: "#256f7c",
     borderRadius: 4,
   },
+  dimensionCard: { backgroundColor: "#e3f0ff", borderRadius: 8, padding: 8, marginBottom: 8 },
+  dimensionHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
+  dimensionTitle: { fontSize: 12, fontWeight: 700, width: "52%" },
+  dimensionScale: { width: "45%" },
+  criteria: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 6 },
+  criterion: { width: "24%", backgroundColor: "#ffffff", borderRadius: 5, padding: 6 },
+  optionRow: { flexDirection: "row", borderBottom: "1 solid #e2e8f0", paddingVertical: 5, gap: 8 },
+  optionLabel: { flexGrow: 1, flexBasis: 0, fontSize: 8, lineHeight: 1.3 },
+  optionNumber: { width: 65, textAlign: "right", fontSize: 9 },
   question: {
     borderTop: "1 solid #d8dee6",
     paddingTop: 10,
     marginTop: 10,
   },
   questionText: {
+    fontSize: 9,
     fontWeight: 700,
-    marginBottom: 5,
-    lineHeight: 1.35,
+    marginBottom: 3,
+    lineHeight: 1.18,
   },
   stackedBar: {
     flexDirection: "row",
@@ -184,9 +195,12 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
         <View style={styles.row}>
           <View style={styles.metric}>
             <Text style={styles.metricLabel}>
-              {results.scopeLabel ? copy.scope : copy.spaceCode}
+              {results.centreName ? copy.centre : results.scopeLabel ? copy.scope : copy.spaceCode}
             </Text>
-            <Text style={styles.metricValue}>{scopeLabel}</Text>
+            <Text style={styles.metricValue}>{results.centreName ?? scopeLabel}</Text>
+            {results.centreName && results.publicCode !== "GLOBAL" && !results.scopeLabel ? (
+              <Text style={styles.legend}>{copy.spaceCode}: {results.publicCode}</Text>
+            ) : null}
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricLabel}>{copy.version}</Text>
@@ -203,8 +217,8 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
             <Text style={styles.metricValue}>{results.totalSubmissions}</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricLabel}>{copy.globalPercentage}</Text>
-            <Text style={styles.metricValue}>{formatPercentage(results.globalAverage, copy)}</Text>
+            <Text style={styles.metricLabel}>{copy.participantCompetence.replace("Competència Digital", "CD")}</Text>
+            <Text style={[styles.metricValue, { color: results.globalAverage === null ? "#526075" : results.globalAverage <= 100 / 3 ? "#b91c1c" : results.globalAverage <= 200 / 3 ? "#b7791f" : "#15803d" }]}>{results.globalAverage === null ? copy.noData : results.globalAverage <= 100 / 3 ? copy.basicStage : results.globalAverage <= 200 / 3 ? copy.intermediateStage : copy.advancedStage}</Text>
           </View>
         </View>
 
@@ -219,14 +233,36 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
         ) : null}
 
         <View style={styles.section}>
-          <Text style={styles.heading}>{copy.scale}</Text>
-          <Text style={styles.paragraph}>{copy.scoreScale}</Text>
-        </View>
-
-        <View style={styles.section}>
           <Text style={styles.heading}>{copy.blockOverview}</Text>
           {results.blocks.map((block) => (
-            <View key={block.position}>
+            <View key={block.position} style={styles.dimensionCard} wrap={false}>
+              <View style={styles.dimensionHeader}>
+                <Text style={styles.dimensionTitle}>{copy.dimension} {block.position}: {block.title}</Text>
+                <View style={styles.dimensionScale}><AggregateScale average={block.average} copy={copy} large /></View>
+              </View>
+              <View style={styles.criteria}>
+                {block.criteria.map((criterion) => (
+                  <View key={criterion.position} style={styles.criterion}>
+                    <Text style={styles.legend}>{block.position}.{criterion.position} · {criterion.title}</Text>
+                    <AggregateScale average={criterion.average} copy={copy} />
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+
+      </Page>
+
+        {results.blocks.map((block) => (
+          <Page key={block.position} size="A4" style={styles.page}>
+            <Text style={styles.title}>{copy.blockResults}</Text>
+            <Text style={styles.subtitle}>
+              {block.position}. {block.title}
+            </Text>
+
+            <View style={styles.section}>
+              <Text style={styles.heading}>{copy.blockPercentage}</Text>
               <Text style={styles.blockTitle}>
                 {block.position}. {block.title} · {formatPercentage(block.average, copy)}
               </Text>
@@ -234,7 +270,46 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
                 <View style={[styles.barFill, { width: barWidth(block.average) }]} />
               </View>
             </View>
-          ))}
+
+            <View style={styles.section}>
+              <Text style={styles.heading}>{copy.questionResults}</Text>
+              {block.questions.map((question) => (
+                <View key={question.position} style={styles.question} wrap={false}>
+                  <Text style={styles.questionText}>
+                    {block.position}.{question.criterionPosition}.{question.criterionQuestionPosition}. {question.criterionTitle} — {question.text}
+                  </Text>
+                  <Text>{copy.percentage}: {formatPercentage(question.average, copy)}</Text>
+                  <DistributionBar distribution={question.distribution} />
+                  <View style={styles.optionRow}>
+                    <Text style={styles.optionLabel}>{copy.scale}</Text>
+                    <Text style={styles.optionNumber}>{copy.percentage}</Text>
+                    <Text style={styles.optionNumber}>{copy.responses}</Text>
+                  </View>
+                  {question.distribution.map((bucket) => (
+                    <View key={bucket.value} style={styles.optionRow}>
+                      <View style={{ width: 5, backgroundColor: distributionColor(bucket.value) }} />
+                      <Text style={styles.optionLabel}>{bucket.label}</Text>
+                      <Text style={styles.optionNumber}>{formatPercentage(bucket.percentage, copy)}</Text>
+                      <Text style={styles.optionNumber}>{bucket.count}</Text>
+                    </View>
+                  ))}
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.footer}>
+              <Text>
+                {
+                  copy.blockPrivacy
+                }
+              </Text>
+            </View>
+          </Page>
+        ))}
+      <Page size="A4" style={styles.page}>
+        <View style={styles.section}>
+          <Text style={styles.heading}>{copy.scale}</Text>
+          <Text style={styles.paragraph}>{copy.scoreScale}</Text>
         </View>
 
         <View style={styles.section}>
@@ -268,54 +343,12 @@ export function DiagnosticReportDocument({ results }: { results: AggregatedResul
           </Text>
         </View>
       </Page>
-
-        {results.blocks.map((block) => (
-          <Page key={block.position} size="A4" style={styles.page}>
-            <Text style={styles.title}>{copy.blockResults}</Text>
-            <Text style={styles.subtitle}>
-              {block.position}. {block.title}
-            </Text>
-
-            <View style={styles.section}>
-              <Text style={styles.heading}>{copy.blockPercentage}</Text>
-              <Text style={styles.blockTitle}>
-                {block.position}. {block.title} · {formatPercentage(block.average, copy)}
-              </Text>
-              <View style={styles.barTrack}>
-                <View style={[styles.barFill, { width: barWidth(block.average) }]} />
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <Text style={styles.heading}>{copy.questionResults}</Text>
-              {block.questions.map((question) => (
-                <View key={question.position} style={styles.question}>
-                  <Text style={styles.questionText}>
-                    {block.position}.{question.criterionPosition}.{question.criterionQuestionPosition}. {question.criterionTitle} — {question.text}
-                  </Text>
-                  <Text>{copy.percentage}: {formatPercentage(question.average, copy)}</Text>
-                  <DistributionBar distribution={question.distribution} />
-                  <Text style={styles.legend}>
-                    {question.distribution
-                      .map(
-                        (bucket) =>
-                          `${bucket.label}: ${bucket.count} (${bucket.percentage.toFixed(1)}%)`,
-                      )
-                      .join(" · ")}
-                  </Text>
-                </View>
-              ))}
-            </View>
-
-            <View style={styles.footer}>
-              <Text>
-                {
-                  copy.blockPrivacy
-                }
-              </Text>
-            </View>
-          </Page>
-        ))}
     </Document>
   );
+}
+
+function AggregateScale({ average, copy, large = false }: { average: number | null; copy: ReportCopy; large?: boolean }) {
+  if (average === null) return <Text style={styles.legend}>{copy.noData}</Text>;
+  const stage = average <= 100 / 3 ? "basic" : average <= 200 / 3 ? "intermediate" : "advanced";
+  return <ReportStageScale position={average} stage={stage} copy={copy} large={large} />;
 }

@@ -806,6 +806,13 @@ El servidor valida novament el token i genera un PDF de conjunt amb:
 - Nota metodològica.
 - Avis que no és una avaluació individual del professorat.
 
+El PDF agregat presenta primer el resum gràfic de dimensions i criteris amb
+escales de progressió com al PDF docent. A continuació mostra el detall per
+dimensió: cada pregunta inclou la distribució gràfica i les quatre opcions
+amb el percentatge i el recompte agregat, incloses les opcions sense respostes.
+La interpretació, fortaleses, millores i nota metodològica tanquen l’informe.
+Les preguntes es mantenen juntes en una pàgina sempre que hi càpiguen.
+
 El PDF no inclou dades personals, token privat ni respostes individuals.
 La llengua del PDF és la llengua obligatòria de la versió del qüestionari
 (`ca`, `es`, `eu`, `gl` o `oc`), independentment de la llengua d'interfície
@@ -864,3 +871,8 @@ d'estructura crea una nova versió.
   pantalla, formularis etiquetats, contrast suficient, focus visible, navegació
   completa amb teclat i reducció del moviment segons la preferència del sistema.
 - UI clara i institucional, sense aparenca de ranquing ni avaluació personal.
+
+La capçalera del PDF agregat mostra la Competència Digital docent en IA
+amb l’etapa bàsica, intermèdia o avançada derivada del resultat global,
+en lloc del percentatge global, igual que el tauler de centre.
+Els percentatges de distribució per opció es mantenen.

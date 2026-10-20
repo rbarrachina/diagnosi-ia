@@ -213,3 +213,10 @@ npm run build
 
 També cal revisar el diff, cercar secrets i confirmar que no s'han introduït
 dades identificatives ni endpoints individuals.
+
+El PDF agregat presenta primer el resum gràfic de dimensions i criteris amb
+escales de progressió com al PDF docent. A continuació mostra el detall per
+dimensió: cada pregunta inclou la distribució gràfica i les quatre opcions
+amb el percentatge i el recompte agregat, incloses les opcions sense respostes.
+La interpretació, fortaleses, millores i nota metodològica tanquen l’informe.
+Les preguntes es mantenen juntes en una pàgina sempre que hi càpiguen.
