@@ -23,6 +23,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { StageScale, stageForScore } from "@/components/results/stage-scale";
 import { SCALE_OPTIONS } from "@/lib/questionnaire/scale";
 import type {
   AggregatedResults,
@@ -42,6 +43,7 @@ const CHART_INITIAL_DIMENSION = { height: 1, width: 1 } as const;
 
 type ResultsDashboardProps = {
   integrated?: boolean;
+  showDimensionScales?: boolean;
   introContent?: ReactNode;
   results: AggregatedResults;
   eyebrow?: string;
@@ -64,9 +66,9 @@ function formatPercentage(value: number | null, t: InterfaceTranslator): string 
   return value === null ? t("senseDades") : `${value.toFixed(1)}%`;
 }
 
-function blockChartData(blocks: BlockResult[]) {
+function blockChartData(blocks: BlockResult[], t: InterfaceTranslator) {
   return blocks.map((block) => ({
-    name: block.title,
+    name: `${t("dimensio")} ${block.position}: ${block.title}`,
     percentatge: block.average ?? 0,
     visiblePercentatge: block.average === 0 ? 3 : block.average ?? 0,
     position: block.position,
@@ -91,7 +93,7 @@ function wrapTickLabel(label: string, maxLength: number): string[] {
   return lines;
 }
 
-function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength, fontSize, centerVertically = false }: {
+function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength, fontSize, centerVertically = false, outsideRadar = false }: {
   payload: { value?: unknown };
   x: number | string;
   y: number | string;
@@ -100,21 +102,25 @@ function WrappedDimensionTick({ payload, x, y, textAnchor, fill, maxLength, font
   maxLength: number;
   fontSize?: number;
   centerVertically?: boolean;
+  outsideRadar?: boolean;
 }) {
   const lines = wrapTickLabel(String(payload.value ?? ""), maxLength);
   const lineHeight = 11;
-  const firstLineOffset = centerVertically ? -((lines.length - 1) * lineHeight) / 2 : 0;
+  const firstLineOffset = outsideRadar && textAnchor === "middle"
+    ? Number(y) < 160 ? -(lines.length - 1) * lineHeight : 6
+    : centerVertically ? -((lines.length - 1) * lineHeight) / 2 : 0;
+  const labelX = Number(x);
 
   return (
     <text
       fill={fill ?? "#475569"}
       fontSize={fontSize ?? 11}
       textAnchor={textAnchor}
-      x={x}
+      x={labelX}
       y={y}
     >
       {lines.map((line, index) => (
-        <tspan dy={index === 0 ? firstLineOffset : lineHeight} key={index} x={x}>
+        <tspan dy={index === 0 ? firstLineOffset : lineHeight} key={index} x={labelX}>
           {line}
         </tspan>
       ))}
@@ -171,6 +177,28 @@ function blockScoreDistributionData(block: BlockResult) {
     range: `${bucket.startPercentage.toFixed(1)}–${(bucket.startPercentage + 100 / 9).toFixed(1)}%`,
     count: bucket.count,
   }));
+}
+
+function blockScoreCountAxis(block: BlockResult) {
+  const maximum = Math.max(0, ...block.scoreDistribution.map((bucket) => bucket.count));
+  const upperBound = maximum > 0 ? maximum * 1.25 : 1;
+  const step = Math.max(1, Math.ceil(upperBound / 6));
+  return {
+    domain: [0, upperBound] as [number, number],
+    ticks: Array.from({ length: Math.floor(upperBound / step) + 1 }, (_, index) => index * step),
+  };
+}
+
+function BlockScoreTooltip({ active, payload }: TooltipContentProps) {
+  const t = useInterfaceTranslator();
+  const bucket = payload[0]?.payload as { range: string; count: number } | undefined;
+  if (!active || !bucket || bucket.count <= 0) return null;
+
+  return (
+    <div className="relative z-50 border border-line bg-surface px-3 py-2 text-sm text-ink shadow-lg">
+      <p className="font-semibold">{t("docents")}: {bucket.count}</p>
+    </div>
+  );
 }
 
 function formatTooltipPercentage(value: number): string {
@@ -250,6 +278,7 @@ function QuestionDistributionTooltip({
 
 export function ResultsDashboard({
   integrated = false,
+  showDimensionScales = false,
   introContent,
   eyebrow,
   results,
@@ -261,7 +290,9 @@ export function ResultsDashboard({
   title = "Diagnosi IA",
 }: ResultsDashboardProps) {
   const t = useInterfaceTranslator();
-  const [selectedBlockPosition, setSelectedBlockPosition] = useState<number | null>(null);
+  const [otherChartsOpen, setOtherChartsOpen] = useState(false);
+  const [dimensionDetailsOpen, setDimensionDetailsOpen] = useState(false);
+  const [selectedBlockPosition, setSelectedBlockPosition] = useState<number | null>(() => showDimensionScales ? results.blocks[0]?.position ?? null : null);
   const selectedBlock = results.blocks.find(
     (block) => block.position === selectedBlockPosition,
   ) ?? null;
@@ -375,6 +406,41 @@ export function ResultsDashboard({
         </div>
       </div>
 
+      {showDimensionScales ? (
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {results.blocks.map((block) => (
+            <article className="flex min-w-0 flex-col rounded-2xl border border-line bg-surface p-5" key={block.position}>
+              <h2 className="mb-1 min-h-12 break-words font-semibold text-ink">
+                <InterfaceText messageKey="dimensio" /> {block.position}. {block.title}
+              </h2>
+              {block.average === null ? (
+                <p className="mt-auto pt-5 text-sm text-muted"><InterfaceText messageKey="senseDades" /></p>
+              ) : (
+                <div className="mt-auto">
+                  <span className="sr-only">
+                    {blockStageLabel(block.average, t)}, {formatPercentage(block.average, t)}
+                  </span>
+                  <StageScale score={block.average} stage={stageForScore(block.average)} />
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      ) : null}
+
+      {showDimensionScales ? (
+        <button
+          aria-controls="other-dimension-charts"
+          aria-expanded={otherChartsOpen}
+          className="mt-6 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition hover:border-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          onClick={() => setOtherChartsOpen((open) => !open)}
+          type="button"
+        >
+          <span aria-hidden="true">{otherChartsOpen ? "−" : "+"}</span>
+          <InterfaceText messageKey="altresGrafics" />
+        </button>
+      ) : null}
+      <div hidden={showDimensionScales && !otherChartsOpen} id="other-dimension-charts">
       <div className="mt-6 rounded-md border border-line bg-surface p-5 shadow-sm">
         <h2 className="text-center text-lg font-semibold text-ink">
           <InterfaceText messageKey="percentatgePerBlocs" />
@@ -389,7 +455,7 @@ export function ResultsDashboard({
             >
               <BarChart
                 accessibilityLayer={false}
-                data={blockChartData(results.blocks)}
+                data={blockChartData(results.blocks, t)}
               >
                 <defs>
                   <linearGradient id="blockBarGradient" x1="0" y1="1" x2="0" y2="0">
@@ -409,10 +475,10 @@ export function ResultsDashboard({
                 <CartesianGrid vertical={false} stroke="#d8dee6" strokeDasharray="3 3" />
                 <XAxis
                   dataKey="name"
-                  height={78}
+                  height={100}
                   interval={0}
                   tickMargin={8}
-                  tick={(props) => <WrappedDimensionTick {...props} maxLength={11} fontSize={10} />}
+                  tick={(props) => <WrappedDimensionTick {...props} maxLength={20} fontSize={10} />}
                 />
                 <YAxis
                   domain={[0, 100]}
@@ -428,24 +494,14 @@ export function ResultsDashboard({
                   barSize={44}
                   dataKey="visiblePercentatge"
                   fill="transparent"
-                  onClick={(entry) => {
-                    const block = results.blocks.find(({ position }) => position === entry.payload?.position);
-                    if (block) selectBlock(block.position);
-                  }}
                   radius={[4, 4, 0, 0]}
                 >
                   {results.blocks.map((block) => (
                     <Cell
                       key={block.position}
-                      cursor="pointer"
-                      fill={selectedBlockPosition === block.position
-                        ? "var(--app-action)"
-                        : blockStageFill(block.average ?? 0)}
-                      fillOpacity={selectedBlockPosition === block.position ? 0.9 : 0.3}
-                      stroke={selectedBlockPosition === block.position
-                        ? "var(--app-action-hover)"
-                        : "#111827"}
-                      strokeWidth={selectedBlockPosition === block.position ? 3 : 2}
+                      fill="transparent"
+                      stroke="#111827"
+                      strokeWidth={2}
                     />
                   ))}
                 </Bar>
@@ -460,8 +516,8 @@ export function ResultsDashboard({
               width="100%"
             >
               <RadarChart
-                data={blockChartData(results.blocks)}
-                margin={{ top: 28, right: 72, bottom: 28, left: 72 }}
+                data={blockChartData(results.blocks, t)}
+                margin={{ top: 40, right: 104, bottom: 40, left: 104 }}
               >
                 <defs>
                   <radialGradient id="blockRadarGradient" cx="50%" cy="50%" r="50%">
@@ -477,7 +533,7 @@ export function ResultsDashboard({
                 />
                 <PolarAngleAxis
                   dataKey="name"
-                  tick={(props) => <WrappedDimensionTick {...props} maxLength={18} fontSize={11} centerVertically />}
+                  tick={(props) => <WrappedDimensionTick {...props} maxLength={20} fontSize={11} centerVertically outsideRadar />}
                 />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} tickLine={false} axisLine={false} />
                 <Radar
@@ -493,6 +549,22 @@ export function ResultsDashboard({
             </ResponsiveContainer>
           </div>
         </div>
+      </div>
+      </div>
+      {showDimensionScales ? (
+        <button
+          aria-controls="dimension-details"
+          aria-expanded={dimensionDetailsOpen}
+          className="mt-4 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition hover:border-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          onClick={() => setDimensionDetailsOpen((open) => !open)}
+          type="button"
+        >
+          <span aria-hidden="true">{dimensionDetailsOpen ? "−" : "+"}</span>
+          <InterfaceText messageKey="detallDimensions" />
+        </button>
+      ) : null}
+      <div hidden={showDimensionScales && !dimensionDetailsOpen} id="dimension-details">
+        <div className="mt-5 rounded-2xl border border-line bg-surface p-5">
         <div className="mt-5 grid gap-3 border-t border-line pt-4 text-sm text-muted sm:grid-cols-2 lg:grid-cols-4">
           {results.blocks.map((block) => (
             <button
@@ -527,6 +599,17 @@ export function ResultsDashboard({
                   <h4 className="min-h-12 text-sm font-semibold text-ink">
                     <InterfaceText messageKey="criteri" /> {selectedBlock.position}.{criterion.position} · {criterion.title}
                   </h4>
+                  {showDimensionScales ? (
+                    criterion.average === null ? (
+                      <p className="mt-5 text-sm text-muted"><InterfaceText messageKey="senseDades" /></p>
+                    ) : (
+                      <>
+                        <span className="sr-only">{blockStageLabel(criterion.average, t)}, {formatPercentage(criterion.average, t)}</span>
+                        <StageScale score={criterion.average} stage={stageForScore(criterion.average)} />
+                      </>
+                    )
+                  ) : (
+                    <>
                   <p className={`mt-2 text-sm font-semibold ${blockStageTextClass(criterion.average)}`}>
                     <InterfaceText messageKey="percentatge" />{" "}{formatPercentage(criterion.average, t)}
                   </p>
@@ -562,6 +645,8 @@ export function ResultsDashboard({
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
+                    </>
+                  )}
                 </article>
               ))}
             </div>
@@ -569,6 +654,7 @@ export function ResultsDashboard({
         ) : null}
       </div>
 
+      </div>
       <div className="mt-6 rounded-md border border-line bg-surface p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-ink"><InterfaceText messageKey="interpretacioBreu" /></h2>
         <p className="mt-3 text-sm leading-6 text-muted">{results.interpretation}</p>
@@ -603,9 +689,6 @@ export function ResultsDashboard({
               <h2 className="text-lg font-semibold text-ink">
                 {block.position}. {block.title}
               </h2>
-              <p className="text-sm font-semibold text-muted">
-                <InterfaceText messageKey="percentatge" />{" "}{formatPercentage(block.average, t)}
-              </p>
             </div>
 
             <h3 className="mt-4 text-sm font-semibold text-ink">
@@ -646,19 +729,16 @@ export function ResultsDashboard({
                     dataKey="position"
                     domain={[0, 100]}
                     interval={0}
-                    tick={{ fontSize: 10 }}
-                    tickFormatter={(value: number) => {
-                      const start = Math.floor(value / (100 / 9)) * (100 / 9);
-                      return `${start.toFixed(0)}–${(start + 100 / 9).toFixed(0)}`;
-                    }}
-                    ticks={Array.from({ length: 9 }, (_, index) => (index + 0.5) * (100 / 9))}
+                    tick={{ fontSize: 14 }}
+                    tickFormatter={(value: number) => value === 50 ? t("etapaIntermitja") : blockStageLabel(value, t)}
+                    ticks={[100 / 6, 50, 250 / 3]}
                     type="number"
                   />
-                  <YAxis allowDecimals={false} tickLine={false} width={28} />
+                  <YAxis allowDecimals={false} interval={0} {...blockScoreCountAxis(block)} tickLine={false} width={28} />
                   <Tooltip
                     cursor={false}
-                    formatter={(value) => [value, t("docents")]}
-                    labelFormatter={(_, payload) => String(payload[0]?.payload.range ?? "")}
+                    content={BlockScoreTooltip}
+                    wrapperStyle={{ zIndex: 50 }}
                   />
                   <ReferenceLine x={100 / 3} stroke="#64748b" strokeDasharray="2 4" />
                   <ReferenceLine x={200 / 3} stroke="#64748b" strokeDasharray="2 4" />

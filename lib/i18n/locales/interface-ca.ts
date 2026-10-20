@@ -1,5 +1,8 @@
 // Textos de la interfície compartida; exclou el contingut versionat dels qüestionaris.
 export const interfaceCa = {
+  "etapaIntermitja": "Intermitja",
+  "detallDimensions": "Detall dimensions",
+  "altresGrafics": "Altres gràfics",
   "questionari": "Qüestionari",
   "accesDocent": "Accés docent",
   "iniciaSessioAmbGoogle": "Inicia sessió amb Google",
