@@ -6,10 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
-- Afegeix pàgines públiques de privacitat i condicions d'ús, marcades com a
+- Afegeix pàgines públiques de privacitat i normes d'ús intern, marcades com a
   esborrany fins a concretar els pendents legals, i enllaços traduïts al peu.
 - Documenta OAuth de producció per a `https://diagnosia.edigital.cat`, amb
-  audiència externa i permisos bàsics d'identitat.
+  audiència interna i permisos bàsics d'identitat.
 
 - Compacta l’interlineat dels enunciats de les preguntes al PDF de centre.
 

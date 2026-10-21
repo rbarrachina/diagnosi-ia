@@ -5,7 +5,7 @@
 La política pública a `/privacitat` descriu aquestes garanties i els pendents
 sense atribuir responsabilitats ni terminis no confirmats. `/condicions`
 explica els usos permesos. Ambdues són públiques i enllaçades al peu, amb
-contacte `rbarrach@xtec.cat`. Són esborranys fins a confirmar responsable,
+contacte `XXXXXX`. Són esborranys fins a confirmar responsable,
 base jurídica, proveïdors i retenció de còpies; no s'ha d'obrir l'ús real
 basant-se només en aquests textos. Preparació OAuth: `PRODUCTION_OAUTH.md`.
 

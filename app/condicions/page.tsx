@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/legal-page";
 
 export const metadata: Metadata = {
-  title: "Condicions d’ús",
+  title: "Normes d’ús intern",
   description: "Finalitat educativa, accés i ús responsable de Diagnosi IA.",
 };
 
 export default function TermsPage() {
   return (
-    <LegalPage title="Condicions d’ús">
+    <LegalPage title="Normes d’ús intern">
       <section>
         <h2>1. Finalitat del servei</h2>
         <p>Diagnosi IA és una eina de reflexió educativa sobre la competència digital
@@ -16,17 +16,19 @@ export default function TermsPage() {
           la planificació del centre; no constitueixen una certificació ni una
           avaluació laboral individual.</p>
         <p>El servei s’ofereix a <a href="https://diagnosia.edigital.cat/">diagnosia.edigital.cat</a>.
-          Contacte: <a href="mailto:rbarrach@xtec.cat">rbarrach@xtec.cat</a>.
+          Contacte: <span>XXXXXX</span>.
           La identificació definitiva del prestador resta pendent de confirmar.
           L’ús de comptes XTEC no implica per si mateix que el servei sigui oficial
           ni que estigui avalat pel Departament d’Educació.</p>
       </section>
       <section>
         <h2>2. Accés dels centres i del professorat</h2>
-        <p>Els responsables accedeixen amb comptes XTEC segons la política vigent
-          del servei. El centre configura l’accés docent amb comptes @xtec.cat o
-          amb un únic domini exacte de Google Workspace propi. El servidor
-          comprova la política de domini en accedir i en enviar les respostes.</p>
+        <p>Aquest desplegament es destina a ús intern de l’organització Google
+          Workspace a què pertany el projecte OAuth. Els responsables i docents
+          utilitzen comptes XTEC autoritzats, sempre que pertanyin a aquesta
+          organització. No s’hi admeten comptes de centres d’altres organitzacions
+          Workspace. El servidor també comprova la política de domini de l’espai
+          en accedir i en enviar les respostes.</p>
         <p>Google autentica el compte; això no concedeix automàticament accés a
           qualsevol espai. Cada docent només pot enviar una participació per espai
           amb el mateix compte i recuperar-ne els resultats propis.</p>

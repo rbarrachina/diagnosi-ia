@@ -14,7 +14,10 @@ export default function PrivacyPage() {
         <p>Diagnosi IA, disponible a <a href="https://diagnosia.edigital.cat/">diagnosia.edigital.cat</a>,
           facilita una diagnosi de la competència digital docent en intel·ligència artificial.
           Cada centre gestiona el seu espai i consulta resultats de conjunt.</p>
-        <p>Contacte del projecte i per a consultes de privacitat: <a href="mailto:rbarrach@xtec.cat">rbarrach@xtec.cat</a>.
+        <p>Aquest desplegament està previst per a ús intern de l’organització
+          Google Workspace propietària del projecte OAuth. Aquesta restricció
+          d’accés no elimina el caràcter personal de les dades pseudonimitzades.</p>
+        <p>Contacte del projecte i per a consultes de privacitat: <span>XXXXXX</span>.
           Aquest contacte no pressuposa la condició de responsable del tractament.
           La identitat i el repartiment de responsabilitats entre el prestador del
           servei i els centres, així com la base jurídica de cada finalitat, estan
@@ -83,7 +86,7 @@ export default function PrivacyPage() {
       </section>
       <section>
         <h2>6. Drets i consultes</h2>
-        <p>Pots contactar a <a href="mailto:rbarrach@xtec.cat">rbarrach@xtec.cat</a> per
+        <p>Pots contactar a <span>XXXXXX</span> per
           consultes i sol·licituds d’accés, rectificació, supressió, oposició,
           limitació o portabilitat, quan siguin aplicables. La tramitació ha de
           verificar la titularitat de manera segura, sense comunicar les respostes

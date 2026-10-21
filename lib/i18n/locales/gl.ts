@@ -20,7 +20,7 @@ export const gl: Messages = {
     "accessibility": "Accesibilidade: WCAG 2.2, ábrese nunha nova pestana",
     "license": "Licenza Apache 2.0",
     "privacyPolicy": "Política de privacidade",
-    "termsOfUse": "Condicións de uso",
+    "termsOfUse": "Normas de uso interno",
     "thirdPartyLicenses": "Licenzas de terceiros",
     "sourceCode": "Código fonte",
     "sourceCodeGithub": "Código fonte en GitHub",

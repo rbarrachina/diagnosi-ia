@@ -34,7 +34,7 @@ pseudonimització com a dada personal protegida.
 La portada i el peu compartit enllacen `/privacitat` i `/condicions`, accessibles
 sense sessió, també durant el prellançament. Els textos inicials són en català
 amb l'idioma declarat explícitament. Els enllaços del peu es tradueixen als cinc
-idiomes. El contacte públic és `rbarrach@xtec.cat`; no s'atribueix per això la
+idiomes. El contacte públic queda pendent amb el marcador `XXXXXX`; no s'atribueix per això la
 responsabilitat del tractament. Mentre no es confirmin els rols legals, la base
 jurídica i els detalls d'infraestructura, els textos indiquen que són esborranys
 i no acrediten preparació per a ús real. Vegeu `PRODUCTION_OAUTH.md`.
