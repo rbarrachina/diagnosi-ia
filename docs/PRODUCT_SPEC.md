@@ -29,6 +29,16 @@ pseudonimització com a dada personal protegida.
 - Separar estrictament la identitat del centre i del responsable de les
   respostes, i impedir l'accés institucional a participacions individuals.
 
+## Informació pública del servei
+
+La portada i el peu compartit enllacen `/privacitat` i `/llicencies`, accessibles
+sense sessió, també durant el prellançament. Els textos inicials són en català
+amb l'idioma declarat explícitament. Els enllaços del peu es tradueixen als cinc
+idiomes. El contacte públic queda pendent amb el marcador `XXXXXX`; no s'atribueix per això la
+responsabilitat del tractament. Mentre no es confirmin els rols legals, la base
+jurídica i els detalls d'infraestructura, els textos indiquen que són esborranys
+i no acrediten preparació per a ús real. Vegeu `PRODUCTION_OAUTH.md`.
+
 ## Fora d'abast
 
 - Perfils, gestio o persistència de correus del professorat participant fora de
@@ -308,7 +318,8 @@ informació de versió, autoria, llicència i repositori es mostra al peu de
 pàgina.
 
 El peu també permet consultar els avisos i textos originals de les llicències
-dels components de tercers a `/THIRD_PARTY_NOTICES.txt`, amb etiqueta traduïda
+dels components de tercers a través de `/llicencies`, que enllaça
+`/THIRD_PARTY_NOTICES.txt`, amb etiqueta traduïda
 a les cinc llengües. Apache 2.0 continua sent la llicència del projecte; cada
 component conserva la pròpia. Els textos pendents es fan explícits i bloquegen
 la comprovació de preparació d'una publicació completa.
@@ -876,3 +887,33 @@ La capçalera del PDF agregat mostra la Competència Digital docent en IA
 amb l’etapa bàsica, intermèdia o avançada derivada del resultat global,
 en lloc del percentatge global, igual que el tauler de centre.
 Els percentatges de distribució per opció es mantenen.
+
+## Mode global d’accés amb Google
+
+L’administració pot triar `google_login_mode`: `internal` (predeterminat) o
+`external`. En mode intern només s’autoritza professorat amb correu i claim
+Workspace `hd` de `xtec.cat`; s’oculta el domini propi tant a la configuració
+inicial com a l’espai del centre, i el servidor rebutja desar-lo. En mode extern
+cada centre torna a triar entre XTEC i un domini Workspace exacte.
+
+El mode es revalida al callback, en llegir la sessió docent i dins la transacció
+d’enviament; les sessions externes existents deixen de donar accés en la petició
+següent en passar a intern. La política efectiva interna és XTEC sense modificar
+ni esborrar un domini propi guardat anteriorment. En tornar a extern es recupera
+la política desada. No es vinculen comptes de dominis diferents ni es modifiquen
+respostes o identificadors pseudònims.
+
+Aquest selector no modifica Google Cloud. L’administrador ha d’alinear-hi
+Internal/External i comprovar que el projecte pertany a l’organització XTEC
+per a l’ús intern. Els responsables continuen restringits a XTEC segons la
+política de responsables, independentment d’aquest selector.
+
+La configuració administrativa presenta cada apartat en una targeta pròpia i
+agrupa el mode Google amb la resta de camps en un únic desament al final,
+amb confirmació només si es modifica el mode d’accés Google. Obrir o tancar el servei conserva
+la seva acció immediata independent.
+
+El peu simplifica els accessos legals a «Privacitat i ús» (`/privacitat`, amb les
+normes d’ús al mateix document) i «Llicències» (`/llicencies`, amb accés a Apache
+2.0 i als avisos íntegres de tercers). `/condicions` redirigeix a
+`/privacitat#normes-dus`. Els textos i avisos de tercers continuen disponibles.

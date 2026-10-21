@@ -1,5 +1,7 @@
 "use server";
 
+import { loginModeSchema, setLoginMode } from "@/lib/auth/login-mode";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
@@ -334,6 +336,7 @@ export async function setResponsibleAccessModeAction(formData: FormData) {
   await requireAdminActorId();
 
   try {
+    const loginMode = loginModeSchema.parse(getRequiredFormString(formData, "loginMode"));
     const mode = responsibleAccessModeSchema.parse(
       getRequiredFormString(formData, "responsibleAccessMode"),
     );
@@ -354,6 +357,7 @@ export async function setResponsibleAccessModeAction(formData: FormData) {
     await setAdminResultsMinimumSubmissions(minimumSubmissions);
     await setCommunicationTemplate(communicationTemplate);
     await setLanguageSettings(languageSettings);
+    await setLoginMode(loginMode);
   } catch {
     redirect(adminPath({ error: "settings", section: "settings" }));
   }

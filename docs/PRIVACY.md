@@ -2,6 +2,13 @@
 
 ## Principi rector
 
+La política pública a `/privacitat` descriu aquestes garanties i els pendents
+sense atribuir responsabilitats ni terminis no confirmats i inclou les normes
+d’ús intern. És pública i enllaçada al peu, amb
+contacte `XXXXXX`. Són esborranys fins a confirmar responsable,
+base jurídica, proveïdors i retenció de còpies; no s'ha d'obrir l'ús real
+basant-se només en aquests textos. Preparació OAuth: `PRODUCTION_OAUTH.md`.
+
 Diagnosi IA identifica el centre promotor i minimitza les dades del professorat.
 El centre no és anònim davant l'aplicacio ni davant l'administracio autoritzada.
 No es recull el nom del professorat ni se'n persisteix el correu a MySQL. El
@@ -257,3 +264,28 @@ es genera sota demanda, no es desa i no conté identitat ni identificadors.
 - Durada i purga de les còpies de seguretat.
 - Caducitat automàtica d'espais.
 - Revisió legal o DPO per a ús institucional.
+
+## Mode global d’accés amb Google
+
+L’administració pot triar `google_login_mode`: `internal` (predeterminat) o
+`external`. En mode intern només s’autoritza professorat amb correu i claim
+Workspace `hd` de `xtec.cat`; s’oculta el domini propi tant a la configuració
+inicial com a l’espai del centre, i el servidor rebutja desar-lo. En mode extern
+cada centre torna a triar entre XTEC i un domini Workspace exacte.
+
+El mode es revalida al callback, en llegir la sessió docent i dins la transacció
+d’enviament; les sessions externes existents deixen de donar accés en la petició
+següent en passar a intern. La política efectiva interna és XTEC sense modificar
+ni esborrar un domini propi guardat anteriorment. En tornar a extern es recupera
+la política desada. No es vinculen comptes de dominis diferents ni es modifiquen
+respostes o identificadors pseudònims.
+
+Aquest selector no modifica Google Cloud. L’administrador ha d’alinear-hi
+Internal/External i comprovar que el projecte pertany a l’organització XTEC
+per a l’ús intern. Els responsables continuen restringits a XTEC segons la
+política de responsables, independentment d’aquest selector.
+
+El peu simplifica els accessos legals a «Privacitat i ús» (`/privacitat`, amb les
+normes d’ús al mateix document) i «Llicències» (`/llicencies`, amb accés a Apache
+2.0 i als avisos íntegres de tercers). `/condicions` redirigeix a
+`/privacitat#normes-dus`. Els textos i avisos de tercers continuen disponibles.

@@ -10,8 +10,10 @@ import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 export function CentreOnboarding({
   centre,
+  allowCustomDomain = false,
 }: {
   centre: CentreProfile;
+  allowCustomDomain?: boolean;
 }) {
   const router = useRouter();
   const messages = useTranslations();
@@ -58,6 +60,7 @@ export function CentreOnboarding({
   return (
     <div className="w-full max-w-3xl">
       <CentreEmailPolicyForm
+        allowCustomDomain={allowCustomDomain}
         embedded
         initialPolicy={{
           allowXtec: centre.allowXtec,

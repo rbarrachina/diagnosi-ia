@@ -1,3 +1,5 @@
+import { getLoginMode } from "@/lib/auth/login-mode";
+import { isParticipantAllowedByLoginMode } from "@/lib/auth/login-mode-policy";
 import { NextResponse, type NextRequest } from "next/server";
 import {
   exchangeGoogleAuthorizationCode,
@@ -135,7 +137,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (
-      (statePayload.purpose === "participant" && !isParticipantAllowed) ||
+      (statePayload.purpose === "participant" && (!isParticipantAllowed ||
+        !isParticipantAllowedByLoginMode(user, await getLoginMode()))) ||
       (statePayload.purpose !== "participant" && !isXtecEmail(user.email))
     ) {
       const response = NextResponse.redirect(

@@ -1,4 +1,5 @@
 import "server-only";
+import { effectiveCentreEmailPolicy, getLoginMode } from "@/lib/auth/login-mode";
 
 import type { RowDataPacket } from "mysql2/promise";
 import { z } from "zod";
@@ -106,7 +107,7 @@ export async function getCentreEmailPolicyForPublicCode(
     [publicCode],
   );
 
-  return rows[0] ? mapPolicy(rows[0]) : null;
+  return rows[0] ? effectiveCentreEmailPolicy(mapPolicy(rows[0]), await getLoginMode()) : null;
 }
 
 export async function confirmCentreProfileForUser(userId: string): Promise<boolean> {
@@ -129,7 +130,11 @@ export async function updateCentreEmailPolicyForUser(
   userId: string,
   input: unknown,
 ): Promise<CentreEmailPolicy | null> {
-  const policy = centreEmailPolicySchema.parse(input);
+  const mode = await getLoginMode();
+  const policy = centreEmailPolicySchema.refine(
+    (value) => mode === "external" || (value.allowXtec && value.customDomain === null),
+    { message: "En mode intern només es permet @xtec.cat." },
+  ).parse(input);
   const [result] = await mysqlPool.execute(
     `
       update centres

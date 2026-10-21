@@ -6,12 +6,14 @@ import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 export function CentreEmailPolicyForm({
   initialPolicy,
+  allowCustomDomain = false,
   onSaved,
   title,
   embedded = false,
   headingId,
 }: {
   initialPolicy: CentreEmailPolicy;
+  allowCustomDomain?: boolean;
   onSaved?: (policy: CentreEmailPolicy) => void;
   title?: string;
   embedded?: boolean;
@@ -20,7 +22,7 @@ export function CentreEmailPolicyForm({
   const messages = useTranslations();
   const copy = messages.centre;
   const [domainType, setDomainType] = useState<"xtec" | "custom">(
-    initialPolicy.customDomain ? "custom" : "xtec",
+    allowCustomDomain && initialPolicy.customDomain ? "custom" : "xtec",
   );
   const [customDomain, setCustomDomain] = useState(initialPolicy.customDomain ?? "");
   const [saving, setSaving] = useState(false);
@@ -33,9 +35,9 @@ export function CentreEmailPolicyForm({
       method: "PUT",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        allowXtec: domainType === "xtec",
+        allowXtec: !allowCustomDomain || domainType === "xtec",
         customDomain:
-          domainType === "custom" ? customDomain.toLowerCase().trim() : null,
+          allowCustomDomain && domainType === "custom" ? customDomain.toLowerCase().trim() : null,
       }),
     });
     const payload = (await response.json()) as {
@@ -67,13 +69,13 @@ export function CentreEmailPolicyForm({
         </p>
       ) : null}
 
-      <fieldset className="mt-7 grid max-w-3xl gap-4 lg:grid-cols-2">
+      <fieldset className={`mt-7 grid max-w-3xl gap-4 ${allowCustomDomain ? "lg:grid-cols-2" : ""}`}>
         <legend className="sr-only">{copy.admittedEmails}</legend>
-        <label className={`block cursor-pointer rounded-2xl border p-5 transition focus-within:ring-2 focus-within:ring-focus ${domainType === "xtec" ? "border-action bg-accent-soft" : "border-line bg-surface hover:border-action"}`}>
+        <label className={`block cursor-pointer rounded-2xl border p-5 transition focus-within:ring-2 focus-within:ring-focus ${!allowCustomDomain || domainType === "xtec" ? "border-action bg-accent-soft" : "border-line bg-surface hover:border-action"}`}>
           <span className="flex items-center gap-3">
             <input
               aria-label="@xtec.cat"
-              checked={domainType === "xtec"}
+              checked={!allowCustomDomain || domainType === "xtec"}
               className="h-5 w-5 shrink-0 accent-action"
               name="email-domain"
               onChange={() => setDomainType("xtec")}
@@ -86,7 +88,7 @@ export function CentreEmailPolicyForm({
           </span>
         </label>
 
-        <div className={`rounded-2xl border p-5 transition focus-within:ring-2 focus-within:ring-focus ${domainType === "custom" ? "border-action bg-accent-soft" : "border-line bg-surface hover:border-action"}`}>
+        {allowCustomDomain ? <div className={`rounded-2xl border p-5 transition focus-within:ring-2 focus-within:ring-focus ${domainType === "custom" ? "border-action bg-accent-soft" : "border-line bg-surface hover:border-action"}`}>
           <label className="block cursor-pointer">
             <span className="flex items-center gap-3">
               <input
@@ -121,7 +123,7 @@ export function CentreEmailPolicyForm({
               value={customDomain}
             />
           </div>
-        </div>
+        </div> : null}
       </fieldset>
 
       {message ? <p className="mt-3 text-sm text-muted">{message}</p> : null}

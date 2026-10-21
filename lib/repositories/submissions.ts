@@ -1,4 +1,5 @@
 import "server-only";
+import { effectiveCentreEmailPolicy, getLoginMode } from "@/lib/auth/login-mode";
 
 import { randomUUID } from "node:crypto";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
@@ -100,11 +101,11 @@ export async function createSubmissionWithAnswers(
 
     const space = await lockActiveDiagnosticSpace(connection, payload);
     if (
-      !isGoogleAccountAllowedByCentrePolicy(user.email, user.hostedDomain, {
+      !isGoogleAccountAllowedByCentrePolicy(user.email, user.hostedDomain, effectiveCentreEmailPolicy({
         allowXtec: Boolean(space.allow_xtec),
         customDomain: space.custom_domain,
         configured: Boolean(space.email_policy_configured_at),
-      })
+      }, await getLoginMode(connection, true)))
     ) {
       throw new InvalidSubmissionRepositoryError();
     }

@@ -552,6 +552,8 @@ export const appSettings = mysqlTable(
     updatedAt: createdAt("updated_at"),
   },
   (table) => [
+    check("app_settings_google_login_mode_check",
+      sql`${table.settingKey} <> 'google_login_mode' or ${table.settingValue} in ('internal', 'external')`),
     check("app_settings_setting_key_not_blank_check", sql`trim(${table.settingKey}) <> ''`),
     check("app_settings_setting_value_not_blank_check", sql`trim(${table.settingValue}) <> ''`),
     check(

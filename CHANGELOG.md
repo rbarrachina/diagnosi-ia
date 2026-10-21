@@ -6,6 +6,23 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Compacta el peu amb «Privacitat i ús» i «Llicències», reunint els documents
+  sense retirar el text de les normes ni els avisos de tercers. Situa la icona
+  d’accessibilitat abans de GitHub, amb la mateixa mida.
+
+- Unifica el desament de configuració administrativa en un botó final i
+  presenta cada apartat en una targeta independent.
+
+- Afegeix un selector administratiu d’accés Google intern o extern, amb mode
+  intern predeterminat. Oculta el domini propi als centres en mode intern i
+  revalida el domini al servidor, també per a sessions existents i enviaments.
+
+
+- Afegeix pàgines públiques de privacitat i normes d'ús intern, marcades com a
+  esborrany fins a concretar els pendents legals, i enllaços traduïts al peu.
+- Documenta OAuth de producció per a `https://diagnosia.edigital.cat`, amb
+  audiència interna i permisos bàsics d'identitat.
+
 - Compacta l’interlineat dels enunciats de les preguntes al PDF de centre.
 
 - Etiqueta el nom institucional del PDF amb «Centre» en lloc d’«Àmbit».

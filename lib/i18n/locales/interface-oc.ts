@@ -2,6 +2,13 @@ import type { InterfaceTranslations } from "@/lib/i18n/interface-messages";
 
 // Esborrany pendent de revisió lingüística professional.
 export const interfaceOc = {
+  "googleLoginMode": "Accès damb Google",
+  "googleLoginModeHelp": "Aguest selector regule es domenis admetudi ena aplicacion. Non modifique Google Cloud: tanben cau configurar-i Internal o External. En mòde intèrn sonque se permet @xtec.cat.",
+  "googleLoginInternal": "Intèrn — sonque XTEC",
+  "googleLoginExternal": "Extèrn — XTEC o Google Workspace des centres",
+  "googleLoginModeConfirm": "Vòs cambiar eth mòde d’accès? Eth mòde intèrn blòque es compdes docents extèrns tanben damb era session dubèrta. Google Cloud se configure per separat.",
+  "googleLoginModeSave": "Desa eth mòde d’accès",
+
   "etapaIntermitja": "Intermediària",
   "detallDimensions": "Detalh de dimensions",
   "altresGrafics": "D’autes grafics",
