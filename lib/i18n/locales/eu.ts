@@ -19,6 +19,8 @@ export const eu: Messages = {
     "projectInformation": "Proiektuaren informazioa",
     "accessibility": "Irisgarritasuna: WCAG 2.2, fitxa berri batean irekitzen da",
     "license": "Apache 2.0 lizentzia",
+    "privacyPolicy": "Pribatutasun politika",
+    "termsOfUse": "Erabilera baldintzak",
     "thirdPartyLicenses": "Hirugarrenen lizentziak",
     "sourceCode": "Iturburu kodea",
     "sourceCodeGithub": "Iturburu kodea GitHub-en",

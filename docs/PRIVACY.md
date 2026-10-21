@@ -2,6 +2,13 @@
 
 ## Principi rector
 
+La política pública a `/privacitat` descriu aquestes garanties i els pendents
+sense atribuir responsabilitats ni terminis no confirmats. `/condicions`
+explica els usos permesos. Ambdues són públiques i enllaçades al peu, amb
+contacte `rbarrach@xtec.cat`. Són esborranys fins a confirmar responsable,
+base jurídica, proveïdors i retenció de còpies; no s'ha d'obrir l'ús real
+basant-se només en aquests textos. Preparació OAuth: `PRODUCTION_OAUTH.md`.
+
 Diagnosi IA identifica el centre promotor i minimitza les dades del professorat.
 El centre no és anònim davant l'aplicacio ni davant l'administracio autoritzada.
 No es recull el nom del professorat ni se'n persisteix el correu a MySQL. El

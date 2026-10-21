@@ -29,6 +29,16 @@ pseudonimització com a dada personal protegida.
 - Separar estrictament la identitat del centre i del responsable de les
   respostes, i impedir l'accés institucional a participacions individuals.
 
+## Informació pública del servei
+
+La portada i el peu compartit enllacen `/privacitat` i `/condicions`, accessibles
+sense sessió, també durant el prellançament. Els textos inicials són en català
+amb l'idioma declarat explícitament. Els enllaços del peu es tradueixen als cinc
+idiomes. El contacte públic és `rbarrach@xtec.cat`; no s'atribueix per això la
+responsabilitat del tractament. Mentre no es confirmin els rols legals, la base
+jurídica i els detalls d'infraestructura, els textos indiquen que són esborranys
+i no acrediten preparació per a ús real. Vegeu `PRODUCTION_OAUTH.md`.
+
 ## Fora d'abast
 
 - Perfils, gestio o persistència de correus del professorat participant fora de

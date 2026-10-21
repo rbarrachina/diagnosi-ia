@@ -23,6 +23,11 @@ Després d'`1.0.0`:
 
 ## Preparar una release
 
+La preparació de les pàgines legals i OAuth per a `diagnosia.edigital.cat`
+s'inclou a `Unreleased`, sense migracions ni dependències. Seguir
+`PRODUCTION_OAUTH.md`; els textos tenen pendents explícits que cal resoldre
+abans d'obrir l'ús real. No canviar l'entorn local al domini de producció.
+
 La distribució per dimensió conserva nou trams de recompte, amb tres etiquetes
 d’etapa a l’eix horitzontal i un tooltip només amb el nombre de docents, sense percentatges.
 

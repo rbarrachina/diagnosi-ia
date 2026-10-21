@@ -44,6 +44,11 @@ No es carreguen participacions ni es modifiquen consultes o endpoints.
 
 ## Principis
 
+Les rutes públiques `/privacitat` i `/condicions` són Server Components sense
+consulta d'identitats ni dades de diagnosi. Reutilitzen la capçalera i el peu;
+el layout arrel manté la política dinàmica i CSP existent. El contingut legal
+inicial es declara en català. No afegeixen cookies, taules ni dependències.
+
 - El navegador no es connecta directament a MySQL.
 - `DATABASE_URL` i la resta de secrets només existeixen al servidor.
 - Totes les operacions sensibles passen per Route Handlers, server actions o

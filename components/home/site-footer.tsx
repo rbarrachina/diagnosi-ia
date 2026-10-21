@@ -29,6 +29,12 @@ export function SiteFooter() {
           aria-label={messages.common.projectInformation}
           className="flex flex-wrap gap-x-5 gap-y-2 font-medium"
         >
+          <a className="text-action transition hover:text-action-hover" href="/privacitat">
+            {messages.common.privacyPolicy}
+          </a>
+          <a className="text-action transition hover:text-action-hover" href="/condicions">
+            {messages.common.termsOfUse}
+          </a>
           <a
             aria-label={messages.common.accessibility}
             className="inline-flex items-center gap-2 text-action transition hover:text-action-hover"
