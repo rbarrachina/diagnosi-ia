@@ -1,14 +1,15 @@
+import { InternalUseRules } from "@/components/legal/internal-use-rules";
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/legal-page";
 
 export const metadata: Metadata = {
-  title: "Política de privacitat",
+  title: "Privacitat i normes d’ús",
   description: "Com tracta Diagnosi IA les dades dels centres, responsables i docents participants.",
 };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Política de privacitat">
+    <LegalPage title="Privacitat i normes d’ús">
       <section>
         <h2>1. Servei i contacte</h2>
         <p>Diagnosi IA, disponible a <a href="https://diagnosia.edigital.cat/">diagnosia.edigital.cat</a>,
@@ -105,6 +106,10 @@ export default function PrivacyPage() {
         <p>No s’incorporen eines d’analítica, publicitat ni seguiment del professorat.
           Les cookies pròpies del procés d’autenticació de Google es regeixen per
           la seva política.</p>
+      </section>
+      <section className="scroll-mt-28 border-t border-line pt-8" id="normes-dus">
+        <h2>Normes d’ús intern</h2>
+        <InternalUseRules />
       </section>
     </LegalPage>
   );

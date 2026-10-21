@@ -3,8 +3,8 @@
 ## Principi rector
 
 La política pública a `/privacitat` descriu aquestes garanties i els pendents
-sense atribuir responsabilitats ni terminis no confirmats. `/condicions`
-explica els usos permesos. Ambdues són públiques i enllaçades al peu, amb
+sense atribuir responsabilitats ni terminis no confirmats i inclou les normes
+d’ús intern. És pública i enllaçada al peu, amb
 contacte `XXXXXX`. Són esborranys fins a confirmar responsable,
 base jurídica, proveïdors i retenció de còpies; no s'ha d'obrir l'ús real
 basant-se només en aquests textos. Preparació OAuth: `PRODUCTION_OAUTH.md`.
@@ -284,3 +284,8 @@ Aquest selector no modifica Google Cloud. L’administrador ha d’alinear-hi
 Internal/External i comprovar que el projecte pertany a l’organització XTEC
 per a l’ús intern. Els responsables continuen restringits a XTEC segons la
 política de responsables, independentment d’aquest selector.
+
+El peu simplifica els accessos legals a «Privacitat i ús» (`/privacitat`, amb les
+normes d’ús al mateix document) i «Llicències» (`/llicencies`, amb accés a Apache
+2.0 i als avisos íntegres de tercers). `/condicions` redirigeix a
+`/privacitat#normes-dus`. Els textos i avisos de tercers continuen disponibles.

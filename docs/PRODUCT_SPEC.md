@@ -31,7 +31,7 @@ pseudonimització com a dada personal protegida.
 
 ## Informació pública del servei
 
-La portada i el peu compartit enllacen `/privacitat` i `/condicions`, accessibles
+La portada i el peu compartit enllacen `/privacitat` i `/llicencies`, accessibles
 sense sessió, també durant el prellançament. Els textos inicials són en català
 amb l'idioma declarat explícitament. Els enllaços del peu es tradueixen als cinc
 idiomes. El contacte públic queda pendent amb el marcador `XXXXXX`; no s'atribueix per això la
@@ -318,7 +318,8 @@ informació de versió, autoria, llicència i repositori es mostra al peu de
 pàgina.
 
 El peu també permet consultar els avisos i textos originals de les llicències
-dels components de tercers a `/THIRD_PARTY_NOTICES.txt`, amb etiqueta traduïda
+dels components de tercers a través de `/llicencies`, que enllaça
+`/THIRD_PARTY_NOTICES.txt`, amb etiqueta traduïda
 a les cinc llengües. Apache 2.0 continua sent la llicència del projecte; cada
 component conserva la pròpia. Els textos pendents es fan explícits i bloquegen
 la comprovació de preparació d'una publicació completa.
@@ -911,3 +912,8 @@ La configuració administrativa presenta cada apartat en una targeta pròpia i
 agrupa el mode Google amb la resta de camps en un únic desament al final,
 amb confirmació només si es modifica el mode d’accés Google. Obrir o tancar el servei conserva
 la seva acció immediata independent.
+
+El peu simplifica els accessos legals a «Privacitat i ús» (`/privacitat`, amb les
+normes d’ús al mateix document) i «Llicències» (`/llicencies`, amb accés a Apache
+2.0 i als avisos íntegres de tercers). `/condicions` redirigeix a
+`/privacitat#normes-dus`. Els textos i avisos de tercers continuen disponibles.

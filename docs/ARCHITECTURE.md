@@ -14,7 +14,7 @@
 - `@react-pdf/renderer` per als informes PDF.
 
 La compilació webpack registra els mòduls de producció i regenera els avisos
-de tercers a `public/THIRD_PARTY_NOTICES.txt`. El peu compartit hi enllaça en
+de tercers a `public/THIRD_PARTY_NOTICES.txt`. La pàgina `/llicencies`, enllaçada al peu compartit, hi dona accés en
 totes les llengües. Els avisos públics cobreixen els recursos del servei web;
 les traces del servidor es revisen amb una comprovació separada abans de
 distribuir-ne binaris. L'abast, les fonts originals i els pendents es documenten a `docs/THIRD_PARTY_LICENSES.md`.
@@ -44,7 +44,7 @@ No es carreguen participacions ni es modifiquen consultes o endpoints.
 
 ## Principis
 
-Les rutes públiques `/privacitat` i `/condicions` són Server Components sense
+Les rutes públiques `/privacitat` i `/llicencies` són Server Components sense
 consulta d'identitats ni dades de diagnosi. Reutilitzen la capçalera i el peu;
 el layout arrel manté la política dinàmica i CSP existent. El contingut legal
 inicial es declara en català. No afegeixen cookies, taules ni dependències.
@@ -459,3 +459,8 @@ Aquest selector no modifica Google Cloud. L’administrador ha d’alinear-hi
 Internal/External i comprovar que el projecte pertany a l’organització XTEC
 per a l’ús intern. Els responsables continuen restringits a XTEC segons la
 política de responsables, independentment d’aquest selector.
+
+El peu simplifica els accessos legals a «Privacitat i ús» (`/privacitat`, amb les
+normes d’ús al mateix document) i «Llicències» (`/llicencies`, amb accés a Apache
+2.0 i als avisos íntegres de tercers). `/condicions` redirigeix a
+`/privacitat#normes-dus`. Els textos i avisos de tercers continuen disponibles.

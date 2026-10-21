@@ -301,9 +301,9 @@ describe("initial page", () => {
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText("Beta")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Llicència Apache 2.0" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Llicències" })).toHaveAttribute(
       "href",
-      "https://www.apache.org/licenses/LICENSE-2.0",
+      "/llicencies",
     );
     expect(
       screen.getByRole("link", { name: "Codi font a GitHub" }),

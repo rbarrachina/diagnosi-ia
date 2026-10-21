@@ -30,34 +30,12 @@ export function SiteFooter() {
           className="flex flex-wrap gap-x-5 gap-y-2 font-medium"
         >
           <a className="text-action transition hover:text-action-hover" href="/privacitat">
-            {messages.common.privacyPolicy}
+            {messages.common.privacyAndUse}
           </a>
-          <a className="text-action transition hover:text-action-hover" href="/condicions">
-            {messages.common.termsOfUse}
+          <a className="text-action transition hover:text-action-hover" href="/llicencies">
+            {messages.common.licenses}
           </a>
-          <a
-            aria-label={messages.common.accessibility}
-            className="inline-flex items-center gap-2 text-action transition hover:text-action-hover"
-            href="https://www.w3.org/TR/WCAG22/"
-            rel="noreferrer"
-            target="_blank"
-          >
-            <AccessibilityIcon />
-          </a>
-          <a
-            className="text-action transition hover:text-action-hover"
-            href="https://www.apache.org/licenses/LICENSE-2.0"
-            rel="noreferrer"
-            target="_blank"
-          >
-            {messages.common.license}
-          </a>
-          <a
-            className="text-action transition hover:text-action-hover"
-            href="/THIRD_PARTY_NOTICES.txt"
-          >
-            {messages.common.thirdPartyLicenses}
-          </a>
+          <span className="inline-flex items-center gap-5">
           <a
             aria-label={messages.common.sourceCodeGithub}
             className="inline-flex items-center gap-2 text-action transition hover:text-action-hover"
@@ -68,6 +46,16 @@ export function SiteFooter() {
             <GitHubIcon />
             {messages.common.sourceCode}
           </a>
+          <a
+            aria-label={messages.common.accessibility}
+            className="inline-flex items-center gap-2 text-action transition hover:text-action-hover"
+            href="https://www.w3.org/TR/WCAG22/"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <AccessibilityIcon />
+          </a>
+          </span>
         </nav>
       </div>
     </footer>
@@ -80,7 +68,7 @@ function AccessibilityIcon() {
       aria-hidden="true"
       className="h-4 w-4"
       fill="none"
-      viewBox="0 0 24 24"
+      viewBox="2 2 20 20"
     >
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
       <circle cx="12" cy="7.5" fill="currentColor" r="1.5" />

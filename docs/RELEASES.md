@@ -217,3 +217,8 @@ La configuració administrativa presenta cada apartat en una targeta pròpia i
 agrupa el mode Google amb la resta de camps en un únic desament al final,
 amb confirmació només si es modifica el mode d’accés Google. Obrir o tancar el servei conserva
 la seva acció immediata independent.
+
+El peu simplifica els accessos legals a «Privacitat i ús» (`/privacitat`, amb les
+normes d’ús al mateix document) i «Llicències» (`/llicencies`, amb accés a Apache
+2.0 i als avisos íntegres de tercers). `/condicions` redirigeix a
+`/privacitat#normes-dus`. Els textos i avisos de tercers continuen disponibles.

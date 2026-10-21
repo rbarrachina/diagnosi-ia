@@ -16,6 +16,8 @@ export const ca = {
     projectInformation: "Informació del projecte",
     accessibility: "Accessibilitat: WCAG 2.2, s’obre en una pestanya nova",
     license: "Llicència Apache 2.0",
+    privacyAndUse: "Privacitat i ús",
+    licenses: "Llicències",
     privacyPolicy: "Política de privacitat",
     termsOfUse: "Normes d’ús intern",
     thirdPartyLicenses: "Llicències de tercers",

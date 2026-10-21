@@ -12,7 +12,7 @@ Fer els canvis al projecte independent `Diagnosi IA`:
 | Correu de suport i contacte | Compte institucional vàlid; `XXXXXX` és només un marcador documental |
 | Pàgina principal | `https://diagnosia.edigital.cat/` |
 | Política de privacitat | `https://diagnosia.edigital.cat/privacitat` |
-| Normes internes (URL si es publica) | `https://diagnosia.edigital.cat/condicions` |
+| Normes internes (URL si es publica) | `https://diagnosia.edigital.cat/privacitat#normes-dus` |
 | Domini autoritzat | `edigital.cat` |
 | Tipus de públic | Internal |
 | Client OAuth web: redirecció | `https://diagnosia.edigital.cat/auth/callback` |
@@ -90,8 +90,9 @@ els enllaços del peu estan traduïts als cinc idiomes de la interfície.
 
 1. Integrar la PR, executar els controls de `docs/RELEASES.md`, compilar i
    reiniciar el servei amb l'entorn anterior i HTTPS.
-2. Comprovar sense sessió que `/`, `/privacitat` i `/condicions` responen 200,
-   també amb l'accés dels centres tancat. Les pàgines no requereixen OAuth.
+2. Comprovar sense sessió que `/`, `/privacitat` i `/llicencies` responen 200,
+   també amb l’accés dels centres tancat. Les pàgines no requereixen OAuth.
+   `/condicions` ha de redirigir a `/privacitat#normes-dus`.
 3. Emplenar Marca amb la portada i la política quan el contingut definitiu sigui
    accessible. Les normes d’ús són un document informatiu breu; afegir-ne la URL
    al camp de condicions només si es decideix publicar-les com a tals.

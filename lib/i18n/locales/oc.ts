@@ -19,6 +19,8 @@ export const oc: Messages = {
     "projectInformation": "Informacion deth projècte",
     "accessibility": "Accessibilitat: WCAG 2.2, s’òbri en ua pestanha naua",
     "license": "Licéncia Apache 2.0",
+    "privacyAndUse": "Privadesa e usatge",
+    "licenses": "Licéncies",
     "privacyPolicy": "Politica de privadesa",
     "termsOfUse": "Normes d’usatge intèrn",
     "thirdPartyLicenses": "Licéncies de tercèrs",
