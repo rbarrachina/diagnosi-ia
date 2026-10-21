@@ -37,6 +37,15 @@ export function SiteFooter() {
           </a>
           <span className="inline-flex items-center gap-5">
           <a
+            aria-label={messages.common.accessibility}
+            className="inline-flex items-center gap-2 text-action transition hover:text-action-hover"
+            href="https://www.w3.org/TR/WCAG22/"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <AccessibilityIcon />
+          </a>
+          <a
             aria-label={messages.common.sourceCodeGithub}
             className="inline-flex items-center gap-2 text-action transition hover:text-action-hover"
             href="https://github.com/rbarrachina/diagnosi-ia"
@@ -45,15 +54,6 @@ export function SiteFooter() {
           >
             <GitHubIcon />
             {messages.common.sourceCode}
-          </a>
-          <a
-            aria-label={messages.common.accessibility}
-            className="inline-flex items-center gap-2 text-action transition hover:text-action-hover"
-            href="https://www.w3.org/TR/WCAG22/"
-            rel="noreferrer"
-            target="_blank"
-          >
-            <AccessibilityIcon />
           </a>
           </span>
         </nav>

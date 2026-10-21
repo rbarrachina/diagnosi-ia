@@ -8,7 +8,7 @@ Semantic Versioning.
 
 - Compacta el peu amb «Privacitat i ús» i «Llicències», reunint els documents
   sense retirar el text de les normes ni els avisos de tercers. Situa la icona
-  d’accessibilitat després de GitHub, amb la mateixa mida.
+  d’accessibilitat abans de GitHub, amb la mateixa mida.
 
 - Unifica el desament de configuració administrativa en un botó final i
   presenta cada apartat en una targeta independent.
