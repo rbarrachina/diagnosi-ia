@@ -1,6 +1,13 @@
 import type { InterfaceTranslations } from "@/lib/i18n/interface-messages";
 
 export const interfaceEs = {
+  "googleLoginMode": "Acceso con Google",
+  "googleLoginModeHelp": "Este selector regula los dominios admitidos en la aplicación. No modifica Google Cloud: también hay que configurar allí Internal o External. En modo interno, los centros solo pueden utilizar @xtec.cat.",
+  "googleLoginInternal": "Interno — solo XTEC",
+  "googleLoginExternal": "Externo — XTEC o Google Workspace de los centros",
+  "googleLoginModeConfirm": "¿Quieres cambiar el modo de acceso? El modo interno bloquea las cuentas docentes externas incluso con una sesión abierta. Google Cloud debe configurarse por separado.",
+  "googleLoginModeSave": "Guardar el modo de acceso",
+
   "etapaIntermitja": "Intermedia",
   "detallDimensions": "Detalle de dimensiones",
   "altresGrafics": "Otros gráficos",

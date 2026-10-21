@@ -4,9 +4,15 @@ import { describe, expect, it } from "vitest";
 import { CentreEmailPolicyForm } from "@/components/create-space/centre-email-policy-form";
 
 describe("centre email policy form", () => {
+  it("hides the custom-domain option in internal mode even for a stored custom policy", () => {
+    render(<CentreEmailPolicyForm initialPolicy={{ allowXtec: false, customDomain: "escola.cat", configured: true }} />);
+    expect(screen.queryByRole("radio", { name: "Domini propi" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "@xtec.cat" })).toBeChecked();
+  });
   it("explains that the initial domain configuration can be changed later", () => {
     render(
-      <CentreEmailPolicyForm
+      <CentreEmailPolicyForm allowCustomDomain
         initialPolicy={{
           allowXtec: true,
           customDomain: null,
@@ -24,7 +30,7 @@ describe("centre email policy form", () => {
 
   it("offers one mutually exclusive domain choice", () => {
     render(
-      <CentreEmailPolicyForm
+      <CentreEmailPolicyForm allowCustomDomain
         initialPolicy={{
           allowXtec: true,
           customDomain: null,
@@ -52,7 +58,7 @@ describe("centre email policy form", () => {
 
   it("normalizes a legacy policy with both domains to the custom domain", () => {
     render(
-      <CentreEmailPolicyForm
+      <CentreEmailPolicyForm allowCustomDomain
         initialPolicy={{
           allowXtec: true,
           customDomain: "escola.cat",
@@ -66,7 +72,7 @@ describe("centre email policy form", () => {
   });
 
   it("keeps the domain field visible and selects the custom option on focus", () => {
-    render(<CentreEmailPolicyForm initialPolicy={{ allowXtec: true, customDomain: null, configured: true }} />);
+    render(<CentreEmailPolicyForm allowCustomDomain initialPolicy={{ allowXtec: true, customDomain: null, configured: true }} />);
     const input = screen.getByRole("textbox", { name: "Domini propi" });
     expect(input).toBeVisible();
     expect(screen.getByRole("radio", { name: "@xtec.cat" })).toBeChecked();

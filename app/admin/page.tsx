@@ -1,3 +1,5 @@
+import { getLoginMode } from "@/lib/auth/login-mode";
+import type { LoginMode } from "@/lib/auth/login-mode-policy";
 import type { InterfaceMessageKey } from "@/lib/i18n/interface-messages";
 import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 
@@ -23,6 +25,7 @@ import {
   deleteQuestionnaireVersionAction,
   deleteAdminUserAction,
   deletePendingAdminEmailInvitationAction,
+  setLoginModeAction,
   setResponsibleAccessModeAction,
   setResponsiblePortalStatusAction,
   setAdminUserActiveAction,
@@ -898,12 +901,14 @@ function ResponsibleAccessOption({
 }
 
 async function SettingsPanel({
+  loginMode,
   communicationTemplate,
   languageSettings,
   minimumResponseCount,
   responsibleAccessMode,
   responsiblePortalStatus,
 }: {
+  loginMode: LoginMode;
   communicationTemplate: CommunicationTemplate;
   languageSettings: LanguageSettings;
   minimumResponseCount: number;
@@ -960,6 +965,23 @@ async function SettingsPanel({
           </form>
         </div>
       </div>
+      <form action={setLoginModeAction} className="mb-10 rounded-2xl border border-line bg-surface p-6">
+        <fieldset>
+          <legend className="text-lg font-semibold text-ink">{t("googleLoginMode")}</legend>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">{t("googleLoginModeHelp")}</p>
+          <div className="mt-4 space-y-3">
+            {(["internal", "external"] as const).map((mode) => (
+              <label className="flex items-center gap-3 text-sm font-semibold" key={mode}>
+                <input type="radio" name="loginMode" value={mode} defaultChecked={loginMode === mode} />
+                {t(mode === "internal" ? "googleLoginInternal" : "googleLoginExternal")}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <ConfirmSubmitButton className="mt-5 rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast" message={t("googleLoginModeConfirm")}>
+          {t("googleLoginModeSave")}
+        </ConfirmSubmitButton>
+      </form>
       <form action={setResponsibleAccessModeAction}>
         <fieldset className="border-b border-line pb-10">
           <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
@@ -1157,6 +1179,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const activeSection = getAdminSection(params);
   const centreFilter = getAdminCentreFilter(params.filter);
   const [
+    loginMode,
     versions,
     admins,
     adminInvitations,
@@ -1167,6 +1190,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     languageSettings,
     managedCentres,
   ] = await Promise.all([
+    activeSection === "settings" ? getLoginMode() : Promise.resolve<LoginMode>("internal"),
     activeSection === "questionnaires" || activeSection === "results"
       ? listQuestionnaireVersions()
       : Promise.resolve([]),
@@ -1376,6 +1400,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           />
         ) : (
           <SettingsPanel
+            loginMode={loginMode}
             communicationTemplate={communicationTemplate}
             languageSettings={languageSettings}
             minimumResponseCount={minimumResponseCount}

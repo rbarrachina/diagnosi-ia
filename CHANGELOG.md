@@ -6,6 +6,11 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Afegeix un selector administratiu d’accés Google intern o extern, amb mode
+  intern predeterminat. Oculta el domini propi als centres en mode intern i
+  revalida el domini al servidor, també per a sessions existents i enviaments.
+
+
 - Afegeix pàgines públiques de privacitat i normes d'ús intern, marcades com a
   esborrany fins a concretar els pendents legals, i enllaços traduïts al peu.
 - Documenta OAuth de producció per a `https://diagnosia.edigital.cat`, amb

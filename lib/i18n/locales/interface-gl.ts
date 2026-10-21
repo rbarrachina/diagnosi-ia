@@ -2,6 +2,13 @@ import type { InterfaceTranslations } from "@/lib/i18n/interface-messages";
 
 // Esborrany pendent de revisió lingüística professional.
 export const interfaceGl = {
+  "googleLoginMode": "Acceso con Google",
+  "googleLoginModeHelp": "Este selector regula os dominios admitidos na aplicación. Non modifica Google Cloud: tamén hai que configurar alí Internal ou External. No modo interno só se permite @xtec.cat.",
+  "googleLoginInternal": "Interno — só XTEC",
+  "googleLoginExternal": "Externo — XTEC ou Google Workspace dos centros",
+  "googleLoginModeConfirm": "Queres cambiar o modo de acceso? O modo interno bloquea as contas docentes externas mesmo coa sesión aberta. Google Cloud debe configurarse por separado.",
+  "googleLoginModeSave": "Gardar o modo de acceso",
+
   "etapaIntermitja": "Intermedia",
   "detallDimensions": "Detalle de dimensións",
   "altresGrafics": "Outros gráficos",

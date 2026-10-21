@@ -192,3 +192,23 @@ La capçalera del PDF agregat mostra la Competència Digital docent en IA
 amb l’etapa bàsica, intermèdia o avançada derivada del resultat global,
 en lloc del percentatge global, igual que el tauler de centre.
 Els percentatges de distribució per opció es mantenen.
+
+## Desplegament del selector d’accés Google
+
+Executar `npm run db:migrate` abans de reiniciar la nova versió. La migració
+`0020_narrow_butterfly.sql` afegeix un CHECK a `app_settings` i inicialitza
+`google_login_mode=internal` sense substituir un valor existent. No modifica
+centres, respostes ni comptes. Fer còpia abans de la migració segons el
+procediment d’infraestructura existent.
+
+El selector és a Administració → Configuració → Accés amb Google i exigeix
+confirmació. Comprovar que el domini propi desapareix a la configuració inicial
+i a la gestió del centre en mode intern; una petició directa per desar-lo també
+ha de ser rebutjada. Canviar a extern en proves i comprovar que reapareix i
+que es manté la coincidència exacta de correu i claim `hd`. En tornar a intern,
+una sessió docent externa oberta ha de perdre l’accés i no poder enviar ni
+consultar/exportar resultats propis. No cal ni s’ha de rotar cap secret.
+
+El canvi no configura Google Cloud: alinear l’audiència manualment. Els centres
+que haguessin desat un domini propi passen a XTEC només de manera efectiva;
+el domini desat es conserva per si es torna a extern.

@@ -2,6 +2,10 @@
 
 ## Estat actual
 
+S’afegeix un selector administratiu de mode Google intern/extern, amb mode intern
+predeterminat, política efectiva XTEC i validació server-side en cada accés i
+enviament. Migració `0020_narrow_butterfly.sql`, sense dades personals noves.
+
 L'aplicació funciona amb Next.js i MySQL i disposa de:
 
 - qüestionari públic versionat;

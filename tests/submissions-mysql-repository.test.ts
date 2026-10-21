@@ -20,6 +20,8 @@ type ConnectionMock = {
 };
 
 type ConnectionOptions = {
+  loginMode?: "internal" | "external";
+  customDomain?: string;
   questionIds?: string[];
   existingParticipationCount?: number;
   submissionCount?: number;
@@ -83,6 +85,21 @@ const repositorySource = readFileSync(
   join(process.cwd(), "lib/repositories/submissions.ts"),
   "utf8",
 );
+
+describe("submission login mode revalidation", () => {
+  it("rejects an external account in internal mode before inserting any answer", async () => {
+    currentConnection = createConnectionMock({ loginMode: "internal", customDomain: "escola.cat" });
+    await expect(createSubmissionWithAnswers(validPayload, { ...testUser, email: "docent@escola.cat", hostedDomain: "escola.cat" })).rejects.toBeInstanceOf(InvalidSubmissionRepositoryError);
+    expect(currentConnection.insertedSubmissions).toHaveLength(0);
+    expect(currentConnection.rollback).toHaveBeenCalled();
+  });
+  it("accepts the exact configured Workspace domain in external mode", async () => {
+    currentConnection = createConnectionMock({ loginMode: "external", customDomain: "escola.cat" });
+    await createSubmissionWithAnswers(validPayload, { ...testUser, email: "docent@escola.cat", hostedDomain: "escola.cat" });
+    expect(currentConnection.commit).toHaveBeenCalled();
+    expect(currentConnection.calls.some(({ query }) => query.includes("from app_settings") && query.includes("for share"))).toBe(true);
+  });
+});
 
 describe("MySQL submission repository", () => {
   beforeEach(() => {
@@ -306,6 +323,10 @@ function createConnectionMock(options: ConnectionOptions = {}): ConnectionMock {
       const normalizedQuery = query.toLowerCase();
       calls.push({ query: normalizedQuery, values });
 
+      if (normalizedQuery.includes("from app_settings")) {
+        return [[{ setting_value: options.loginMode ?? "internal" }]];
+      }
+
       if (normalizedQuery.includes("from participant_submissions")) {
         return [[{ participation_count: options.existingParticipationCount ?? 0 }]];
       }
@@ -320,8 +341,8 @@ function createConnectionMock(options: ConnectionOptions = {}): ConnectionMock {
             {
               diagnostic_space_id: "11111111-1111-4111-8111-111111111111",
               questionnaire_id: "002",
-              allow_xtec: 1,
-              custom_domain: null,
+              allow_xtec: options.customDomain ? 0 : 1,
+              custom_domain: options.customDomain ?? null,
               email_policy_configured_at: "2026-07-17T13:25:00.000Z",
             },
           ],

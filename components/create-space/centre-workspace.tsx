@@ -20,12 +20,14 @@ import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 type CentreWorkspaceProps = CreateSpaceFormProps & {
   centre: CentreProfile | null;
+  allowCustomDomain?: boolean;
   footer: ReactNode;
   initialView?: WorkspaceView;
 };
 
 export function CentreWorkspace({
   centre,
+  allowCustomDomain = false,
   centreName,
   footer,
   initialView = "questionnaire",
@@ -117,6 +119,7 @@ export function CentreWorkspace({
                   hidden={view !== "settings"}
                 >
                   <CentreEmailPolicyForm
+        allowCustomDomain={allowCustomDomain}
                     embedded
                     headingId="workspace-settings-heading"
                     initialPolicy={emailPolicy}

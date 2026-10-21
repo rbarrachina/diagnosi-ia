@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+const loginMode = vi.hoisted(() => ({ value: "internal" }));
+vi.mock("@/lib/auth/login-mode", () => ({ getLoginMode: async () => loginMode.value }));
 const localCookies = vi.hoisted(() => new Map<string, string>());
 vi.mock("next/headers", () => ({
   cookies: async () => ({ get: (name: string) => localCookies.has(name) ? { value: localCookies.get(name) } : undefined }),
@@ -16,10 +18,19 @@ const originalEnv = { ...process.env };
 describe("local provisional auth", () => {
   beforeEach(() => {
     localCookies.clear();
+    loginMode.value = "internal";
     process.env = { ...originalEnv };
     process.env.AUTH_MODE = "local";
     process.env.LOCAL_AUTH_USER_ID = "00000000-0000-4000-8000-000000000001";
     process.env.LOCAL_AUTH_EMAIL = "usuari.prova@xtec.cat";
+  });
+
+  it("revalidates existing participant access after a global mode change", async () => {
+    process.env.LOCAL_AUTH_EMAIL = "docent@escola.cat";
+    loginMode.value = "external";
+    expect(await getCurrentParticipantUser()).not.toBeNull();
+    loginMode.value = "internal";
+    expect(await getCurrentParticipantUser()).toBeNull();
   });
 
   it("hides the local user from both roles after logout", async () => {

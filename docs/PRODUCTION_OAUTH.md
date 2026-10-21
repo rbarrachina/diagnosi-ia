@@ -36,9 +36,10 @@ per fet que tots els comptes XTEC hi podran accedir. No n'hi ha prou amb el
 correu de suport o el nom del projecte.
 
 Els comptes de dominis propis d'altres organitzacions Workspace quedaran
-bloquejats per Google. El codi conserva suport per a dominis propis, però aquesta
-capacitat no és utilitzable en aquest desplegament intern; configurar els espais
-amb la política XTEC. No s'han modificat els controls de domini de l'aplicació.
+bloquejats per Google. Administració → Configuració → Accés amb Google ha d’estar en Intern.
+Aquest mode oculta el domini propi als centres i aplica XTEC al servidor.
+El mode Extern resta disponible per a futurs desplegaments, però requereix
+canviar també l’audiència a Google Cloud.
 
 L'ús intern queda exempt de la verificació OAuth pública corresponent.
 Revisar igualment els avisos de la consola. Els administradors Workspace poden

@@ -1,5 +1,12 @@
 // Textos de la interfície compartida; exclou el contingut versionat dels qüestionaris.
 export const interfaceCa = {
+  "googleLoginMode": "Accés amb Google",
+  "googleLoginModeHelp": "Aquest selector regula els dominis admesos a l’aplicació. No modifica Google Cloud: cal configurar-hi també Internal o External. En mode intern, els centres només poden utilitzar @xtec.cat.",
+  "googleLoginInternal": "Intern — només XTEC",
+  "googleLoginExternal": "Extern — XTEC o Google Workspace dels centres",
+  "googleLoginModeConfirm": "Vols canviar el mode d’accés? En mode intern es bloquegen els comptes docents externs també amb sessió oberta. La configuració de Google Cloud s’ha de canviar per separat.",
+  "googleLoginModeSave": "Desa el mode d’accés",
+
   "etapaIntermitja": "Intermitja",
   "detallDimensions": "Detall dimensions",
   "altresGrafics": "Altres gràfics",

@@ -886,3 +886,23 @@ La capçalera del PDF agregat mostra la Competència Digital docent en IA
 amb l’etapa bàsica, intermèdia o avançada derivada del resultat global,
 en lloc del percentatge global, igual que el tauler de centre.
 Els percentatges de distribució per opció es mantenen.
+
+## Mode global d’accés amb Google
+
+L’administració pot triar `google_login_mode`: `internal` (predeterminat) o
+`external`. En mode intern només s’autoritza professorat amb correu i claim
+Workspace `hd` de `xtec.cat`; s’oculta el domini propi tant a la configuració
+inicial com a l’espai del centre, i el servidor rebutja desar-lo. En mode extern
+cada centre torna a triar entre XTEC i un domini Workspace exacte.
+
+El mode es revalida al callback, en llegir la sessió docent i dins la transacció
+d’enviament; les sessions externes existents deixen de donar accés en la petició
+següent en passar a intern. La política efectiva interna és XTEC sense modificar
+ni esborrar un domini propi guardat anteriorment. En tornar a extern es recupera
+la política desada. No es vinculen comptes de dominis diferents ni es modifiquen
+respostes o identificadors pseudònims.
+
+Aquest selector no modifica Google Cloud. L’administrador ha d’alinear-hi
+Internal/External i comprovar que el projecte pertany a l’organització XTEC
+per a l’ús intern. Els responsables continuen restringits a XTEC segons la
+política de responsables, independentment d’aquest selector.

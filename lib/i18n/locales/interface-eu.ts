@@ -2,6 +2,13 @@ import type { InterfaceTranslations } from "@/lib/i18n/interface-messages";
 
 // Esborrany pendent de revisió lingüística professional.
 export const interfaceEu = {
+  "googleLoginMode": "Google bidezko sarbidea",
+  "googleLoginModeHelp": "Hautatzaile honek aplikazioan onartutako domeinuak arautzen ditu. Ez du Google Cloud aldatzen: han ere Internal edo External konfiguratu behar da. Barne moduan @xtec.cat soilik onartzen da.",
+  "googleLoginInternal": "Barnekoa — XTEC soilik",
+  "googleLoginExternal": "Kanpokoa — XTEC edo ikastetxeen Google Workspace",
+  "googleLoginModeConfirm": "Sarbide modua aldatu nahi duzu? Barne moduak kanpoko irakasleen kontuak blokeatzen ditu, saioa irekita badago ere. Google Cloud bereiz konfiguratu behar da.",
+  "googleLoginModeSave": "Gorde sarbide modua",
+
   "etapaIntermitja": "Tartekoa",
   "detallDimensions": "Dimentsioen xehetasuna",
   "altresGrafics": "Beste grafiko batzuk",

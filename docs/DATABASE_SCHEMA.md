@@ -162,6 +162,9 @@ sigui compatible també en bases de dades amb `utf8mb4_0900_ai_ci` per defecte.
 
 Configuració global no personal:
 
+- `google_login_mode`: `internal` o `external`; absència o valor no vàlid es
+  resol com a `internal`. CHECK i inicialització a la migració `0020`.
+
 - `responsible_access_mode`: `all_xtec` o `centre_xtec`.
 - `responsible_portal_status`: `closed` o `open`; controla globalment l'accés
   de centres i docents. Si no existeix, l'aplicació assumeix `closed` per

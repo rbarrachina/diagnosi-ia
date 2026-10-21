@@ -1,4 +1,5 @@
 // @vitest-environment node
+vi.mock("@/lib/auth/login-mode", () => ({ getLoginMode: async () => "external" }));
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({

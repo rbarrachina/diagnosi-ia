@@ -1,5 +1,7 @@
 "use server";
 
+import { loginModeSchema, setLoginMode } from "@/lib/auth/login-mode";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
@@ -464,4 +466,15 @@ export async function deleteAdminCentreAction(formData: FormData) {
 
   revalidatePath("/admin");
   redirect(adminPath({ section: "centres", status: "centre-deleted" }));
+}
+
+export async function setLoginModeAction(formData: FormData) {
+  await requireAdminActorId();
+  try {
+    await setLoginMode(loginModeSchema.parse(getRequiredFormString(formData, "loginMode")));
+  } catch {
+    redirect(adminPath({ error: "settings", section: "settings" }));
+  }
+  revalidatePath("/", "layout");
+  redirect(adminPath({ section: "settings", status: "settings-saved" }));
 }

@@ -1,3 +1,4 @@
+import { getLoginMode } from "@/lib/auth/login-mode";
 import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messages";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -59,6 +60,7 @@ export default async function CreatePage({ searchParams }: CreatePageProps) {
     session.status === "authenticated"
       ? await getCommunicationTemplate()
       : { subject: "", body: "" };
+  const allowCustomDomain = (await getLoginMode()) === "external";
   const existingSpace = ownerSpaces[0] ?? null;
   const accountName = session.status === "authenticated"
     ? session.user.displayName ?? centre?.accountDisplayName ?? session.user.email
@@ -102,13 +104,14 @@ export default async function CreatePage({ searchParams }: CreatePageProps) {
               {messages.centre.initialSetup}
             </h1>
           </div>
-          <CentreOnboarding centre={centre} />
+          <CentreOnboarding allowCustomDomain={allowCustomDomain} centre={centre} />
         </section>
       ) : null}
 
       {session.status === "authenticated" &&
       centre && centre.profileConfirmedAt && centre.emailPolicyConfiguredAt ? (
         <CentreWorkspace
+          allowCustomDomain={allowCustomDomain}
           centre={centre}
           communicationTemplate={communicationTemplate}
           centreName={centre.displayName}

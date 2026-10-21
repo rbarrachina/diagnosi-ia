@@ -1,4 +1,6 @@
 import "server-only";
+import { getLoginMode } from "@/lib/auth/login-mode";
+import { isParticipantAllowedByLoginMode } from "@/lib/auth/login-mode-policy";
 
 import { cookies } from "next/headers";
 import { getLocalAuthUser, LOCAL_SIGNED_OUT_COOKIE_NAME, type AppAuthenticatedUser } from "@/lib/auth/local";
@@ -78,8 +80,8 @@ export async function getCurrentResponsibleUser(): Promise<AppAuthenticatedUser 
 
 export async function getCurrentParticipantUser(): Promise<AppAuthenticatedUser | null> {
   const localUser = getLocalAuthUser();
-  if (localUser) {
-    return (await cookies()).get(LOCAL_SIGNED_OUT_COOKIE_NAME) ? null : localUser;
-  }
-  return getParticipantSessionCookieUser();
+  const user = localUser
+    ? ((await cookies()).get(LOCAL_SIGNED_OUT_COOKIE_NAME) ? null : localUser)
+    : await getParticipantSessionCookieUser();
+  return user && isParticipantAllowedByLoginMode(user, await getLoginMode()) ? user : null;
 }
