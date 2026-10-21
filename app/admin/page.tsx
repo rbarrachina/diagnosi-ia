@@ -25,7 +25,6 @@ import {
   deleteQuestionnaireVersionAction,
   deleteAdminUserAction,
   deletePendingAdminEmailInvitationAction,
-  setLoginModeAction,
   setResponsibleAccessModeAction,
   setResponsiblePortalStatusAction,
   setAdminUserActiveAction,
@@ -965,178 +964,183 @@ async function SettingsPanel({
           </form>
         </div>
       </div>
-      <form action={setLoginModeAction} className="mb-10 rounded-2xl border border-line bg-surface p-6">
-        <fieldset>
-          <legend className="text-lg font-semibold text-ink">{t("googleLoginMode")}</legend>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">{t("googleLoginModeHelp")}</p>
-          <div className="mt-4 space-y-3">
-            {(["internal", "external"] as const).map((mode) => (
-              <label className="flex items-center gap-3 text-sm font-semibold" key={mode}>
-                <input type="radio" name="loginMode" value={mode} defaultChecked={loginMode === mode} />
-                {t(mode === "internal" ? "googleLoginInternal" : "googleLoginExternal")}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-        <ConfirmSubmitButton className="mt-5 rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast" message={t("googleLoginModeConfirm")}>
-          {t("googleLoginModeSave")}
-        </ConfirmSubmitButton>
-      </form>
-      <form action={setResponsibleAccessModeAction}>
-        <fieldset className="border-b border-line pb-10">
-          <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
-            <InterfaceText messageKey="accesPerAResponsables" />
-          </legend>
-          <div className="mt-4 max-w-3xl space-y-0.5 pl-4">
-            <ResponsibleAccessOption
-              checked={responsibleAccessMode === "all_xtec"}
-              description={
-                <><InterfaceText messageKey="qualsevolCompteAcabatEnXtecCatPotCrearIGestionarEl" /></>
-              }
-              id="responsible-access-all-xtec"
-              infoLabel={t("mesInformacioSobreQualsevolCompteXtec")}
-              value="all_xtec"
-            ><InterfaceText messageKey="qualsevolCompteXtec" /></ResponsibleAccessOption>
-            <ResponsibleAccessOption
-              checked={responsibleAccessMode === "centre_xtec"}
-              description={
-                <><InterfaceText messageKey="nomesElsComptesAmbFormatA0000000XtecCatB0000000XtecCat" /></>
-              }
-              id="responsible-access-restricted-xtec"
-              infoLabel={t("mesInformacioSobreNomesComptesDeCentreXtec")}
-              value="centre_xtec"
-            ><InterfaceText messageKey="nomesComptesDeCentreXtec" /></ResponsibleAccessOption>
-          </div>
-        </fieldset>
-        <fieldset className="border-b border-line py-10">
-          <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
-            <InterfaceText messageKey="resultatsGlobals" />
-          </legend>
-          <div className="mt-2 pl-4 text-sm text-muted">
-            <div className="flex flex-wrap items-center gap-2">
-              <label
-                className="font-semibold text-ink"
-                htmlFor="minimum-response-count"
-              ><InterfaceText messageKey="respostesMinimesPerComputar" /></label>
-              <input
-                className="w-20 rounded-md border border-line px-3 py-2 text-sm"
-                defaultValue={minimumResponseCount}
-                id="minimum-response-count"
-                max={10}
-                min={0}
-                name="minimumResponseCount"
-                required
-                type="number"
-              />
-              <InfoDisclosure label={t("mesInformacioSobreRespostesMinimesPerComputar")}>
-                <InterfaceText messageKey="lesEnquestesAmbUnNombreDeRespostesIgualOInferiorA" />
-              </InfoDisclosure>
+      <form action={setResponsibleAccessModeAction} className="space-y-6">
+        <div className="rounded-2xl border border-line bg-surface p-6">
+          <fieldset>
+            <legend className="text-lg font-semibold text-ink">{t("googleLoginMode")}</legend>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">{t("googleLoginModeHelp")}</p>
+            <div className="mt-4 space-y-3">
+              {(["internal", "external"] as const).map((mode) => (
+                <label className="flex items-center gap-3 text-sm font-semibold" key={mode}>
+                  <input type="radio" name="loginMode" value={mode} defaultChecked={loginMode === mode} />
+                  {t(mode === "internal" ? "googleLoginInternal" : "googleLoginExternal")}
+                </label>
+              ))}
             </div>
-          </div>
-        </fieldset>
-        <fieldset className="border-b border-line py-10">
-          <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
-            <InterfaceText messageKey="idiomes" />
-          </legend>
-          <div className="mt-4 max-w-3xl space-y-4 pl-4 text-sm text-muted">
-            <label className="flex items-center gap-3 font-semibold text-ink">
-              <input
-                className="h-4 w-4"
-                defaultChecked={languageSettings.selectorVisible}
-                name="languageSelectorVisible"
-                type="checkbox"
-              /><InterfaceText messageKey="mostraElSelectorDIdiomaALesCapcaleres" /></label>
-            <div>
-              <p className="font-semibold text-ink"><InterfaceText messageKey="idiomesVisibles" /></p>
-              <div className="mt-2 flex flex-wrap gap-x-6 gap-y-3">
-                {AVAILABLE_LANGUAGES.map((language) => {
-                  const isCatalan = language.code === "CA";
-                  return (
-                    <label
-                      className="inline-flex items-center gap-2"
-                      key={language.code}
-                    >
-                      {isCatalan ? (
-                        <>
-                          <input
-                            checked
-                            className="h-4 w-4"
-                            disabled
-                            readOnly
-                            type="checkbox"
-                          />
-                          <input
-                            name="visibleLanguageCodes"
-                            type="hidden"
-                            value="CA"
-                          />
-                        </>
-                      ) : (
-                        <input
-                          className="h-4 w-4"
-                          defaultChecked={languageSettings.visibleLanguageCodes.includes(
-                            language.code,
-                          )}
-                          name="visibleLanguageCodes"
-                          type="checkbox"
-                          value={language.code}
-                        />
-                      )}
-                      <span>
-                        <span className="font-semibold text-ink">
-                          {language.code}
-                        </span>{" "}
-                        {language.label}
-                      </span>
-                    </label>
-                  );
-                })}
+          </fieldset>
+        </div>
+        <div className="rounded-2xl border border-line bg-surface p-6">
+          <fieldset>
+            <legend className="text-lg font-semibold text-ink">
+              <InterfaceText messageKey="accesPerAResponsables" />
+            </legend>
+            <div className="mt-4 max-w-3xl space-y-0.5 pl-4">
+              <ResponsibleAccessOption
+                checked={responsibleAccessMode === "all_xtec"}
+                description={
+                  <><InterfaceText messageKey="qualsevolCompteAcabatEnXtecCatPotCrearIGestionarEl" /></>
+                }
+                id="responsible-access-all-xtec"
+                infoLabel={t("mesInformacioSobreQualsevolCompteXtec")}
+                value="all_xtec"
+              ><InterfaceText messageKey="qualsevolCompteXtec" /></ResponsibleAccessOption>
+              <ResponsibleAccessOption
+                checked={responsibleAccessMode === "centre_xtec"}
+                description={
+                  <><InterfaceText messageKey="nomesElsComptesAmbFormatA0000000XtecCatB0000000XtecCat" /></>
+                }
+                id="responsible-access-restricted-xtec"
+                infoLabel={t("mesInformacioSobreNomesComptesDeCentreXtec")}
+                value="centre_xtec"
+              ><InterfaceText messageKey="nomesComptesDeCentreXtec" /></ResponsibleAccessOption>
+            </div>
+          </fieldset>
+        </div>
+        <div className="rounded-2xl border border-line bg-surface p-6">
+          <fieldset>
+            <legend className="text-lg font-semibold text-ink">
+              <InterfaceText messageKey="resultatsGlobals" />
+            </legend>
+            <div className="mt-2 pl-4 text-sm text-muted">
+              <div className="flex flex-wrap items-center gap-2">
+                <label
+                  className="font-semibold text-ink"
+                  htmlFor="minimum-response-count"
+                ><InterfaceText messageKey="respostesMinimesPerComputar" /></label>
+                <input
+                  className="w-20 rounded-md border border-line px-3 py-2 text-sm"
+                  defaultValue={minimumResponseCount}
+                  id="minimum-response-count"
+                  max={10}
+                  min={0}
+                  name="minimumResponseCount"
+                  required
+                  type="number"
+                />
+                <InfoDisclosure label={t("mesInformacioSobreRespostesMinimesPerComputar")}>
+                  <InterfaceText messageKey="lesEnquestesAmbUnNombreDeRespostesIgualOInferiorA" />
+                </InfoDisclosure>
               </div>
-              <p className="mt-3 text-xs leading-5 text-muted">
-                <InterfaceText messageKey="elCatalaEsLIdiomaBaseIDeReservaLesLlengues" />
-              </p>
             </div>
-          </div>
-        </fieldset>
-        <fieldset className="py-10">
-          <legend className="border-l-4 border-action pl-3 text-lg font-semibold text-ink">
-            <InterfaceText messageKey="comunicat" />
-          </legend>
-          <div className="mt-4 max-w-4xl space-y-4 pl-4 text-sm text-muted">
-            <p className="text-xs leading-5 text-muted">
-              <InterfaceText messageKey="potsUsar" />{" "}<code>{"{NOM_CENTRE}"}</code>{" "}<InterfaceText messageKey="alTitolOAlCos" />{" "}
-              <code>{QUESTIONNAIRE_URL_PLACEHOLDER}</code>{" "}<InterfaceText messageKey="perALEnllacI" />{" "}
-              <code>{QUESTIONNAIRE_CODE_PLACEHOLDER}</code>{" "}<InterfaceText messageKey="perAlCodiElNomDelCentreNomesApareixeraOnHagis" /></p>
-            <label className="block">
-              <span className="font-semibold text-ink"><InterfaceText messageKey="titolDelCorreu" /></span>
-              <input
-                className="mt-2 w-full rounded-md border border-line px-3 py-2 text-sm"
-                defaultValue={communicationTemplate.subject}
-                maxLength={160}
-                name="communicationSubject"
-                required
-                type="text"
-              />
-            </label>
-            <label className="block">
-              <span className="font-semibold text-ink"><InterfaceText messageKey="textDelMissatge" /></span>
-              <textarea
-                className="mt-2 min-h-56 w-full rounded-md border border-line px-3 py-2 text-sm leading-6"
-                defaultValue={communicationTemplate.body}
-                maxLength={4000}
-                name="communicationBody"
-                required
-              />
-            </label>
-            <p className="text-xs leading-5 text-muted">
-              <InterfaceText messageKey="laMarca" />{" "}<code>{QUESTIONNAIRE_URL_PLACEHOLDER}</code>{" "}<InterfaceText messageKey="seSubstituiraPerLEnllacPublicI" />{" "}
-              <code>{QUESTIONNAIRE_CODE_PLACEHOLDER}</code>{" "}<InterfaceText messageKey="pelCodiDeCadaEspaiSiFaltaAlgunaDeLesDues" /></p>
-          </div>
-        </fieldset>
-        <button
+          </fieldset>
+        </div>
+        <div className="rounded-2xl border border-line bg-surface p-6">
+          <fieldset>
+            <legend className="text-lg font-semibold text-ink">
+              <InterfaceText messageKey="idiomes" />
+            </legend>
+            <div className="mt-4 max-w-3xl space-y-4 pl-4 text-sm text-muted">
+              <label className="flex items-center gap-3 font-semibold text-ink">
+                <input
+                  className="h-4 w-4"
+                  defaultChecked={languageSettings.selectorVisible}
+                  name="languageSelectorVisible"
+                  type="checkbox"
+                /><InterfaceText messageKey="mostraElSelectorDIdiomaALesCapcaleres" /></label>
+              <div>
+                <p className="font-semibold text-ink"><InterfaceText messageKey="idiomesVisibles" /></p>
+                <div className="mt-2 flex flex-wrap gap-x-6 gap-y-3">
+                  {AVAILABLE_LANGUAGES.map((language) => {
+                    const isCatalan = language.code === "CA";
+                    return (
+                      <label
+                        className="inline-flex items-center gap-2"
+                        key={language.code}
+                      >
+                        {isCatalan ? (
+                          <>
+                            <input
+                              checked
+                              className="h-4 w-4"
+                              disabled
+                              readOnly
+                              type="checkbox"
+                            />
+                            <input
+                              name="visibleLanguageCodes"
+                              type="hidden"
+                              value="CA"
+                            />
+                          </>
+                        ) : (
+                          <input
+                            className="h-4 w-4"
+                            defaultChecked={languageSettings.visibleLanguageCodes.includes(
+                              language.code,
+                            )}
+                            name="visibleLanguageCodes"
+                            type="checkbox"
+                            value={language.code}
+                          />
+                        )}
+                        <span>
+                          <span className="font-semibold text-ink">
+                            {language.code}
+                          </span>{" "}
+                          {language.label}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <p className="mt-3 text-xs leading-5 text-muted">
+                  <InterfaceText messageKey="elCatalaEsLIdiomaBaseIDeReservaLesLlengues" />
+                </p>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+        <div className="rounded-2xl border border-line bg-surface p-6">
+          <fieldset>
+            <legend className="text-lg font-semibold text-ink">
+              <InterfaceText messageKey="comunicat" />
+            </legend>
+            <div className="mt-4 max-w-4xl space-y-4 pl-4 text-sm text-muted">
+              <p className="text-xs leading-5 text-muted">
+                <InterfaceText messageKey="potsUsar" />{" "}<code>{"{NOM_CENTRE}"}</code>{" "}<InterfaceText messageKey="alTitolOAlCos" />{" "}
+                <code>{QUESTIONNAIRE_URL_PLACEHOLDER}</code>{" "}<InterfaceText messageKey="perALEnllacI" />{" "}
+                <code>{QUESTIONNAIRE_CODE_PLACEHOLDER}</code>{" "}<InterfaceText messageKey="perAlCodiElNomDelCentreNomesApareixeraOnHagis" /></p>
+              <label className="block">
+                <span className="font-semibold text-ink"><InterfaceText messageKey="titolDelCorreu" /></span>
+                <input
+                  className="mt-2 w-full rounded-md border border-line px-3 py-2 text-sm"
+                  defaultValue={communicationTemplate.subject}
+                  maxLength={160}
+                  name="communicationSubject"
+                  required
+                  type="text"
+                />
+              </label>
+              <label className="block">
+                <span className="font-semibold text-ink"><InterfaceText messageKey="textDelMissatge" /></span>
+                <textarea
+                  className="mt-2 min-h-56 w-full rounded-md border border-line px-3 py-2 text-sm leading-6"
+                  defaultValue={communicationTemplate.body}
+                  maxLength={4000}
+                  name="communicationBody"
+                  required
+                />
+              </label>
+              <p className="text-xs leading-5 text-muted">
+                <InterfaceText messageKey="laMarca" />{" "}<code>{QUESTIONNAIRE_URL_PLACEHOLDER}</code>{" "}<InterfaceText messageKey="seSubstituiraPerLEnllacPublicI" />{" "}
+                <code>{QUESTIONNAIRE_CODE_PLACEHOLDER}</code>{" "}<InterfaceText messageKey="pelCodiDeCadaEspaiSiFaltaAlgunaDeLesDues" /></p>
+            </div>
+          </fieldset>
+        </div>
+        <ConfirmSubmitButton message={t("googleLoginModeConfirm")}
+          confirmWhenFieldChanges={{ name: "loginMode", initialValue: loginMode }}
           className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover"
-          type="submit"
-        ><InterfaceText messageKey="desaConfiguracio" /></button>
+        ><InterfaceText messageKey="desaConfiguracio" /></ConfirmSubmitButton>
       </form>
     </section>
   );

@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Unifica el desament de configuració administrativa en un botó final i
+  presenta cada apartat en una targeta independent.
+
 - Afegeix un selector administratiu d’accés Google intern o extern, amb mode
   intern predeterminat. Oculta el domini propi als centres en mode intern i
   revalida el domini al servidor, també per a sessions existents i enviaments.

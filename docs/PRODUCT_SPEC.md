@@ -906,3 +906,8 @@ Aquest selector no modifica Google Cloud. L’administrador ha d’alinear-hi
 Internal/External i comprovar que el projecte pertany a l’organització XTEC
 per a l’ús intern. Els responsables continuen restringits a XTEC segons la
 política de responsables, independentment d’aquest selector.
+
+La configuració administrativa presenta cada apartat en una targeta pròpia i
+agrupa el mode Google amb la resta de camps en un únic desament al final,
+amb confirmació només si es modifica el mode d’accés Google. Obrir o tancar el servei conserva
+la seva acció immediata independent.

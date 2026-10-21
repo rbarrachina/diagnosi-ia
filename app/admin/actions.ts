@@ -336,6 +336,7 @@ export async function setResponsibleAccessModeAction(formData: FormData) {
   await requireAdminActorId();
 
   try {
+    const loginMode = loginModeSchema.parse(getRequiredFormString(formData, "loginMode"));
     const mode = responsibleAccessModeSchema.parse(
       getRequiredFormString(formData, "responsibleAccessMode"),
     );
@@ -356,6 +357,7 @@ export async function setResponsibleAccessModeAction(formData: FormData) {
     await setAdminResultsMinimumSubmissions(minimumSubmissions);
     await setCommunicationTemplate(communicationTemplate);
     await setLanguageSettings(languageSettings);
+    await setLoginMode(loginMode);
   } catch {
     redirect(adminPath({ error: "settings", section: "settings" }));
   }
@@ -466,15 +468,4 @@ export async function deleteAdminCentreAction(formData: FormData) {
 
   revalidatePath("/admin");
   redirect(adminPath({ section: "centres", status: "centre-deleted" }));
-}
-
-export async function setLoginModeAction(formData: FormData) {
-  await requireAdminActorId();
-  try {
-    await setLoginMode(loginModeSchema.parse(getRequiredFormString(formData, "loginMode")));
-  } catch {
-    redirect(adminPath({ error: "settings", section: "settings" }));
-  }
-  revalidatePath("/", "layout");
-  redirect(adminPath({ section: "settings", status: "settings-saved" }));
 }

@@ -212,3 +212,8 @@ consultar/exportar resultats propis. No cal ni s’ha de rotar cap secret.
 El canvi no configura Google Cloud: alinear l’audiència manualment. Els centres
 que haguessin desat un domini propi passen a XTEC només de manera efectiva;
 el domini desat es conserva per si es torna a extern.
+
+La configuració administrativa presenta cada apartat en una targeta pròpia i
+agrupa el mode Google amb la resta de camps en un únic desament al final,
+amb confirmació només si es modifica el mode d’accés Google. Obrir o tancar el servei conserva
+la seva acció immediata independent.
