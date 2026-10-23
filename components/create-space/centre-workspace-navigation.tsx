@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useTranslations } from "@/components/i18n/language-settings-provider";
 
 export type WorkspaceView = "questionnaire" | "profile" | "settings";
@@ -156,7 +158,7 @@ export function CentreMobileNavigation({
         );
       })}
       {navigationLinks.map((item) => (
-        <a
+        <Link
           aria-current={activeAccess === item.access ? "page" : undefined}
           aria-label={item.label}
           className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-1 text-center text-[0.65rem] font-semibold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
@@ -169,7 +171,7 @@ export function CentreMobileNavigation({
         >
           <NavigationIcon name={item.icon} />
           <span>{item.mobileLabel}</span>
-        </a>
+        </Link>
       ))}
     </nav>
   );
@@ -250,14 +252,14 @@ function SidebarItem({
   );
 
   return href ? (
-    <a
+    <Link
       aria-current={active ? "page" : undefined}
       aria-label={item.label}
       className={className}
       href={href}
     >
       {content}
-    </a>
+    </Link>
   ) : (
     <button
       aria-current={active ? "page" : undefined}
@@ -281,7 +283,7 @@ function SidebarLink({
   item: NavigationLink;
 }) {
   return (
-    <a
+    <Link
       aria-label={item.label}
       aria-current={active ? "page" : undefined}
       className={`centre-sidebar-navigation-item group relative flex h-11 w-full items-center justify-center rounded-xl px-3 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
@@ -300,7 +302,7 @@ function SidebarLink({
         label={item.label}
       />
       <span className="sr-only lg:hidden">{item.label}</span>
-    </a>
+    </Link>
   );
 }
 
@@ -328,14 +330,14 @@ function MobileSectionItem({
   );
 
   return href ? (
-    <a
+    <Link
       aria-current={active ? "page" : undefined}
       aria-label={item.label}
       className={className}
       href={href}
     >
       {content}
-    </a>
+    </Link>
   ) : (
     <button
       aria-current={active ? "page" : undefined}

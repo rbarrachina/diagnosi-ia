@@ -1,14 +1,15 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { OwnerResultsClient } from "@/components/results/owner-results-client";
 import type { AggregatedResults } from "@/lib/results/types";
 
 vi.mock("@/components/results/results-dashboard", () => ({
-  ResultsDashboard: ({ introContent }: { introContent?: ReactNode }) => (
-    <div>{introContent}</div>
-  ),
+  ResultsDashboard: function MockDashboard({ detailsLabel, detailsContent }: { detailsLabel?: string; detailsContent?: ReactNode }) {
+    const [open, setOpen] = useState(false);
+    return <div><button aria-expanded={open} onClick={() => setOpen(!open)}>{detailsLabel}</button><div hidden={!open}>{detailsContent}</div></div>;
+  },
 }));
 
 const results = {} as AggregatedResults;
@@ -33,9 +34,12 @@ describe("owner results client", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("heading", { name: "Comparteix els resultats" }),
-    ).toBeVisible();
+    const sharingButton = screen.getByRole("button", { name: "Comparteix els resultats" });
+    expect(sharingButton).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByDisplayValue(sharedResultsUrl)).not.toBeVisible();
+    fireEvent.click(sharingButton);
+    expect(sharingButton).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("heading", { name: "Comparteix els resultats" })).toBeVisible();
     expect(screen.getByDisplayValue(sharedResultsUrl)).toHaveAccessibleName(
       "Enllaç privat compartit de resultats",
     );
@@ -45,6 +49,8 @@ describe("owner results client", () => {
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(sharedResultsUrl);
     });
+    fireEvent.click(sharingButton);
+    expect(screen.getByDisplayValue(sharedResultsUrl)).not.toBeVisible();
   });
 
   it("regenerates the private result link from the results view", async () => {
@@ -64,6 +70,7 @@ describe("owner results client", () => {
       />,
     );
 
+    fireEvent.click(screen.getByRole("button", { name: "Comparteix els resultats" }));
     fireEvent.click(screen.getByRole("button", { name: "Regenerar" }));
 
     await waitFor(() => {

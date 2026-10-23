@@ -31,6 +31,19 @@ describe("visual preferences initializer", () => {
     expect(document.documentElement.dataset.participantSidebar).toBe("expanded");
   });
 
+  it("restores the collapsed menu from the client entry before components mount", async () => {
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      value: { getItem: (key: string) => key.endsWith("sidebar-expanded") ? "false" : "light" },
+    });
+
+    await import("../instrumentation-client");
+
+    expect(document.documentElement.dataset.centreSidebar).toBe("collapsed");
+    expect(document.documentElement.dataset.adminSidebar).toBe("collapsed");
+    expect(document.documentElement.dataset.participantSidebar).toBe("collapsed");
+  });
+
   it("uses safe defaults when browser storage is unavailable", () => {
     Object.defineProperty(window, "localStorage", {
       configurable: true,

@@ -3,7 +3,7 @@ import type { InterfaceTranslator } from "@/lib/i18n/interface-messages";
 
 import { InterfaceText, useInterfaceTranslator } from "@/components/i18n/interface-text";
 
-import { useState, type ReactNode } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import {
   Bar,
   BarChart,
@@ -44,7 +44,8 @@ const CHART_INITIAL_DIMENSION = { height: 1, width: 1 } as const;
 type ResultsDashboardProps = {
   integrated?: boolean;
   showDimensionScales?: boolean;
-  introContent?: ReactNode;
+  detailsLabel?: string;
+  detailsContent?: ReactNode;
   results: AggregatedResults;
   eyebrow?: string;
   isDownloading: boolean;
@@ -53,13 +54,6 @@ type ResultsDashboardProps = {
   noticeText?: string;
   onDownloadPdf: () => void;
   title?: string;
-};
-
-type QuestionDistributionChartDatum = {
-  name: string;
-  questionText: string;
-  optionLabels: Record<number, string>;
-  [key: string]: string | number | Record<number, string>;
 };
 
 function formatPercentage(value: number | null, t: InterfaceTranslator): string {
@@ -201,10 +195,6 @@ function BlockScoreTooltip({ active, payload }: TooltipContentProps) {
   );
 }
 
-function formatTooltipPercentage(value: number): string {
-  return Number.isInteger(value) ? `${value}%` : `${value.toFixed(1)}%`;
-}
-
 function distributionForOption(
   question: QuestionResult,
   value: DistributionBucket["value"],
@@ -239,47 +229,11 @@ function OrderedScaleLegend() {
   );
 }
 
-function QuestionDistributionTooltip({
-  active,
-  payload,
-}: TooltipContentProps) {
-  const question = payload[0]?.payload as QuestionDistributionChartDatum | undefined;
-
-  if (!active || !question) {
-    return null;
-  }
-
-  return (
-    <div
-      className="relative z-50 max-w-sm border border-line px-3 py-2 shadow-lg"
-      style={{
-        backgroundColor: "var(--app-surface-strong, var(--color-surface))",
-        opacity: 1,
-      }}
-    >
-      <p className="text-sm font-semibold leading-5 text-ink">
-        {question.name}. {question.questionText}
-      </p>
-      <ul className="mt-2 space-y-1 text-sm">
-        {ORDERED_SCALE_OPTIONS.map((option) => (
-          <li className="flex justify-between gap-4" key={option.value}>
-            <span style={{ color: option.color }}>
-              {option.value} · {question.optionLabels[option.value]}
-            </span>
-            <span className="font-semibold text-ink">
-              {formatTooltipPercentage(Number(question[option.shortLabel] ?? 0))}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 export function ResultsDashboard({
   integrated = false,
   showDimensionScales = false,
-  introContent,
+  detailsLabel,
+  detailsContent,
   eyebrow,
   results,
   isDownloading,
@@ -290,8 +244,10 @@ export function ResultsDashboard({
   title = "Diagnosi IA",
 }: ResultsDashboardProps) {
   const t = useInterfaceTranslator();
-  const [otherChartsOpen, setOtherChartsOpen] = useState(false);
-  const [dimensionDetailsOpen, setDimensionDetailsOpen] = useState(false);
+  const [openPanel, setOpenPanel] = useState<"charts" | "dimensions" | "sharing" | null>(null);
+  const otherChartsOpen = openPanel === "charts";
+  const dimensionDetailsOpen = openPanel === "dimensions";
+  const panelButtonClass = (active: boolean) => `inline-flex items-center justify-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus ${active ? "border-action bg-surface text-action" : "border-transparent text-muted hover:bg-surface hover:text-ink"}`;
   const [selectedBlockPosition, setSelectedBlockPosition] = useState<number | null>(() => showDimensionScales ? results.blocks[0]?.position ?? null : null);
   const selectedBlock = results.blocks.find(
     (block) => block.position === selectedBlockPosition,
@@ -339,17 +295,9 @@ export function ResultsDashboard({
         </div>
       </div>
 
-      {introContent}
-
       {noticeText ? (
         <div className="mt-6 rounded-md border border-info-border bg-info-bg px-4 py-3 text-sm leading-6 text-info-text">
           {noticeText}
-        </div>
-      ) : null}
-
-      {results.lowResponseWarning ? (
-        <div className="mt-6 rounded-md border border-warning-border bg-warning-bg px-4 py-3 text-sm leading-6 text-warning-text">
-          <InterfaceText messageKey="poquesRespostesInterpretaElsResultatsAmbPrudencia" />
         </div>
       ) : null}
 
@@ -377,6 +325,11 @@ export function ResultsDashboard({
           <p className="mt-2 text-3xl font-semibold text-ink">
             {results.totalSubmissions}
           </p>
+          {results.lowResponseWarning ? (
+            <p className="mt-2 text-sm leading-5 text-warning-text">
+              <InterfaceText messageKey="poquesRespostesInterpretaElsResultatsAmbPrudencia" />
+            </p>
+          ) : null}
         </div>
         <div className="rounded-md border border-line bg-surface p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
@@ -392,6 +345,31 @@ export function ResultsDashboard({
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
             <InterfaceText messageKey="escala" />
           </p>
+          {showDimensionScales ? (
+            <>
+              <p className="mt-2 text-xs leading-5 text-muted">
+                <InterfaceText messageKey="escalaPuntuacionsAjuda" />
+              </p>
+              <div className="mx-5 mt-3">
+                <div aria-hidden="true" className="participant-stage-gradient h-3 rounded-full" />
+                <div className="relative h-10">
+                  {ORDERED_SCALE_OPTIONS.map((option) => (
+                    <span
+                      className="absolute top-0 flex -translate-x-1/2 flex-col items-center"
+                      key={option.value}
+                      style={{ left: `${(option.value / 3) * 100}%` }}
+                    >
+                      <span aria-hidden="true" className="-mt-1 h-2 w-2 rounded-full bg-ink" />
+                      <span aria-hidden="true" className="h-2 w-px bg-ink" />
+                      <span className="whitespace-nowrap rounded bg-ink px-1.5 py-0.5 text-xs font-medium text-surface">
+                        {option.value}{" "}<InterfaceText messageKey={option.value === 1 ? "punt" : "punts"} />
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : (
           <p className="mt-2 text-sm leading-6 text-muted">
             {ORDERED_SCALE_OPTIONS.map((option) => (
               <span className="mr-3 inline-flex items-center gap-1" key={option.value}>
@@ -403,6 +381,7 @@ export function ResultsDashboard({
                 {option.value}{" "}<InterfaceText messageKey="punts" /></span>
             ))}
           </p>
+          )}
         </div>
       </div>
 
@@ -428,20 +407,49 @@ export function ResultsDashboard({
         </div>
       ) : null}
 
-      {showDimensionScales ? (
-        <button
-          aria-controls="other-dimension-charts"
-          aria-expanded={otherChartsOpen}
-          className="mt-6 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition hover:border-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
-          onClick={() => setOtherChartsOpen((open) => !open)}
-          type="button"
-        >
-          <span aria-hidden="true">{otherChartsOpen ? "−" : "+"}</span>
-          <InterfaceText messageKey="altresGrafics" />
-        </button>
+      <div className={showDimensionScales || detailsLabel ? "mt-6 overflow-hidden rounded-xl border border-line bg-surface" : undefined}>
+      {showDimensionScales || detailsLabel ? (
+        <div className="flex flex-wrap border-b border-line bg-surface-soft">
+          {showDimensionScales ? (
+            <>
+              <button
+                aria-controls="other-dimension-charts"
+                aria-expanded={otherChartsOpen}
+                className={panelButtonClass(otherChartsOpen)}
+                onClick={() => setOpenPanel(otherChartsOpen ? null : "charts")}
+                type="button"
+              >
+                <span aria-hidden="true">{otherChartsOpen ? "−" : "+"}</span>
+                <InterfaceText messageKey="altresGrafics" />
+              </button>
+              <button
+                aria-controls="dimension-details"
+                aria-expanded={dimensionDetailsOpen}
+                className={panelButtonClass(dimensionDetailsOpen)}
+                onClick={() => setOpenPanel(dimensionDetailsOpen ? null : "dimensions")}
+                type="button"
+              >
+                <span aria-hidden="true">{dimensionDetailsOpen ? "−" : "+"}</span>
+                <InterfaceText messageKey="detallDimensions" />
+              </button>
+            </>
+          ) : null}
+          {detailsLabel ? (
+            <button
+              aria-controls="results-sharing"
+              aria-expanded={openPanel === "sharing"}
+              className={panelButtonClass(openPanel === "sharing")}
+              onClick={() => setOpenPanel(openPanel === "sharing" ? null : "sharing")}
+              type="button"
+            >
+              <span aria-hidden="true">{openPanel === "sharing" ? "−" : "+"}</span>
+              {detailsLabel}
+            </button>
+          ) : null}
+        </div>
       ) : null}
       <div hidden={showDimensionScales && !otherChartsOpen} id="other-dimension-charts">
-      <div className="mt-6 rounded-md border border-line bg-surface p-5 shadow-sm">
+      <div className={showDimensionScales ? "p-5" : "mt-6 rounded-md border border-line bg-surface p-5 shadow-sm"}>
         <h2 className="text-center text-lg font-semibold text-ink">
           <InterfaceText messageKey="percentatgePerBlocs" />
         </h2>
@@ -551,20 +559,9 @@ export function ResultsDashboard({
         </div>
       </div>
       </div>
-      {showDimensionScales ? (
-        <button
-          aria-controls="dimension-details"
-          aria-expanded={dimensionDetailsOpen}
-          className="mt-4 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition hover:border-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
-          onClick={() => setDimensionDetailsOpen((open) => !open)}
-          type="button"
-        >
-          <span aria-hidden="true">{dimensionDetailsOpen ? "−" : "+"}</span>
-          <InterfaceText messageKey="detallDimensions" />
-        </button>
-      ) : null}
+      {detailsContent ? <div hidden={openPanel !== "sharing"} id="results-sharing">{detailsContent}</div> : null}
       <div hidden={showDimensionScales && !dimensionDetailsOpen} id="dimension-details">
-        <div className="mt-5 rounded-2xl border border-line bg-surface p-5">
+        <div className={showDimensionScales ? "p-5" : "mt-5 rounded-2xl border border-line bg-surface p-5"}>
         <div className="mt-5 grid gap-3 border-t border-line pt-4 text-sm text-muted sm:grid-cols-2 lg:grid-cols-4">
           {results.blocks.map((block) => (
             <button
@@ -655,6 +652,7 @@ export function ResultsDashboard({
       </div>
 
       </div>
+      </div>
       <div className="mt-6 rounded-md border border-line bg-surface p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-ink"><InterfaceText messageKey="interpretacioBreu" /></h2>
         <p className="mt-3 text-sm leading-6 text-muted">{results.interpretation}</p>
@@ -738,6 +736,7 @@ export function ResultsDashboard({
                   <Tooltip
                     cursor={false}
                     content={BlockScoreTooltip}
+                    isAnimationActive={false}
                     wrapperStyle={{ zIndex: 50 }}
                   />
                   <ReferenceLine x={100 / 3} stroke="#64748b" strokeDasharray="2 4" />
@@ -772,10 +771,6 @@ export function ResultsDashboard({
                   <CartesianGrid stroke="#d8dee6" strokeDasharray="3 3" />
                   <XAxis domain={[0, 100]} type="number" unit="%" />
                   <YAxis dataKey="name" interval={0} type="category" width={44} />
-                  <Tooltip
-                    content={QuestionDistributionTooltip}
-                    wrapperStyle={{ zIndex: 50 }}
-                  />
                   <Legend content={<OrderedScaleLegend />} />
                   {ORDERED_SCALE_OPTIONS.map((option) => (
                     <Bar
@@ -796,20 +791,20 @@ export function ResultsDashboard({
                 </caption>
                 <colgroup>
                   <col />
-                  <col className="w-[110px]" />
+                  <col className="w-[150px]" />
                   {Array.from({ length: 4 }, (_, index) => (
-                    <col className="w-[100px]" key={index} />
+                    <col className="w-[90px]" key={index} />
                   ))}
                 </colgroup>
                 <thead>
                   <tr className="border-b border-line text-xs uppercase tracking-[0.08em] text-muted">
                     <th className="py-2 pr-4" scope="col"><InterfaceText messageKey="pregunta" /></th>
-                    <th className="whitespace-nowrap py-2 pr-4" scope="col">
-                      <InterfaceText messageKey="percentatge" />
+                    <th className="whitespace-nowrap py-2 pr-4 text-center" scope="col">
+                      <InterfaceText messageKey="cdDocentEnIa" />
                     </th>
                     {ORDERED_SCALE_OPTIONS.map((option) => (
                       <th
-                        className={`whitespace-nowrap py-2 pr-4 ${option.headerClass}`}
+                        className={`whitespace-nowrap py-2 text-center ${option.headerClass}`}
                         key={option.value}
                         scope="col"
                       >
@@ -819,23 +814,58 @@ export function ResultsDashboard({
                 </thead>
                 <tbody>
                   {block.questions.map((question) => (
-                    <tr className="border-b border-line last:border-b-0" key={question.position}>
+                    <Fragment key={question.position}>
+                    <tr>
                       <td className="py-3 pr-4 text-muted">
                         {block.position}.{question.criterionPosition}.{question.criterionQuestionPosition}. {question.criterionTitle} — {question.text}
                       </td>
-                      <td className="whitespace-nowrap py-3 pr-4 font-semibold text-ink">
-                        {formatPercentage(question.average, t)}
+                      <td className={`py-3 pr-4 text-center font-semibold ${blockStageTextClass(question.average)}`}>
+                        {question.average === null ? (
+                          t("senseDades")
+                        ) : (
+                          <>
+                            <span className="block">{blockStageLabel(question.average, t)}</span>
+                            <span className="mt-1 block text-xs">{formatPercentage(question.average, t)}</span>
+                          </>
+                        )}
                       </td>
                       {ORDERED_SCALE_OPTIONS.map((option) => {
                         const bucket = distributionForOption(question, option.value);
 
                         return (
-                          <td className="whitespace-nowrap py-3 pr-4 text-muted" key={option.value}>
+                          <td className="whitespace-nowrap py-3 text-center text-muted" key={option.value}>
                             {bucket.count} ({bucket.percentage.toFixed(1)}%)
                           </td>
                         );
                       })}
                     </tr>
+                    <tr className="border-b border-line last:border-b-0">
+                      <td className="pb-4" colSpan={6}>
+                        <details>
+                          <summary className="w-fit cursor-pointer rounded text-sm font-semibold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                            <InterfaceText messageKey="respostes" />
+                            <span className="sr-only">: {question.text}</span>
+                          </summary>
+                          <ul className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                            {ORDERED_SCALE_OPTIONS.map((option) => {
+                              const bucket = distributionForOption(question, option.value);
+                              return (
+                                <li className={`flex flex-col gap-3 rounded-xl border px-4 py-3 text-sm text-ink ${option.formClasses}`} key={option.value}>
+                                  <span className="text-xs font-semibold">
+                                    {option.value}{" "}<InterfaceText messageKey={option.value === 1 ? "punt" : "punts"} />
+                                  </span>
+                                  <p>{bucket.label}</p>
+                                  <p className="mt-auto text-xs font-semibold">
+                                    {bucket.count}{" "}<InterfaceText messageKey="respostes" /> · {bucket.percentage.toFixed(1)}%
+                                  </p>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </details>
+                      </td>
+                    </tr>
+                    </Fragment>
                   ))}
                 </tbody>
               </table>

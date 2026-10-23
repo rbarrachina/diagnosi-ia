@@ -23,6 +23,30 @@ Després d'`1.0.0`:
 
 ## Preparar una release
 
+Els tres desplegables de resultats formen una sola caixa amb capçalera de pestanyes i contingut integrat. Només es manté un panell obert alhora; tornar a prémer el control actiu el plega.
+
+Els panells «Altres gràfics», «Detall dimensions» i «Comparteix els resultats» s’obren sense marge superior respecte de la fila de botons.
+
+El gràfic de distribució per dimensió s’etiqueta «Distribució del professorat per nivell de CD docent en IA», amb traduccions a les llengües de la interfície.
+
+El popup de recompte per dimensió apareix sense animació de desplaçament al centre, l’enllaç compartit i l’administració.
+
+La inicialització de tema i menús es mou de l’efecte React a `instrumentation-client.ts`, abans de la hidratació. Els enllaços del menú del centre usen navegació interna per conservar l’estat visual sense recarregar el document. No afegeix dades ni cookies.
+
+L’enllaç privat compartit reutilitza la mateixa presentació de resultats que el centre, amb escales de dimensions i criteris, llegenda i desplegables. Les accions de gestió de l’enllaç continuen reservades al responsable i es mantenen les validacions de token i les dades exclusivament agregades.
+
+Els textos de compartició expliquen l’accés del claustre als resultats de conjunt i la retirada d’accés regenerant l’enllaç sense compartir el nou.
+
+El detall agregat de preguntes mostra l’etapa de CD docent en IA sobre el percentatge, ambdós amb el color de l’etapa i els mateixos límits exactes per terços. Sense respostes mostra «Sense dades».
+
+El detall de cada pregunta ofereix les quatre opcions en un desplegable inicialment plegat, amb les caixes de color del qüestionari i només recomptes i percentatges agregats. Es retira el popup de la distribució per pregunta; el tooltip del recompte per dimensió es manté.
+
+La compartició de resultats del centre queda plegada per defecte i es desplega amb un botó alineat amb «Altres gràfics» i «Detall dimensions» en una fila adaptable, mantenint les accions de copiar i regenerar.
+
+L’avís web de poques respostes es presenta dins la targeta «Respostes» del tauler compartit per centre i administració. Manté el criteri d’entre 1 i 4 respostes i no altera l’agregació, el llindar administratiu ni el PDF.
+
+La targeta «Escala» del resultat del centre incorpora el degradat compartit de les gràfiques amb marcadors fixos per a les puntuacions 0, 1, 2 i 3, sense dades individuals ni migracions. Les puntuacions apareixen sota la franja; el text «Valor de les respostes» sota el títol identifica el significat de l’escala.
+
 La preparació de les pàgines legals i OAuth per a `diagnosia.edigital.cat`
 s'inclou a `Unreleased`, sense migracions ni dependències. Seguir
 `PRODUCTION_OAUTH.md`; els textos tenen pendents explícits que cal resoldre

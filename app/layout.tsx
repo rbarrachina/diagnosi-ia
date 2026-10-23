@@ -2,7 +2,6 @@ import { getServerInterfaceTranslator } from "@/lib/i18n/server-interface-messag
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { LanguageSettingsProvider } from "@/components/i18n/language-settings-provider";
-import { VisualPreferencesInitializer } from "@/components/layout/visual-preferences-initializer";
 import { getLanguageSettings } from "@/lib/admin/language-settings";
 import { getCurrentLanguage } from "@/lib/i18n/locale";
 import "./globals.css";
@@ -40,7 +39,6 @@ export default async function RootLayout({
   return (
     <html lang={language.toLowerCase()} suppressHydrationWarning>
       <body>
-        <VisualPreferencesInitializer />
         <LanguageSettingsProvider language={language} settings={languageSettings}>
           {children}
         </LanguageSettingsProvider>
