@@ -96,10 +96,11 @@ export function OwnerResultsClient({
     <ResultsDashboard
       integrated
       showDimensionScales
-      introContent={(
+      detailsLabel={copy.shareResults}
+      detailsContent={(
         <section
           aria-labelledby="results-link-heading"
-          className="mt-6 rounded-2xl border border-line bg-surface-soft p-5 shadow-[0_12px_32px_rgb(34_73_118_/_0.06)] sm:p-6"
+          className="p-5 sm:p-6"
         >
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-base font-semibold text-ink" id="results-link-heading">

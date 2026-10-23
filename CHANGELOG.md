@@ -6,6 +6,30 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Integra els controls de gràfics, dimensions i compartició en una única caixa amb capçalera de pestanyes, ressaltat actiu i un sol panell obert alhora.
+
+- Retira el marge entre la fila de botons dels resultats i els panells de gràfics, detall i compartició.
+
+- Aclareix el subtítol del gràfic de distribució: «Distribució del professorat per nivell de CD docent en IA».
+
+- Elimina el moviment d’entrada del popup de recompte per dimensió perquè aparegui directament al costat de la barra.
+
+- Evita el desplegament i plegat del menú lateral en navegar: restaura les preferències abans de la hidratació i usa navegació interna als enllaços del centre.
+
+- Iguala la visualització compartida amb la del centre: escales de dimensions i criteris, llegenda de puntuacions i desplegables de gràfics i detall.
+
+- Aclareix com compartir els resultats de conjunt amb el claustre i com retirar l’accés regenerant l’enllaç sense compartir el nou.
+
+- Mostra l’etapa de CD docent en IA de cada pregunta sobre el percentatge, tots dos amb el color de l’etapa corresponent.
+
+- Retira el popup de distribució per pregunta i afegeix un desplegable amb les quatre opcions en caixes de color, amb recomptes i percentatges agregats.
+
+- Plega inicialment la compartició de resultats del centre i situa el botó «Comparteix els resultats» al costat de «Detall dimensions».
+
+- Integra l’avís de poques respostes dins la targeta «Respostes» als resultats web de centre i administració, mantenint el mateix llindar.
+
+- Substitueix la llegenda de punts de l’escala del centre per una franja amb el mateix degradat de les gràfiques i marcadors fixos de 0, 1, 2 i 3 punts sota la franja i una explicació breu sota el títol.
+
 - Compacta el peu amb «Privacitat i ús» i «Llicències», reunint els documents
   sense retirar el text de les normes ni els avisos de tercers. Situa la icona
   d’accessibilitat abans de GitHub, amb la mateixa mida.

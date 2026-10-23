@@ -21,6 +21,8 @@ distribuir-ne binaris. L'abast, les fonts originals i els pendents es documenten
 
 ### Arquitectura visual
 
+`instrumentation-client.ts` restaura síncronament el tema i les preferències de menú abans de la hidratació. No es reinicialitzen des d’un efecte React en muntar el layout. El menú del centre usa `next/link` per navegar entre gestió, previsualització i resultats sense recarregar el document ni reiniciar el menú.
+
 - `app/globals.css` conté exclusivament les directives base de Tailwind.
 - `app/styles/tokens.css` defineix els tokens semàntics de color i les dues
   paletes de l'aplicació. `tailwind.config.ts` consumeix aquests tokens, de

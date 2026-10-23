@@ -160,6 +160,7 @@ export function ResultsClient({ publicCode }: ResultsClientProps) {
 
   return (
     <ResultsDashboard
+      showDimensionScales
       isDownloading={isDownloading}
       onDownloadPdf={handleDownloadPdf}
       results={state.results}

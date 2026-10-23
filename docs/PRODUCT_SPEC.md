@@ -473,7 +473,7 @@ tauleta el rail és la presentació predeterminada i en mòbil se substitueix pe
 una navegació inferior fixa amb respecte per la zona segura del dispositiu. La
 mateixa navegació incorpora els enllaços `Veure qüestionari` i `Ves als
 resultats`; aquests accessos no es repeteixen a la zona central. La
-preferència expandida o plegada es conserva localment al navegador. La zona
+preferència expandida o plegada es conserva localment al navegador. Els enllaços del menú naveguen entre les pàgines del centre sense recarregar el document, conservant l’estat plegat o desplegat. La zona
 central mostra inicialment la gestió del qüestionari, sense contenidors de
 targeta superposats. La part superior mostra el codi públic del qüestionari
 amb la seva etiqueta, sota el títol i la versió. Canviar de vista no reinicialitza l'estat local de la
@@ -740,6 +740,12 @@ versió formen part de la visualització del qüestionari i del resultat propi.
 
 ### Consulta de resultats
 
+L’enllaç privat compartit mostra els mateixos gràfics i controls de visualització que el centre: escales de dimensió i criteri, llegenda de puntuacions, «Altres gràfics», «Detall dimensions» i desplegables de respostes per pregunta. Només el responsable pot gestionar la compartició i regenerar l’enllaç. Totes dues vistes consumeixen exclusivament resultats agregats.
+
+La caixa «Comparteix els resultats» del creador queda plegada inicialment. Els botons «Altres gràfics», «Detall dimensions» i «Comparteix els resultats» comparteixen una capçalera adaptable dins una única caixa amb el panell de contingut. El control actiu es ressalta i només hi ha un panell obert alhora; tornar-lo a prémer el plega. El botó de compartició la desplega, amb les accions de copiar i regenerar l’enllaç privat. Els textos expliquen que compartir-lo dona accés als resultats de conjunt i que regenerar-lo invalida l’anterior; per deixar de compartir, cal regenerar-lo i no distribuir el nou.
+
+La targeta «Escala» del resultat del creador mostra una franja amb el mateix degradat de les gràfiques i quatre marcadors fixos de puntuació: 0, 1, 2 i 3 punts, situats al 0%, un terç, dos terços i 100%. És una llegenda de les opcions de resposta, sense dades individuals. Les puntuacions apareixen sota la franja; el text «Valor de les respostes» sota el títol identifica el significat de l’escala.
+
 Ruta compartida: `/resultats/compartit/[publicCode]#token=[privateToken]`
 
 Ruta del creador: `/espais/[publicCode]/resultats`
@@ -762,7 +768,7 @@ El servidor valida el token i retorna només dades de conjunt:
 - Les gràfiques de barres i aranya del creador queden plegades per defecte sota «Altres gràfics». Un segon botó «Detall dimensions» desplega la selecció de dimensions i les escales de color dels seus criteris, en lloc de barres verticals. La primera dimensió queda seleccionada inicialment. Les escales del resum continuen visibles.
 - A la vista del creador, abans de «Percentatge per dimensions», una targeta per dimensió mostra la mitjana agregada del claustre amb la mateixa escala de color i etapes que el resultat docent. Sense respostes mostra «Sense dades». Les gràfiques existents es mantenen a sota.
 - Percentatge per dimensió.
-- La distribució per dimensió mostra només «Bàsica», «Intermitja» i «Avançada» a l’eix horitzontal; cada barra conserva el recompte del seu tram percentual i el tooltip mostra només el nombre de docents, sense percentatges, quan el recompte és superior a zero. Les etiquetes de l’eix es mostren a 14 px. L’eix vertical arriba exactament al 125% del recompte màxim, amb marques enteres i passos regulars; sense dades usa un límit visual d’1. La capçalera de cada dimensió no mostra el percentatge mitjà.
+- La distribució per dimensió porta el subtítol «Distribució del professorat per nivell de CD docent en IA» i mostra només «Bàsica», «Intermitja» i «Avançada» a l’eix horitzontal; cada barra conserva el recompte del seu tram percentual i el tooltip mostra només el nombre de docents, sense percentatges, quan el recompte és superior a zero, i apareix sense animació de desplaçament. Les etiquetes de l’eix es mostren a 14 px. L’eix vertical arriba exactament al 125% del recompte màxim, amb marques enteres i passos regulars; sense dades usa un límit visual d’1. La capçalera de cada dimensió no mostra el percentatge mitjà.
 - Distribució agregada de les puntuacions docents de cada dimensió en nou trams
   percentuals; només es retornen recomptes, sense puntuacions ni identificadors
   individuals.
@@ -788,13 +794,12 @@ El servidor valida el token i retorna només dades de conjunt:
   amb fons blau i apareixen a sota, en una fila desplaçable, els gràfics de
   percentatge dels seus criteris. Els percentatges de criteri es calculen només
   a partir de recomptes de respostes agregats.
-- Percentatge per pregunta.
-- Distribució per pregunta amb recomptes i percentatges per puntuació, sense
-  repetir el text de cada opció a la taula.
+- Etapa agregada de CD docent en IA per pregunta (bàsica, intermèdia o avançada pels mateixos terços exactes), amb el percentatge a sota. Tots dos textos comparteixen el color de l’etapa; sense respostes es mostra «Sense dades».
+- Distribució per pregunta amb recomptes i percentatges per puntuació, sense popup al gràfic. Sota cada pregunta, un desplegable «Respostes» inicialment plegat mostra les quatre opcions en caixes amb els colors del qüestionari, ordenades de 0 a 3 punts, amb text, recompte i percentatge agregats. No mostra seleccions individuals.
 - Grafiques apilades amb les quatre opcions.
 - Text breu d'interpretació.
 
-Si hi ha poques respostes, el tauler mostra un avís de prudència metodològica. No hi ha mínim fix.
+Si hi ha entre 1 i 4 respostes, el tauler mostra l’avís de prudència metodològica dins la targeta «Respostes», sota el recompte, tant al centre com a l’administració i a l’enllaç compartit. No hi ha una caixa d’avís separada ni un mínim fix per consultar els resultats del centre.
 
 ### Informe PDF
 
