@@ -28,7 +28,8 @@ function roundToTwoDecimals(value: number): number {
 }
 
 function scoreToPercentage(value: number): number {
-  return roundToTwoDecimals((value / MAX_SCALE_VALUE) * 100);
+  // Preserve precision for stage boundaries; round only when formatting for display.
+  return (value / MAX_SCALE_VALUE) * 100;
 }
 
 function createEmptyDistribution(): Record<ScaleValue, number> {

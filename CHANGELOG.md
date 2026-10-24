@@ -6,6 +6,8 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Corregeix les etapes dels resultats agregats als límits exactes: classifica abans d’arrodonir, també al PDF. Dos terços correspon a «Intermèdia».
+
 - Integra els controls de gràfics, dimensions i compartició en una única caixa amb capçalera de pestanyes, ressaltat actiu i un sol panell obert alhora.
 
 - Retira el marge entre la fila de botons dels resultats i els panells de gràfics, detall i compartició.

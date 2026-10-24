@@ -1,3 +1,4 @@
+import { stageForScore } from "@/components/results/stage-scale";
 import {
   calculateAggregatedResults,
   calculateAggregatedResultsFromCounts,
@@ -78,9 +79,9 @@ describe("calculateAggregatedResults", () => {
     });
 
     expect(results.globalAverage).toBe(50);
-    expect(results.blocks[0].average).toBe(66.67);
-    expect(results.blocks[1].average).toBe(16.67);
-    expect(results.blocks[0].questions[0].average).toBe(83.33);
+    expect(results.blocks[0].average).toBeCloseTo(200 / 3, 12);
+    expect(results.blocks[1].average).toBeCloseTo(50 / 3, 12);
+    expect(results.blocks[0].questions[0].average).toBeCloseTo(250 / 3, 12);
     expect(results.blocks[0].questions[1].distribution).toEqual([
       { value: 0, label: "Gens / No ho faig", count: 0, percentage: 0 },
       { value: 1, label: "Una mica / Ocasionalment", count: 1, percentage: 50 },
@@ -125,7 +126,7 @@ describe("calculateAggregatedResultsFromCounts", () => {
     });
 
     expect(results.globalAverage).toBe(50);
-    expect(results.blocks[0].average).toBe(66.67);
+    expect(results.blocks[0].average).toBeCloseTo(200 / 3, 12);
     expect(results.blocks[0].scoreDistribution).toHaveLength(9);
     expect(results.blocks[0].scoreDistribution[0]).toEqual({
       startPercentage: 0,
@@ -135,8 +136,8 @@ describe("calculateAggregatedResultsFromCounts", () => {
       startPercentage: (100 / 9) * 8,
       count: 1,
     });
-    expect(results.blocks[1].average).toBe(16.67);
-    expect(results.blocks[0].questions[0].average).toBe(83.33);
+    expect(results.blocks[1].average).toBeCloseTo(50 / 3, 12);
+    expect(results.blocks[0].questions[0].average).toBeCloseTo(250 / 3, 12);
     expect(results.blocks[0].questions[1].distribution).toEqual([
       { value: 0, label: "Gens / No ho faig", count: 0, percentage: 0 },
       { value: 1, label: "Una mica / Ocasionalment", count: 1, percentage: 50 },
@@ -161,5 +162,34 @@ describe("calculateAggregatedResultsFromCounts", () => {
     expect(serialized).not.toContain("submission");
     expect(serialized).not.toContain("diagnostic_space_id");
     expect(serialized).not.toContain("question-1");
+  });
+});
+
+
+describe("aggregate stage boundaries", () => {
+  it.each([
+    [1, "basic"],
+    [2, "intermediate"],
+    [3, "advanced"],
+  ] as const)("classifies score %s before display rounding", (value, stage) => {
+    const results = calculateAggregatedResultsFromCounts({
+      publicCode: "C-7KX9-M2Q8",
+      questionnaireVersion: "2026.2",
+      generatedAt: "2026-10-24T10:00:00.000Z",
+      totalSubmissions: 2,
+      blocks: [blocks[0]],
+      questions: [questions[0]],
+      answerCounts: [{ questionId: "question-1", value, count: 2 }],
+    });
+    const block = results.blocks[0];
+    for (const score of [results.globalAverage, block.average, block.questions[0].average]) {
+      expect(score).not.toBeNull();
+      expect(stageForScore(score!)).toBe(stage);
+    }
+  });
+
+  it("keeps scores immediately above the boundaries in the next stage", () => {
+    expect(stageForScore(100 / 3 + 0.00001)).toBe("intermediate");
+    expect(stageForScore(200 / 3 + 0.00001)).toBe("advanced");
   });
 });

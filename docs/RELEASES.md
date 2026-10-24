@@ -1,5 +1,9 @@
 # Versions i releases
 
+## Correcció pendent de publicar
+
+- Corregeix les etapes dels resultats agregats als límits exactes: classifica abans d’arrodonir, també al PDF. Dos terços correspon a «Intermèdia».
+
 ## Dos versionats independents
 
 La versió de l'aplicació usa Semantic Versioning, per exemple `v0.1.0`.
