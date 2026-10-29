@@ -94,7 +94,7 @@ export const ca = {
     questionnaireSampleLink: "Ves a la mostra del qüestionari",
     teacherEyebrow: "Accés docent",
     teacherTitle: "Entra amb el codi del qüestionari",
-    teacherHelp: "El codi només es comprovarà després d’autenticar-te. Els errors no indiquen si el codi, l’estat o el domini són la causa.",
+    teacherHelp: "Introdueix el codi que t’ha facilitat el centre. Després, accedeix amb el compte Google autoritzat.",
     teacherHistoryTitle: "Ja hi has participat?",
     teacherHistoryHelp: "Recupera les participacions anteriors i consulta exclusivament les teves respostes i resultats.",
     teacherHistory: "Consulta les meves participacions",

@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Simplifica l’ajuda de l’accés docent per codi amb instruccions per introduir
+  el codi del centre i accedir amb el compte Google autoritzat.
+
 - Descriu la mostra de portada per dimensions, criteris i quatre nivells de
   resposta sense indicar el nombre de preguntes.
 
