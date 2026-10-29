@@ -75,7 +75,7 @@ export default async function Home() {
           <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
             {centreSignedIn ? (
               <Link
-                className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover sm:w-auto sm:min-w-72 sm:text-lg"
+                className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover sm:w-72 sm:text-lg"
                 href="/crear"
               >
                 {copy.mySpace}
@@ -83,7 +83,7 @@ export default async function Home() {
               </Link>
             ) : <CentreLoginDialog
               ariaLabel={responsiblePortalOpen ? undefined : copy.centreAccessSoon}
-              className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:w-auto sm:min-w-72 sm:text-lg"
+              className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:w-72 sm:text-lg"
               disabled={!responsiblePortalOpen}
             >
               {responsiblePortalOpen
@@ -91,8 +91,9 @@ export default async function Home() {
                 : copy.centreAccessSoon}
               {responsiblePortalOpen ? <ArrowIcon /> : null}
             </CentreLoginDialog>}
-            <a className="inline-flex min-h-14 w-full items-center justify-center rounded-2xl border border-line bg-surface px-7 text-base font-semibold text-ink sm:w-auto" href="#acces-docent">
+            <a className="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border border-line bg-surface px-7 text-base font-semibold text-ink sm:w-72 sm:text-lg" href="#acces-docent">
               {copy.teacherButton}
+              <ArrowIcon />
             </a>
           </div>
 

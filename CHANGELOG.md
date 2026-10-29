@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Iguala l’amplada, l’alçada i la mida de lletra dels dos botons principals
+  d’accés de la portada i afegeix la mateixa fletxa a l’accés docent.
+
 - Unifica el text dels botons d’accés del centre amb «Accés centre».
 
 - Separa en una línia pròpia l’exemple de compte XTEC al diàleg d’accés.
