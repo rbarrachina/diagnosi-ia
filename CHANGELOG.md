@@ -6,6 +6,8 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Unifica el text dels botons d’accés del centre amb «Accés centre».
+
 - Separa en una línia pròpia l’exemple de compte XTEC al diàleg d’accés.
 
 - Aclareix l’accés del centre amb un exemple de compte XTEC institucional.

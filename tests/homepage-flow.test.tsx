@@ -143,7 +143,7 @@ describe("initial page", () => {
     render(await Home());
 
     const accessButton = screen.getByRole("button", {
-      name: "Accedeix amb el compte de centre",
+      name: "Accés centre",
     });
     fireEvent.click(accessButton);
 
@@ -161,7 +161,7 @@ describe("initial page", () => {
       ),
     ).not.toBeInTheDocument();
     expect(
-      within(dialog).getByRole("link", { name: "Accedeix amb XTEC" }),
+      within(dialog).getByRole("link", { name: "Accés centre" }),
     ).toHaveAttribute("href", "/auth/login?next=%2Fcrear");
 
     fireEvent.keyDown(dialog, { key: "Escape" });
@@ -225,7 +225,7 @@ describe("initial page", () => {
 
     expect(accessButtons).toHaveLength(2);
     expect(accessButtons.every((button) => button.hasAttribute("disabled"))).toBe(true);
-    expect(screen.queryByRole("link", { name: "Accedeix amb XTEC" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Accés centre" })).not.toBeInTheDocument();
     expect(screen.getByLabelText("Codi del qüestionari")).toBeDisabled();
     expect(screen.getByText("Accés docent properament")).toBeVisible();
     expect(
