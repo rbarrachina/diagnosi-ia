@@ -100,7 +100,7 @@ export const ca = {
     teacherHistory: "Consulta les meves participacions",
     previewEyebrow: "Una mirada al qüestionari",
     previewTitle: "Preguntes clares per obtenir una visió compartida",
-    previewIntro: "El professorat respon 20 preguntes distribuïdes en cinc dimensions. Cada pregunta ofereix quatre nivells de resposta.",
+    previewIntro: "El qüestionari inclou preguntes per a cada dimensió i criteri, amb quatre nivells de resposta.",
     previewGroup: "Exemple de la primera pregunta del qüestionari",
     example: "Exemple",
     questionProgress: "Pregunta 1 de 20",

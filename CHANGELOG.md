@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Descriu la mostra de portada per dimensions, criteris i quatre nivells de
+  resposta sense indicar el nombre de preguntes.
+
 - Presenta les quatre respostes de la mostra de portada en una sola fila
   a les pantalles amples.
 

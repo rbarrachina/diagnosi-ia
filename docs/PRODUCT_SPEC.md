@@ -362,8 +362,9 @@ del formulari del qüestionari. Aquesta mostra és una còpia editorial fixa, no
 base de dades, no conté controls de formulari i no pot enviar ni desar cap
 resposta. En monitors, l'espaiat i la mida de la mostra s'adapten perquè tota
 la tercera pantalla quedi visible sota la capçalera; en dispositius estrets es
-manté el recorregut vertical llegible. També resumeix que el qüestionari consta
-de 20 preguntes repartides en cinc dimensions i cinc criteris generals de compatibilitat.
+manté el recorregut vertical llegible. També explica que el qüestionari inclou
+preguntes per a cada dimensió i criteri, amb quatre nivells de resposta, sense
+indicar el nombre de preguntes.
 
 El responsable inicia l'accés XTEC des de la portada i, un cop autenticat,
 arriba a `/crear` per crear o gestionar el seu espai. El professorat accedeix
