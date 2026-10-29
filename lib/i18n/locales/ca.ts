@@ -10,7 +10,7 @@ export const ca = {
     centreDialogClose: "Tanca l’accés del centre",
     participantDialogClose: "Tanca l’accés docent",
     centreArea: "Espai del centre",
-    centreLoginHelp: "Heu d’accedir amb el compte @xtec del centre (Exemple a1234567@xtec.cat)",
+    centreLoginHelp: "Heu d’accedir amb el compte @xtec del centre\n(Exemple a1234567@xtec.cat)",
     centreLogin: "Accedeix amb XTEC",
     author: "Autor",
     projectInformation: "Informació del projecte",

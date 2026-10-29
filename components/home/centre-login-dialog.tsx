@@ -119,7 +119,7 @@ function LoginDialog({
               {isParticipant ? t("areaDocent") : messages.common.centreArea}
             </h2>
             <p
-              className="mx-auto mt-3 max-w-sm text-pretty text-sm leading-6 text-muted"
+              className="mx-auto mt-3 max-w-sm whitespace-pre-line text-pretty text-sm leading-6 text-muted"
               id={descriptionId}
             >
               {isParticipant

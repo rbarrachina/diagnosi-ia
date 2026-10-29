@@ -6,6 +6,8 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Separa en una línia pròpia l’exemple de compte XTEC al diàleg d’accés.
+
 - Aclareix l’accés del centre amb un exemple de compte XTEC institucional.
 
 - Simplifica l’ajuda de l’accés docent per codi amb instruccions per introduir
