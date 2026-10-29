@@ -12,6 +12,7 @@ type LoginDialogProps = {
   children: ReactNode;
   className: string;
   disabled?: boolean;
+  content?: ReactNode;
 };
 
 export function CentreLoginDialog(props: LoginDialogProps) {
@@ -28,6 +29,7 @@ function LoginDialog({
   className,
   disabled = false,
   kind,
+  content,
 }: LoginDialogProps & { kind: "centre" | "participant" }) {
   const messages = useTranslations();
   const t = useInterfaceTranslator();
@@ -78,7 +80,7 @@ function LoginDialog({
       </button>
 
       <dialog
-        aria-describedby={descriptionId}
+        aria-describedby={content ? undefined : descriptionId}
         aria-labelledby={titleId}
         className="m-auto max-h-[calc(100svh-2rem)] w-[min(27rem,calc(100%-2rem))] overflow-y-auto rounded-3xl border border-line bg-surface p-0 text-ink shadow-[0_32px_110px_rgba(3,15,35,0.45)] backdrop:bg-slate-950/55 backdrop:backdrop-blur-md"
         onCancel={(event) => {
@@ -116,25 +118,25 @@ function LoginDialog({
               className="mt-5 text-balance text-3xl font-semibold tracking-[-0.035em]"
               id={titleId}
             >
-              {isParticipant ? t("areaDocent") : messages.common.centreArea}
+              {isParticipant ? messages.home.teacherButton : messages.common.centreArea}
             </h2>
-            <p
-              className="mx-auto mt-3 max-w-sm text-pretty text-sm leading-6 text-muted"
+            {!content ? <p
+              className="mx-auto mt-3 max-w-sm whitespace-pre-line text-pretty text-sm leading-6 text-muted"
               id={descriptionId}
             >
               {isParticipant
                 ? t("iniciaSessioAmbElMateixCompteGoogleQueVasUtilitzarPer")
                 : messages.common.centreLoginHelp}
-            </p>
+            </p> : null}
           </div>
 
-          <a
+          {content ?? <a
             className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-xl bg-action px-6 font-semibold text-action-contrast shadow-[0_14px_34px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-surface"
             href={isParticipant ? "/auth/login?next=%2Fdocent" : "/auth/login?next=%2Fcrear"}
           >
             <GoogleIcon />
             {isParticipant ? t("accedeixAmbGoogle") : messages.common.centreLogin}
-          </a>
+          </a>}
         </div>
       </dialog>
     </>

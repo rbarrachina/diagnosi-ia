@@ -55,14 +55,7 @@ describe("initial page", () => {
     ]) {
       expect(document.getElementById(sectionId)).toHaveClass("min-h-[100svh]");
     }
-    expect(document.getElementById("acces-docent")?.parentElement).toHaveClass(
-      "min-h-[100svh]",
-    );
-    expect(
-      document.getElementById("mostra-questionari")!.compareDocumentPosition(
-        document.getElementById("acces-docent")!,
-      ) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(document.getElementById("acces-docent")).not.toBeInTheDocument();
     expect(
       screen.getByText(
         "[OIA-12] Fer una diagnosi de quina és la competència digital docent en IA del claustre",
@@ -92,8 +85,6 @@ describe("initial page", () => {
     for (const title of [
       "Una diagnosi compartida per avançar amb criteri",
       "Preguntes clares per obtenir una visió compartida",
-      "Entra amb el codi del qüestionari",
-      "Ja hi has participat?",
     ]) {
       expect(screen.getByRole("heading", { level: 2, name: title })).toHaveClass(
         "text-3xl",
@@ -109,29 +100,21 @@ describe("initial page", () => {
     ).toHaveClass("lg:whitespace-nowrap");
     expect(screen.getByText("Un únic espai de diagnosi per centre")).toBeVisible();
     expect(
-      screen.getByText("El centre només veu resultats de conjunt"),
+      screen.getByText("Només tu pots veure les teves respostes"),
     ).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "Crea o gestiona l’espai de diagnosi" }),
     ).not.toBeInTheDocument();
-    expect(screen.getByText(/identificador pseudònim permet recuperar/)).toBeVisible();
+    expect(screen.getByText(/El centre només veu resultats de conjunt. Cada docent pot consultar exclusivament/)).toBeVisible();
     expect(
       screen.getByRole("link", { name: "Ves a la mostra del qüestionari" }),
     ).toHaveAttribute("href", "#mostra-questionari");
-    expect(
-      screen.getAllByRole("link", { name: "Accés docent" }).some(
-        (link) => link.getAttribute("href") === "#acces-docent",
-      ),
-    ).toBe(true);
-    expect(
-      screen.getByRole("button", { name: "Consulta les meves participacions" }),
-    ).toHaveClass("border-action", "rounded-2xl");
-    expect(
-      screen.getByRole("heading", { level: 2, name: "Ja hi has participat?" }),
-    ).toBeVisible();
-    expect(
-      screen.getByText(/consulta exclusivament les teves respostes i resultats/),
-    ).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Accés docent" }));
+    const teacherDialog = screen.getByRole("dialog", { name: "Accés docent" });
+    expect(within(teacherDialog).getByRole("heading", { name: "Entra amb el codi del qüestionari" })).toBeVisible();
+    expect(within(teacherDialog).getByRole("heading", { name: "Ja hi has participat?" })).toBeVisible();
+    expect(within(teacherDialog).getByText(/consulta exclusivament les teves respostes i resultats/)).toBeVisible();
+    fireEvent.keyDown(teacherDialog, { key: "Escape" });
     expect(
       screen.getByRole("link", {
         name: "Accessibilitat: WCAG 2.2, s’obre en una pestanya nova",
@@ -143,7 +126,7 @@ describe("initial page", () => {
     render(await Home());
 
     const accessButton = screen.getByRole("button", {
-      name: "Accedeix amb el compte de centre",
+      name: "Accés centre",
     });
     fireEvent.click(accessButton);
 
@@ -153,7 +136,7 @@ describe("initial page", () => {
 
     expect(within(dialog).getByText(/@xtec.cat/)).toBeInTheDocument();
     expect(
-      within(dialog).getByText(/Heu d’accedir amb el compte institucional/),
+      within(dialog).getByText("Heu d’accedir amb el compte @xtec del centre (Exemple a1234567@xtec.cat)"),
     ).toBeInTheDocument();
     expect(
       within(dialog).queryByText(
@@ -161,7 +144,7 @@ describe("initial page", () => {
       ),
     ).not.toBeInTheDocument();
     expect(
-      within(dialog).getByRole("link", { name: "Accedeix amb XTEC" }),
+      within(dialog).getByRole("link", { name: "Accés centre" }),
     ).toHaveAttribute("href", "/auth/login?next=%2Fcrear");
 
     fireEvent.keyDown(dialog, { key: "Escape" });
@@ -174,27 +157,33 @@ describe("initial page", () => {
     expect(dialog).not.toHaveAttribute("open");
   });
 
-  it("opens a participant login dialog and keeps the participant OAuth route", async () => {
+  it("opens both participant access routes in one dialog and validates the code locally", async () => {
     render(await Home());
-
-    fireEvent.click(screen.getByRole("button", { name: "Consulta les meves participacions" }));
-
-    const dialog = screen.getByRole("dialog", { name: "Àrea docent" });
-    expect(within(dialog).getByText(/mateix compte Google/)).toBeInTheDocument();
-    expect(within(dialog).getByRole("link", { name: "Accedeix amb Google" }))
+    fireEvent.click(screen.getByRole("button", { name: "Accés docent" }));
+    const dialog = screen.getByRole("dialog", { name: "Accés docent" });
+    expect(within(dialog).getByRole("link", { name: "Consulta les meves participacions" }))
       .toHaveAttribute("href", "/auth/login?next=%2Fdocent");
+    const code = within(dialog).getByLabelText("Codi del qüestionari");
+    expect(within(dialog).getByRole("button", { name: "Accedeix amb Google" })).toBeDisabled();
+    fireEvent.change(code, { target: { value: "C-ABCD-EFGH" } });
+    expect(within(dialog).getByRole("button", { name: "Accedeix amb Google" })).toBeEnabled();
     fireEvent.click(within(dialog).getByRole("button", { name: "Tanca l’accés docent" }));
+    expect(dialog).not.toHaveAttribute("open");
+    fireEvent.click(screen.getByRole("button", { name: "Accés docent" }));
+    fireEvent.click(dialog);
+    expect(dialog).not.toHaveAttribute("open");
+    fireEvent.click(screen.getByRole("button", { name: "Accés docent" }));
+    fireEvent.keyDown(dialog, { key: "Escape" });
     expect(dialog).not.toHaveAttribute("open");
   });
 
   it("goes straight to participations when the participant session is active", async () => {
     participantSignedIn = true;
     render(await Home());
-
-    expect(screen.getByRole("link", { name: "Consulta les meves participacions" }))
+    fireEvent.click(screen.getByRole("button", { name: "Accés docent" }));
+    const dialog = screen.getByRole("dialog", { name: "Accés docent" });
+    expect(within(dialog).getByRole("link", { name: "Consulta les meves participacions" }))
       .toHaveAttribute("href", "/docent");
-    expect(screen.queryByRole("button", { name: "Consulta les meves participacions" }))
-      .not.toBeInTheDocument();
   });
 
   it("shows the centre workspace and a visible exit with an active session", async () => {
@@ -225,8 +214,8 @@ describe("initial page", () => {
 
     expect(accessButtons).toHaveLength(2);
     expect(accessButtons.every((button) => button.hasAttribute("disabled"))).toBe(true);
-    expect(screen.queryByRole("link", { name: "Accedeix amb XTEC" })).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Codi del qüestionari")).toBeDisabled();
+    expect(screen.queryByRole("link", { name: "Accés centre" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Accés docent properament" })).toBeDisabled();
     expect(screen.getByText("Accés docent properament")).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "Consulta les meves participacions" }),
@@ -275,18 +264,18 @@ describe("initial page", () => {
 
     expect(
       within(example).getByText(
-        /Identifico oportunitats i limitacions de la IA en contextos educatius/,
+        /Quin coneixement tens dels conceptes i termes relacionats amb la IA/,
       ),
     ).toBeInTheDocument();
-    expect(within(example).getByText("Gens / No ho faig")).toBeInTheDocument();
+    expect(within(example).getByText("No els conec o no en sabria explicar el significat.")).toBeInTheDocument();
     expect(
-      within(example).getByText("Una mica / Ocasionalment"),
+      within(example).getByText("Reconec aquests termes i en puc explicar el significat bàsic."),
     ).toBeInTheDocument();
     expect(
-      within(example).getByText("Bastant / Habitualment"),
+      within(example).getByText("Conec els processos principals que intervenen en el funcionament dels sistemes d’IA."),
     ).toBeInTheDocument();
     expect(
-      within(example).getByText("Molt / Soc un referent al centre"),
+      within(example).getByText("Conec en profunditat els processos i subprocessos que intervenen en el funcionament dels sistemes d’IA."),
     ).toBeInTheDocument();
     expect(within(example).queryByRole("radio")).not.toBeInTheDocument();
   });

@@ -1,4 +1,5 @@
 import { CentreLoginDialog, ParticipantLoginDialog } from "@/components/home/centre-login-dialog";
+import { InterfaceText } from "@/components/i18n/interface-text";
 import { IconLogoutButton } from "@/components/auth/auth-actions";
 import { QuestionPreview } from "@/components/home/question-preview";
 import { SiteFooter } from "@/components/home/site-footer";
@@ -75,7 +76,7 @@ export default async function Home() {
           <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
             {centreSignedIn ? (
               <Link
-                className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover sm:w-auto sm:min-w-72 sm:text-lg"
+                className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover sm:w-72 sm:text-lg"
                 href="/crear"
               >
                 {copy.mySpace}
@@ -83,7 +84,7 @@ export default async function Home() {
               </Link>
             ) : <CentreLoginDialog
               ariaLabel={responsiblePortalOpen ? undefined : copy.centreAccessSoon}
-              className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:w-auto sm:min-w-72 sm:text-lg"
+              className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-action px-7 text-base font-semibold text-action-contrast shadow-[0_18px_50px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-1 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:w-72 sm:text-lg"
               disabled={!responsiblePortalOpen}
             >
               {responsiblePortalOpen
@@ -91,9 +92,40 @@ export default async function Home() {
                 : copy.centreAccessSoon}
               {responsiblePortalOpen ? <ArrowIcon /> : null}
             </CentreLoginDialog>}
-            <a className="inline-flex min-h-14 w-full items-center justify-center rounded-2xl border border-line bg-surface px-7 text-base font-semibold text-ink sm:w-auto" href="#acces-docent">
-              {copy.teacherButton}
-            </a>
+            <ParticipantLoginDialog
+              className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border border-line bg-surface px-7 text-base font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-60 sm:w-72 sm:text-lg"
+              disabled={!responsiblePortalOpen}
+              content={
+                <div className="mt-6 space-y-6">
+                  <section aria-labelledby="teacher-code-title">
+                    <h3 className="text-xl font-semibold" id="teacher-code-title">{copy.teacherTitle}</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted">{copy.teacherHelp}</p>
+                    <div className="mt-4">
+                      <ParticipantCodeAccessForm
+                        authenticated={Boolean(participant)}
+                        disabled={!responsiblePortalOpen}
+                        stacked
+                        submitLabel={participant ? undefined : <InterfaceText messageKey="accedeixAmbGoogle" />}
+                      />
+                    </div>
+                  </section>
+                  <section aria-labelledby="teacher-history-title" className="border-t border-line pt-6">
+                    <h3 className="text-xl font-semibold" id="teacher-history-title">{copy.teacherHistoryTitle}</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted">{copy.teacherHistoryHelp}</p>
+                    <a
+                      className="group mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-action px-4 text-sm font-semibold text-action transition hover:bg-accent-soft focus:outline-none focus:ring-2 focus:ring-focus"
+                      href={participant ? "/docent" : "/auth/login?next=%2Fdocent"}
+                    >
+                      {copy.teacherHistory}
+                      <ArrowIcon />
+                    </a>
+                  </section>
+                </div>
+              }
+            >
+              {responsiblePortalOpen ? copy.teacherButton : copy.teacherAccessSoon}
+              <ArrowIcon />
+            </ParticipantLoginDialog>
           </div>
 
           <div className="mx-auto mt-6 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted">
@@ -199,53 +231,7 @@ export default async function Home() {
 
       <QuestionPreview />
 
-      <div className="flex min-h-[100svh] flex-col">
-        <section className="flex flex-1 items-center border-t border-line bg-paper px-5 py-10 sm:px-8 sm:py-12" id="acces-docent">
-          <div className="mx-auto w-full max-w-5xl">
-            <p className="text-center text-sm font-semibold uppercase tracking-[0.16em] text-action">
-              {copy.teacherEyebrow}
-            </p>
-            <div className="mt-6 grid gap-5 md:grid-cols-2">
-              <article className="rounded-3xl border border-line bg-surface p-7 shadow-[0_14px_40px_var(--app-shadow)] sm:p-9">
-                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{copy.teacherTitle}</h2>
-                <p className="mt-4 leading-7 text-muted">{copy.teacherHelp}</p>
-                <div className="mt-6">
-                  <ParticipantCodeAccessForm disabled={!responsiblePortalOpen} />
-                </div>
-              </article>
-
-              <article className="flex flex-col rounded-3xl border border-line bg-surface p-7 shadow-[0_14px_40px_var(--app-shadow)] sm:p-9">
-                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                  {copy.teacherHistoryTitle}
-                </h2>
-                <p className="mt-4 flex-1 leading-7 text-muted">
-                  {copy.teacherHistoryHelp}
-                </p>
-                {responsiblePortalOpen ? participant ? (
-                  <Link
-                    className="group mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-action bg-surface px-5 text-sm font-semibold text-action transition hover:bg-accent-soft focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper sm:w-auto sm:self-start"
-                    href="/docent"
-                  >
-                    {copy.teacherHistory}
-                    <ArrowIcon />
-                  </Link>
-                ) : (
-                  <ParticipantLoginDialog className="group mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-action bg-surface px-5 text-sm font-semibold text-action transition hover:bg-accent-soft focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper sm:w-auto sm:self-start">
-                    {copy.teacherHistory}
-                    <ArrowIcon />
-                  </ParticipantLoginDialog>
-                ) : (
-                  <span className="mt-6 inline-flex cursor-not-allowed text-sm font-semibold text-muted opacity-60">
-                    {copy.teacherAccessSoon}
-                  </span>
-                )}
-              </article>
-            </div>
-          </div>
-        </section>
-
-        <SiteFooter />
-      </div>
+      <SiteFooter />
     </main>
   );
 }

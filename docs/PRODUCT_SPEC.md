@@ -349,13 +349,31 @@ amb transició suau a la mostra del qüestionari. L'enllaç conserva una etiquet
 accessible encara que visualment només mostri la icona.
 
 Després de l'explicació dels rols, la portada mostra una previsualització
-estàtica de la primera pregunta de la versió `2026.2` i de les seves quatre
-opcions de resposta. Aquesta mostra és una còpia editorial fixa, no consulta la
+estàtica de la primera pregunta real facilitada per al qüestionari i de les seves quatre
+opcions de resposta, amb «Dimensió 1 · Comprensió i ús segur de la IA» i
+«Criteri 1.1 · Comprensió de la IA». El contingut de la pregunta es manté en
+català en totes les llengües de la interfície. No mostra comptador de preguntes,
+barra de progrés ni avís final informatiu. La dimensió, el criteri i la pregunta
+comparteixen les mides, pesos i colors tipogràfics del formulari del qüestionari.
+Les quatre opcions es disposen en una sola fila a partir de 1024 px, en dues
+columnes a partir de 640 px i en una columna en pantalles més estretes.
+Les opcions no mostren números de puntuació i reutilitzen els colors de resposta
+del formulari del qüestionari. Aquesta mostra és una còpia editorial fixa, no consulta la
 base de dades, no conté controls de formulari i no pot enviar ni desar cap
 resposta. En monitors, l'espaiat i la mida de la mostra s'adapten perquè tota
 la tercera pantalla quedi visible sota la capçalera; en dispositius estrets es
-manté el recorregut vertical llegible. També resumeix que el qüestionari consta
-de 20 preguntes repartides en cinc dimensions i cinc criteris generals de compatibilitat.
+manté el recorregut vertical llegible. També explica que el qüestionari inclou
+preguntes per a cada dimensió i criteri, amb quatre nivells de resposta, sense
+indicar el nombre de preguntes.
+
+El botó «Accés docent» obre un únic diàleg amb dues opcions visibles:
+introduir el codi del centre i consultar les participacions anteriors. El codi
+manté la validació de format local i només es comprova després de l’autenticació.
+Amb sessió docent activa, el formulari navega directament al qüestionari i
+l’accés a participacions apunta a `/docent`; sense sessió s’inicia Google OAuth.
+En prellançament el botó està desactivat. La portada no inclou la secció
+d’accés al final ni l’enllaç de desplaçament des de la mostra a aquesta secció.
+El diàleg es pot tancar amb el botó, Escape o el fons, i adapta l’alçada a la pantalla.
 
 El responsable inicia l'accés XTEC des de la portada i, un cop autenticat,
 arriba a `/crear` per crear o gestionar el seu espai. El professorat accedeix
@@ -365,10 +383,9 @@ qualsevol accés de responsable de la portada obre un diàleg amb el logotip de
 l'aplicació i la pàgina desenfocada. El diàleg informa que només s'hi admet el
 compte institucional `@xtec.cat` assignat al centre; no substitueix la
 validació de servidor ni modifica el flux d'autenticació.
-L'enllaç de la portada per consultar participacions obre un diàleg equivalent
-quan no hi ha sessió docent. Indica que cal fer servir el mateix compte Google
-amb què es va participar i continua cap a l'OAuth docent. Amb una sessió docent
-vigent, l'enllaç obre directament `/docent`.
+Dins el diàleg docent, l’enllaç per consultar participacions continua cap a
+l’OAuth docent quan no hi ha sessió. Amb una sessió docent vigent, obre
+directament `/docent`.
 
 Amb una sessió de responsable autoritzada, la portada substitueix els accessos
 de centre pel vincle `El meu espai` cap a `/crear` i mostra una icona de sortida

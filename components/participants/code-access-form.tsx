@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "@/components/i18n/language-settings-provider";
@@ -9,9 +10,13 @@ const PUBLIC_CODE_PATTERN = /^C-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}-[ABCDEFGHJK
 export function ParticipantCodeAccessForm({
   disabled = false,
   authenticated = false,
+  stacked = false,
+  submitLabel,
 }: {
   disabled?: boolean;
   authenticated?: boolean;
+  stacked?: boolean;
+  submitLabel?: ReactNode;
 }) {
   const router = useRouter();
   const messages = useTranslations();
@@ -36,7 +41,7 @@ export function ParticipantCodeAccessForm({
         window.location.assign(`/auth/login?next=${encodeURIComponent(`/q/${normalizedCode}`)}`);
       }}
     >
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className={`flex flex-col gap-3 ${stacked ? "" : "sm:flex-row"}`}>
         <label className="sr-only" htmlFor="participant-code">
           {messages.common.questionnaireCode}
         </label>
@@ -60,7 +65,7 @@ export function ParticipantCodeAccessForm({
           disabled={disabled || !valid}
           type="submit"
         >
-          {messages.common.access}
+          {submitLabel ?? messages.common.access}
         </button>
       </div>
       <p

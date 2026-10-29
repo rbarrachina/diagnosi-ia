@@ -6,6 +6,41 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Reuneix el codi del qüestionari i les participacions anteriors en un únic
+  popup d’accés docent i retira la secció final d’accés de la portada.
+
+- Escurça la frase destacada de privacitat a «Només tu pots veure les teves respostes».
+
+- Alleugereix la targeta de privacitat de portada, destacant els resultats de
+  conjunt del centre i l’accés exclusiu del docent a les seves respostes.
+
+- Iguala l’amplada, l’alçada i la mida de lletra dels dos botons principals
+  d’accés de la portada i afegeix la mateixa fletxa a l’accés docent.
+
+- Unifica el text dels botons d’accés del centre amb «Accés centre».
+
+- Separa en una línia pròpia l’exemple de compte XTEC al diàleg d’accés.
+
+- Aclareix l’accés del centre amb un exemple de compte XTEC institucional.
+
+- Simplifica l’ajuda de l’accés docent per codi amb instruccions per introduir
+  el codi del centre i accedir amb el compte Google autoritzat.
+
+- Descriu la mostra de portada per dimensions, criteris i quatre nivells de
+  resposta sense indicar el nombre de preguntes.
+
+- Presenta les quatre respostes de la mostra de portada en una sola fila
+  a les pantalles amples.
+
+- Retira els números 0–3 de les opcions de mostra i reutilitza els colors
+  de resposta del qüestionari.
+
+- Iguala la mida, el pes i els colors de dimensió, criteri i pregunta de la
+  mostra de portada amb els del qüestionari.
+
+- Actualitza la mostra de la portada amb la primera pregunta real, la dimensió,
+  el criteri i les quatre respostes; retira el comptador, el progrés i l’avís final.
+
 - Corregeix les etapes dels resultats agregats als límits exactes: classifica abans d’arrodonir, també al PDF. Dos terços correspon a «Intermèdia».
 
 - Integra els controls de gràfics, dimensions i compartició en una única caixa amb capçalera de pestanyes, ressaltat actiu i un sol panell obert alhora.

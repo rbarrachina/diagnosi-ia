@@ -67,38 +67,6 @@ html[data-theme="dark"] .home-title-gradient {
   box-shadow: 0 14px 55px rgb(38 91 148 / 12%);
 }
 
-.home-question-progress {
-  background: linear-gradient(90deg, #2f7ed0, #75baff);
-  box-shadow: 0 0 18px rgb(71 151 235 / 65%);
-}
-
-.home-scale-option {
-  border-color: color-mix(in srgb, var(--scale-color) 34%, var(--app-line));
-  background: color-mix(in srgb, var(--scale-color) 11%, var(--app-surface-strong));
-}
-
-.home-scale-number {
-  background: color-mix(in srgb, var(--scale-color) 23%, var(--app-surface-strong));
-  color: color-mix(in srgb, var(--scale-color) 72%, var(--app-ink));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--scale-color) 42%, transparent);
-}
-
-.home-scale-option-0 {
-  --scale-color: #ef7777;
-}
-
-.home-scale-option-1 {
-  --scale-color: #e7b63f;
-}
-
-.home-scale-option-2 {
-  --scale-color: #42b873;
-}
-
-.home-scale-option-3 {
-  --scale-color: #35b8d0;
-}
-
 .home-scroll-cue span {
   animation: home-scroll 1.8s ease-in-out infinite;
 }
