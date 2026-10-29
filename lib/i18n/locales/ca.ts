@@ -90,7 +90,7 @@ export const ca = {
     privacyEyebrow: "Privacitat docent",
     privacyTitle: "El docent respon",
     privacyText: "El centre només veu resultats de conjunt. Cada docent pot consultar exclusivament les seves respostes i resultats. El nom no es recull i el correu només es conserva durant la sessió per validar el domini.",
-    privacyCheck: "Les teves respostes, només accessibles per a tu",
+    privacyCheck: "Només tu pots veure les teves respostes",
     questionnaireSampleLink: "Ves a la mostra del qüestionari",
     teacherEyebrow: "Accés docent",
     teacherTitle: "Entra amb el codi del qüestionari",

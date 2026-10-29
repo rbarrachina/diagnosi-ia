@@ -109,7 +109,7 @@ describe("initial page", () => {
     ).toHaveClass("lg:whitespace-nowrap");
     expect(screen.getByText("Un únic espai de diagnosi per centre")).toBeVisible();
     expect(
-      screen.getByText("Les teves respostes, només accessibles per a tu"),
+      screen.getByText("Només tu pots veure les teves respostes"),
     ).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "Crea o gestiona l’espai de diagnosi" }),

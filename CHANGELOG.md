@@ -6,6 +6,8 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Escurça la frase destacada de privacitat a «Només tu pots veure les teves respostes».
+
 - Alleugereix la targeta de privacitat de portada, destacant els resultats de
   conjunt del centre i l’accés exclusiu del docent a les seves respostes.
 
