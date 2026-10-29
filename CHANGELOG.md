@@ -6,6 +6,12 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Retira els números 0–3 de les opcions de mostra i reutilitza els colors
+  de resposta del qüestionari.
+
+- Iguala la mida, el pes i els colors de dimensió, criteri i pregunta de la
+  mostra de portada amb els del qüestionari.
+
 - Actualitza la mostra de la portada amb la primera pregunta real, la dimensió,
   el criteri i les quatre respostes; retira el comptador, el progrés i l’avís final.
 

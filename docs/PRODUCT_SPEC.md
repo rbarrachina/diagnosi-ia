@@ -353,7 +353,10 @@ estàtica de la primera pregunta real facilitada per al qüestionari i de les se
 opcions de resposta, amb «Dimensió 1 · Comprensió i ús segur de la IA» i
 «Criteri 1.1 · Comprensió de la IA». El contingut de la pregunta es manté en
 català en totes les llengües de la interfície. No mostra comptador de preguntes,
-barra de progrés ni avís final informatiu. Aquesta mostra és una còpia editorial fixa, no consulta la
+barra de progrés ni avís final informatiu. La dimensió, el criteri i la pregunta
+comparteixen les mides, pesos i colors tipogràfics del formulari del qüestionari.
+Les opcions no mostren números de puntuació i reutilitzen els colors de resposta
+del formulari del qüestionari. Aquesta mostra és una còpia editorial fixa, no consulta la
 base de dades, no conté controls de formulari i no pot enviar ni desar cap
 resposta. En monitors, l'espaiat i la mida de la mostra s'adapten perquè tota
 la tercera pantalla quedi visible sota la capçalera; en dispositius estrets es

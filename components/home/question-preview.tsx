@@ -46,12 +46,12 @@ export function QuestionPreview() {
             </div>
 
             <div className="mt-6 lg:mt-5" lang="ca">
-              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-action">
+              <p className="text-2xl font-bold tracking-[-0.03em] text-action-hover sm:text-3xl">
                 {ca.home.block}
               </p>
-              <p className="mt-2 text-sm font-medium text-muted">{ca.home.criterion}</p>
-              <h3 className="mt-4 max-w-4xl text-balance text-2xl font-semibold leading-tight tracking-[-0.025em] sm:text-3xl lg:mt-2 lg:text-2xl">
-                <span className="mr-2 text-action">1.1.1.</span>
+              <p className="mt-2 text-lg font-semibold text-action sm:text-xl">{ca.home.criterion}</p>
+              <h3 className="mt-4 w-full text-base font-semibold leading-7 text-ink sm:text-lg">
+                <span className="mr-1">1.1.1.</span>
                 {ca.home.question}
               </h3>
             </div>
@@ -63,15 +63,9 @@ export function QuestionPreview() {
             >
               {ca.home.options.map((label, value) => (
                 <li
-                  className={`home-scale-option home-scale-option-${value} flex min-h-20 items-center gap-4 rounded-2xl border px-4 py-4 sm:px-5 lg:min-h-14 lg:py-2.5`}
+                  className={`questionnaire-scale-option questionnaire-scale-option-${value} flex min-h-20 items-center gap-4 rounded-2xl border px-4 py-4 sm:px-5 lg:min-h-14 lg:py-2.5`}
                   key={value}
                 >
-                  <span
-                    aria-hidden="true"
-                    className="home-scale-number inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold lg:h-8 lg:w-8"
-                  >
-                    {value}
-                  </span>
                   <span className="font-medium leading-6 text-ink">
                     {label}
                   </span>
