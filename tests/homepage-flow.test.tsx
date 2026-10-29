@@ -153,7 +153,7 @@ describe("initial page", () => {
 
     expect(within(dialog).getByText(/@xtec.cat/)).toBeInTheDocument();
     expect(
-      within(dialog).getByText(/Heu d’accedir amb el compte institucional/),
+      within(dialog).getByText("Heu d’accedir amb el compte @xtec del centre (Exemple a1234567@xtec.cat)"),
     ).toBeInTheDocument();
     expect(
       within(dialog).queryByText(
