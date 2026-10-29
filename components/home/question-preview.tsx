@@ -59,7 +59,7 @@ export function QuestionPreview() {
             <ul
               aria-label={copy.answerOptionsLabel}
               lang="ca"
-              className="mt-8 grid gap-3 sm:grid-cols-2 lg:mt-5 lg:gap-2"
+              className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:mt-5 lg:gap-2"
             >
               {ca.home.options.map((label, value) => (
                 <li

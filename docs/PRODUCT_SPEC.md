@@ -355,6 +355,8 @@ opcions de resposta, amb «Dimensió 1 · Comprensió i ús segur de la IA» i
 català en totes les llengües de la interfície. No mostra comptador de preguntes,
 barra de progrés ni avís final informatiu. La dimensió, el criteri i la pregunta
 comparteixen les mides, pesos i colors tipogràfics del formulari del qüestionari.
+Les quatre opcions es disposen en una sola fila a partir de 1024 px, en dues
+columnes a partir de 640 px i en una columna en pantalles més estretes.
 Les opcions no mostren números de puntuació i reutilitzen els colors de resposta
 del formulari del qüestionari. Aquesta mostra és una còpia editorial fixa, no consulta la
 base de dades, no conté controls de formulari i no pot enviar ni desar cap

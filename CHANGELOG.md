@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Presenta les quatre respostes de la mostra de portada en una sola fila
+  a les pantalles amples.
+
 - Retira els números 0–3 de les opcions de mostra i reutilitza els colors
   de resposta del qüestionari.
 
