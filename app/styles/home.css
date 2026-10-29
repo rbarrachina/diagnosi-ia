@@ -67,11 +67,6 @@ html[data-theme="dark"] .home-title-gradient {
   box-shadow: 0 14px 55px rgb(38 91 148 / 12%);
 }
 
-.home-question-progress {
-  background: linear-gradient(90deg, #2f7ed0, #75baff);
-  box-shadow: 0 0 18px rgb(71 151 235 / 65%);
-}
-
 .home-scale-option {
   border-color: color-mix(in srgb, var(--scale-color) 34%, var(--app-line));
   background: color-mix(in srgb, var(--scale-color) 11%, var(--app-surface-strong));

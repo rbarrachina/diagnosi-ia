@@ -275,18 +275,18 @@ describe("initial page", () => {
 
     expect(
       within(example).getByText(
-        /Identifico oportunitats i limitacions de la IA en contextos educatius/,
+        /Quin coneixement tens dels conceptes i termes relacionats amb la IA/,
       ),
     ).toBeInTheDocument();
-    expect(within(example).getByText("Gens / No ho faig")).toBeInTheDocument();
+    expect(within(example).getByText("No els conec o no en sabria explicar el significat.")).toBeInTheDocument();
     expect(
-      within(example).getByText("Una mica / Ocasionalment"),
+      within(example).getByText("Reconec aquests termes i en puc explicar el significat bàsic."),
     ).toBeInTheDocument();
     expect(
-      within(example).getByText("Bastant / Habitualment"),
+      within(example).getByText("Conec els processos principals que intervenen en el funcionament dels sistemes d’IA."),
     ).toBeInTheDocument();
     expect(
-      within(example).getByText("Molt / Soc un referent al centre"),
+      within(example).getByText("Conec en profunditat els processos i subprocessos que intervenen en el funcionament dels sistemes d’IA."),
     ).toBeInTheDocument();
     expect(within(example).queryByRole("radio")).not.toBeInTheDocument();
   });

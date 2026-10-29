@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Actualitza la mostra de la portada amb la primera pregunta real, la dimensió,
+  el criteri i les quatre respostes; retira el comptador, el progrés i l’avís final.
+
 - Corregeix les etapes dels resultats agregats als límits exactes: classifica abans d’arrodonir, també al PDF. Dos terços correspon a «Intermèdia».
 
 - Integra els controls de gràfics, dimensions i compartició en una única caixa amb capçalera de pestanyes, ressaltat actiu i un sol panell obert alhora.

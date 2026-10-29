@@ -349,8 +349,11 @@ amb transició suau a la mostra del qüestionari. L'enllaç conserva una etiquet
 accessible encara que visualment només mostri la icona.
 
 Després de l'explicació dels rols, la portada mostra una previsualització
-estàtica de la primera pregunta de la versió `2026.2` i de les seves quatre
-opcions de resposta. Aquesta mostra és una còpia editorial fixa, no consulta la
+estàtica de la primera pregunta real facilitada per al qüestionari i de les seves quatre
+opcions de resposta, amb «Dimensió 1 · Comprensió i ús segur de la IA» i
+«Criteri 1.1 · Comprensió de la IA». El contingut de la pregunta es manté en
+català en totes les llengües de la interfície. No mostra comptador de preguntes,
+barra de progrés ni avís final informatiu. Aquesta mostra és una còpia editorial fixa, no consulta la
 base de dades, no conté controls de formulari i no pot enviar ni desar cap
 resposta. En monitors, l'espaiat i la mida de la mostra s'adapten perquè tota
 la tercera pantalla quedi visible sota la capçalera; en dispositius estrets es
