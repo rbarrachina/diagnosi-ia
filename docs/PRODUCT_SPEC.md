@@ -366,6 +366,15 @@ manté el recorregut vertical llegible. També explica que el qüestionari inclo
 preguntes per a cada dimensió i criteri, amb quatre nivells de resposta, sense
 indicar el nombre de preguntes.
 
+El botó «Accés docent» obre un únic diàleg amb dues opcions visibles:
+introduir el codi del centre i consultar les participacions anteriors. El codi
+manté la validació de format local i només es comprova després de l’autenticació.
+Amb sessió docent activa, el formulari navega directament al qüestionari i
+l’accés a participacions apunta a `/docent`; sense sessió s’inicia Google OAuth.
+En prellançament el botó està desactivat. La portada no inclou la secció
+d’accés al final ni l’enllaç de desplaçament des de la mostra a aquesta secció.
+El diàleg es pot tancar amb el botó, Escape o el fons, i adapta l’alçada a la pantalla.
+
 El responsable inicia l'accés XTEC des de la portada i, un cop autenticat,
 arriba a `/crear` per crear o gestionar el seu espai. El professorat accedeix
 al qüestionari des de l'enllaç específic rebut. Un accés directe a `/crear`
@@ -374,10 +383,9 @@ qualsevol accés de responsable de la portada obre un diàleg amb el logotip de
 l'aplicació i la pàgina desenfocada. El diàleg informa que només s'hi admet el
 compte institucional `@xtec.cat` assignat al centre; no substitueix la
 validació de servidor ni modifica el flux d'autenticació.
-L'enllaç de la portada per consultar participacions obre un diàleg equivalent
-quan no hi ha sessió docent. Indica que cal fer servir el mateix compte Google
-amb què es va participar i continua cap a l'OAuth docent. Amb una sessió docent
-vigent, l'enllaç obre directament `/docent`.
+Dins el diàleg docent, l’enllaç per consultar participacions continua cap a
+l’OAuth docent quan no hi ha sessió. Amb una sessió docent vigent, obre
+directament `/docent`.
 
 Amb una sessió de responsable autoritzada, la portada substitueix els accessos
 de centre pel vincle `El meu espai` cap a `/crear` i mostra una icona de sortida

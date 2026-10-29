@@ -55,14 +55,7 @@ describe("initial page", () => {
     ]) {
       expect(document.getElementById(sectionId)).toHaveClass("min-h-[100svh]");
     }
-    expect(document.getElementById("acces-docent")?.parentElement).toHaveClass(
-      "min-h-[100svh]",
-    );
-    expect(
-      document.getElementById("mostra-questionari")!.compareDocumentPosition(
-        document.getElementById("acces-docent")!,
-      ) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(document.getElementById("acces-docent")).not.toBeInTheDocument();
     expect(
       screen.getByText(
         "[OIA-12] Fer una diagnosi de quina és la competència digital docent en IA del claustre",
@@ -92,8 +85,6 @@ describe("initial page", () => {
     for (const title of [
       "Una diagnosi compartida per avançar amb criteri",
       "Preguntes clares per obtenir una visió compartida",
-      "Entra amb el codi del qüestionari",
-      "Ja hi has participat?",
     ]) {
       expect(screen.getByRole("heading", { level: 2, name: title })).toHaveClass(
         "text-3xl",
@@ -118,20 +109,12 @@ describe("initial page", () => {
     expect(
       screen.getByRole("link", { name: "Ves a la mostra del qüestionari" }),
     ).toHaveAttribute("href", "#mostra-questionari");
-    expect(
-      screen.getAllByRole("link", { name: "Accés docent" }).some(
-        (link) => link.getAttribute("href") === "#acces-docent",
-      ),
-    ).toBe(true);
-    expect(
-      screen.getByRole("button", { name: "Consulta les meves participacions" }),
-    ).toHaveClass("border-action", "rounded-2xl");
-    expect(
-      screen.getByRole("heading", { level: 2, name: "Ja hi has participat?" }),
-    ).toBeVisible();
-    expect(
-      screen.getByText(/consulta exclusivament les teves respostes i resultats/),
-    ).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Accés docent" }));
+    const teacherDialog = screen.getByRole("dialog", { name: "Accés docent" });
+    expect(within(teacherDialog).getByRole("heading", { name: "Entra amb el codi del qüestionari" })).toBeVisible();
+    expect(within(teacherDialog).getByRole("heading", { name: "Ja hi has participat?" })).toBeVisible();
+    expect(within(teacherDialog).getByText(/consulta exclusivament les teves respostes i resultats/)).toBeVisible();
+    fireEvent.keyDown(teacherDialog, { key: "Escape" });
     expect(
       screen.getByRole("link", {
         name: "Accessibilitat: WCAG 2.2, s’obre en una pestanya nova",
@@ -174,27 +157,33 @@ describe("initial page", () => {
     expect(dialog).not.toHaveAttribute("open");
   });
 
-  it("opens a participant login dialog and keeps the participant OAuth route", async () => {
+  it("opens both participant access routes in one dialog and validates the code locally", async () => {
     render(await Home());
-
-    fireEvent.click(screen.getByRole("button", { name: "Consulta les meves participacions" }));
-
-    const dialog = screen.getByRole("dialog", { name: "Àrea docent" });
-    expect(within(dialog).getByText(/mateix compte Google/)).toBeInTheDocument();
-    expect(within(dialog).getByRole("link", { name: "Accedeix amb Google" }))
+    fireEvent.click(screen.getByRole("button", { name: "Accés docent" }));
+    const dialog = screen.getByRole("dialog", { name: "Accés docent" });
+    expect(within(dialog).getByRole("link", { name: "Consulta les meves participacions" }))
       .toHaveAttribute("href", "/auth/login?next=%2Fdocent");
+    const code = within(dialog).getByLabelText("Codi del qüestionari");
+    expect(within(dialog).getByRole("button", { name: "Accedeix amb Google" })).toBeDisabled();
+    fireEvent.change(code, { target: { value: "C-ABCD-EFGH" } });
+    expect(within(dialog).getByRole("button", { name: "Accedeix amb Google" })).toBeEnabled();
     fireEvent.click(within(dialog).getByRole("button", { name: "Tanca l’accés docent" }));
+    expect(dialog).not.toHaveAttribute("open");
+    fireEvent.click(screen.getByRole("button", { name: "Accés docent" }));
+    fireEvent.click(dialog);
+    expect(dialog).not.toHaveAttribute("open");
+    fireEvent.click(screen.getByRole("button", { name: "Accés docent" }));
+    fireEvent.keyDown(dialog, { key: "Escape" });
     expect(dialog).not.toHaveAttribute("open");
   });
 
   it("goes straight to participations when the participant session is active", async () => {
     participantSignedIn = true;
     render(await Home());
-
-    expect(screen.getByRole("link", { name: "Consulta les meves participacions" }))
+    fireEvent.click(screen.getByRole("button", { name: "Accés docent" }));
+    const dialog = screen.getByRole("dialog", { name: "Accés docent" });
+    expect(within(dialog).getByRole("link", { name: "Consulta les meves participacions" }))
       .toHaveAttribute("href", "/docent");
-    expect(screen.queryByRole("button", { name: "Consulta les meves participacions" }))
-      .not.toBeInTheDocument();
   });
 
   it("shows the centre workspace and a visible exit with an active session", async () => {
@@ -226,7 +215,7 @@ describe("initial page", () => {
     expect(accessButtons).toHaveLength(2);
     expect(accessButtons.every((button) => button.hasAttribute("disabled"))).toBe(true);
     expect(screen.queryByRole("link", { name: "Accés centre" })).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Codi del qüestionari")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Accés docent properament" })).toBeDisabled();
     expect(screen.getByText("Accés docent properament")).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "Consulta les meves participacions" }),

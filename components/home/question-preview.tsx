@@ -75,15 +75,7 @@ export function QuestionPreview() {
           </div>
         </div>
 
-        <div className="mt-5 flex justify-center">
-          <a
-            aria-label={copy.teacherButton}
-            className="home-scroll-cue flex h-9 w-6 justify-center rounded-full border border-line pt-2 transition hover:border-action focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper"
-            href="#acces-docent"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-action" />
-          </a>
-        </div>
+
       </div>
     </section>
   );

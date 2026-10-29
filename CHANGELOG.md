@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Reuneix el codi del qüestionari i les participacions anteriors en un únic
+  popup d’accés docent i retira la secció final d’accés de la portada.
+
 - Escurça la frase destacada de privacitat a «Només tu pots veure les teves respostes».
 
 - Alleugereix la targeta de privacitat de portada, destacant els resultats de
