@@ -109,12 +109,12 @@ describe("initial page", () => {
     ).toHaveClass("lg:whitespace-nowrap");
     expect(screen.getByText("Un únic espai de diagnosi per centre")).toBeVisible();
     expect(
-      screen.getByText("El centre només veu resultats de conjunt"),
+      screen.getByText("Les teves respostes, només accessibles per a tu"),
     ).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "Crea o gestiona l’espai de diagnosi" }),
     ).not.toBeInTheDocument();
-    expect(screen.getByText(/identificador pseudònim permet recuperar/)).toBeVisible();
+    expect(screen.getByText(/El centre només veu resultats de conjunt. Cada docent pot consultar exclusivament/)).toBeVisible();
     expect(
       screen.getByRole("link", { name: "Ves a la mostra del qüestionari" }),
     ).toHaveAttribute("href", "#mostra-questionari");

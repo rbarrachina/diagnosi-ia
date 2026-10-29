@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Alleugereix la targeta de privacitat de portada, destacant els resultats de
+  conjunt del centre i l’accés exclusiu del docent a les seves respostes.
+
 - Iguala l’amplada, l’alçada i la mida de lletra dels dos botons principals
   d’accés de la portada i afegeix la mateixa fletxa a l’accés docent.
 
