@@ -15,8 +15,10 @@ export function AppLogoLink({
   showLabelOnMobile = false,
 }: AppLogoLinkProps) {
   const messages = useTranslations();
+  const LogoLink = href.startsWith("#") ? "a" : Link;
+
   return (
-    <Link
+    <LogoLink
       aria-label={messages.common.backHome}
       className="group inline-flex items-center gap-3 font-semibold tracking-[-0.02em]"
       href={href}
@@ -27,7 +29,7 @@ export function AppLogoLink({
       <span className={`${showLabelOnMobile ? "inline" : "hidden sm:inline"} text-base`}>
         Diagnosi IA
       </span>
-    </Link>
+    </LogoLink>
   );
 }
 

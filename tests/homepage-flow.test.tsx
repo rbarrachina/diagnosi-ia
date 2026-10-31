@@ -70,9 +70,8 @@ describe("initial page", () => {
     expect(
       screen.getByRole("button", { name: "Activa el tema fosc" }),
     ).toBeInTheDocument();
-    const xtecHeaderButton = screen.getByRole("button", { name: "Accés XTEC" });
-    expect(xtecHeaderButton).toHaveClass("h-10", "w-10", "rounded-full", "bg-action");
-    expect(xtecHeaderButton).not.toHaveTextContent("Accés XTEC");
+    expect(screen.queryByRole("button", { name: "Accés XTEC" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Surt" })).not.toBeInTheDocument();
     expect(
       screen.getByRole("heading", { level: 3, name: "Una diagnosi amb criteri" }),
     ).toBeInTheDocument();
@@ -105,7 +104,7 @@ describe("initial page", () => {
     expect(
       screen.queryByRole("button", { name: "Crea o gestiona l’espai de diagnosi" }),
     ).not.toBeInTheDocument();
-    expect(screen.getByText(/El centre només veu resultats de conjunt. Cada docent pot consultar exclusivament/)).toBeVisible();
+    expect(screen.getByText(/Cada docent pot consultar les seves respostes i resultats. No es recullen noms/)).toBeVisible();
     expect(
       screen.getByRole("link", { name: "Ves a la mostra del qüestionari" }),
     ).toHaveAttribute("href", "#mostra-questionari");
@@ -180,6 +179,9 @@ describe("initial page", () => {
   it("goes straight to participations when the participant session is active", async () => {
     participantSignedIn = true;
     render(await Home());
+    expect(screen.getByRole("link", { name: "El meu espai" })).toHaveAttribute("href", "/docent");
+    expect(screen.getByRole("button", { name: "Surt" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Accés XTEC" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Accés docent" }));
     const dialog = screen.getByRole("dialog", { name: "Accés docent" });
     expect(within(dialog).getByRole("link", { name: "Consulta les meves participacions" }))
@@ -196,12 +198,23 @@ describe("initial page", () => {
     expect(screen.queryByRole("button", { name: "Accés XTEC" })).not.toBeInTheDocument();
   });
 
+  it("keeps the centre workspace when both sessions are active", async () => {
+    responsibleSessionStatus = "authenticated";
+    participantSignedIn = true;
+    render(await Home());
+
+    const header = screen.getByRole("banner");
+    expect(within(header).getByRole("link", { name: "El meu espai" })).toHaveAttribute("href", "/crear");
+    expect(within(header).getAllByRole("button", { name: "Surt" })).toHaveLength(1);
+  });
+
   it("keeps exit visible when the responsible session is denied", async () => {
     responsibleSessionStatus = "forbidden";
     render(await Home());
 
     expect(screen.getByRole("button", { name: "Surt" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Accés XTEC" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Accés centre" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Accés XTEC" })).not.toBeInTheDocument();
   });
 
   it("shows prelaunch mode without exposing a centre login link", async () => {
@@ -212,7 +225,7 @@ describe("initial page", () => {
       name: "Accés de centres properament",
     });
 
-    expect(accessButtons).toHaveLength(2);
+    expect(accessButtons).toHaveLength(1);
     expect(accessButtons.every((button) => button.hasAttribute("disabled"))).toBe(true);
     expect(screen.queryByRole("link", { name: "Accés centre" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Accés docent properament" })).toBeDisabled();

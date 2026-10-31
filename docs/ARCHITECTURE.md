@@ -362,6 +362,8 @@ de verificació manual i els límits de l’auditoria es documenten a
 
 ## Pàgines d'entrada
 
+- El logotip de portada usa una àncora HTML nativa a `#inici` perquè el
+  navegador gestioni el retorn al principi sense la navegació de Next.js.
 - `/` és l'única portada informativa. Mostra objectiu, indicador, rols i accés
   del responsable. La versió mostrada prové de `package.json`; l'autoria, la
   llicència i el repositori són al peu de pàgina. La capçalera fixa activa
@@ -396,7 +398,12 @@ de verificació manual i els límits de l’auditoria es documenten a
   a text no interactiu, situat abans dels controls d'idioma, tema i sortida;
   una icona de sortida independent queda visible a la capçalera. La portada
   amb sessió autoritzada mostra `El meu espai` i la
-  mateixa sortida. Les pantalles de responsable amb accés denegat mantenen una
+  mateixa sortida. La portada també mostra la sortida amb sessió docent i el vincle
+  `El meu espai` cap a `/docent`; amb totes dues sessions, prioritza `/crear`.
+  Sense sessió no renderitza cap icona d’accés ni de sortida i conserva els
+  dos botons principals d’accés. La decisió es pren al servidor amb les
+  sessions existents, sense enviar dades identificatives al client. Les pantalles
+  de responsable amb accés denegat mantenen una
   sortida visible per poder canviar de compte. Un contenidor client manté
   muntades les vistes centrals de qüestionari, fitxa i configuració de correus per preservar-ne
   l'estat local mentre s'alterna entre totes tres. El mateix estat governa una
@@ -432,7 +439,8 @@ de verificació manual i els límits de l’auditoria es documenten a
   un altre accés per codi. `/docent/resultats/[publicCode]` mostra les respostes
   pròpies sense exposar identificadors interns. Les dues rutes i el qüestionari
   autenticat reutilitzen la icona de sortida de la capçalera del centre; no
-  mostren nom ni correu del docent.
+  mostren nom ni correu del docent. El logotip de les dues rutes apunta a `/`
+  per tornar a la portada.
 
 ## Decisions pendents
 

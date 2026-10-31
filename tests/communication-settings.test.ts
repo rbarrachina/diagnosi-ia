@@ -32,9 +32,21 @@ describe("communication settings", () => {
     expect(template.body).toContain("{CODI_QUESTIONARI}");
   });
 
+  it("refreshes the known privacy paragraph and preserves custom content", async () => {
+    communicationSettings.set(COMMUNICATION_BODY_SETTING_KEY,
+      "Salutació personalitzada\n\n" + 'Les respostes no inclouen el vostre nom. La vostra participació es vincula a un identificador pseudonimitzat perquè pugueu consultar-la més endavant amb el mateix compte Google. El centre i l’administració només poden consultar resultats agregats.' + "\n\nComiat personalitzat\n{URL_QUESTIONARI}\n{CODI_QUESTIONARI}");
+
+    const template = await getCommunicationTemplate();
+    expect(template.body).toContain("Salutació personalitzada");
+    expect(template.body).toContain("Comiat personalitzat");
+    expect(template.body).toContain("No es recullen noms i el correu només s’utilitza durant la sessió per validar l’accés.");
+    expect(template.body).toContain("identificador pseudonimitzat");
+    expect(template.body).not.toContain("Les respostes no inclouen el vostre nom");
+  });
+
   it("persists configured communication text", async () => {
     const normalizedBody =
-      "Nou cos {URL_QUESTIONARI}\n\nPer tornar-hi a accedir més endavant, conserveu aquest codi:\n{CODI_QUESTIONARI}";
+      "Nou cos {URL_QUESTIONARI}\n\nTambé podeu accedir al qüestionari amb aquest codi:\n{CODI_QUESTIONARI}";
 
     await expect(
       setCommunicationTemplate({

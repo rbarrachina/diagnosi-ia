@@ -29,21 +29,15 @@ export default async function Home() {
     <main className="app-shell min-h-screen overflow-hidden bg-paper text-ink">
       <AppHeader brandHref="#inici">
         <ThemeToggle />
-        {centreSignedIn ? (
+        {centreSignedIn || participant ? (
           <Link
             className="ml-1 inline-flex h-10 items-center rounded-full bg-action px-3 text-xs font-semibold text-action-contrast transition hover:bg-action-hover sm:px-4 sm:text-sm"
-            href="/crear"
+            href={centreSignedIn ? "/crear" : "/docent"}
           >
             {copy.mySpace}
           </Link>
-        ) : <CentreLoginDialog
-          ariaLabel={responsiblePortalOpen ? copy.centreAccess : copy.centreAccessSoon}
-          className="ml-1 inline-flex h-10 w-10 items-center justify-center rounded-full bg-action text-action-contrast shadow-[0_8px_24px_var(--app-action-shadow)] transition duration-200 hover:-translate-y-0.5 hover:bg-action-hover focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-paper disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
-          disabled={!responsiblePortalOpen}
-        >
-          <AccessIcon />
-        </CentreLoginDialog>}
-        {session.status !== "unauthenticated" ? <IconLogoutButton /> : null}
+        ) : null}
+        {session.status !== "unauthenticated" || participant ? <IconLogoutButton /> : null}
       </AppHeader>
 
       <section
@@ -241,14 +235,6 @@ function TrustItem({ label }: { label: string }) {
     <span className="inline-flex items-center gap-2">
       <CheckIcon /> {label}
     </span>
-  );
-}
-
-function AccessIcon() {
-  return (
-    <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24">
-      <path d="M14 8 18 12l-4 4M18 12H7M10 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-    </svg>
   );
 }
 

@@ -7,6 +7,8 @@ import {
   DEFAULT_COMMUNICATION_SUBJECT,
   QUESTIONNAIRE_CODE_PLACEHOLDER,
   QUESTIONNAIRE_URL_PLACEHOLDER,
+  refreshCommunicationPrivacyText,
+  formatCommunicationBody,
   type CommunicationTemplate,
 } from "@/lib/communication/email-template";
 import { mysqlPool } from "@/lib/db/client";
@@ -91,7 +93,8 @@ export async function setCommunicationTemplate(
   return { subject, body };
 }
 
-function ensureRequiredCommunicationPlaceholders(body: string): string {
+function ensureRequiredCommunicationPlaceholders(savedBody: string): string {
+  const body = refreshCommunicationPrivacyText(savedBody);
   const additions: string[] = [];
 
   if (!body.includes(QUESTIONNAIRE_URL_PLACEHOLDER)) {
@@ -100,13 +103,15 @@ function ensureRequiredCommunicationPlaceholders(body: string): string {
 
   if (!body.includes(QUESTIONNAIRE_CODE_PLACEHOLDER)) {
     additions.push(
-      `Per tornar-hi a accedir més endavant, conserveu aquest codi:\n${QUESTIONNAIRE_CODE_PLACEHOLDER}`,
+      `També podeu accedir al qüestionari amb aquest codi:\n${QUESTIONNAIRE_CODE_PLACEHOLDER}`,
     );
   }
 
-  return additions.length === 0
-    ? body
-    : `${body.trim()}\n\n${additions.join("\n\n")}`;
+  return formatCommunicationBody(
+    additions.length === 0
+      ? body
+      : `${body.trim()}\n\n${additions.join("\n\n")}`,
+  );
 }
 
 function isMissingSettingsTableError(error: unknown): boolean {

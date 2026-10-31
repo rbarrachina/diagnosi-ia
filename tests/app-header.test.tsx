@@ -8,6 +8,17 @@ vi.mock("next/navigation", () => ({
 import { AppHeader } from "@/components/layout/app-header";
 
 describe("app header brand link", () => {
+  it("uses a native anchor to return to the homepage start", () => {
+    render(
+      <AppHeader brandHref="#inici">
+        <span>Control</span>
+      </AppHeader>,
+    );
+
+    expect(screen.getByRole("link", { name: "Torna a l’inici de Diagnosi IA" }))
+      .toHaveAttribute("href", "#inici");
+  });
+
   it("can open the home page in a new tab for the public questionnaire", () => {
     render(
       <AppHeader brandHref="/" brandOpensInNewTab showBrandLabelOnMobile>

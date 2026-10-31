@@ -37,7 +37,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
   return (
     <main className="app-shell min-h-screen bg-paper text-ink">
       <AppHeader
-        brandHref="/docent"
+        brandHref="/"
         contentWidth="wide"
         leadingControls={
           <span className="max-w-20 truncate text-right text-xs font-semibold text-ink sm:max-w-48 sm:text-sm lg:max-w-64" title={result.centreName}>
@@ -60,7 +60,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
               <p className="text-2xl font-semibold leading-tight text-ink sm:text-3xl">
                 {result.questionnaireTitle}
               </p>
-              <p className="mt-2 text-sm leading-6 text-muted">{formatDate(result.completedAt)}</p>
+              <p className="mt-2 text-sm leading-6 text-muted"><InterfaceText messageKey="realitzatEl" values={{ date: formatDate(result.completedAt) }} /></p>
             </div>
             <div className="self-center rounded-2xl border border-line bg-surface px-4 py-3 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">

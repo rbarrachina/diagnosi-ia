@@ -2,6 +2,12 @@
 
 ## Correcció pendent de publicar
 
+- Ajusta la capçalera de portada segons la sessió, afegeix l’accés directe a
+  l’espai docent i corregeix la navegació del logotip.
+- Simplifica els textos d’accés i privacitat, etiqueta les dates docents i
+  actualitza el paràgraf i el format de les plantilles de correu existents,
+  inclosos els salts de línia CRLF. Sense migracions ni dades personals noves.
+
 - Corregeix les etapes dels resultats agregats als límits exactes: classifica abans d’arrodonir, també al PDF. Dos terços correspon a «Intermèdia».
 
 ## Dos versionats independents
