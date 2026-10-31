@@ -54,7 +54,7 @@ export default async function ParticipantAreaPage({
 
   return (
     <main className="app-shell min-h-screen bg-paper text-ink">
-      <AppHeader brandHref="/docent">
+      <AppHeader brandHref="/">
         <ThemeToggle />
         <IconLogoutButton next="/" />
       </AppHeader>
@@ -77,7 +77,7 @@ export default async function ParticipantAreaPage({
                       <Link className="mt-3 block text-lg font-semibold text-action hover:underline" href={`/docent/resultats/${participations[0].publicCode}`}>
                         {participations[0].questionnaireTitle}
                       </Link>
-                      <p className="mt-1 text-sm text-muted">{formatDate(participations[0].completedAt)}</p>
+                      <p className="mt-1 text-sm text-muted"><InterfaceText messageKey="realitzatEl" values={{ date: formatDate(participations[0].completedAt) }} /></p>
                     </>
                   ) : <p className="mt-3 text-sm text-muted"><InterfaceText messageKey="encaraNoHiHaCapParticipacioVinculadaAAquestCompte" /></p>}
                 </div>
@@ -113,7 +113,7 @@ export default async function ParticipantAreaPage({
                       <div>
                         <p className="text-sm font-semibold text-action">{item.centreName}</p>
                         <h2 className="mt-1 text-xl font-semibold">{item.questionnaireTitle}</h2>
-                        <p className="mt-2 text-sm text-muted"><InterfaceText messageKey="versio" />{" "}{item.questionnaireVersion} · {formatDate(item.completedAt)}</p>
+                        <p className="mt-2 text-sm text-muted"><InterfaceText messageKey="versio" />{" "}{item.questionnaireVersion} · <InterfaceText messageKey="realitzatEl" values={{ date: formatDate(item.completedAt) }} /></p>
                       </div>
                       <div className="flex flex-wrap gap-3">
                         <Link className="rounded-xl bg-action px-4 py-2 text-sm font-semibold text-action-contrast" href={`/docent/resultats/${item.publicCode}`}><InterfaceText messageKey="veureResultats" /></Link>

@@ -132,13 +132,13 @@ async function QuestionnaireLoginNotice({
         <InterfaceText messageKey="accesDocent" />
       </p>
       <h1 className="mt-4 text-3xl font-bold tracking-[-0.035em] text-ink sm:text-4xl">
-        <InterfaceText messageKey="iniciaSessioAmbGoogle" />
+        <InterfaceText messageKey="iniciaSessio" />
       </h1>
       <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted sm:text-base sm:leading-7">
-        <InterfaceText messageKey="calValidarElCompteGoogleAbansDeComprovarElCodiI" />
+        <InterfaceText messageKey="iniciaSessioPerContinuarAlQuestionari" />
       </p>
       <div className="mt-7">
-        <LoginButton label={t("accedeixAmbGoogle")} next={`/q/${publicCode}`} />
+        <LoginButton label={t("accedeix")} next={`/q/${publicCode}`} />
       </div>
     </div>
   );

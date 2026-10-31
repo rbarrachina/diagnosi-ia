@@ -210,6 +210,14 @@ Els catàlegs d'euskera, gallec i aranès són complets funcionalment però rest
 marcats com a esborranys fins que una revisió lingüística professional en
 validi la redacció definitiva.
 
+El paràgraf de privacitat del comunicat explica la consulta pròpia amb el mateix
+compte Google, l’absència de noms, l’ús del correu durant la sessió per validar
+l’accés, l’identificador pseudonimitzat i els resultats de conjunt institucionals.
+En carregar o desar la plantilla, les dues formulacions antigues conegudes
+d’aquest paràgraf s’actualitzen literalment, conservant la resta del text.
+El comunicat separa la salutació i el paràgraf de privacitat amb línies en
+blanc i situa el codi abans de l’agraïment final, també en plantilles desades.
+
 La configuracio també inclou el comunicat global per compartir el qüestionari:
 títol del correu i text del missatge. El títol i el text poden contenir la marca
 `{NOM_CENTRE}`, que se substitueix pel nom institucional; si la marca no hi és,
@@ -324,7 +332,10 @@ a les cinc llengües. Apache 2.0 continua sent la llicència del projecte; cada
 component conserva la pròpia. Els textos pendents es fan explícits i bloquegen
 la comprovació de preparació d'una publicació completa.
 
-La portada presenta primer una capçalera fixa amb accés XTEC, selector de tema
+El logotip de la portada torna al principi de la pàgina amb una àncora nativa
+a `#inici`, també després de baixar a les seccions inferiors.
+
+La portada presenta primer una capçalera fixa amb selector de tema
 clar o fosc i selector d'idioma, seguida d'un bloc principal a pantalla
 completa amb una única acció destacada per accedir amb el compte de centre. La
 capçalera és
@@ -391,7 +402,13 @@ Amb una sessió de responsable autoritzada, la portada substitueix els accessos
 de centre pel vincle `El meu espai` cap a `/crear` i mostra una icona de sortida
 sempre visible a la capçalera. Si la sessió de responsable és denegada, la
 portada conserva l'accés inicial i mostra una sortida visible per canviar de
-compte. El professorat continua tenint un flux d'accés separat.
+compte. Sense sessió no hi ha cap icona d’accés ni de sortida a la capçalera:
+l’accés es fa amb els dos botons principals. Amb sessió docent també s’hi
+mostra la icona de sortida i el vincle `El meu espai` cap a `/docent` a la
+capçalera. Si totes dues sessions són actives, el vincle conserva la destinació
+de centre (`/crear`). Els administradors utilitzen la sessió de
+responsable i també disposen de sortida. El professorat continua tenint un
+flux d’accés separat.
 
 ### Creacio d'espai
 
@@ -536,6 +553,10 @@ No s'eliminen ni es modifiquen les preguntes del qüestionari versionat.
 
 Ruta: `/q/[publicCode]`
 
+Abans d’autenticar-se, l’accés al qüestionari mostra «Inicia sessió»,
+«Inicieu sessió per continuar al qüestionari» i el botó «Accedeix», sense
+mostrar el domini ni dades del centre. L’autenticació continua fent-se amb Google.
+
 La ruta pública presenta una capçalera mínima amb la marca `Diagnosi IA` i el
 selector clar o fosc. Amb sessió docent, mostra també la mateixa icona `Surt`
 que l'espai del centre, sense mostrar la identitat del participant. No mostra
@@ -650,10 +671,14 @@ original. Recarregar-la o tancar-la encara esborra les respostes pendents.
 
 Rutes: `/docent` i `/docent/resultats/[publicCode]`
 
+La data i hora de realització es presenta amb l’etiqueta «Realitzat el…»
+a l’inici docent, la llista de qüestionaris i el resultat propi.
+
 L'àrea docent exigeix sessió Google i mostra només centre, qüestionari i data
 de les participacions vinculades a l'identificador opac de la sessió.
 L'àrea i el resultat propi mostren la mateixa icona `Surt` de la capçalera del
-centre quan la sessió docent és activa.
+centre quan la sessió docent és activa. El logotip superior esquerre de les
+dues pantalles torna a la portada (`/`), igual que a l’espai del centre.
 L'àrea docent i els resultats propis comparteixen una barra lateral plegable,
 inicialment reduïda a icones. Té tres opcions: `Inici`, amb un recompte dels
 qüestionaris fets i l'últim qüestionari; `Nou qüestionari`, que indica que el

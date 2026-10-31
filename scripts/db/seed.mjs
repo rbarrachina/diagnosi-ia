@@ -99,11 +99,13 @@ const communicationSubject =
 const communicationBody = `Benvolgudes i benvolguts,
 
 Us convidem a respondre el qüestionari de diagnosi sobre l'ús educatiu de la intel·ligència artificial.
-
 Podeu accedir-hi des d'aquest enllaç:
 {URL_QUESTIONARI}
 
-No es demana el nom docent. El correu només es conserva durant la sessió per validar el domini i no es desa a la base de dades ni es vincula a les respostes. Cada participant pot recuperar els seus resultats amb el mateix compte, mentre que el centre només veu dades agregades.
+Podeu consultar les vostres respostes i resultats amb el mateix compte Google. No es recullen noms i el correu només s’utilitza durant la sessió per validar l’accés. La participació es vincula a un identificador pseudonimitzat per poder recuperar-la més endavant. El centre i l’administració només veuen resultats de conjunt.
+
+També podeu accedir al qüestionari amb aquest codi:
+{CODI_QUESTIONARI}
 
 Gràcies per la vostra participació.`;
 

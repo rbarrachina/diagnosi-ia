@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   CENTRE_NAME_PLACEHOLDER,
+  DEFAULT_COMMUNICATION_BODY,
   QUESTIONNAIRE_CODE_PLACEHOLDER,
   QUESTIONNAIRE_URL_PLACEHOLDER,
   buildGmailComposeUrl,
@@ -9,6 +10,16 @@ import {
 } from "@/lib/communication/email-template";
 
 describe("communication email template", () => {
+  it("keeps paragraph spacing and puts the code before the closing in saved templates", () => {
+    const privacy = DEFAULT_COMMUNICATION_BODY.split("\n\n")[2];
+    const body = renderCommunicationBody(
+      `Benvolgudes i benvolguts,\nIntroducció\n{URL_QUESTIONARI}\n${privacy}\nGràcies per la vostra participació.\n\nTambé podeu accedir al qüestionari amb aquest codi:\n{CODI_QUESTIONARI}`.replaceAll("\n", "\r\n"),
+      "https://example.test/q/C-AAAA-BBBB",
+      "C-AAAA-BBBB",
+    );
+    expect(body).toBe(`Benvolgudes i benvolguts,\n\nIntroducció\nhttps://example.test/q/C-AAAA-BBBB\n\n${privacy}\n\nTambé podeu accedir al qüestionari amb aquest codi:\nC-AAAA-BBBB\n\nGràcies per la vostra participació.`);
+  });
+
   it("replaces the questionnaire URL and code placeholders", () => {
     expect(
       renderCommunicationBody(

@@ -6,6 +6,31 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Identifica la data i hora dels qüestionaris docents amb «Realitzat el…».
+
+- Simplifica la pantalla d’accés docent al qüestionari amb textos genèrics
+  d’inici de sessió, sense referències a Google ni al compte del centre.
+
+- Separa els paràgrafs del correu i situa el codi d’accés abans de l’agraïment final.
+
+- Alinea el paràgraf de privacitat del correu amb la portada i actualitza
+  les formulacions antigues conegudes sense substituir la resta de la plantilla.
+
+- Centra el text impersonal de privacitat de portada en el docent i deixa
+  al final la informació sobre els resultats de conjunt del centre.
+
+- Usa una àncora nativa al logotip de portada per tornar a l’inici després
+  de desplaçar-se per la pàgina.
+
+- Mostra «El meu espai» a la capçalera de portada amb sessió docent, amb
+  accés directe a les participacions pròpies.
+
+- Corregeix el logotip de l’àrea docent i dels resultats propis perquè torni
+  a la portada, igual que a l’espai del centre.
+
+- Retira la icona d’accés de la capçalera de portada sense sessió i mostra
+  només la sortida quan hi ha sessió de centre, administració o docent.
+
 - Reuneix el codi del qüestionari i les participacions anteriors en un únic
   popup d’accés docent i retira la secció final d’accés de la portada.
 

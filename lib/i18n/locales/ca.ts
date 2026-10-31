@@ -89,7 +89,7 @@ export const ca = {
     centreCheck: "Un únic espai de diagnosi per centre",
     privacyEyebrow: "Privacitat docent",
     privacyTitle: "El docent respon",
-    privacyText: "El centre només veu resultats de conjunt. Cada docent pot consultar exclusivament les seves respostes i resultats. El nom no es recull i el correu només es conserva durant la sessió per validar el domini.",
+    privacyText: "Cada docent pot consultar les seves respostes i resultats. No es recullen noms i el correu només s’utilitza durant la sessió per validar l’accés. El centre només veu resultats de conjunt.",
     privacyCheck: "Només tu pots veure les teves respostes",
     questionnaireSampleLink: "Ves a la mostra del qüestionari",
     teacherEyebrow: "Accés docent",
