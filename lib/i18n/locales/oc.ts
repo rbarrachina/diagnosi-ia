@@ -174,6 +174,8 @@ export const oc: Messages = {
     "teacherHistoryTitle": "As ja participat?",
     "teacherHistoryHelp": "Recupère es participacions anteriores e consulte sonque es tues responses e resultats.",
     "teacherHistory": "Consulte es mies participacions",
+    "teacherPrivacyNotice": "En accedir damb Google, non se sauve eth nòm ne se registre eth corrèu electronic.",
+    "teacherPrivacyPurpose": "Eth corrèu sonque s’emplegue entà verificar qu’eth compde ei autorizat.",
     "previewEyebrow": "Un guardar ath qüestionari",
     "previewTitle": "Qüestions clares entà obtier ua vision compartida",
     "previewIntro": "Eth professorat arrespon 20 afirmacions brèus distribuïdes en cinc dimensions. Cada qüestion aufrís quate nivèus de responsa.",

@@ -380,6 +380,10 @@ indicar el nombre de preguntes.
 El botó «Accés docent» obre un únic diàleg amb dues opcions visibles:
 introduir el codi del centre i consultar les participacions anteriors. El codi
 manté la validació de format local i només es comprova després de l’autenticació.
+El camp és compacte i comparteix fila amb el botó quan hi ha prou amplada.
+El botó s’ajusta al text. Al peu, un paràgraf explica que no es registra el
+nom ni el correu del professorat i que el correu només es fa servir per
+validar l’accés.
 Amb sessió docent activa, el formulari navega directament al qüestionari i
 l’accés a participacions apunta a `/docent`; sense sessió s’inicia Google OAuth.
 En prellançament el botó està desactivat. La portada no inclou la secció

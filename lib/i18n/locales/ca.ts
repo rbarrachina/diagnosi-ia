@@ -98,6 +98,8 @@ export const ca = {
     teacherHistoryTitle: "Ja hi has participat?",
     teacherHistoryHelp: "Recupera les participacions anteriors i consulta exclusivament les teves respostes i resultats.",
     teacherHistory: "Consulta les meves participacions",
+    teacherPrivacyNotice: "El correu electrònic del compte de Google només es fa servir per comprovar que el compte té permís per accedir.",
+    teacherPrivacyPurpose: "Ni el nom ni el correu queden registrats.",
     previewEyebrow: "Una mirada al qüestionari",
     previewTitle: "Preguntes clares per obtenir una visió compartida",
     previewIntro: "El qüestionari inclou preguntes per a cada dimensió i criteri, amb quatre nivells de resposta.",

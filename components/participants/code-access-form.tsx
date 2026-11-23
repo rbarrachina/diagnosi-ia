@@ -10,12 +10,12 @@ const PUBLIC_CODE_PATTERN = /^C-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}-[ABCDEFGHJK
 export function ParticipantCodeAccessForm({
   disabled = false,
   authenticated = false,
-  stacked = false,
+  compact = false,
   submitLabel,
 }: {
   disabled?: boolean;
   authenticated?: boolean;
-  stacked?: boolean;
+  compact?: boolean;
   submitLabel?: ReactNode;
 }) {
   const router = useRouter();
@@ -41,7 +41,7 @@ export function ParticipantCodeAccessForm({
         window.location.assign(`/auth/login?next=${encodeURIComponent(`/q/${normalizedCode}`)}`);
       }}
     >
-      <div className={`flex flex-col gap-3 ${stacked ? "" : "sm:flex-row"}`}>
+      <div className={`flex gap-3 ${compact ? "flex-row flex-wrap justify-center" : "flex-col sm:flex-row"}`}>
         <label className="sr-only" htmlFor="participant-code">
           {messages.common.questionnaireCode}
         </label>
@@ -49,7 +49,7 @@ export function ParticipantCodeAccessForm({
           autoComplete="off"
           aria-describedby={invalid ? "participant-code-error" : "participant-code-help"}
           aria-invalid={invalid || undefined}
-          className="min-h-12 min-w-0 flex-1 rounded-xl border border-line bg-surface px-4 font-mono uppercase text-ink outline-none focus:border-action focus:ring-2 focus:ring-focus"
+          className={`min-h-12 min-w-0 rounded-xl border border-line bg-surface px-4 font-mono uppercase text-ink outline-none focus:border-action focus:ring-2 focus:ring-focus ${compact ? "box-content w-[12ch] max-w-[calc(100%_-_2rem_-_2px)]" : "flex-1"}`}
           id="participant-code"
           disabled={disabled}
           maxLength={12}
@@ -61,7 +61,7 @@ export function ParticipantCodeAccessForm({
           value={code}
         />
         <button
-          className="min-h-12 rounded-xl bg-action px-6 font-semibold text-action-contrast disabled:cursor-not-allowed disabled:opacity-50"
+          className={`min-h-12 rounded-xl bg-action font-semibold text-action-contrast disabled:cursor-not-allowed disabled:opacity-50 ${compact ? "max-w-full px-4" : "px-6"}`}
           disabled={disabled || !valid}
           type="submit"
         >
