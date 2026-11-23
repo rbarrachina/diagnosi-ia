@@ -1,3 +1,4 @@
+import { ANSWER_PALETTE_PATTERN } from "@/lib/questionnaire/answer-colors";
 import { z } from "zod";
 import { PUBLIC_CODE_PATTERN } from "@/lib/validation/public-code";
 
@@ -289,6 +290,7 @@ export const replaceQuestionnaireContentInputSchema = z
     title: questionnaireTitleSchema,
     estimatedMinutes: questionnaireEstimatedMinutesSchema,
     languageCode: questionnaireLanguageCodeSchema.default("ca"),
+    answerColors: z.string().regex(ANSWER_PALETTE_PATTERN).optional(),
     blocks: adminQuestionnaireBlocksSchema,
     confirmAssignedEdit: z.boolean().default(false),
   })

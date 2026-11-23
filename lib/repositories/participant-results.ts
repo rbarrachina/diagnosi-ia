@@ -1,5 +1,7 @@
 import "server-only";
 
+import { readAnswerColors } from "@/lib/questionnaire/answer-colors";
+
 import type { RowDataPacket } from "mysql2/promise";
 import { mysqlPool } from "@/lib/db/client";
 import type { ScaleValue } from "@/lib/results/types";
@@ -16,6 +18,7 @@ type SummaryRow = RowDataPacket & {
   questionnaire_title: string;
   questionnaire_version: string;
   language_code: QuestionnaireLanguageCode;
+  answer_colors?: string | null;
   completed_at: string | Date;
   global_score: number | string;
 };
@@ -44,6 +47,7 @@ const SUMMARY_SELECT = `
     questionnaires.title as questionnaire_title,
     questionnaires.version as questionnaire_version,
     questionnaires.language_code,
+    questionnaires.answer_colors,
     submissions.created_at as completed_at,
     round(avg(answers.value) / 3 * 100, 2) as global_score
   from participant_submissions
@@ -66,7 +70,7 @@ export async function listParticipantResults(
       where participant_submissions.participant_user_id = ?
       group by participant_submissions.submission_id,
         centres.official_name, centre_accounts.display_name, centres.email, diagnostic_spaces.public_code,
-        questionnaires.title, questionnaires.version, questionnaires.language_code, submissions.created_at
+        questionnaires.title, questionnaires.version, questionnaires.language_code, questionnaires.answer_colors, submissions.created_at
       order by submissions.created_at desc`,
     [participantUserId],
   );
@@ -84,7 +88,7 @@ export async function getParticipantResult(params: {
         and diagnostic_spaces.public_code = ?
       group by participant_submissions.submission_id,
         centres.official_name, centre_accounts.display_name, centres.email, diagnostic_spaces.public_code,
-        questionnaires.title, questionnaires.version, questionnaires.language_code, submissions.created_at
+        questionnaires.title, questionnaires.version, questionnaires.language_code, questionnaires.answer_colors, submissions.created_at
       limit 1`,
     [params.participantUserId, params.publicCode],
   );
@@ -136,6 +140,7 @@ export async function getParticipantResult(params: {
 
   return {
     ...mapSummary(summary),
+    answerColors: readAnswerColors(summary.answer_colors),
     blocks: groupAnswers(answerRows),
   };
 }

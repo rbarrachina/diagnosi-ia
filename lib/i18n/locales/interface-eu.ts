@@ -2,6 +2,10 @@ import type { InterfaceTranslations } from "@/lib/i18n/interface-messages";
 
 // Esborrany pendent de revisió lingüística professional.
 export const interfaceEu = {
+  colorsDeLesRespostes: "Erantzunen koloreak",
+  colorOpcio: "{number}. aukera",
+  mostraColorsRespostes: "Koloreak aurreikusi",
+  amagaMostraColors: "Ezkutatu aurrebista",
   "googleLoginMode": "Google bidezko sarbidea",
   "googleLoginModeHelp": "Hautatzaile honek aplikazioan onartutako domeinuak arautzen ditu. Ez du Google Cloud aldatzen: han ere Internal edo External konfiguratu behar da. Barne moduan @xtec.cat soilik onartzen da.",
   "googleLoginInternal": "Barnekoa — XTEC soilik",

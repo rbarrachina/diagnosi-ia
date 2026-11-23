@@ -27,6 +27,7 @@ export const questionnaires = mysqlTable(
     id: questionnaireId("id").notNull().primaryKey(),
     version: varchar("version", { length: 20 }).notNull(),
     title: varchar("title", { length: 255 }).notNull(),
+    answerColors: varchar("answer_colors", { length: 31 }),
     estimatedMinutes: int("estimated_minutes").notNull().default(10),
     languageCode: varchar("language_code", { length: 2 }).notNull().default("ca"),
     isActive: boolean("is_active").notNull().default(false),

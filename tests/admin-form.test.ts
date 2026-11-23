@@ -74,6 +74,17 @@ describe("admin questionnaire form parsing", () => {
     });
   });
 
+  it("keeps the four colors in score order and rejects invalid colors", () => {
+    const formData = buildFormData();
+    const colors = ["#112233", "#445566", "#778899", "#aabbcc"];
+    colors.forEach((color) => formData.append("answerColor", color));
+
+    expect(parseQuestionnaireContentFormData(formData).answerColors).toBe(colors.join(","));
+
+    formData.append("answerColor", "red");
+    expect(() => parseQuestionnaireContentFormData(formData)).toThrow();
+  });
+
   it("parses partial editor forms before activation", () => {
     const formData = buildFormData();
     formData.delete("blockPosition");

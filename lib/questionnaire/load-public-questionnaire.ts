@@ -27,6 +27,7 @@ export async function loadPublicQuestionnaire(
     questionnaireVersion: space.questionnaireVersion,
     languageCode: questionnaire.languageCode,
     estimatedMinutes: questionnaire.estimatedMinutes,
+    answerColors: questionnaire.answerColors,
     blocks: questionnaire.blocks,
   };
 }

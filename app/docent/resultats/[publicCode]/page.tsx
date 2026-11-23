@@ -1,3 +1,4 @@
+import { answerColorStyle } from "@/lib/questionnaire/answer-colors";
 import { InterfaceText } from "@/components/i18n/interface-text";
 import { IconLogoutButton } from "@/components/auth/auth-actions";
 import { notFound, redirect } from "next/navigation";
@@ -106,6 +107,7 @@ export default async function ParticipantResultPage({ params }: { params: Promis
                           return (
                             <li key={option.value}>
                               <div
+                                style={question.randomizeOptions ? undefined : answerColorStyle(result.answerColors, option.value)}
                                 aria-current={selected ? "true" : undefined}
                                 className={`questionnaire-answer-option flex min-h-14 items-center rounded-xl border px-4 py-3 text-sm text-ink ${colorClasses}${selected ? " questionnaire-answer-option-selected" : ""}`}
                               >

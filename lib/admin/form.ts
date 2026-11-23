@@ -19,7 +19,9 @@ export function parseQuestionnaireContentFormData(
     .map((value) => Number(value))
     .filter((value) => Number.isInteger(value));
 
+  const answerColors = formData.getAll("answerColor");
   const payload = {
+    ...(answerColors.length > 0 ? { answerColors: answerColors.join(",") } : {}),
     questionnaireId: getRequiredFormString(formData, "questionnaireId"),
     title: getRequiredFormString(formData, "title"),
     estimatedMinutes: getRequiredFormString(formData, "estimatedMinutes"),

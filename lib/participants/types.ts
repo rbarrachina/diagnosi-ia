@@ -1,3 +1,4 @@
+import type { AnswerColors } from "@/lib/questionnaire/answer-colors";
 import type { ScaleValue } from "@/lib/results/types";
 import type { QuestionnaireLanguageCode } from "@/lib/questionnaire/languages";
 
@@ -22,6 +23,7 @@ export type ParticipantBlockResult = {
 };
 
 export type ParticipantResult = {
+  answerColors?: AnswerColors;
   centreName: string;
   publicCode: string;
   questionnaireTitle: string;

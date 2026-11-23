@@ -6,6 +6,10 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Permet personalitzar i previsualitzar els quatre colors de resposta de cada
+  qüestionari des de l’administració. Les preguntes es mostren plegades
+  d’entrada per deixar el botó de desar a prop dels ajustos.
+
 - Posa el camp de codi i el botó d’accés docent en una fila quan hi caben i
   afegeix un avís breu de privacitat al peu del diàleg.
 

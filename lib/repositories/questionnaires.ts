@@ -1,4 +1,7 @@
+import type { AnswerColors } from "@/lib/questionnaire/answer-colors";
 import "server-only";
+
+import { readAnswerColors } from "@/lib/questionnaire/answer-colors";
 
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
@@ -22,6 +25,7 @@ export type QuestionnaireWithContent = {
   version: string;
   title: string;
   estimatedMinutes: number;
+  answerColors?: AnswerColors;
   isActive: boolean;
   languageCode: QuestionnaireLanguageCode;
   blocks: QuestionBlock[];
@@ -65,6 +69,7 @@ function mapQuestionnaireContent(params: {
     version: string;
     title: string;
     estimatedMinutes: number;
+    answerColors?: AnswerColors;
     isActive: boolean;
     languageCode: QuestionnaireLanguageCode;
   };
@@ -141,6 +146,7 @@ export async function getQuestionnaireById(
       version: questionnaires.version,
       title: questionnaires.title,
       estimatedMinutes: questionnaires.estimatedMinutes,
+      answerColors: questionnaires.answerColors,
       isActive: questionnaires.isActive,
       languageCode: questionnaires.languageCode,
     })
@@ -203,6 +209,7 @@ export async function getQuestionnaireById(
   return mapQuestionnaireContent({
     questionnaire: {
       ...questionnaire,
+      answerColors: readAnswerColors(questionnaire.answerColors),
       languageCode: questionnaire.languageCode as QuestionnaireLanguageCode,
     },
     blocks: blockRows,

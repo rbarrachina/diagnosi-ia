@@ -1,3 +1,4 @@
+import type { AnswerColors } from "@/lib/questionnaire/answer-colors";
 import type { QuestionnaireLanguageCode } from "@/lib/questionnaire/languages";
 import type { ScaleValue } from "@/lib/questionnaire/scale";
 
@@ -75,6 +76,7 @@ export type AdminQuestionnaireSummary = {
 };
 
 export type AdminQuestionnaireDetail = AdminQuestionnaireSummary & {
+  answerColors?: AnswerColors;
   blocks: AdminQuestionBlockSummary[];
 };
 

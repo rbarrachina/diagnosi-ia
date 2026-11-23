@@ -1,5 +1,8 @@
 "use client";
 
+import { answerColorStyle, DEFAULT_ANSWER_COLORS, readAnswerColors } from "@/lib/questionnaire/answer-colors";
+import { SCALE_OPTIONS } from "@/lib/questionnaire/scale";
+
 import { InterfaceText, useInterfaceTranslator } from "@/components/i18n/interface-text";
 
 import { useState } from "react";
@@ -81,12 +84,15 @@ export function QuestionnaireEditorForm({
 }) {
   const t = useInterfaceTranslator();
   const [title, setTitle] = useState(detail.title);
+  const [answerColors, setAnswerColors] = useState(() => [...(detail.answerColors ?? DEFAULT_ANSWER_COLORS)]);
+  const [showColorPreview, setShowColorPreview] = useState(false);
   const [estimatedMinutes, setEstimatedMinutes] = useState(detail.estimatedMinutes);
   const [languageCode, setLanguageCode] = useState(detail.languageCode);
   const [blocks, setBlocks] = useState(() => initialBlocks(detail));
   const [hasAcceptedLockedEdit, setHasAcceptedLockedEdit] = useState(false);
   const isEditingLockedVersion = isLocked && hasAcceptedLockedEdit;
   const isFormDisabled = isLocked && !hasAcceptedLockedEdit;
+  const previewColors = readAnswerColors(answerColors.join(","));
   const hasResponses = detail.totalSubmissions > 0;
   const canChangeStructure = !isFormDisabled && !hasResponses && !detail.isActive;
   const structureLockedMessage = detail.isActive
@@ -251,7 +257,15 @@ export function QuestionnaireEditorForm({
   }
 
   return (
-    <form action={saveQuestionnaireContentAction} className="mt-5 space-y-6">
+    <form
+      action={saveQuestionnaireContentAction}
+      className="mt-5 space-y-6"
+      onInvalidCapture={(event) => {
+        if (!(event.target instanceof HTMLElement)) return;
+        const section = event.target.closest("details");
+        if (section) section.open = true;
+      }}
+    >
       <input name="questionnaireId" type="hidden" value={detail.id} />
       <input
         name="confirmAssignedEdit"
@@ -291,7 +305,7 @@ export function QuestionnaireEditorForm({
       </label>
       <label className="block text-sm font-medium text-muted">
         <InterfaceText messageKey="idiomaDelQuestionariIDelsInformes" />{" "}<select
-          className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm disabled:bg-accent-soft sm:w-64"
+          className="mt-1 w-fit max-w-full rounded-md border border-line bg-surface py-2 pl-3 pr-7 text-sm disabled:bg-accent-soft"
           disabled={isFormDisabled || hasResponses || detail.isActive}
           name="languageCode"
           onChange={(event) =>
@@ -311,7 +325,7 @@ export function QuestionnaireEditorForm({
       </label>
       <label className="block text-sm font-medium text-muted">
         <InterfaceText messageKey="minutsPerRespondreLa" />{" "}<input
-          className="mt-1 w-28 rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
+          className="mt-1 w-[calc(3ch+2.5rem)] rounded-md border border-line py-2 pl-3 pr-1 text-sm disabled:bg-accent-soft"
           disabled={isFormDisabled}
           max={120}
           min={1}
@@ -323,71 +337,127 @@ export function QuestionnaireEditorForm({
         />
       </label>
 
-      <div className="space-y-5">
-        {blocks.map((block, blockIndex) => {
-          const blockPosition = blockIndex + 1;
+      <fieldset className="space-y-3 rounded-md border border-line p-4">
+        <legend className="px-1 text-sm font-semibold"><InterfaceText messageKey="colorsDeLesRespostes" /></legend>
+        <div className="flex flex-wrap gap-4">
+          {SCALE_OPTIONS.map(({ value }) => (
+            <label className="flex items-center gap-2 text-sm" key={value}>
+              <InterfaceText messageKey="colorOpcio" values={{ number: value + 1 }} />
+              <input
+                className="h-9 w-12 cursor-pointer rounded border border-line bg-surface p-1 disabled:cursor-not-allowed disabled:opacity-100"
+                disabled={isFormDisabled}
+                name="answerColor"
+                onChange={(event) => {
+                  const color = event.target.value;
+                  setAnswerColors((current) => current.map((previous, index) => index === value ? color : previous));
+                }}
+                type="color"
+                value={answerColors[value]}
+              />
+            </label>
+          ))}
+        </div>
+        <button
+          aria-expanded={showColorPreview}
+          className="rounded-md border border-line px-3 py-2 text-sm font-semibold text-action"
+          onClick={() => setShowColorPreview((current) => !current)}
+          type="button"
+        >
+          <InterfaceText messageKey={showColorPreview ? "amagaMostraColors" : "mostraColorsRespostes"} />
+        </button>
+        {showColorPreview ? (
+          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {SCALE_OPTIONS.map(({ value, formClasses }) => (
+              <li
+                className={`questionnaire-answer-option flex min-h-14 items-center rounded-xl border px-4 py-3 text-sm text-ink ${formClasses}`}
+                key={value}
+                style={answerColorStyle(previewColors, value)}
+              >
+                <InterfaceText messageKey="colorOpcio" values={{ number: value + 1 }} />
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </fieldset>
 
-          return (
-            <fieldset
-              className="rounded-md border border-line p-4"
-              disabled={isFormDisabled}
-              key={block.id}
-            >
-              <input name="blockPosition" type="hidden" value={blockPosition} />
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <legend className="px-1 text-sm font-semibold text-ink">
-                  <InterfaceText messageKey="dimensio" />{" "}{blockPosition}
-                </legend>
-                {canChangeStructure ? (
-                  <button
-                    className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg"
-                    onClick={() => removeBlock(blockIndex)}
-                    type="button"
-                  ><InterfaceText messageKey="eliminaDimensio" /></button>
-                ) : null}
-              </div>
-              <label className="block text-sm font-medium text-muted">
-                <InterfaceText messageKey="titolDeLaDimensio" />{" "}<input
-                  className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
-                  name={`block-${blockPosition}-title`}
-                  onChange={(event) => updateBlockTitle(blockIndex, event.target.value)}
-                  required
-                  value={block.title}
-                />
-              </label>
-              <div className="mt-4 space-y-4">
-                {block.criteria.map((criterion, criterionIndex) => {
-                  const criterionPosition = criterionIndex + 1;
-                  return <fieldset className="rounded-md border border-line p-4" disabled={isFormDisabled} key={criterion.id}>
-                    <input name={`dimension-${blockPosition}-criterionPosition`} type="hidden" value={criterionPosition} />
-                    <div className="flex items-center justify-between gap-3">
-                      <legend className="text-sm font-semibold text-ink"><InterfaceText messageKey="criteri" /> {blockPosition}.{criterionPosition}</legend>
-                      {canChangeStructure ? <button className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text" onClick={() => removeCriterion(blockIndex, criterionIndex)} type="button"><InterfaceText messageKey="eliminaCriteri" /></button> : null}
-                    </div>
-                    <label className="mt-2 block text-sm font-medium text-muted"><InterfaceText messageKey="titolDelCriteri" /><input className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft" name={`dimension-${blockPosition}-criterion-${criterionPosition}-title`} onChange={(event) => updateCriterionTitle(blockIndex, criterionIndex, event.target.value)} required value={criterion.title} /></label>
-                    <div className="mt-4 grid gap-4">
-                      {criterion.questions.map((question, questionIndex) => {
-                        const questionPosition = questionIndex + 1;
-                        const questionKey = `dimension-${blockPosition}-criterion-${criterionPosition}-question-${questionPosition}`;
-                        return <div className="grid gap-2" key={question.id}>
-                          <input name={`dimension-${blockPosition}-criterion-${criterionPosition}-questionPosition`} type="hidden" value={questionPosition} />
-                          <label className="block text-sm font-medium text-muted"><InterfaceText messageKey="pregunta" /> {blockPosition}.{criterionPosition}.{questionPosition}<textarea className="mt-1 min-h-20 w-full rounded-md border border-line px-3 py-2 text-sm leading-6 disabled:bg-accent-soft" name={questionKey} onChange={(event) => updateQuestionText(blockIndex, criterionIndex, questionIndex, event.target.value)} required value={question.text} /></label>
-                          <div className="grid gap-2 rounded-md border border-line bg-canvas/40 p-3 sm:grid-cols-2">{question.options.slice().sort((a, b) => a.score - b.score).map((option) => <label className="block text-xs font-medium text-muted" key={option.score}><InterfaceText messageKey="resposta" /> {option.score + 1} · {option.score} <InterfaceText messageKey="punts" /><input className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft" maxLength={300} name={`${questionKey}-option-${option.score}`} onChange={(event) => updateOptionText(blockIndex, criterionIndex, questionIndex, option.score, event.target.value)} required value={option.text} /></label>)}</div>
-                          <label className="flex items-start gap-2 text-sm text-muted"><input checked={question.randomizeOptions} className="mt-0.5 h-4 w-4" disabled={!canChangeStructure} name={`${questionKey}-randomize`} onChange={(event) => updateQuestionRandomization(blockIndex, criterionIndex, questionIndex, event.target.checked)} type="checkbox" value="yes" /><InterfaceText messageKey="mostraLesRespostesEnUnOrdreAleatoriIAmbColorsNeutres" /></label>
-                          {question.randomizeOptions && !canChangeStructure ? <input name={`${questionKey}-randomize`} type="hidden" value="yes" /> : null}
-                          {canChangeStructure ? <button className="w-fit rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text" onClick={() => removeQuestion(blockIndex, criterionIndex, questionIndex)} type="button"><InterfaceText messageKey="eliminaPregunta" /></button> : null}
-                        </div>;
-                      })}
-                    </div>
-                    {canChangeStructure && criterion.questions.length < MAX_QUESTIONS_PER_BLOCK && questionCount < MAX_QUESTIONNAIRE_QUESTIONS ? <button className="mt-4 rounded-md border border-action px-3 py-1.5 text-xs font-semibold text-action" onClick={() => addQuestion(blockIndex, criterionIndex)} type="button"><InterfaceText messageKey="afegeixPregunta" /></button> : null}
-                  </fieldset>;
-                })}
-              </div>
-              {canChangeStructure && block.criteria.length < MAX_CRITERIA_PER_DIMENSION && questionCount < MAX_QUESTIONNAIRE_QUESTIONS ? <button className="mt-4 rounded-md border border-action px-3 py-1.5 text-xs font-semibold text-action" onClick={() => addCriterion(blockIndex)} type="button"><InterfaceText messageKey="afegeixCriteri" /></button> : null}
-            </fieldset>
-          );
-        })}
-      </div>
+      <details className="rounded-md border border-line p-4">
+        <summary className="cursor-pointer font-semibold text-ink">
+          <span className="capitalize"><InterfaceText messageKey="preguntes" /></span>
+          {" "}({questionCount})
+        </summary>
+        <div className="mt-4 space-y-5">
+          {blocks.map((block, blockIndex) => {
+            const blockPosition = blockIndex + 1;
+
+            return (
+              <fieldset
+                className="rounded-md border border-line p-4"
+                disabled={isFormDisabled}
+                key={block.id}
+              >
+                <input name="blockPosition" type="hidden" value={blockPosition} />
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <legend className="px-1 text-sm font-semibold text-ink">
+                    <InterfaceText messageKey="dimensio" />{" "}{blockPosition}
+                  </legend>
+                  {canChangeStructure ? (
+                    <button
+                      className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text hover:bg-danger-bg"
+                      onClick={() => removeBlock(blockIndex)}
+                      type="button"
+                    ><InterfaceText messageKey="eliminaDimensio" /></button>
+                  ) : null}
+                </div>
+                <label className="block text-sm font-medium text-muted">
+                  <InterfaceText messageKey="titolDeLaDimensio" />{" "}<input
+                    className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft"
+                    name={`block-${blockPosition}-title`}
+                    onChange={(event) => updateBlockTitle(blockIndex, event.target.value)}
+                    required
+                    value={block.title}
+                  />
+                </label>
+                <div className="mt-4 space-y-4">
+                  {block.criteria.map((criterion, criterionIndex) => {
+                    const criterionPosition = criterionIndex + 1;
+                    return <fieldset className="rounded-md border border-line p-4" disabled={isFormDisabled} key={criterion.id}>
+                      <input name={`dimension-${blockPosition}-criterionPosition`} type="hidden" value={criterionPosition} />
+                      <div className="flex items-center justify-between gap-3">
+                        <legend className="text-sm font-semibold text-ink"><InterfaceText messageKey="criteri" /> {blockPosition}.{criterionPosition}</legend>
+                        {canChangeStructure ? <button className="rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text" onClick={() => removeCriterion(blockIndex, criterionIndex)} type="button"><InterfaceText messageKey="eliminaCriteri" /></button> : null}
+                      </div>
+                      <label className="mt-2 block text-sm font-medium text-muted"><InterfaceText messageKey="titolDelCriteri" /><input className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft" name={`dimension-${blockPosition}-criterion-${criterionPosition}-title`} onChange={(event) => updateCriterionTitle(blockIndex, criterionIndex, event.target.value)} required value={criterion.title} /></label>
+                      <div className="mt-4 grid gap-4">
+                        {criterion.questions.map((question, questionIndex) => {
+                          const questionPosition = questionIndex + 1;
+                          const questionKey = `dimension-${blockPosition}-criterion-${criterionPosition}-question-${questionPosition}`;
+                          return <div className="grid gap-2" key={question.id}>
+                            <input name={`dimension-${blockPosition}-criterion-${criterionPosition}-questionPosition`} type="hidden" value={questionPosition} />
+                            <label className="block text-sm font-medium text-muted"><InterfaceText messageKey="pregunta" /> {blockPosition}.{criterionPosition}.{questionPosition}<textarea className="mt-1 min-h-20 w-full rounded-md border border-line px-3 py-2 text-sm leading-6 disabled:bg-accent-soft" name={questionKey} onChange={(event) => updateQuestionText(blockIndex, criterionIndex, questionIndex, event.target.value)} required value={question.text} /></label>
+                            <div className="grid gap-2 rounded-md border border-line bg-canvas/40 p-3 sm:grid-cols-2">{question.options.slice().sort((a, b) => a.score - b.score).map((option) => <label className="block text-xs font-medium text-muted" key={option.score}><InterfaceText messageKey="resposta" /> {option.score + 1} · {option.score} <InterfaceText messageKey="punts" /><input className="mt-1 w-full rounded-md border border-line px-3 py-2 text-sm disabled:bg-accent-soft" maxLength={300} name={`${questionKey}-option-${option.score}`} onChange={(event) => updateOptionText(blockIndex, criterionIndex, questionIndex, option.score, event.target.value)} required value={option.text} /></label>)}</div>
+                            <label className="flex items-start gap-2 text-sm text-muted"><input checked={question.randomizeOptions} className="mt-0.5 h-4 w-4" disabled={!canChangeStructure} name={`${questionKey}-randomize`} onChange={(event) => updateQuestionRandomization(blockIndex, criterionIndex, questionIndex, event.target.checked)} type="checkbox" value="yes" /><InterfaceText messageKey="mostraLesRespostesEnUnOrdreAleatoriIAmbColorsNeutres" /></label>
+                            {question.randomizeOptions && !canChangeStructure ? <input name={`${questionKey}-randomize`} type="hidden" value="yes" /> : null}
+                            {canChangeStructure ? <button className="w-fit rounded-md border border-danger-border px-3 py-1.5 text-xs font-semibold text-danger-text" onClick={() => removeQuestion(blockIndex, criterionIndex, questionIndex)} type="button"><InterfaceText messageKey="eliminaPregunta" /></button> : null}
+                          </div>;
+                        })}
+                      </div>
+                      {canChangeStructure && criterion.questions.length < MAX_QUESTIONS_PER_BLOCK && questionCount < MAX_QUESTIONNAIRE_QUESTIONS ? <button className="mt-4 rounded-md border border-action px-3 py-1.5 text-xs font-semibold text-action" onClick={() => addQuestion(blockIndex, criterionIndex)} type="button"><InterfaceText messageKey="afegeixPregunta" /></button> : null}
+                    </fieldset>;
+                  })}
+                </div>
+                {canChangeStructure && block.criteria.length < MAX_CRITERIA_PER_DIMENSION && questionCount < MAX_QUESTIONNAIRE_QUESTIONS ? <button className="mt-4 rounded-md border border-action px-3 py-1.5 text-xs font-semibold text-action" onClick={() => addCriterion(blockIndex)} type="button"><InterfaceText messageKey="afegeixCriteri" /></button> : null}
+              </fieldset>
+            );
+          })}
+        </div>
+        {canChangeStructure && blocks.length < MAX_QUESTION_BLOCKS && questionCount < MAX_QUESTIONNAIRE_QUESTIONS ? (
+          <button
+            className="mt-4 rounded-md border border-action px-4 py-2 text-sm font-semibold text-action hover:bg-accent-soft"
+            onClick={addBlock}
+            type="button"
+          ><InterfaceText messageKey="afegeixDimensio" /></button>
+        ) : null}
+      </details>
 
       {feedback ? (
         <div
@@ -405,18 +475,11 @@ export function QuestionnaireEditorForm({
       )}
 
       <div className="flex flex-wrap items-center gap-3">
-        {canChangeStructure && blocks.length < MAX_QUESTION_BLOCKS && questionCount < MAX_QUESTIONNAIRE_QUESTIONS ? (
-          <button
-            className="rounded-md border border-action px-4 py-2 text-sm font-semibold text-action hover:bg-accent-soft"
-            onClick={addBlock}
-            type="button"
-          ><InterfaceText messageKey="afegeixDimensio" /></button>
-        ) : null}
         <button
           className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-action-contrast hover:bg-action-hover disabled:bg-muted"
           disabled={isFormDisabled}
           type="submit"
-        ><InterfaceText messageKey="desaDimensionsCriterisIPreguntes" /></button>
+        ><InterfaceText messageKey="desaConfiguracio" /></button>
         {isFormDisabled ? (
           <p className="text-sm text-muted">
             <InterfaceText messageKey="premEditarIAcceptaLAvisPerModificarAquestaVersio" />
