@@ -6,6 +6,9 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+- Posa el camp de codi i el botó d’accés docent en una fila quan hi caben i
+  afegeix un avís breu de privacitat al peu del diàleg.
+
 - Identifica la data i hora dels qüestionaris docents amb «Realitzat el…».
 
 - Simplifica la pantalla d’accés docent al qüestionari amb textos genèrics

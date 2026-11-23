@@ -98,7 +98,7 @@ export default async function Home() {
                       <ParticipantCodeAccessForm
                         authenticated={Boolean(participant)}
                         disabled={!responsiblePortalOpen}
-                        stacked
+                        compact
                         submitLabel={participant ? undefined : <InterfaceText messageKey="accedeixAmbGoogle" />}
                       />
                     </div>
@@ -114,6 +114,9 @@ export default async function Home() {
                       <ArrowIcon />
                     </a>
                   </section>
+                  <p className="text-sm leading-5 text-muted">
+                    {copy.teacherPrivacyNotice}{" "}{copy.teacherPrivacyPurpose}
+                  </p>
                 </div>
               }
             >

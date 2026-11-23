@@ -174,6 +174,8 @@ export const gl: Messages = {
     "teacherHistoryTitle": "Xa participaches?",
     "teacherHistoryHelp": "Recupera as participacións anteriores e consulta exclusivamente as túas respostas e resultados.",
     "teacherHistory": "Consulta as miñas participacións",
+    "teacherPrivacyNotice": "Ao acceder con Google, non se garda o nome nin se rexistra o correo electrónico.",
+    "teacherPrivacyPurpose": "O correo só se usa para comprobar que a conta está autorizada.",
     "previewEyebrow": "Unha ollada ao cuestionario",
     "previewTitle": "Preguntas claras para obter unha visión compartida",
     "previewIntro": "Os profesores responden a 20 enunciados breves distribuídos en cinco dimensións. Cada pregunta ofrece catro niveis de resposta.",

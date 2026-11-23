@@ -174,6 +174,8 @@ export const eu: Messages = {
     "teacherHistoryTitle": "Aurretik parte hartu duzu?",
     "teacherHistoryHelp": "Berreskuratu aurreko parte-hartzeak eta kontsultatu zure erantzunak eta emaitzak soilik.",
     "teacherHistory": "Egiaztatu nire sarrerak",
+    "teacherPrivacyNotice": "Google bidez sartzean, ez da izena gordetzen, ezta helbide elektronikoa erregistratzen ere.",
+    "teacherPrivacyPurpose": "Helbide elektronikoa kontua baimenduta dagoela egiaztatzeko baino ez da erabiltzen.",
     "previewEyebrow": "Galdetegiari begirada bat",
     "previewTitle": "Galdera argiak ikuspegi partekatu bat lortzeko",
     "previewIntro": "Irakasleek bost dimentsiotan banatutako 20 adierazpen labur erantzuten dituzte. Galdera bakoitzak lau erantzun maila eskaintzen ditu.",
