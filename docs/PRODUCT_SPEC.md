@@ -61,6 +61,10 @@ Funcionalitats previstes:
 - gestionar dimensions, criteris i preguntes tancades;
 - crear noves versions del qüestionari;
 - configurar els minuts estimats per respondre cada versio;
+- triar i previsualitzar els quatre colors de resposta de cada versió, amb la
+  paleta original per defecte. S’apliquen al qüestionari i a la revisió docent.
+  Les opcions aleatòries mantenen els colors neutres;
+- desplegar les preguntes des d’una secció plegada d’entrada a l’editor;
 - activar una versio concreta;
 - eliminar una versio no activa del qüestionari amb tots els espais i respostes
   associats després d'un avís explícit;

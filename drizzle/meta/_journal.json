@@ -148,6 +148,13 @@
       "when": 1792569418706,
       "tag": "0020_narrow_butterfly",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "5",
+      "when": 1795439530861,
+      "tag": "0021_smooth_tombstone",
+      "breakpoints": true
     }
   ]
 }

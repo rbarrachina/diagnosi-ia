@@ -49,6 +49,8 @@ són únics i no buits. La versió admet qualsevol text de fins a 20 caràcters.
 minuts estimats van d'1 a 120 i només una versió pot estar activa des de la
 lògica transaccional d'administració. `language_code` és obligatori i només
 admet `ca`, `es`, `eu`, `gl` o `oc`; fixa també la llengua dels informes.
+`answer_colors` conté quatre colors hexadecimals separats per comes, en ordre
+de puntuació (0 a 3). Si és nul, s’aplica la paleta original.
 
 ### `question_blocks` (dimensions)
 

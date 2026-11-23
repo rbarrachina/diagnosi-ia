@@ -1,5 +1,7 @@
 import "server-only";
 
+import { readAnswerColors } from "@/lib/questionnaire/answer-colors";
+
 import { randomUUID } from "node:crypto";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
@@ -37,6 +39,7 @@ type QuestionnaireRow = RowDataPacket & {
   version: string;
   title: string;
   estimated_minutes: number;
+  answer_colors?: string | null;
   language_code: QuestionnaireLanguageCode;
   is_active: number | boolean;
   created_at: string | Date;
@@ -229,7 +232,7 @@ export async function getQuestionnaireVersionDetail(
   const parsedQuestionnaireId = questionnaireIdSchema.parse(questionnaireId);
   const [questionnaireRows] = await mysqlPool.execute<QuestionnaireRow[]>(
     `
-      select id, version, title, estimated_minutes, language_code, is_active, created_at
+      select id, version, title, estimated_minutes, answer_colors, language_code, is_active, created_at
       from questionnaires
       where id = ?
       limit 1
@@ -285,6 +288,7 @@ export async function getQuestionnaireVersionDetail(
 
   return {
     ...summary,
+    answerColors: readAnswerColors(questionnaire.answer_colors),
     blocks: mapBlocks(blocks, criteria, questions, options),
   };
 }
@@ -812,11 +816,12 @@ async function replaceStructuralContent(
   payload: ReplaceQuestionnaireContentPayload,
 ): Promise<void> {
   await connection.execute<ResultSetHeader>(
-    "update questionnaires set title = ?, estimated_minutes = ?, language_code = ? where id = ?",
+    "update questionnaires set title = ?, estimated_minutes = ?, language_code = ?, answer_colors = coalesce(?, answer_colors) where id = ?",
     [
       payload.title.trim(),
       payload.estimatedMinutes,
       payload.languageCode,
+      payload.answerColors ?? null,
       payload.questionnaireId,
     ],
   );
@@ -912,10 +917,11 @@ async function updateTextOnlyContent(
     );
   }
   await connection.execute<ResultSetHeader>(
-    "update questionnaires set title = ?, estimated_minutes = ? where id = ?",
+    "update questionnaires set title = ?, estimated_minutes = ?, answer_colors = coalesce(?, answer_colors) where id = ?",
     [
       payload.title.trim(),
       payload.estimatedMinutes,
+      payload.answerColors ?? null,
       payload.questionnaireId,
     ],
   );

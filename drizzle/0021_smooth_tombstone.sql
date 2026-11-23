@@ -1,0 +1,1 @@
+ALTER TABLE `questionnaires` ADD `answer_colors` varchar(31);

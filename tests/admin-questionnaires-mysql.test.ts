@@ -7,6 +7,7 @@ type QuestionnaireRow = {
   version: string;
   title: string;
   estimated_minutes: number;
+  answer_colors?: string;
   language_code: "ca" | "es" | "eu" | "gl" | "oc";
   is_active: number;
   created_at: string;
@@ -182,6 +183,7 @@ describe("MySQL admin questionnaire mutations", () => {
       questionnaireId: "003",
       title: "Esborrany revisat",
       estimatedMinutes: 12,
+      answerColors: "#112233,#445566,#778899,#aabbcc",
       confirmAssignedEdit: false,
       blocks: [
         {
@@ -199,6 +201,7 @@ describe("MySQL admin questionnaire mutations", () => {
       "Esborrany revisat",
     );
     expect(questionnaires.find((row) => row.id === "003")?.estimated_minutes).toBe(12);
+    expect(questionnaires.find((row) => row.id === "003")?.answer_colors).toBe("#112233,#445566,#778899,#aabbcc");
     expect(blocks.filter((row) => row.questionnaire_id === "003")).toEqual([
       expect.objectContaining({ id: "01", title: "Bloc nou" }),
     ]);
@@ -528,10 +531,12 @@ function createConnectionMock(): ConnectionMock {
 
       if (normalizedQuery.includes("update questionnaires") && normalizedQuery.includes("set title")) {
         const hasLanguage = normalizedQuery.includes("language_code");
-        const target = questionnaires.find((row) => row.id === values[hasLanguage ? 3 : 2]);
+        const target = questionnaires.find((row) => row.id === values.at(-1));
         if (target) {
           target.title = String(values[0]);
           target.estimated_minutes = Number(values[1]);
+          const palette = values.at(-2);
+          if (typeof palette === "string") target.answer_colors = palette;
           if (hasLanguage) target.language_code = String(values[2]) as QuestionnaireRow["language_code"];
         }
         return [{ affectedRows: target ? 1 : 0 }];

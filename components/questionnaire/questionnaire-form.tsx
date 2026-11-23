@@ -3,6 +3,7 @@
 import { InterfaceText, useInterfaceTranslator } from "@/components/i18n/interface-text";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { answerColorStyle } from "@/lib/questionnaire/answer-colors";
 import { SCALE_OPTIONS } from "@/lib/questionnaire/scale";
 import type {
   PublicQuestionnaire,
@@ -251,6 +252,7 @@ export function QuestionnaireForm({
         />
       ) : currentPage ? (
         <CriterionPage
+          answerColors={questionnaire.answerColors}
           answers={answers}
           block={currentPage.block}
           criterion={currentPage.criterion}
@@ -445,6 +447,7 @@ function IntroPage({
 }
 
 function CriterionPage({
+  answerColors,
   answers,
   block,
   criterion,
@@ -453,6 +456,7 @@ function CriterionPage({
   optionOrder,
   onAnswer,
 }: {
+  answerColors?: PublicQuestionnaire["answerColors"];
   answers: Record<string, AnswerValue>;
   block: QuestionBlock;
   criterion: QuestionCriterion;
@@ -505,11 +509,13 @@ function CriterionPage({
                 const visualClasses = question.randomizeOptions
                   ? "questionnaire-random-option"
                   : scaleOption?.formClasses ?? "border-line bg-surface";
+                const colorStyle = question.randomizeOptions ? undefined : answerColorStyle(answerColors, option.score);
                 return (
                 isReadOnly ? (
                   <div
                     className={`flex min-h-14 items-center rounded-xl border px-4 py-3 text-sm text-ink ${visualClasses}`}
                     key={option.id}
+                    style={colorStyle}
                   >
                     {option.text}
                   </div>
@@ -517,6 +523,7 @@ function CriterionPage({
                   <label
                     className={`questionnaire-answer-option flex min-h-14 cursor-pointer items-center rounded-xl border px-4 py-3 text-sm text-ink transition ${visualClasses}`}
                     key={option.id}
+                    style={colorStyle}
                   >
                     <input
                       checked={answers[question.id] === option.id}

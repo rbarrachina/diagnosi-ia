@@ -2,6 +2,10 @@ import type { InterfaceTranslations } from "@/lib/i18n/interface-messages";
 
 // Esborrany pendent de revisió lingüística professional.
 export const interfaceGl = {
+  colorsDeLesRespostes: "Cores das respostas",
+  colorOpcio: "Opción {number}",
+  mostraColorsRespostes: "Previsualizar as cores",
+  amagaMostraColors: "Agochar a vista previa",
   "googleLoginMode": "Acceso con Google",
   "googleLoginModeHelp": "Este selector regula os dominios admitidos na aplicación. Non modifica Google Cloud: tamén hai que configurar alí Internal ou External. No modo interno só se permite @xtec.cat.",
   "googleLoginInternal": "Interno — só XTEC",

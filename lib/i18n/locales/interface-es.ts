@@ -1,6 +1,10 @@
 import type { InterfaceTranslations } from "@/lib/i18n/interface-messages";
 
 export const interfaceEs = {
+  colorsDeLesRespostes: "Colores de las respuestas",
+  colorOpcio: "Opción {number}",
+  mostraColorsRespostes: "Previsualizar los colores",
+  amagaMostraColors: "Ocultar la vista previa",
   "googleLoginMode": "Acceso con Google",
   "googleLoginModeHelp": "Este selector regula los dominios admitidos en la aplicación. No modifica Google Cloud: también hay que configurar allí Internal o External. En modo interno, los centros solo pueden utilizar @xtec.cat.",
   "googleLoginInternal": "Interno — solo XTEC",

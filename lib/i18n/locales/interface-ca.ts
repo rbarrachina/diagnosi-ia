@@ -1,5 +1,9 @@
 // Textos de la interfície compartida; exclou el contingut versionat dels qüestionaris.
 export const interfaceCa = {
+  colorsDeLesRespostes: "Colors de les respostes",
+  colorOpcio: "Opció {number}",
+  mostraColorsRespostes: "Previsualitza els colors",
+  amagaMostraColors: "Amaga la previsualització",
   "googleLoginMode": "Accés amb Google",
   "googleLoginModeHelp": "Aquest selector regula els dominis admesos a l’aplicació. No modifica Google Cloud: cal configurar-hi també Internal o External. En mode intern, els centres només poden utilitzar @xtec.cat.",
   "googleLoginInternal": "Intern — només XTEC",

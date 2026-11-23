@@ -1,3 +1,4 @@
+import type { AnswerColors } from "@/lib/questionnaire/answer-colors";
 import type { QuestionnaireLanguageCode } from "@/lib/questionnaire/languages";
 import type { ScaleValue } from "@/lib/questionnaire/scale";
 
@@ -34,5 +35,6 @@ export type PublicQuestionnaire = {
   questionnaireVersion: string;
   languageCode: QuestionnaireLanguageCode;
   estimatedMinutes: number;
+  answerColors?: AnswerColors;
   blocks: QuestionBlock[];
 };
